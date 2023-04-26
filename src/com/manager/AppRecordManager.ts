@@ -25,7 +25,12 @@ export class AppRecordManager {
     /**
      * 访问记录
      */
-    private static history: IRecord[][] = []
+    private static history: {
+        /** 当前的面板 */
+        current: IRecord,
+        /** 要跳转的新面板 */
+        newPage: IRecord
+    }[] = []
     /** 退出点击上一次时间 */
     private static exitTimer = 0
     /** 暂停返回上一页 */
@@ -39,8 +44,8 @@ export class AppRecordManager {
      * @param newPage 添加的新面板
      */
     static addHistory(currentPage: IRecord, newPage: IRecord) {
-        console.log("addHistory")
-        this.history.push([currentPage, newPage])
+        // console.log("addHistory")
+        this.history.push({current: currentPage, newPage: newPage})
     }
 
     /**
@@ -49,10 +54,10 @@ export class AppRecordManager {
      *
      */
     static invalidHistory(value: IRecord) {
-        console.log("invalidHistory")
+        // console.log("invalidHistory")
         if (this.history.length > 0) {
             for (let i = 0; i < this.history.length; i++) {
-                if (this.history[i][1] == value) {
+                if (this.history[i]?.newPage == value) {
                     this.history.splice(i, 1)
                     break
                 }
@@ -62,7 +67,7 @@ export class AppRecordManager {
 
     /**
      * 退出游戏
-     * @param isBack 是否用的返回键（非项目内的）
+     * @param [isBack = false] 是否用的返回键（非项目内的）
      *
      */
     static backGame(isBack = false) {
@@ -74,8 +79,9 @@ export class AppRecordManager {
 //			    MessageTip.showTip(CommonCmd.NOT_EXIT_GAME)
             return
         }
+        if (history.length > 0) return
         let array = this.history[this.history.length - 1]
-        if (array[1] instanceof BaseScene) {
+        if (array.newPage instanceof BaseScene) {
             this.back(isBack)
         } else {
             this.back(isBack)
@@ -91,9 +97,9 @@ export class AppRecordManager {
      *
      */
     static backHistory(isBack = false) {
-        if (this.history.length > 0 && (this.history[this.history.length - 1][1] instanceof fgui.Window || !this.pauseHistory)) {
-            let array: any[] = this.history[this.history.length - 1]
-            if (isBack && array[1] instanceof BaseScene) {
+        if (this.history.length > 0 && (this.history[this.history.length - 1].newPage instanceof fgui.Window || !this.pauseHistory)) {
+            let array = this.history[this.history.length - 1]
+            if (isBack && array.newPage instanceof BaseScene) {
                 this.backGame(isBack)
                 return
             }
@@ -118,9 +124,9 @@ export class AppRecordManager {
     /** 执行非大厅后退 */
     private static back(isBack = false) {
         if (this.history.length > 0) {
-            let array: any = this.history.pop()
-            if (array[1] != null) (array[1] as IRecord).hideRecord()
-            if (array[0] != null) (array[0] as IRecord).showRecord()
+            let array = this.history.pop()
+            array?.newPage?.hideRecord()
+            array?.current?.showRecord()
             if (isBack) {// 键盘返回
                 if (!Render.isConchApp)
                     Browser.window.addNewHistory()
