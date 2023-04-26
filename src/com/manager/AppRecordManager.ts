@@ -79,7 +79,7 @@ export class AppRecordManager {
 //			    MessageTip.showTip(CommonCmd.NOT_EXIT_GAME)
             return
         }
-        if (history.length > 0) return
+        if (history.length === 0) return
         let array = this.history[this.history.length - 1]
         if (array.newPage instanceof BaseScene) {
             this.back(isBack)

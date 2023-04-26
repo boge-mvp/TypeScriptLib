@@ -18,7 +18,6 @@
     "gif2webp",
     "webpmux"
   ],
-
   "files": [
     "assets/",
     "version_info.txt",
