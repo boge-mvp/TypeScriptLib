@@ -7,6 +7,10 @@ import Point = Laya.Point;
 import SpineSkeleton = Laya.SpineSkeleton;
 import Rectangle = Laya.Rectangle;
 import {ISkeletonPlay} from "../interfaces/ICommon";
+import SoundChannel = Laya.SoundChannel;
+import SoundManager = Laya.SoundManager;
+import Handler = Laya.Handler;
+import {GSkeleton} from "./GSkeleton";
 
 export class GSpineSkeleton extends GComponent {
 
@@ -18,7 +22,7 @@ export class GSpineSkeleton extends GComponent {
     private p4: Point
 
     private readonly ver: SpineVersion
-    private spineSkeleton: Laya.SpineSkeleton
+    private spineSkeleton: MySpineSkeleton
     private template: Laya.SpineTemplet
     /** 加载路径 */
     private _aniPath: string
@@ -48,7 +52,7 @@ export class GSpineSkeleton extends GComponent {
     protected createDisplayObject() {
         super.createDisplayObject()
 
-        this.spineSkeleton = this._displayObject = new SpineSkeleton()
+        this.spineSkeleton = this._displayObject = new MySpineSkeleton()
         this._displayObject["$owner"] = this
         this["_touchable"] = this._displayObject.mouseEnabled = this._displayObject.mouseThrough = false
         this._displayObject.on(Event.STOPPED, this, this.onPlayStopped)
@@ -337,6 +341,66 @@ export class GSpineSkeleton extends GComponent {
 
     dispose() {
         super.dispose()
+    }
+
+}
+
+class MySpineSkeleton extends Laya.SpineSkeleton {
+
+    init(templet: Laya.SpineTempletBase) {
+        super.init(templet);
+        let that = this;
+        // @ts-ignore
+        this.state.addListener({
+            start: function(entry: any) {
+                // console.log("started:", entry);
+            },
+            interrupt: function(entry: any) {
+                // console.log("interrupt:", entry);
+            },
+            end: function(entry: any) {
+                // console.log("end:", entry);
+            },
+            dispose: function(entry: any) {
+                // console.log("dispose:", entry);
+            },
+            complete: function(entry: any) {
+                // console.log("complete:", entry);
+                if (entry.loop) { // 如果多次播放,发送complete事件
+                    that.event(Event.COMPLETE);
+                } else { // 如果只播放一次，就发送stop事件
+                    // @ts-ignore
+                    that._currAniName = null;
+                    that.event(Event.STOPPED);
+                }
+            },
+            event: function(entry: any, event: any) {
+                let eventData = {
+                    audioValue: event.data.audioPath,
+                    audioPath: event.data.audioPath,
+                    floatValue: event.floatValue,
+                    intValue: event.intValue,
+                    name: event.data.name,
+                    stringValue: event.stringValue,
+                    time: event.time * 1000,
+                    balance: event.balance,
+                    volume: event.volume
+                };
+                // console.log("event:", entry, event);
+                that.event(GSkeleton.UPDATE_BONE_SLOT + event.data.name, [entry, event])
+                that.event(Event.LABEL, eventData);
+                let _soundChannel: SoundChannel;
+                // @ts-ignore
+                if (that._playAudio && eventData.audioValue) {
+                    // @ts-ignore
+                    _soundChannel = SoundManager.playSound(templet._textureDic.root + eventData.audioValue, 1, Handler.create(that, that._onAniSoundStoped), null, (that.currentPlayTime * 1000 - eventData.time) / 1000);
+                    // @ts-ignore
+                    SoundManager.playbackRate = that._playbackRate;
+                    // @ts-ignore
+                    _soundChannel && that._soundChannelArr.push(_soundChannel);
+                }
+            },
+        })
     }
 
 }

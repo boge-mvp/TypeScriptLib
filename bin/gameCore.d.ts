@@ -736,14 +736,6 @@ declare namespace coreLib {
         /** 更新bounds信息 */
         GAME_UPDATE_BOUNDS_INFO = "game_update_bounds_info"
     }
-    /** 加载资源配置 */
-    export class LoaderConfig {
-        /**
-         * 清理资源
-         * @param res 要清理的资源数组
-         */
-        static clear(res: LoadRes[]): void;
-    }
     export class BaseButton extends fgui.GButton implements IView {
         constructor();
         regAction(action: string, caller: any, method: Function, group?: string): void;
@@ -1783,6 +1775,14 @@ declare namespace coreLib {
          */
         protected completeHandler(list: fgui.GList): void;
         dispose(): void;
+    }
+    /** 加载资源配置 */
+    export class LoaderConfig {
+        /**
+         * 清理资源
+         * @param res 要清理的资源数组
+         */
+        static clear(res: LoadRes[]): void;
     }
     export class GoldEffect extends View {
         private golds;
@@ -5088,7 +5088,7 @@ declare namespace coreLib {
         private skeletonPlay;
         constructor(ver?: Laya.SpineVersion);
         protected createDisplayObject(): void;
-        get asSkeleton(): Laya.SpineSkeleton;
+        get asSkeleton(): MySpineSkeleton;
         /**
          * 加载json 或 skel格式的骨骼文件
          * @param jsonOrSkelUrl
@@ -5147,6 +5147,9 @@ declare namespace coreLib {
         setMiddlePoint2(tempX: number, tempY: number, tempX2: number, tempY2: number): void;
         setEndPoint(tempX: number, tempY: number): void;
         dispose(): void;
+    }
+    class MySpineSkeleton extends Laya.SpineSkeleton {
+        init(templet: Laya.SpineTempletBase): void;
     }
     /** 提示框 */
     export class HomePrompt extends BaseWindow {

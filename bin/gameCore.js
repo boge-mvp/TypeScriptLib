@@ -1465,19 +1465,6 @@ window.coreLib = {};
         /** 更新bounds信息 */
         ActionLib["GAME_UPDATE_BOUNDS_INFO"] = "game_update_bounds_info";
     })(ActionLib = coreLib.ActionLib || (coreLib.ActionLib = {}));
-    /** 加载资源配置 */
-    class LoaderConfig {
-        /**
-         * 清理资源
-         * @param res 要清理的资源数组
-         */
-        static clear(res) {
-            for (let i = 0; i < res.length; i++) {
-                MyLoader.loader.clearRes(res[i].url);
-            }
-        }
-    }
-    coreLib.LoaderConfig = LoaderConfig;
     class BaseButton extends fgui.GButton {
         constructor() {
             super();
@@ -4421,6 +4408,19 @@ window.coreLib = {};
         }
     }
     coreLib.SlotScrollTweenModel = SlotScrollTweenModel;
+    /** 加载资源配置 */
+    class LoaderConfig {
+        /**
+         * 清理资源
+         * @param res 要清理的资源数组
+         */
+        static clear(res) {
+            for (let i = 0; i < res.length; i++) {
+                MyLoader.loader.clearRes(res[i].url);
+            }
+        }
+    }
+    coreLib.LoaderConfig = LoaderConfig;
     class GoldEffect extends View {
         constructor() {
             super();
@@ -11493,7 +11493,7 @@ window.coreLib = {};
         }
         createDisplayObject() {
             super.createDisplayObject();
-            this.spineSkeleton = this._displayObject = new Laya.SpineSkeleton();
+            this.spineSkeleton = this._displayObject = new MySpineSkeleton();
             this._displayObject["$owner"] = this;
             this["_touchable"] = this._displayObject.mouseEnabled = this._displayObject.mouseThrough = false;
             this._displayObject.on(Laya.Event.STOPPED, this, this.onPlayStopped);
@@ -11759,6 +11759,64 @@ window.coreLib = {};
         }
     }
     coreLib.GSpineSkeleton = GSpineSkeleton;
+    class MySpineSkeleton extends Laya.SpineSkeleton {
+        init(templet) {
+            super.init(templet);
+            let that = this;
+            // @ts-ignore
+            this.state.addListener({
+                start: function (entry) {
+                    // console.log("started:", entry);
+                },
+                interrupt: function (entry) {
+                    // console.log("interrupt:", entry);
+                },
+                end: function (entry) {
+                    // console.log("end:", entry);
+                },
+                dispose: function (entry) {
+                    // console.log("dispose:", entry);
+                },
+                complete: function (entry) {
+                    // console.log("complete:", entry);
+                    if (entry.loop) { // 如果多次播放,发送complete事件
+                        that.event(Laya.Event.COMPLETE);
+                    }
+                    else { // 如果只播放一次，就发送stop事件
+                        // @ts-ignore
+                        that._currAniName = null;
+                        that.event(Laya.Event.STOPPED);
+                    }
+                },
+                event: function (entry, event) {
+                    let eventData = {
+                        audioValue: event.data.audioPath,
+                        audioPath: event.data.audioPath,
+                        floatValue: event.floatValue,
+                        intValue: event.intValue,
+                        name: event.data.name,
+                        stringValue: event.stringValue,
+                        time: event.time * 1000,
+                        balance: event.balance,
+                        volume: event.volume
+                    };
+                    // console.log("event:", entry, event);
+                    that.event(GSkeleton.UPDATE_BONE_SLOT + event.data.name, [entry, event]);
+                    that.event(Laya.Event.LABEL, eventData);
+                    let _soundChannel;
+                    // @ts-ignore
+                    if (that._playAudio && eventData.audioValue) {
+                        // @ts-ignore
+                        _soundChannel = Laya.SoundManager.playSound(templet._textureDic.root + eventData.audioValue, 1, Laya.Handler.create(that, that._onAniSoundStoped), null, (that.currentPlayTime * 1000 - eventData.time) / 1000);
+                        // @ts-ignore
+                        Laya.SoundManager.playbackRate = that._playbackRate;
+                        // @ts-ignore
+                        _soundChannel && that._soundChannelArr.push(_soundChannel);
+                    }
+                },
+            });
+        }
+    }
     /** 提示框 */
     class HomePrompt extends BaseWindow {
         constructor() {
