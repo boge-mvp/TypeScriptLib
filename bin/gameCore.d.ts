@@ -736,14 +736,6 @@ declare namespace coreLib {
         /** 更新bounds信息 */
         GAME_UPDATE_BOUNDS_INFO = "game_update_bounds_info"
     }
-    /** 加载资源配置 */
-    export class LoaderConfig {
-        /**
-         * 清理资源
-         * @param res 要清理的资源数组
-         */
-        static clear(res: LoadRes[]): void;
-    }
     export class BaseButton extends fgui.GButton implements IView {
         constructor();
         regAction(action: string, caller: any, method: Function, group?: string): void;
@@ -1924,6 +1916,14 @@ declare namespace coreLib {
         playComplete(): void;
         dispose(): void;
     }
+    /** 加载资源配置 */
+    export class LoaderConfig {
+        /**
+         * 清理资源
+         * @param res 要清理的资源数组
+         */
+        static clear(res: LoadRes[]): void;
+    }
     export interface IAction {
         /**
          * 注册事件
@@ -2545,291 +2545,6 @@ declare namespace coreLib {
             new (): T;
         }): T;
     }
-    /** 通信命令 */
-    export enum Cmd {
-        /** 大厅socket房间号 */
-        PROT_HOME = 999999,
-        /** 聊天内容 */
-        SOCKET_CHAT_MESSAGE = 1,
-        /** 中奖信息公告 */
-        SOCKET_WIN_INFO = 2,
-        /** 在线人数 */
-        SOCKET_ROOM_MONEY_MESSAGE = 3,
-        /** 充值状态 */
-        SOCKET_RECHARGE_STATUS = 4,
-        /** 余额变化 */
-        SOCKET_MONEY_CHANGE = 1001,
-        /** 黄金变化 */
-        SOCKET_GOLD_CHANGE = 1002,
-        /** 充值成功 */
-        SOCKET_TOP_UP_CHANGE = 1004,
-        /** 显示广播消息 */
-        SOCKET_SHOW_NOTICE = 12
-    }
-    /** 公用信息处理 */
-    export enum CommonCmd {
-        /** 游戏首页 */
-        GAME_HOME = 999999,
-        /** 水果 */
-        GAME_FRUIT = 1,
-        /** 大转盘 */
-        GAME_WHEEL = 2,
-        /** 百家乐 低倍 */
-        GAME_LOW_BACCARAT = 30,
-        /** 百家乐 高倍 */
-        GAME_HIGH_BACCARAT = 3,
-        /** 单机水果 低倍 */
-        GAME_ALONE_LOW_FRUIT = 1001,
-        /** 单机水果 高倍 */
-        GAME_ALONE_HIGH_FRUIT = 1002,
-        /** 刮刮奖 */
-        GAME_SCRATCHER = 1003,
-        /** 单机大转盘 低倍 */
-        GAME_ALONE_LOW_WHEEL = 2001,
-        /** 单机大转盘 高倍 */
-        GAME_ALONE_HIGH_WHEEL = 2002,
-        /** 翻牌机 */
-        GAME_FACE_UP = 3001,
-        /** 单机轮盘 */
-        GAME_ALONE_ROULETTE = 3002,
-        /** 动物园 */
-        GAME_ZOO = 3003,
-        /** 轮盘 */
-        GAME_ROULETTE = 3005,
-        /** 百家乐单机版 */
-        GAME_ALONE_BACCARAT = 3006,
-        /** 翻牌机单机版 */
-        GAME_ALONE_FACEUP = 3007,
-        /** 49游戏 */
-        GAME_FOUR_NINE = 3008,
-        /** 捕鱼游戏 */
-        GAME_FISHING = 3009,
-        /** 足球老虎机 */
-        GAME_FOOTBALL_SLOT_MACHINES = 3010,
-        /** 体育足彩 */
-        GAME_SPORTS = 10000,
-        /** 虚拟体育 */
-        GAME_VIRTUAL_SPORTS = 10001,
-        /** 游客模式玩游戏到达最大值 提示玩真钱 */
-        GUEST_MAX_PLAY_COUNT = 15,
-        /** web端玩游戏到达最大值 提示下载app */
-        WEB_MAX_PLAY_COUNT = 100,
-        /** 水果机最大下注值 */
-        FRUIT_MAX_BET = 1000,
-        /** 大转盘最大下注值 */
-        WHEEL_MAX_BET = 1000,
-        /** 百家乐最大下注值 */
-        BACCARAT_MAX_BET = 5000,
-        /** 动物园最大下注值 */
-        ZOO_MAX_BET = 1000,
-        /** 大满贯  全部中大的（除苹果核BAR）*/
-        GRAND_SLAM = 1,
-        /** 大火车   5节火车*/
-        MAX_CHOOCHOO = 2,
-        /** 小火车   3节火车*/
-        MIN_CHOOCHOO = 3,
-        /** 大三元   中三个大结果*/
-        DA_SAN_YUAN = 4,
-        /** 小满贯  全部中小的（除苹果核BAR）*/
-        LITTLE_SLAM = 5,
-        /** 小三元 */
-        XIAO_SAN_YUAN = 6,
-        /** 大四喜  中四个苹果*/
-        DA_SI_XI = 7,
-        /** 随机送灯  随机反弹一个结果*/
-        RANDOM = 8,
-        /** 金币 */
-        GAME_MONEY_TYPE_COINS = 2,
-        /** 赠送金 */
-        GAME_MONEY_TYPE_GIFT = 3
-    }
-    export class GameHttpRequest extends Laya.HttpRequest {
-        /** 请求数据完成 */
-        private completeHandler;
-        /** 请求错误 */
-        private errorHandler;
-        /** 超时 */
-        private timerOutHandler;
-        /** 超时时间 */
-        private overtime;
-        /**
-         * 创建一个请求
-         */
-        constructor();
-        onComplete(value: ParamHandler): void;
-        onTimerOut(value: ParamHandler): void;
-        onError(value: ParamHandler): void;
-        setOvertime(value: number): void;
-        send(url: string, data?: any, method?: string, responseType?: string, headers?: string[] | null): void;
-        private httpErrorHandler;
-        /** 请求返回结果数据 */
-        private resultHandler;
-        private timeOut;
-        /**
-         * 终止请求
-         */
-        abort(): void;
-    }
-    export class GameSocket extends Laya.EventDispatcher {
-        static SOCKET_CLASS_PATH: string;
-        protected MAX_CONNECT_TIME: number;
-        protected DELAY: number;
-        protected socket: any;
-        protected options: any;
-        protected auth: boolean;
-        alive: boolean;
-        /**
-         * 创建一个socket
-         * @param options 参数 url 连接地址 notify 回调方法 auth 认证
-         */
-        constructor(options: any);
-        createConnect(): void;
-        protected connect(): void;
-        closeHandler(msg?: any): void;
-        messageHandler(evt: any): void;
-        errorHandler(e: any): void;
-        openHandler(): void;
-        protected reConnect(): void;
-        protected heartbeat(): void;
-        protected getAuth(): void;
-        send(data: any): void;
-        close(): void;
-    }
-    export enum HttpCode {
-        /** 正确返回代码 */
-        OK = 200
-    }
-    export interface IHttpFilter {
-        /**
-         * 解析发送数据
-         * @param url 访问地址
-         * @param value 发送的数据
-         * @return 发送的数据
-         */
-        filterSendData(url: string, value: any): any;
-        /**
-         * 解析返回的数据
-         * @param url 访问地址
-         * @param value 返回的数据
-         * @return 返回的数据
-         */
-        filterResultData(url: string, value: any): any;
-        /**
-         * 拦截器 返回true 表示拦截不再继续执行后续的处理   false 表示继续执行后续的处理
-         * @param url 访问地址
-         * @param value 数据
-         * @param complete 成功数据
-         * @param error 失败数据
-         * @param timeout 超时
-         */
-        interceptSend(url: string, value: any, complete?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler): boolean;
-        /**
-         * 错误调用
-         * @param error
-         */
-        errorResult(error: any): void;
-        /** 自己解析通信数据 url->Handler   需要有返回方法 false 表示继续默认的处理模式 true 表示中止继续处理 */
-        customResult: {
-            [key: string]: ((url: string, value: any, complete?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler) => boolean) | Laya.Handler;
-        };
-        /**
-         * 解析服务器的时间 返回服务器时间毫秒
-         * @param data
-         */
-        parseData(data: any): number;
-    }
-    /** socket管理 */
-    export class SocketManager extends BaseSocket {
-        private static _instance;
-        static get inst(): SocketManager;
-        /** 当前连接的房间号 */
-        private _roomId;
-        /** 接受到的消息 */
-        private receiveData;
-        private _client;
-        static SocketClass: typeof GameSocket;
-        constructor();
-        /**
-         * 链接服务器socket
-         * @param roomId 房间号
-         * @param token token
-         * @param userId 用户id 默认 110
-         * @param url 连接地址 如果不存在 会使用 window.socketUrl
-         */
-        connect(roomId: number, token: string, userId?: number, url?: string): void;
-        private sendData;
-        /** 关闭链接 */
-        close(): void;
-        /** 服务器发来消息 */
-        onMessageReveived(data: any): void;
-        closeHandler(msg?: any): void;
-        messageHandler(evt: any): void;
-        errorHandler(e: any): void;
-        openHandler(): void;
-        get roomId(): number;
-        test(value: string): void;
-    }
-    /**
-     * url 参数
-     */
-    export class UrlParam {
-        private _amount;
-        private _inviteCode;
-        private openGame;
-        /** 国家 'ke'肯尼亚；'ug'乌干达, 'ng'尼日尼亚 */
-        private _country;
-        /** 语言 en zh-CN */
-        private _language;
-        /** 渠道平台 */
-        channel: string;
-        /** 0:ai  1:people 2:friend */
-        private _playWith;
-        private _roomId;
-        /** 1 守门员  2 踢球 */
-        private _role;
-        /** 是否是赠送金 0 没有 1 有 */
-        private _isGift;
-        /** 是否是debug模式 */
-        debug: boolean;
-        constructor();
-        parseData(json: any): void;
-        getValue(json: any, key: string): string;
-        get amount(): string;
-        get inviteCode(): string;
-        /**
-         * 是否是直接指定页面
-         * @return
-         */
-        isJumpPage(): boolean;
-        /**
-         * 清理跳转记录
-         */
-        clearJumpPage(): void;
-        get country(): string;
-        get language(): string;
-        get playWith(): string;
-        set playWith(value: string);
-        set roomId(value: string);
-        get roomId(): string;
-        get role(): number;
-        set role(value: number);
-        get isGift(): number;
-        set isGift(value: number);
-    }
-    export enum Urls {
-        /** 获取服务器时间 */
-        GAME_SERVER_TIME = "/game/server-time",
-        /** 优惠券投注 */
-        URL_COUPON_BET = "/game/coupon/bet",
-        /** 获取用户信息 */
-        URL_USER_INFO = "/user/info",
-        /** 获取用户账户金额 */
-        URL_USER_ACCOUNT_ASSET = "/account/asset",
-        /** gift 抽奖开奖结果 */
-        URL_GAME_SCRATCHER_LOTTERY = "/game/scratcher/handle",
-        /** 获取所有优惠券 */
-        URL_GAME_ALL_COUPON = "/coupon/all?"
-    }
     /**
      * 统计管理器
      * @author boge
@@ -3289,6 +3004,291 @@ declare namespace coreLib {
          */
         sendErrorLog(data: any): void;
     }
+    /** 通信命令 */
+    export enum Cmd {
+        /** 大厅socket房间号 */
+        PROT_HOME = 999999,
+        /** 聊天内容 */
+        SOCKET_CHAT_MESSAGE = 1,
+        /** 中奖信息公告 */
+        SOCKET_WIN_INFO = 2,
+        /** 在线人数 */
+        SOCKET_ROOM_MONEY_MESSAGE = 3,
+        /** 充值状态 */
+        SOCKET_RECHARGE_STATUS = 4,
+        /** 余额变化 */
+        SOCKET_MONEY_CHANGE = 1001,
+        /** 黄金变化 */
+        SOCKET_GOLD_CHANGE = 1002,
+        /** 充值成功 */
+        SOCKET_TOP_UP_CHANGE = 1004,
+        /** 显示广播消息 */
+        SOCKET_SHOW_NOTICE = 12
+    }
+    /** 公用信息处理 */
+    export enum CommonCmd {
+        /** 游戏首页 */
+        GAME_HOME = 999999,
+        /** 水果 */
+        GAME_FRUIT = 1,
+        /** 大转盘 */
+        GAME_WHEEL = 2,
+        /** 百家乐 低倍 */
+        GAME_LOW_BACCARAT = 30,
+        /** 百家乐 高倍 */
+        GAME_HIGH_BACCARAT = 3,
+        /** 单机水果 低倍 */
+        GAME_ALONE_LOW_FRUIT = 1001,
+        /** 单机水果 高倍 */
+        GAME_ALONE_HIGH_FRUIT = 1002,
+        /** 刮刮奖 */
+        GAME_SCRATCHER = 1003,
+        /** 单机大转盘 低倍 */
+        GAME_ALONE_LOW_WHEEL = 2001,
+        /** 单机大转盘 高倍 */
+        GAME_ALONE_HIGH_WHEEL = 2002,
+        /** 翻牌机 */
+        GAME_FACE_UP = 3001,
+        /** 单机轮盘 */
+        GAME_ALONE_ROULETTE = 3002,
+        /** 动物园 */
+        GAME_ZOO = 3003,
+        /** 轮盘 */
+        GAME_ROULETTE = 3005,
+        /** 百家乐单机版 */
+        GAME_ALONE_BACCARAT = 3006,
+        /** 翻牌机单机版 */
+        GAME_ALONE_FACEUP = 3007,
+        /** 49游戏 */
+        GAME_FOUR_NINE = 3008,
+        /** 捕鱼游戏 */
+        GAME_FISHING = 3009,
+        /** 足球老虎机 */
+        GAME_FOOTBALL_SLOT_MACHINES = 3010,
+        /** 体育足彩 */
+        GAME_SPORTS = 10000,
+        /** 虚拟体育 */
+        GAME_VIRTUAL_SPORTS = 10001,
+        /** 游客模式玩游戏到达最大值 提示玩真钱 */
+        GUEST_MAX_PLAY_COUNT = 15,
+        /** web端玩游戏到达最大值 提示下载app */
+        WEB_MAX_PLAY_COUNT = 100,
+        /** 水果机最大下注值 */
+        FRUIT_MAX_BET = 1000,
+        /** 大转盘最大下注值 */
+        WHEEL_MAX_BET = 1000,
+        /** 百家乐最大下注值 */
+        BACCARAT_MAX_BET = 5000,
+        /** 动物园最大下注值 */
+        ZOO_MAX_BET = 1000,
+        /** 大满贯  全部中大的（除苹果核BAR）*/
+        GRAND_SLAM = 1,
+        /** 大火车   5节火车*/
+        MAX_CHOOCHOO = 2,
+        /** 小火车   3节火车*/
+        MIN_CHOOCHOO = 3,
+        /** 大三元   中三个大结果*/
+        DA_SAN_YUAN = 4,
+        /** 小满贯  全部中小的（除苹果核BAR）*/
+        LITTLE_SLAM = 5,
+        /** 小三元 */
+        XIAO_SAN_YUAN = 6,
+        /** 大四喜  中四个苹果*/
+        DA_SI_XI = 7,
+        /** 随机送灯  随机反弹一个结果*/
+        RANDOM = 8,
+        /** 金币 */
+        GAME_MONEY_TYPE_COINS = 2,
+        /** 赠送金 */
+        GAME_MONEY_TYPE_GIFT = 3
+    }
+    export class GameHttpRequest extends Laya.HttpRequest {
+        /** 请求数据完成 */
+        private completeHandler;
+        /** 请求错误 */
+        private errorHandler;
+        /** 超时 */
+        private timerOutHandler;
+        /** 超时时间 */
+        private overtime;
+        /**
+         * 创建一个请求
+         */
+        constructor();
+        onComplete(value: ParamHandler): void;
+        onTimerOut(value: ParamHandler): void;
+        onError(value: ParamHandler): void;
+        setOvertime(value: number): void;
+        send(url: string, data?: any, method?: string, responseType?: string, headers?: string[] | null): void;
+        private httpErrorHandler;
+        /** 请求返回结果数据 */
+        private resultHandler;
+        private timeOut;
+        /**
+         * 终止请求
+         */
+        abort(): void;
+    }
+    export class GameSocket extends Laya.EventDispatcher {
+        static SOCKET_CLASS_PATH: string;
+        protected MAX_CONNECT_TIME: number;
+        protected DELAY: number;
+        protected socket: any;
+        protected options: any;
+        protected auth: boolean;
+        alive: boolean;
+        /**
+         * 创建一个socket
+         * @param options 参数 url 连接地址 notify 回调方法 auth 认证
+         */
+        constructor(options: any);
+        createConnect(): void;
+        protected connect(): void;
+        closeHandler(msg?: any): void;
+        messageHandler(evt: any): void;
+        errorHandler(e: any): void;
+        openHandler(): void;
+        protected reConnect(): void;
+        protected heartbeat(): void;
+        protected getAuth(): void;
+        send(data: any): void;
+        close(): void;
+    }
+    export enum HttpCode {
+        /** 正确返回代码 */
+        OK = 200
+    }
+    export interface IHttpFilter {
+        /**
+         * 解析发送数据
+         * @param url 访问地址
+         * @param value 发送的数据
+         * @return 发送的数据
+         */
+        filterSendData(url: string, value: any): any;
+        /**
+         * 解析返回的数据
+         * @param url 访问地址
+         * @param value 返回的数据
+         * @return 返回的数据
+         */
+        filterResultData(url: string, value: any): any;
+        /**
+         * 拦截器 返回true 表示拦截不再继续执行后续的处理   false 表示继续执行后续的处理
+         * @param url 访问地址
+         * @param value 数据
+         * @param complete 成功数据
+         * @param error 失败数据
+         * @param timeout 超时
+         */
+        interceptSend(url: string, value: any, complete?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler): boolean;
+        /**
+         * 错误调用
+         * @param error
+         */
+        errorResult(error: any): void;
+        /** 自己解析通信数据 url->Handler   需要有返回方法 false 表示继续默认的处理模式 true 表示中止继续处理 */
+        customResult: {
+            [key: string]: ((url: string, value: any, complete?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler) => boolean) | Laya.Handler;
+        };
+        /**
+         * 解析服务器的时间 返回服务器时间毫秒
+         * @param data
+         */
+        parseData(data: any): number;
+    }
+    /** socket管理 */
+    export class SocketManager extends BaseSocket {
+        private static _instance;
+        static get inst(): SocketManager;
+        /** 当前连接的房间号 */
+        private _roomId;
+        /** 接受到的消息 */
+        private receiveData;
+        private _client;
+        static SocketClass: typeof GameSocket;
+        constructor();
+        /**
+         * 链接服务器socket
+         * @param roomId 房间号
+         * @param token token
+         * @param userId 用户id 默认 110
+         * @param url 连接地址 如果不存在 会使用 window.socketUrl
+         */
+        connect(roomId: number, token: string, userId?: number, url?: string): void;
+        private sendData;
+        /** 关闭链接 */
+        close(): void;
+        /** 服务器发来消息 */
+        onMessageReveived(data: any): void;
+        closeHandler(msg?: any): void;
+        messageHandler(evt: any): void;
+        errorHandler(e: any): void;
+        openHandler(): void;
+        get roomId(): number;
+        test(value: string): void;
+    }
+    /**
+     * url 参数
+     */
+    export class UrlParam {
+        private _amount;
+        private _inviteCode;
+        private openGame;
+        /** 国家 'ke'肯尼亚；'ug'乌干达, 'ng'尼日尼亚 */
+        private _country;
+        /** 语言 en zh-CN */
+        private _language;
+        /** 渠道平台 */
+        channel: string;
+        /** 0:ai  1:people 2:friend */
+        private _playWith;
+        private _roomId;
+        /** 1 守门员  2 踢球 */
+        private _role;
+        /** 是否是赠送金 0 没有 1 有 */
+        private _isGift;
+        /** 是否是debug模式 */
+        debug: boolean;
+        constructor();
+        parseData(json: any): void;
+        getValue(json: any, key: string): string;
+        get amount(): string;
+        get inviteCode(): string;
+        /**
+         * 是否是直接指定页面
+         * @return
+         */
+        isJumpPage(): boolean;
+        /**
+         * 清理跳转记录
+         */
+        clearJumpPage(): void;
+        get country(): string;
+        get language(): string;
+        get playWith(): string;
+        set playWith(value: string);
+        set roomId(value: string);
+        get roomId(): string;
+        get role(): number;
+        set role(value: number);
+        get isGift(): number;
+        set isGift(value: number);
+    }
+    export enum Urls {
+        /** 获取服务器时间 */
+        GAME_SERVER_TIME = "/game/server-time",
+        /** 优惠券投注 */
+        URL_COUPON_BET = "/game/coupon/bet",
+        /** 获取用户信息 */
+        URL_USER_INFO = "/user/info",
+        /** 获取用户账户金额 */
+        URL_USER_ACCOUNT_ASSET = "/account/asset",
+        /** gift 抽奖开奖结果 */
+        URL_GAME_SCRATCHER_LOTTERY = "/game/scratcher/handle",
+        /** 获取所有优惠券 */
+        URL_GAME_ALL_COUPON = "/coupon/all?"
+    }
     export interface IConchRenderObject {
         drawSubmesh(submesh: any, drawType: number, renderMode: number, offset: number, count: number): void;
         matrix(matrix: Float32Array): void;
@@ -3438,65 +3438,6 @@ declare namespace coreLib {
         static conchMarket: IMarket;
         /**@private PlatformClass类，只有加速器模式下才有值 */
         static PlatformClass: ICPlatformClass;
-    }
-    /** 卡牌 */
-    export class Card extends BaseLabel {
-        /** 卡牌的id */
-        code: number;
-        /** 卡牌面值 */
-        value: number;
-        /** 卡牌名字 */
-        nameCard: string;
-        /** 卡牌花色 */
-        suit: number;
-        /** 卡牌花色名字 */
-        _suitName: string;
-        /** 初始化X */
-        initX: number;
-        /** 初始化Y */
-        initY: number;
-        /** XY偏移量 */
-        offset: number;
-        /** 偏移倍数 */
-        offsetMultiple: number;
-        /** 中心点 */
-        tempPivot: Laya.Point;
-        constructor();
-        init(id: number): void;
-        protected suitName(value: number): string;
-        createUI(): void;
-    }
-    export class Deck {
-        /** 存放的卡牌 */
-        cards: Card[];
-        /** 已经完成了动画个数 */
-        private completeNum;
-        /** 动画执行次数 */
-        private executeNum;
-        /** 是否正在运行动画 */
-        private isRun;
-        private handler;
-        createCard(): void;
-        /**
-         * 收集牌
-         * @param handler
-         * @param sort 是否需要排序
-         */
-        sort(handler?: ParamHandler, sort?: boolean): void;
-        /** 展示牌 铺开 */
-        bySuit(handler?: Laya.Handler): void;
-        /** 展示牌 */
-        fan(handler?: Laya.Handler): void;
-        /**
-         * 洗牌
-         * @param handler 执行完成回调
-         * @param num 执行次数 暂未实现
-         */
-        shuffle(handler?: Laya.Handler, num?: number): void;
-        private moveHandler;
-        private plusMinus;
-        setChildIndexHandler(card: Card, index: number): void;
-        dispose(): void;
     }
     export class BindInputButton {
         btn: fgui.GButton;
@@ -5535,6 +5476,65 @@ declare namespace coreLib {
         show(): void;
         private showContent;
         hide(): void;
+    }
+    /** 卡牌 */
+    export class Card extends BaseLabel {
+        /** 卡牌的id */
+        code: number;
+        /** 卡牌面值 */
+        value: number;
+        /** 卡牌名字 */
+        nameCard: string;
+        /** 卡牌花色 */
+        suit: number;
+        /** 卡牌花色名字 */
+        _suitName: string;
+        /** 初始化X */
+        initX: number;
+        /** 初始化Y */
+        initY: number;
+        /** XY偏移量 */
+        offset: number;
+        /** 偏移倍数 */
+        offsetMultiple: number;
+        /** 中心点 */
+        tempPivot: Laya.Point;
+        constructor();
+        init(id: number): void;
+        protected suitName(value: number): string;
+        createUI(): void;
+    }
+    export class Deck {
+        /** 存放的卡牌 */
+        cards: Card[];
+        /** 已经完成了动画个数 */
+        private completeNum;
+        /** 动画执行次数 */
+        private executeNum;
+        /** 是否正在运行动画 */
+        private isRun;
+        private handler;
+        createCard(): void;
+        /**
+         * 收集牌
+         * @param handler
+         * @param sort 是否需要排序
+         */
+        sort(handler?: ParamHandler, sort?: boolean): void;
+        /** 展示牌 铺开 */
+        bySuit(handler?: Laya.Handler): void;
+        /** 展示牌 */
+        fan(handler?: Laya.Handler): void;
+        /**
+         * 洗牌
+         * @param handler 执行完成回调
+         * @param num 执行次数 暂未实现
+         */
+        shuffle(handler?: Laya.Handler, num?: number): void;
+        private moveHandler;
+        private plusMinus;
+        setChildIndexHandler(card: Card, index: number): void;
+        dispose(): void;
     }
     export {};
 }

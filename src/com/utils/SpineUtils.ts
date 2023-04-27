@@ -45,7 +45,12 @@ export class SpineUtils {
             Handler.create(this, SpineUtils.parseComplete, [skeleton, nameOrIndex, loop, loaderComplete]), aniMode)
     }
 
-    private static parseComplete(skeleton: GSkeleton | GSpineSkeleton, nameOrIndex: string | number | (string | number)[] | ISkeletonPlay, loop: boolean, loaderComplete: ParamHandler, fac?: Templet) {
+    private static parseComplete(skeleton: GSkeleton | GSpineSkeleton,
+                                 nameOrIndex: string | number | (string | number)[] | ISkeletonPlay,
+                                 loop: boolean, loaderComplete: ParamHandler, fac?: Templet) {
+        if (!Array.isArray(nameOrIndex) && typeof nameOrIndex === "object") {
+            loaderComplete ??= nameOrIndex.loaderComplete
+        }
         runFun(loaderComplete)
         if (skeleton == null || nameOrIndex == null) return
         skeleton.play(nameOrIndex, loop)
