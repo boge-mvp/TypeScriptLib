@@ -346,7 +346,7 @@ export class AssetsLoader implements IFormatVer {
         let data: LoadRes[] = res.concat()
         let sks = data.filter(function (value, index, array) {
             let temp
-            return Utils.getFileExtension(value.url) === "sk"
+            return Utils.getFileExtension(value.url) === "sk" && value.type === "spine"
                 && (temp = value.url.replace(".sk", ".png")) !== null
                 && array.findIndex(function (value) {
                     return value === temp

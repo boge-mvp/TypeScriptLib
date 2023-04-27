@@ -4806,6 +4806,11 @@ window.coreLib = {};
         }
     }
     coreLib.GoldSprayAni = GoldSprayAni;
+    let Method;
+    (function (Method) {
+        Method["GET"] = "get";
+        Method["POST"] = "post";
+    })(Method = coreLib.Method || (coreLib.Method = {}));
     /**
      * 统计管理器
      * @author boge
@@ -5740,7 +5745,7 @@ window.coreLib = {};
             let data = res.concat();
             let sks = data.filter(function (value, index, array) {
                 let temp;
-                return Laya.Utils.getFileExtension(value.url) === "sk"
+                return Laya.Utils.getFileExtension(value.url) === "sk" && value.type === "spine"
                     && (temp = value.url.replace(".sk", ".png")) !== null
                     && array.findIndex(function (value) {
                         return value === temp;
@@ -6384,11 +6389,6 @@ window.coreLib = {};
         }
     }
     coreLib.SceneManager = SceneManager;
-    let Method;
-    (function (Method) {
-        Method["GET"] = "get";
-        Method["POST"] = "post";
-    })(Method = coreLib.Method || (coreLib.Method = {}));
     /** 通信命令 */
     let Cmd;
     (function (Cmd) {

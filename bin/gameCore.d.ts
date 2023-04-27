@@ -1924,465 +1924,6 @@ declare namespace coreLib {
         playComplete(): void;
         dispose(): void;
     }
-    /**
-     * 统计管理器
-     * @author boge
-     */
-    export class AnalyticsManager {
-        /** 开启数据统计 */
-        static isOpenAnalytics: boolean;
-        constructor();
-        /** 打开了一个游戏 */
-        static openGame(): void;
-        /** 关闭了一个游戏 */
-        static closeGame(): void;
-        /** 打开统计 */
-        static openAnalysis(callback: Function): void;
-        /**
-         * 发送游戏事件
-         * @param eventAction 互动类型 (默认会添加 _)
-         */
-        static sendGameAnalysis(eventAction: string): void;
-        /**
-         * 向Google Analytics 发送事件
-         * @param eventAction 互动类型
-         *
-         */
-        static send(eventAction: string): void;
-        /**
-         * 向Google Analytics 发送用户用时
-         * @param timingVar 用于标识要记录的变量
-         * @param timingValue 向 Google Analytics（分析）报告的，以毫秒为单位的历时时间（例如 20）。
-         *
-         */
-        static sendTiming(timingVar: string, timingValue: number): void;
-    }
-    export class APP {
-        private static _instance;
-        static get inst(): APP;
-        constructor();
-        openGame(gameId: number): void;
-        hide(): void;
-        share(type: number, url: string, content: string): void;
-        /** 打开app */
-        openApp(packageName: string, uriPath: string, url: string, jsonData?: any): void;
-        showGame(str: string): void;
-    }
-    /** app管理器 */
-    export class AppManager {
-        private static jsToJava;
-        constructor();
-        /** 关闭app自定义返回 */
-        static closeAppBack(): void;
-        /** 进入游戏 */
-        static sendAppData(): void;
-        /**
-         * Firebase 上报事件，事件数据为字符串
-         * @param sData {'eventName' : "faqpage",  ‘eventValue’: "value"}
-         * @param callback
-         *
-         */
-        static enterFeedback(sData: any, callback: Function): void;
-        /**
-         * Firebase 上报事件，事件数据为数字
-         * @param sData { eventName : "gametime", eventValue: 1000}
-         * @param callback
-         *
-         */
-        static enterInvite(sData: any, callback: Function): void;
-        /** Toast 提示 */
-        static toast(sData: string): void;
-        /** 退出APP */
-        static exit(): void;
-        /** 上传头像 */
-        static UpdateHead(token: string): void;
-        /** 游戏重启 */
-        static gameRestart(): void;
-        /** 关闭网页 */
-        static closeHtml(): void;
-        /**
-         * 获取设备唯一id
-         * @param callback
-         */
-        static getIMEI(callback: Function): void;
-        static IsBackHome(): void;
-        /**
-         * 发送推送
-         * @param value
-         */
-        static sendNotification(value: any): void;
-        /**
-         * 启动服务
-         */
-        static startServer(): void;
-        /**
-         * 调用分享窗口
-         * @param content 文本内容
-         * @param url 网址
-         * @param type 0.调用公用分享窗口 1.facebook 2.whatsapp 3.instagram 4.sms 5.twitter
-         */
-        static openShare(content: string, url?: string, type?: number): void;
-        /**
-         * 执行 javascript
-         * @param method 执行方法体
-         * @param value 方法传入的方法
-         */
-        static executionJavascript(method: string, value: any): void;
-        /**
-         * android 打印
-         * @param value
-         */
-        static log(value: string): void;
-        /**
-         * 用默认浏览器打开url
-         * @param url
-         */
-        static openBrowser(url: string): void;
-        /**
-         * 拷贝字符串到剪贴板
-         * @param data
-         */
-        static clipData(data: string): void;
-        /**
-         * 下载文件
-         * @param url 文件地址
-         * @param title 标题
-         * @param des 介绍
-         */
-        static downloadFile(url: string, title: string, des: string): void;
-        /**
-         * 设置角标数字
-         * @param value 显示的数字
-         */
-        static sendShortcutBadger(value: number): void;
-        /**
-         * 打开app
-         * @param packageName 包名
-         * @param uriPath 网页打开app方式 "gamemania://com.casino.gamemania/path"
-         * @param url url
-         * @param jsonData 传送的json数据
-         */
-        static openApp(packageName: string, uriPath: string, url: string, jsonData?: any): void;
-        /**
-         * 获取 application meta-data 配置
-         * @param key
-         * @param callback
-         */
-        static getMetaData(key: string, callback: Function): void;
-        /** 显示游戏 */
-        static showGame(value: any): void;
-        /** 显示网页 */
-        static showWeb(value: any): void;
-        static umengTest(): void;
-        /**
-         * 统计用户账号
-         * @param Provider 账号来源。如果用户通过第三方账号登陆，可以调用此接口进行统计。支持自定义，不能以下划线”_”开头，使用大写字母和数字标识，长度小于32 字节; 如果是上市公司，建议使用股票代码。
-         * @param ID 用户账号ID，长度小于64字节
-         */
-        static onProfileSignIn(Provider: string, ID: string): void;
-        /**
-         * 账号登出
-         */
-        static onProfileSignOff(): void;
-        /**
-         * 真实消费
-         * 这部分API用来统计用户(或者玩家) 在游戏内付费的统计，包括购买虚拟币，道具等。
-         * @param money 本次消费金额(非负数)。
-         * @param coin 本次消费的等值虚拟币(非负数)。
-         * @param source 支付渠道, 1 ~ 99 之间的整数， 1-8 已经被预先定义, 9~99 之间需要在网站设置。
-         */
-        static pay(money: number, coin: number, source: number): void;
-        /**
-         * 显示加载进度
-         * @param value 当前加载进度
-         * @param tempCount 当前加载进度模块 1 开始
-         * @param totalCount 总共要加载的模块数
-         */
-        static showLoadingPro(value: number, tempCount: number, totalCount: number): void;
-        static LP_SendMessageToPlatform(json: string, callback: Function): void;
-        static LP_enterBBS(json: string, callback: Function): void;
-        static LP_enterFeedback(json: string, callback: Function): void;
-        static LP_enterInvite(json: string, callback: Function): void;
-        static LP_enterShareAndFeed(json: string, callback: Function): void;
-        static LP_init(): void;
-        /** 空方法 */
-        static nullFun(data: any): void;
-    }
-    /**
-     * app 访问记录管理
-     * @author boge
-     */
-    export class AppRecordManager {
-        /**
-         * 访问记录
-         */
-        private static history;
-        /** 退出点击上一次时间 */
-        private static exitTimer;
-        /** 暂停返回上一页 */
-        static pauseHistory: boolean;
-        /** 进入大厅后执行命令 */
-        static executeJson: any;
-        /**
-         * 添加一个记录
-         * @param currentPage 当前的面板
-         * @param newPage 添加的新面板
-         */
-        static addHistory(currentPage: IRecord, newPage: IRecord): void;
-        /**
-         * 作废指定的记录
-         * @param value 记录页面
-         *
-         */
-        static invalidHistory(value: IRecord): void;
-        /**
-         * 退出游戏
-         * @param [isBack = false] 是否用的返回键（非项目内的）
-         *
-         */
-        static backGame(isBack?: boolean): void;
-        /**
-         * 返回操作
-         * @param isBack 是否用的返回键（非项目内的）
-         *
-         */
-        static backHistory(isBack?: boolean): void;
-        /** 执行非大厅后退 */
-        private static back;
-        /**
-         * app手机调用js方法
-         * @param action 执行动作
-         * @param value 执行命令
-         *
-         */
-        static appRunJs(action: number, ...value: any[]): void;
-        /**
-         * 自定义 JavaSendOpen 处理  返回 true 表示已经处理 后续不再继续了
-         */
-        static customJavaSendOpen: (value: any) => boolean;
-        /**
-         * java 传入要求打开的内容
-         * @param json
-         */
-        static JavaSendOpen(json: any): void;
-        private static open;
-        /**
-         * 长度
-         * @return
-         */
-        static len(): number;
-        /** 清理所有页面缓存 */
-        static clearHistory(): void;
-    }
-    /**
-     * 资源管理类
-     */
-    export class AssetsLoader implements IFormatVer {
-        private static _instance;
-        static get inst(): AssetsLoader;
-        static readonly ma: number;
-        /** 资源配置文件名 */
-        static CONFIG_RES_NAME: string;
-        /** 下载成功 */
-        private handler;
-        /** 下载失败 */
-        private errorHandler;
-        /** 加载对象 */
-        private loadObj;
-        /** 是否是http  */
-        readonly httpProtocol: boolean;
-        /**
-         * 自定义加载文件
-         * @example
-         * AssetsLoader.customLoader = (complete: ParamHandler, errorHandler: ParamHandler) => {
-         *      ...
-         *     runFun(complete)
-         * }
-         *
-         *
-         * Laya.Handler.create(this, function(complete: ParamHandler, errorHandler: ParamHandler) {
-         *  ...
-         *  runFun(complete)
-         *
-         * })
-         */
-        customLoader: ParamHandler;
-        constructor();
-        call(url: string, version: any): string;
-        /**
-         * 加载版本控制文件
-         * @param complete
-         * @param errorHandler
-         */
-        loadVersionXML(complete: ParamHandler, errorHandler: ParamHandler): void;
-        private loadXMLComplete;
-        /**
-         * 加载主要的资源
-         * @param handler
-         */
-        loadMain(handler: ParamHandler): void;
-        /**
-         * 加载公共资源
-         * @param handler
-         */
-        loadCommon(handler: ParamHandler): void;
-        /**
-         * 加载游戏代码
-         * @param config 配置表
-         * @param handler 加载完成
-         * @param errorHandler 加载失败
-         */
-        loadJS(config: string, handler: ParamHandler, errorHandler?: ParamHandler): void;
-        private loadJsProgress;
-        /**
-         * 加载游戏资源
-         * @param obj 游戏对象
-         * @param handler 加载完成
-         * @param errorHandler 加载失败
-         */
-        loadRes(obj: ResConfig, handler: ParamHandler, errorHandler?: ParamHandler): void;
-        /**
-         * 处理资源
-         * @param res
-         * @private
-         */
-        private parseRes;
-        /**
-         * 检查分支资源更换加载
-         * @param loadRes 整理好的加载数据
-         */
-        static checkBranch(loadRes: LoadRes[]): void;
-        private progressComplete;
-        private loadComplete;
-        private loadErrorHandler;
-        /**
-         * 添加游戏UI资源
-         * @param resKey 资源名字
-         * @return 成功与否
-         */
-        addPackage(resKey: string): boolean;
-        /** 设置扩展 */
-        protected insertExt(pkgName: string, resName: string, type: any): void;
-        protected insertExtUrl(url: string, type: any): void;
-        /**
-         * 资源url解析
-         * @param xmlDocument
-         */
-        parseUrl(xmlDocument: XMLDocument): void;
-        /**
-         * 合并两个xml
-         * @param xml 如果有重复并且值不一样  以这个对象内的值为准
-         * @param xml2
-         * @private
-         */
-        mergeXml(xml: XMLDocument, xml2: XMLDocument): XMLDocument;
-    }
-    /**
-     * 舞台
-     */
-    export class SceneManager extends BaseProxy {
-        private static _instance;
-        static get inst(): SceneManager;
-        /** 游戏设计面板宽度 */
-        gameWidth: number;
-        /** 游戏设计面板高度 */
-        gameHeight: number;
-        private blurTimer;
-        /** 当前游戏的 Starter */
-        private _starter;
-        /** 是否已经初始化完成 等待外部调用 */
-        initComplete: boolean;
-        /** 是否已经初始化完成 等待外部调用 */
-        isLoaderResComplete: boolean;
-        /** 是否需要唤醒进入游戏 */
-        isCall: boolean;
-        showHomeScene(): void;
-        /** 显示登录界面 */
-        showLogin(): void;
-        /** 退出登录 */
-        logout(): void;
-        /** 游戏是否进入后台 */
-        private visibilityChange;
-        /** 得到焦点开始渲染 */
-        private focusHandler;
-        /** 失去焦点停止渲染 */
-        private blurHandler;
-        /** 登录提示框 */
-        showloginTip(): void;
-        /** 获取当前屏幕等比例缩放系数 */
-        getEqualRatioScale(): number;
-        /** 获取当前屏幕等比例缩放系数 */
-        getEqualRatioRatio(w: number, h: number): Laya.Point;
-        /**
-         * 开启游戏 两个参数二选一  如果使用id第一个必须设置null
-         * @param config 游戏配置文件名
-         * @param code 游戏id
-         */
-        openGame(config: string, code?: number): void;
-        private loadGameResComplete;
-        private loadGameJs;
-        private loadJsComplete;
-        /**
-         * 加载资源完成
-         */
-        private loadResComplete;
-        /** 供外部调用 */
-        showGameToView(isDemo: boolean): void;
-        /** 启动游戏进程，继续进入游戏 */
-        private startGameProcess;
-        /** 检查游戏状态 */
-        private checkGameState;
-        /**
-         * 游戏检查完成
-         * @private
-         */
-        private checkComplete;
-        /**
-         * 显示游戏到舞台上
-         *
-         */
-        private showGameScene;
-        /** 加载资源失败 */
-        private loadResErrorHandler;
-        /** 游戏内部返回按钮被点击 */
-        backHandler(): void;
-        /** 关闭当前的游戏 */
-        closeGame(): void;
-        /**
-         * 切换游戏
-         * @param config 游戏名字
-         * @param code 游戏id
-         *
-         */
-        changeScene(config: string, code: number): void;
-        /** 当前游戏是否是单机版 */
-        isAloneGame(): boolean;
-        /**
-         * 检查是否是单机版
-         * @param gameModel 游戏id
-         * @return
-         *
-         */
-        checkAloneGame(gameModel: number): boolean;
-        /** 获取游戏开奖结果超时退出游戏 */
-        gameGameTimeOutExit(): void;
-        /** 游戏报错 退出游戏 */
-        gameErrorExit(): void;
-        /**
-         * 出乎意料的退出游戏
-         * @param msg
-         * @param callback
-         */
-        unexpectedExitGame(msg?: string, callback?: ParamHandler): void;
-        /** 更新当前游戏中的游戏金币 */
-        updateGlod(): void;
-        get starter(): BaseStarter;
-        /**
-         * 上传错误日志
-         * @param data json格式的错误数据
-         */
-        sendErrorLog(data: any): void;
-    }
     export interface IAction {
         /**
          * 注册事件
@@ -3003,6 +2544,465 @@ declare namespace coreLib {
         getView<T>(key: string | {
             new (): T;
         }): T;
+    }
+    /**
+     * 统计管理器
+     * @author boge
+     */
+    export class AnalyticsManager {
+        /** 开启数据统计 */
+        static isOpenAnalytics: boolean;
+        constructor();
+        /** 打开了一个游戏 */
+        static openGame(): void;
+        /** 关闭了一个游戏 */
+        static closeGame(): void;
+        /** 打开统计 */
+        static openAnalysis(callback: Function): void;
+        /**
+         * 发送游戏事件
+         * @param eventAction 互动类型 (默认会添加 _)
+         */
+        static sendGameAnalysis(eventAction: string): void;
+        /**
+         * 向Google Analytics 发送事件
+         * @param eventAction 互动类型
+         *
+         */
+        static send(eventAction: string): void;
+        /**
+         * 向Google Analytics 发送用户用时
+         * @param timingVar 用于标识要记录的变量
+         * @param timingValue 向 Google Analytics（分析）报告的，以毫秒为单位的历时时间（例如 20）。
+         *
+         */
+        static sendTiming(timingVar: string, timingValue: number): void;
+    }
+    export class APP {
+        private static _instance;
+        static get inst(): APP;
+        constructor();
+        openGame(gameId: number): void;
+        hide(): void;
+        share(type: number, url: string, content: string): void;
+        /** 打开app */
+        openApp(packageName: string, uriPath: string, url: string, jsonData?: any): void;
+        showGame(str: string): void;
+    }
+    /** app管理器 */
+    export class AppManager {
+        private static jsToJava;
+        constructor();
+        /** 关闭app自定义返回 */
+        static closeAppBack(): void;
+        /** 进入游戏 */
+        static sendAppData(): void;
+        /**
+         * Firebase 上报事件，事件数据为字符串
+         * @param sData {'eventName' : "faqpage",  ‘eventValue’: "value"}
+         * @param callback
+         *
+         */
+        static enterFeedback(sData: any, callback: Function): void;
+        /**
+         * Firebase 上报事件，事件数据为数字
+         * @param sData { eventName : "gametime", eventValue: 1000}
+         * @param callback
+         *
+         */
+        static enterInvite(sData: any, callback: Function): void;
+        /** Toast 提示 */
+        static toast(sData: string): void;
+        /** 退出APP */
+        static exit(): void;
+        /** 上传头像 */
+        static UpdateHead(token: string): void;
+        /** 游戏重启 */
+        static gameRestart(): void;
+        /** 关闭网页 */
+        static closeHtml(): void;
+        /**
+         * 获取设备唯一id
+         * @param callback
+         */
+        static getIMEI(callback: Function): void;
+        static IsBackHome(): void;
+        /**
+         * 发送推送
+         * @param value
+         */
+        static sendNotification(value: any): void;
+        /**
+         * 启动服务
+         */
+        static startServer(): void;
+        /**
+         * 调用分享窗口
+         * @param content 文本内容
+         * @param url 网址
+         * @param type 0.调用公用分享窗口 1.facebook 2.whatsapp 3.instagram 4.sms 5.twitter
+         */
+        static openShare(content: string, url?: string, type?: number): void;
+        /**
+         * 执行 javascript
+         * @param method 执行方法体
+         * @param value 方法传入的方法
+         */
+        static executionJavascript(method: string, value: any): void;
+        /**
+         * android 打印
+         * @param value
+         */
+        static log(value: string): void;
+        /**
+         * 用默认浏览器打开url
+         * @param url
+         */
+        static openBrowser(url: string): void;
+        /**
+         * 拷贝字符串到剪贴板
+         * @param data
+         */
+        static clipData(data: string): void;
+        /**
+         * 下载文件
+         * @param url 文件地址
+         * @param title 标题
+         * @param des 介绍
+         */
+        static downloadFile(url: string, title: string, des: string): void;
+        /**
+         * 设置角标数字
+         * @param value 显示的数字
+         */
+        static sendShortcutBadger(value: number): void;
+        /**
+         * 打开app
+         * @param packageName 包名
+         * @param uriPath 网页打开app方式 "gamemania://com.casino.gamemania/path"
+         * @param url url
+         * @param jsonData 传送的json数据
+         */
+        static openApp(packageName: string, uriPath: string, url: string, jsonData?: any): void;
+        /**
+         * 获取 application meta-data 配置
+         * @param key
+         * @param callback
+         */
+        static getMetaData(key: string, callback: Function): void;
+        /** 显示游戏 */
+        static showGame(value: any): void;
+        /** 显示网页 */
+        static showWeb(value: any): void;
+        static umengTest(): void;
+        /**
+         * 统计用户账号
+         * @param Provider 账号来源。如果用户通过第三方账号登陆，可以调用此接口进行统计。支持自定义，不能以下划线”_”开头，使用大写字母和数字标识，长度小于32 字节; 如果是上市公司，建议使用股票代码。
+         * @param ID 用户账号ID，长度小于64字节
+         */
+        static onProfileSignIn(Provider: string, ID: string): void;
+        /**
+         * 账号登出
+         */
+        static onProfileSignOff(): void;
+        /**
+         * 真实消费
+         * 这部分API用来统计用户(或者玩家) 在游戏内付费的统计，包括购买虚拟币，道具等。
+         * @param money 本次消费金额(非负数)。
+         * @param coin 本次消费的等值虚拟币(非负数)。
+         * @param source 支付渠道, 1 ~ 99 之间的整数， 1-8 已经被预先定义, 9~99 之间需要在网站设置。
+         */
+        static pay(money: number, coin: number, source: number): void;
+        /**
+         * 显示加载进度
+         * @param value 当前加载进度
+         * @param tempCount 当前加载进度模块 1 开始
+         * @param totalCount 总共要加载的模块数
+         */
+        static showLoadingPro(value: number, tempCount: number, totalCount: number): void;
+        static LP_SendMessageToPlatform(json: string, callback: Function): void;
+        static LP_enterBBS(json: string, callback: Function): void;
+        static LP_enterFeedback(json: string, callback: Function): void;
+        static LP_enterInvite(json: string, callback: Function): void;
+        static LP_enterShareAndFeed(json: string, callback: Function): void;
+        static LP_init(): void;
+        /** 空方法 */
+        static nullFun(data: any): void;
+    }
+    /**
+     * app 访问记录管理
+     * @author boge
+     */
+    export class AppRecordManager {
+        /**
+         * 访问记录
+         */
+        private static history;
+        /** 退出点击上一次时间 */
+        private static exitTimer;
+        /** 暂停返回上一页 */
+        static pauseHistory: boolean;
+        /** 进入大厅后执行命令 */
+        static executeJson: any;
+        /**
+         * 添加一个记录
+         * @param currentPage 当前的面板
+         * @param newPage 添加的新面板
+         */
+        static addHistory(currentPage: IRecord, newPage: IRecord): void;
+        /**
+         * 作废指定的记录
+         * @param value 记录页面
+         *
+         */
+        static invalidHistory(value: IRecord): void;
+        /**
+         * 退出游戏
+         * @param [isBack = false] 是否用的返回键（非项目内的）
+         *
+         */
+        static backGame(isBack?: boolean): void;
+        /**
+         * 返回操作
+         * @param isBack 是否用的返回键（非项目内的）
+         *
+         */
+        static backHistory(isBack?: boolean): void;
+        /** 执行非大厅后退 */
+        private static back;
+        /**
+         * app手机调用js方法
+         * @param action 执行动作
+         * @param value 执行命令
+         *
+         */
+        static appRunJs(action: number, ...value: any[]): void;
+        /**
+         * 自定义 JavaSendOpen 处理  返回 true 表示已经处理 后续不再继续了
+         */
+        static customJavaSendOpen: (value: any) => boolean;
+        /**
+         * java 传入要求打开的内容
+         * @param json
+         */
+        static JavaSendOpen(json: any): void;
+        private static open;
+        /**
+         * 长度
+         * @return
+         */
+        static len(): number;
+        /** 清理所有页面缓存 */
+        static clearHistory(): void;
+    }
+    /**
+     * 资源管理类
+     */
+    export class AssetsLoader implements IFormatVer {
+        private static _instance;
+        static get inst(): AssetsLoader;
+        static readonly ma: number;
+        /** 资源配置文件名 */
+        static CONFIG_RES_NAME: string;
+        /** 下载成功 */
+        private handler;
+        /** 下载失败 */
+        private errorHandler;
+        /** 加载对象 */
+        private loadObj;
+        /** 是否是http  */
+        readonly httpProtocol: boolean;
+        /**
+         * 自定义加载文件
+         * @example
+         * AssetsLoader.customLoader = (complete: ParamHandler, errorHandler: ParamHandler) => {
+         *      ...
+         *     runFun(complete)
+         * }
+         *
+         *
+         * Laya.Handler.create(this, function(complete: ParamHandler, errorHandler: ParamHandler) {
+         *  ...
+         *  runFun(complete)
+         *
+         * })
+         */
+        customLoader: ParamHandler;
+        constructor();
+        call(url: string, version: any): string;
+        /**
+         * 加载版本控制文件
+         * @param complete
+         * @param errorHandler
+         */
+        loadVersionXML(complete: ParamHandler, errorHandler: ParamHandler): void;
+        private loadXMLComplete;
+        /**
+         * 加载主要的资源
+         * @param handler
+         */
+        loadMain(handler: ParamHandler): void;
+        /**
+         * 加载公共资源
+         * @param handler
+         */
+        loadCommon(handler: ParamHandler): void;
+        /**
+         * 加载游戏代码
+         * @param config 配置表
+         * @param handler 加载完成
+         * @param errorHandler 加载失败
+         */
+        loadJS(config: string, handler: ParamHandler, errorHandler?: ParamHandler): void;
+        private loadJsProgress;
+        /**
+         * 加载游戏资源
+         * @param obj 游戏对象
+         * @param handler 加载完成
+         * @param errorHandler 加载失败
+         */
+        loadRes(obj: ResConfig, handler: ParamHandler, errorHandler?: ParamHandler): void;
+        /**
+         * 处理资源
+         * @param res
+         * @private
+         */
+        private parseRes;
+        /**
+         * 检查分支资源更换加载
+         * @param loadRes 整理好的加载数据
+         */
+        static checkBranch(loadRes: LoadRes[]): void;
+        private progressComplete;
+        private loadComplete;
+        private loadErrorHandler;
+        /**
+         * 添加游戏UI资源
+         * @param resKey 资源名字
+         * @return 成功与否
+         */
+        addPackage(resKey: string): boolean;
+        /** 设置扩展 */
+        protected insertExt(pkgName: string, resName: string, type: any): void;
+        protected insertExtUrl(url: string, type: any): void;
+        /**
+         * 资源url解析
+         * @param xmlDocument
+         */
+        parseUrl(xmlDocument: XMLDocument): void;
+        /**
+         * 合并两个xml
+         * @param xml 如果有重复并且值不一样  以这个对象内的值为准
+         * @param xml2
+         * @private
+         */
+        mergeXml(xml: XMLDocument, xml2: XMLDocument): XMLDocument;
+    }
+    /**
+     * 舞台
+     */
+    export class SceneManager extends BaseProxy {
+        private static _instance;
+        static get inst(): SceneManager;
+        /** 游戏设计面板宽度 */
+        gameWidth: number;
+        /** 游戏设计面板高度 */
+        gameHeight: number;
+        private blurTimer;
+        /** 当前游戏的 Starter */
+        private _starter;
+        /** 是否已经初始化完成 等待外部调用 */
+        initComplete: boolean;
+        /** 是否已经初始化完成 等待外部调用 */
+        isLoaderResComplete: boolean;
+        /** 是否需要唤醒进入游戏 */
+        isCall: boolean;
+        showHomeScene(): void;
+        /** 显示登录界面 */
+        showLogin(): void;
+        /** 退出登录 */
+        logout(): void;
+        /** 游戏是否进入后台 */
+        private visibilityChange;
+        /** 得到焦点开始渲染 */
+        private focusHandler;
+        /** 失去焦点停止渲染 */
+        private blurHandler;
+        /** 登录提示框 */
+        showloginTip(): void;
+        /** 获取当前屏幕等比例缩放系数 */
+        getEqualRatioScale(): number;
+        /** 获取当前屏幕等比例缩放系数 */
+        getEqualRatioRatio(w: number, h: number): Laya.Point;
+        /**
+         * 开启游戏 两个参数二选一  如果使用id第一个必须设置null
+         * @param config 游戏配置文件名
+         * @param code 游戏id
+         */
+        openGame(config: string, code?: number): void;
+        private loadGameResComplete;
+        private loadGameJs;
+        private loadJsComplete;
+        /**
+         * 加载资源完成
+         */
+        private loadResComplete;
+        /** 供外部调用 */
+        showGameToView(isDemo: boolean): void;
+        /** 启动游戏进程，继续进入游戏 */
+        private startGameProcess;
+        /** 检查游戏状态 */
+        private checkGameState;
+        /**
+         * 游戏检查完成
+         * @private
+         */
+        private checkComplete;
+        /**
+         * 显示游戏到舞台上
+         *
+         */
+        private showGameScene;
+        /** 加载资源失败 */
+        private loadResErrorHandler;
+        /** 游戏内部返回按钮被点击 */
+        backHandler(): void;
+        /** 关闭当前的游戏 */
+        closeGame(): void;
+        /**
+         * 切换游戏
+         * @param config 游戏名字
+         * @param code 游戏id
+         *
+         */
+        changeScene(config: string, code: number): void;
+        /** 当前游戏是否是单机版 */
+        isAloneGame(): boolean;
+        /**
+         * 检查是否是单机版
+         * @param gameModel 游戏id
+         * @return
+         *
+         */
+        checkAloneGame(gameModel: number): boolean;
+        /** 获取游戏开奖结果超时退出游戏 */
+        gameGameTimeOutExit(): void;
+        /** 游戏报错 退出游戏 */
+        gameErrorExit(): void;
+        /**
+         * 出乎意料的退出游戏
+         * @param msg
+         * @param callback
+         */
+        unexpectedExitGame(msg?: string, callback?: ParamHandler): void;
+        /** 更新当前游戏中的游戏金币 */
+        updateGlod(): void;
+        get starter(): BaseStarter;
+        /**
+         * 上传错误日志
+         * @param data json格式的错误数据
+         */
+        sendErrorLog(data: any): void;
     }
     /** 通信命令 */
     export enum Cmd {
