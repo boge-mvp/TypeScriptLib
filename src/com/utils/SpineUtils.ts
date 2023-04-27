@@ -31,7 +31,7 @@ export class SpineUtils {
             }
             // 界面显示了  在加载资源
             skeleton.load(url,
-                Handler.create(this, SpineUtils.parseComplete, [spine, nameOrIndex, loop, loaderComplete]))
+                Handler.create(this, SpineUtils.parseComplete, [skeleton, nameOrIndex, loop, loaderComplete]))
             return
         }
         if (skeleton.asSkeleton.url == url && skeleton.asSkeleton.templet) {
