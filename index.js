@@ -163,7 +163,7 @@ module.exports.findFiles = function (url) {
                     return
                 }
                 for (const entry of entries) {
-                    const fullPath = path.join(dir, entry.name)
+                    const fullPath = path.join(dir, entry.name).replace(/\\/g, "/")
                     if (entry.isDirectory()) {
                         read(fullPath)
                     } else {
@@ -183,7 +183,7 @@ module.exports.findFilesSync = (url) => {
     const read = (dir) => {
         const entries = fs.readdirSync(dir, {withFileTypes: true})
         for (const entry of entries) {
-            const fullPath = path.join(dir, entry.name)
+            const fullPath = path.join(dir, entry.name).replace(/\\/g, "/")
             if (entry.isDirectory()) {
                 read(fullPath)
             } else {
