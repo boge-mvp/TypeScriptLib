@@ -124,6 +124,9 @@ export interface ISkeletonData {
 export interface ISkeletonPlay {
     /**
      * 播放某个动画
+     * ````
+     * 传入-1或null表示不自动播放
+     * ````
      * @default 0
      */
     nameOrIndex?: string | number | (string | number)[],

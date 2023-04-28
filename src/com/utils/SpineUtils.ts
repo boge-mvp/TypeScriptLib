@@ -52,8 +52,7 @@ export class SpineUtils {
             loaderComplete ??= nameOrIndex.loaderComplete
         }
         runFun(loaderComplete)
-        if (skeleton == null || nameOrIndex == null) return
-        skeleton.play(nameOrIndex, loop)
+        if (skeleton && nameOrIndex) skeleton.play(nameOrIndex, loop)
     }
 
     /**
@@ -71,7 +70,7 @@ export class SpineUtils {
 
         const skeleton = new SkeletonClass()
 
-        SpineUtils.playSpine(skeleton, url, optional.play ?? 0)
+        SpineUtils.playSpine(skeleton, url, optional.play)
 
         if (optional.scale) {
             skeleton.setScale(optional.scale, optional.scale)

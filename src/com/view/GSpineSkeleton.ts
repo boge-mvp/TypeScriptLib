@@ -122,9 +122,11 @@ export class GSpineSkeleton extends GComponent {
         if (this.asSkeleton.templet == null) return
         this.playGroupIndex = 0
         if (!Array.isArray(nameOrIndex) && typeof nameOrIndex === "object") {
+            if (nameOrIndex.nameOrIndex == null || (typeof nameOrIndex.nameOrIndex === "number" && nameOrIndex.nameOrIndex < 0)) return
             this.playAni(nameOrIndex)
             return
         }
+        if (typeof nameOrIndex === "number" && nameOrIndex < 0) return
         this.playAni({
             nameOrIndex: nameOrIndex, loop: loop, force: force,
             start: start, end: end, freshSkin: freshSkin, playAudio: playAudio

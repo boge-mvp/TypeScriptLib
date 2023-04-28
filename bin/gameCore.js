@@ -4834,6 +4834,605 @@ window.coreLib = {};
         Method["GET"] = "get";
         Method["POST"] = "post";
     })(Method = coreLib.Method || (coreLib.Method = {}));
+    /** 通信命令 */
+    let Cmd;
+    (function (Cmd) {
+        /** 大厅socket房间号 */
+        Cmd[Cmd["PROT_HOME"] = 999999] = "PROT_HOME";
+        /** 聊天内容 */
+        Cmd[Cmd["SOCKET_CHAT_MESSAGE"] = 1] = "SOCKET_CHAT_MESSAGE";
+        /** 中奖信息公告 */
+        Cmd[Cmd["SOCKET_WIN_INFO"] = 2] = "SOCKET_WIN_INFO";
+        /** 在线人数 */
+        Cmd[Cmd["SOCKET_ROOM_MONEY_MESSAGE"] = 3] = "SOCKET_ROOM_MONEY_MESSAGE";
+        /** 充值状态 */
+        Cmd[Cmd["SOCKET_RECHARGE_STATUS"] = 4] = "SOCKET_RECHARGE_STATUS";
+        /** 余额变化 */
+        Cmd[Cmd["SOCKET_MONEY_CHANGE"] = 1001] = "SOCKET_MONEY_CHANGE";
+        /** 黄金变化 */
+        Cmd[Cmd["SOCKET_GOLD_CHANGE"] = 1002] = "SOCKET_GOLD_CHANGE";
+        /** 充值成功 */
+        Cmd[Cmd["SOCKET_TOP_UP_CHANGE"] = 1004] = "SOCKET_TOP_UP_CHANGE";
+        /** 显示广播消息 */
+        Cmd[Cmd["SOCKET_SHOW_NOTICE"] = 12] = "SOCKET_SHOW_NOTICE";
+    })(Cmd = coreLib.Cmd || (coreLib.Cmd = {}));
+    /** 公用信息处理 */
+    let CommonCmd;
+    (function (CommonCmd) {
+        // 游戏id
+        /** 游戏首页 */
+        CommonCmd[CommonCmd["GAME_HOME"] = 999999] = "GAME_HOME";
+        /** 水果 */
+        CommonCmd[CommonCmd["GAME_FRUIT"] = 1] = "GAME_FRUIT";
+        /** 大转盘 */
+        CommonCmd[CommonCmd["GAME_WHEEL"] = 2] = "GAME_WHEEL";
+        /** 百家乐 低倍 */
+        CommonCmd[CommonCmd["GAME_LOW_BACCARAT"] = 30] = "GAME_LOW_BACCARAT";
+        /** 百家乐 高倍 */
+        CommonCmd[CommonCmd["GAME_HIGH_BACCARAT"] = 3] = "GAME_HIGH_BACCARAT";
+        /** 单机水果 低倍 */
+        CommonCmd[CommonCmd["GAME_ALONE_LOW_FRUIT"] = 1001] = "GAME_ALONE_LOW_FRUIT";
+        /** 单机水果 高倍 */
+        CommonCmd[CommonCmd["GAME_ALONE_HIGH_FRUIT"] = 1002] = "GAME_ALONE_HIGH_FRUIT";
+        /** 刮刮奖 */
+        CommonCmd[CommonCmd["GAME_SCRATCHER"] = 1003] = "GAME_SCRATCHER";
+        /** 单机大转盘 低倍 */
+        CommonCmd[CommonCmd["GAME_ALONE_LOW_WHEEL"] = 2001] = "GAME_ALONE_LOW_WHEEL";
+        /** 单机大转盘 高倍 */
+        CommonCmd[CommonCmd["GAME_ALONE_HIGH_WHEEL"] = 2002] = "GAME_ALONE_HIGH_WHEEL";
+        /** 翻牌机 */
+        CommonCmd[CommonCmd["GAME_FACE_UP"] = 3001] = "GAME_FACE_UP";
+        /** 单机轮盘 */
+        CommonCmd[CommonCmd["GAME_ALONE_ROULETTE"] = 3002] = "GAME_ALONE_ROULETTE";
+        /** 动物园 */
+        CommonCmd[CommonCmd["GAME_ZOO"] = 3003] = "GAME_ZOO";
+        /** 轮盘 */
+        CommonCmd[CommonCmd["GAME_ROULETTE"] = 3005] = "GAME_ROULETTE";
+        /** 百家乐单机版 */
+        CommonCmd[CommonCmd["GAME_ALONE_BACCARAT"] = 3006] = "GAME_ALONE_BACCARAT";
+        /** 翻牌机单机版 */
+        CommonCmd[CommonCmd["GAME_ALONE_FACEUP"] = 3007] = "GAME_ALONE_FACEUP";
+        /** 49游戏 */
+        CommonCmd[CommonCmd["GAME_FOUR_NINE"] = 3008] = "GAME_FOUR_NINE";
+        /** 捕鱼游戏 */
+        CommonCmd[CommonCmd["GAME_FISHING"] = 3009] = "GAME_FISHING";
+        /** 足球老虎机 */
+        CommonCmd[CommonCmd["GAME_FOOTBALL_SLOT_MACHINES"] = 3010] = "GAME_FOOTBALL_SLOT_MACHINES";
+        /** 体育足彩 */
+        CommonCmd[CommonCmd["GAME_SPORTS"] = 10000] = "GAME_SPORTS";
+        /** 虚拟体育 */
+        CommonCmd[CommonCmd["GAME_VIRTUAL_SPORTS"] = 10001] = "GAME_VIRTUAL_SPORTS";
+        /** 游客模式玩游戏到达最大值 提示玩真钱 */
+        CommonCmd[CommonCmd["GUEST_MAX_PLAY_COUNT"] = 15] = "GUEST_MAX_PLAY_COUNT";
+        /** web端玩游戏到达最大值 提示下载app */
+        CommonCmd[CommonCmd["WEB_MAX_PLAY_COUNT"] = 100] = "WEB_MAX_PLAY_COUNT";
+        /** 水果机最大下注值 */
+        CommonCmd[CommonCmd["FRUIT_MAX_BET"] = 1000] = "FRUIT_MAX_BET";
+        /** 大转盘最大下注值 */
+        CommonCmd[CommonCmd["WHEEL_MAX_BET"] = 1000] = "WHEEL_MAX_BET";
+        /** 百家乐最大下注值 */
+        CommonCmd[CommonCmd["BACCARAT_MAX_BET"] = 5000] = "BACCARAT_MAX_BET";
+        /** 动物园最大下注值 */
+        CommonCmd[CommonCmd["ZOO_MAX_BET"] = 1000] = "ZOO_MAX_BET";
+        // 开奖
+        /** 大满贯  全部中大的（除苹果核BAR）*/
+        CommonCmd[CommonCmd["GRAND_SLAM"] = 1] = "GRAND_SLAM";
+        /** 大火车   5节火车*/
+        CommonCmd[CommonCmd["MAX_CHOOCHOO"] = 2] = "MAX_CHOOCHOO";
+        /** 小火车   3节火车*/
+        CommonCmd[CommonCmd["MIN_CHOOCHOO"] = 3] = "MIN_CHOOCHOO";
+        /** 大三元   中三个大结果*/
+        CommonCmd[CommonCmd["DA_SAN_YUAN"] = 4] = "DA_SAN_YUAN";
+        /** 小满贯  全部中小的（除苹果核BAR）*/
+        CommonCmd[CommonCmd["LITTLE_SLAM"] = 5] = "LITTLE_SLAM";
+        /** 小三元 */
+        CommonCmd[CommonCmd["XIAO_SAN_YUAN"] = 6] = "XIAO_SAN_YUAN";
+        /** 大四喜  中四个苹果*/
+        CommonCmd[CommonCmd["DA_SI_XI"] = 7] = "DA_SI_XI";
+        /** 随机送灯  随机反弹一个结果*/
+        CommonCmd[CommonCmd["RANDOM"] = 8] = "RANDOM";
+        // 金币模式
+        /** 金币 */
+        CommonCmd[CommonCmd["GAME_MONEY_TYPE_COINS"] = 2] = "GAME_MONEY_TYPE_COINS";
+        /** 赠送金 */
+        CommonCmd[CommonCmd["GAME_MONEY_TYPE_GIFT"] = 3] = "GAME_MONEY_TYPE_GIFT";
+    })(CommonCmd = coreLib.CommonCmd || (coreLib.CommonCmd = {}));
+    class GameHttpRequest extends Laya.HttpRequest {
+        /**
+         * 创建一个请求
+         */
+        constructor() {
+            super();
+            /** 超时时间 */
+            this.overtime = 10000;
+            this.once(Laya.Event.COMPLETE, this, this.resultHandler);
+            this.once(Laya.Event.ERROR, this, this.httpErrorHandler);
+        }
+        onComplete(value) {
+            this.completeHandler = value;
+        }
+        onTimerOut(value) {
+            this.timerOutHandler = value;
+        }
+        onError(value) {
+            this.errorHandler = value;
+        }
+        setOvertime(value) {
+            this.overtime = value;
+        }
+        send(url, data, method, responseType, headers) {
+            if (this.overtime > 0)
+                Laya.timer.once(this.overtime, this, this.timeOut);
+            super.send(url, data, method, responseType, headers);
+        }
+        httpErrorHandler(obj) {
+            Laya.timer.clear(this, this.timeOut);
+            if (this.completeHandler && this.completeHandler instanceof Laya.Handler)
+                this.completeHandler.recover();
+            if (this.timerOutHandler && this.timerOutHandler instanceof Laya.Handler)
+                this.timerOutHandler.recover();
+            this.completeHandler = null;
+            this.timerOutHandler = null;
+            runFun(this.errorHandler, obj);
+        }
+        /** 请求返回结果数据 */
+        resultHandler(json) {
+            Laya.timer.clear(this, this.timeOut);
+            if (this.errorHandler && this.errorHandler instanceof Laya.Handler)
+                this.errorHandler.recover();
+            if (this.timerOutHandler && this.timerOutHandler instanceof Laya.Handler)
+                this.timerOutHandler.recover();
+            this.errorHandler = null;
+            this.timerOutHandler = null;
+            runFun(this.completeHandler, json);
+        }
+        timeOut() {
+            Laya.timer.clear(this, this.timeOut);
+            this.offAll(Laya.Event.COMPLETE);
+            this.offAll(Laya.Event.ERROR);
+            this.clear();
+            if (this.errorHandler && this.errorHandler instanceof Laya.Handler)
+                this.errorHandler.recover();
+            if (this.completeHandler && this.completeHandler instanceof Laya.Handler)
+                this.completeHandler.recover();
+            this.errorHandler = null;
+            this.completeHandler = null;
+            runFun(this.timerOutHandler);
+        }
+        /**
+         * 终止请求
+         */
+        abort() {
+            if (this.errorHandler && this.errorHandler instanceof Laya.Handler)
+                this.errorHandler.recover();
+            if (this.completeHandler && this.completeHandler instanceof Laya.Handler)
+                this.completeHandler.recover();
+            if (this.timerOutHandler && this.timerOutHandler instanceof Laya.Handler)
+                this.timerOutHandler.recover();
+            this.completeHandler = null;
+            this.errorHandler = null;
+            this.timerOutHandler = null;
+            this.clear();
+            Laya.timer.clear(this, this.timeOut);
+            this.offAll(Laya.Event.COMPLETE);
+            this.offAll(Laya.Event.ERROR);
+        }
+    }
+    coreLib.GameHttpRequest = GameHttpRequest;
+    class GameSocket extends Laya.EventDispatcher {
+        /**
+         * 创建一个socket
+         * @param options 参数 url 连接地址 notify 回调方法 auth 认证
+         */
+        constructor(options) {
+            super();
+            this.MAX_CONNECT_TIME = 10;
+            this.DELAY = 15000;
+            this.alive = true;
+            this.options = options;
+            this.createConnect();
+        }
+        createConnect() {
+            if (this.MAX_CONNECT_TIME <= 0) {
+                return;
+            }
+            this.connect();
+        }
+        connect() {
+            if (Laya.Render.isConchApp && !StringUtil.isEmpty(GameSocket.SOCKET_CLASS_PATH)) {
+                this.socket = NativeUtils.PlatformClass.createClass(GameSocket.SOCKET_CLASS_PATH).newObject();
+                this.socket.call("connect", this.options.url);
+            }
+            else {
+                this.socket = new Laya.Socket();
+                this.socket.disableInput = true;
+                this.auth = false;
+                this.socket.on(Laya.Event.OPEN, this, this.openHandler);
+                this.socket.on(Laya.Event.ERROR, this, this.errorHandler);
+                this.socket.on(Laya.Event.MESSAGE, this, this.messageHandler);
+                this.socket.on(Laya.Event.CLOSE, this, this.closeHandler);
+                this.socket.connectByUrl(this.options.url);
+            }
+        }
+        closeHandler(msg) {
+            if (typeof msg !== "string") {
+                msg = msg.data;
+            }
+            console.log("GameSocket.closeHandler()" + msg);
+            Laya.timer.clear(this, this.heartbeat);
+            Laya.timer.once(this.DELAY, this, this.reConnect);
+        }
+        messageHandler(evt) {
+            //		    AppManager.log(evt)
+            try {
+                if (typeof evt == "string") {
+                    evt = JSON.parse(evt);
+                }
+                // app 端的socket 发送过来的数据会被data 包裹
+                if (evt.data) {
+                    evt = evt.data;
+                }
+                for (let i = 0; i < evt.length; i++) {
+                    let data = evt[i];
+                    if (data.op == 8) {
+                        this.auth = true;
+                        this.heartbeat();
+                        Laya.timer.loop(4 * 60 * 1000, this, this.heartbeat);
+                    }
+                    if (!this.auth) {
+                        Laya.timer.once(this.DELAY, this, this.getAuth);
+                    }
+                    if (this.auth && data.op == 5) {
+                        let notify = this.options.notify;
+                        if (notify)
+                            notify(data.body);
+                    }
+                }
+            }
+            catch (e) {
+                console.log("error socket data", e + ' *** ' + evt);
+            }
+        }
+        errorHandler(e) {
+            if (typeof e !== "string") {
+                e = e.data;
+            }
+            console.log("GameSocket.errorHandler() " + e);
+            Laya.timer.clear(this, this.heartbeat);
+            Laya.timer.once(this.DELAY, this, this.reConnect);
+        }
+        openHandler() {
+            console.log("GameSocket.openHandler()");
+            this.getAuth();
+            this.event(Laya.Event.OPEN);
+        }
+        reConnect() {
+            --this.MAX_CONNECT_TIME;
+            this.DELAY *= 2;
+            if (this.alive)
+                this.createConnect();
+        }
+        heartbeat() {
+            this.send({
+                'ver': 1,
+                'op': 2,
+                'seq': 2,
+                'body': {}
+            });
+        }
+        getAuth() {
+            this.send({
+                'ver': 1,
+                'op': 7,
+                'seq': 1,
+                'body': this.options.auth
+            });
+        }
+        send(data) {
+            if (Laya.Render.isConchApp && !StringUtil.isEmpty(GameSocket.SOCKET_CLASS_PATH)) {
+                this.socket.call("send", JSON.stringify(data));
+            }
+            else {
+                this.socket.send(JSON.stringify(data));
+            }
+        }
+        close() {
+            this.MAX_CONNECT_TIME = 0;
+            if (Laya.Render.isConchApp && !StringUtil.isEmpty(GameSocket.SOCKET_CLASS_PATH)) {
+                this.socket.call("close");
+            }
+            else {
+                this.socket.close();
+            }
+        }
+    }
+    GameSocket.SOCKET_CLASS_PATH = null;
+    coreLib.GameSocket = GameSocket;
+    let HttpCode;
+    (function (HttpCode) {
+        /** 正确返回代码 */
+        HttpCode[HttpCode["OK"] = 200] = "OK";
+    })(HttpCode = coreLib.HttpCode || (coreLib.HttpCode = {}));
+    /** socket管理 */
+    class SocketManager extends BaseSocket {
+        constructor() {
+            super();
+            /** 接受到的消息 */
+            this.receiveData = [];
+        }
+        static get inst() {
+            if (this._instance == null)
+                this._instance = new SocketManager();
+            return this._instance;
+        }
+        /**
+         * 链接服务器socket
+         * @param roomId 房间号
+         * @param token token
+         * @param userId 用户id 默认 110
+         * @param url 连接地址 如果不存在 会使用 window.socketUrl
+         */
+        connect(roomId, token, userId = 110, url) {
+            if (this.isConnect) {
+                close();
+            }
+            this.isConnect = true;
+            if (StringUtil.isEmpty(url)) {
+                url = Laya.Browser.window.socketUrl;
+            }
+            this._roomId = roomId;
+            let obj = {
+                auth: { rid: this._roomId, uid: userId },
+                notify: this.onMessageReveived.bind(this),
+                url: url,
+                token: token
+            };
+            // GameSocket.SOCKET_CLASS_PATH = "com.casino.GameSocket"
+            GameSocket.SOCKET_CLASS_PATH = null;
+            // 初始化IM客户端库
+            this._client = new SocketManager.SocketClass(obj);
+            Laya.timer.loop(200, this, this.sendData);
+        }
+        sendData() {
+            if (this.receiveData.length > 0 && this.isConnect) {
+                let data;
+                let len = this.receiveData.length;
+                for (let i = 0; i < len; i++) {
+                    data = this.receiveData.shift();
+                    let msg = data.message;
+                    let roomId = msg.roomId;
+                    let obj = msg.data;
+                    let type = msg.type;
+                    this.sendEventManager(type, obj);
+                }
+            }
+        }
+        /** 关闭链接 */
+        close() {
+            console.log("close socket");
+            Laya.timer.clear(this, this.sendData);
+            this._roomId = -1;
+            if (this._client)
+                this._client.alive = false;
+            if (this._client)
+                this._client.close();
+            this._client = null;
+            this.receiveData.splice(0, this.receiveData.length);
+            super.close();
+        }
+        /** 服务器发来消息 */
+        onMessageReveived(data) {
+            if (!this.isConnect) {
+                return;
+            }
+            this.receiveData.push(data);
+        }
+        closeHandler(msg = null) {
+            if (this._client)
+                this._client.closeHandler(msg);
+        }
+        messageHandler(evt) {
+            if (this._client)
+                this._client.messageHandler(evt);
+        }
+        errorHandler(e) {
+            if (this._client)
+                this._client.errorHandler(e);
+        }
+        openHandler() {
+            if (this._client)
+                this._client.openHandler();
+        }
+        get roomId() {
+            return this._roomId;
+        }
+        test(value) {
+            if (typeof value == "string") {
+                console.log("string=" + JSON.stringify(value));
+            }
+            else {
+                console.log("json=" + JSON.stringify(value));
+            }
+        }
+    }
+    SocketManager.SocketClass = GameSocket;
+    coreLib.SocketManager = SocketManager;
+    /**
+     * url 参数
+     */
+    class UrlParam {
+        constructor() {
+            /** 国家 'ke'肯尼亚；'ug'乌干达, 'ng'尼日尼亚 */
+            this._country = "";
+            /** 语言 en zh-CN */
+            this._language = "";
+            /** 0:ai  1:people 2:friend */
+            this._playWith = "1";
+            /** 是否是赠送金 0 没有 1 有 */
+            this._isGift = 0;
+            /** 是否是debug模式 */
+            this.debug = false;
+            this.parseData(null);
+            if (Player.inst.isWeb) {
+                let url = Laya.Browser.window.location.href;
+                let newUrl = url.split("?")[0];
+                let clearCache = Laya.Utils.getQueryString("clearCache");
+                if (clearCache) {
+                    let request = UtilsTool.getRequest();
+                    delete request["clearCache"];
+                    Laya.LocalStorage.clear();
+                    let param = "?";
+                    let index = 0;
+                    for (let key in request) {
+                        if (index == 0) {
+                            param += key + "=" + request[key];
+                        }
+                        else {
+                            param += "&" + key + "=" + request[key];
+                        }
+                        index++;
+                    }
+                    Laya.Browser.window.location.href = newUrl + param;
+                }
+                //        if (Laya.Browser.window.location.protocol != "http:" && !Laya.Render.isConchApp)
+                //            Laya.Browser.window.history.pushState(null, null, newUrl)
+            }
+        }
+        parseData(json) {
+            Player.inst.parseParam = json;
+            // 获取链接附带参数
+            let isweb = this.getValue(json, "isweb");
+            if (isweb == null)
+                isweb = Laya.Render.isConchApp ? "false" : "true";
+            Player.inst.isWeb = (isweb != "false");
+            let isGuest = this.getValue(json, "isGuest");
+            if (!StringUtil.isEmpty(isGuest)) {
+                Player.inst.isGuest = isGuest == "true";
+                Player.inst.guestModel.guestUID = UtilsTool.random(1, 99999999) * 1000;
+            }
+            let debug = this.getValue(json, "debug");
+            if (debug) {
+                this.debug = debug == "true";
+            }
+            let token = this.getValue(json, "token");
+            if (token) {
+                Player.inst.token = token;
+            }
+            let tempChannel = this.getValue(json, "channel");
+            if (!StringUtil.isEmpty(tempChannel))
+                this.channel = tempChannel;
+            let tempCountry = this.getValue(json, "country");
+            if (!StringUtil.isEmpty(tempCountry))
+                this._country = tempCountry;
+            let tempLanguage = this.getValue(json, "language");
+            if (!StringUtil.isEmpty(tempLanguage))
+                this._language = tempLanguage;
+            let tempIsGift = this.getValue(json, "isGift");
+            if (!StringUtil.isEmpty(tempIsGift))
+                this._isGift = Laya.Utils.parseInt(tempIsGift);
+            let tempPlayWith = this.getValue(json, "playWith");
+            if (!StringUtil.isEmpty(tempPlayWith))
+                this._playWith = tempPlayWith;
+            let tempRoomId = this.getValue(json, "roomId");
+            if (!StringUtil.isEmpty(tempRoomId))
+                this._roomId = tempRoomId;
+            let tempRole = this.getValue(json, "role");
+            if (!StringUtil.isEmpty(tempRole))
+                this._role = Laya.Utils.parseInt(tempRole);
+            let tempAmount = this.getValue(json, "amount");
+            if (!StringUtil.isEmpty(tempAmount))
+                this._amount = tempAmount;
+            let tempInviteCode = this.getValue(json, "invite_code");
+            if (!StringUtil.isEmpty(tempInviteCode))
+                this._inviteCode = tempInviteCode;
+            let tempMusicMuted = this.getValue(json, "musicMuted");
+            if (!StringUtil.isEmpty(tempMusicMuted))
+                Laya.SoundManager.musicMuted = tempMusicMuted == "true";
+            let tempSoundMuted = this.getValue(json, "soundMuted");
+            if (!StringUtil.isEmpty(tempSoundMuted))
+                Laya.SoundManager.soundMuted = tempSoundMuted == "true";
+            // 游戏id
+            let tempOpenGame = this.getValue(json, "openGame");
+            // 游戏名字
+            let tempGameName = this.getValue(json, "gameName");
+            if (!StringUtil.isEmpty(tempOpenGame) || !StringUtil.isEmpty(tempGameName)) {
+                this.openGame = tempOpenGame;
+                AppRecordManager.executeJson = { type: 2, data: Laya.Utils.parseInt(this.openGame), gameName: tempGameName };
+            }
+        }
+        getValue(json, key) {
+            let value = Laya.Utils.getQueryString(key);
+            if (json != null && key in json) {
+                value = json[key] + "";
+            }
+            return value;
+        }
+        get amount() {
+            return this._amount;
+        }
+        get inviteCode() {
+            return this._inviteCode;
+        }
+        /**
+         * 是否是直接指定页面
+         * @return
+         */
+        isJumpPage() {
+            return AppRecordManager.executeJson != null;
+        }
+        /**
+         * 清理跳转记录
+         */
+        clearJumpPage() {
+            this.openGame = null;
+        }
+        get country() {
+            return this._country;
+        }
+        get language() {
+            return this._language;
+        }
+        get playWith() {
+            return this._playWith;
+        }
+        set playWith(value) {
+            this._playWith = value;
+        }
+        set roomId(value) {
+            this._roomId = value;
+        }
+        get roomId() {
+            return this._roomId;
+        }
+        get role() {
+            return this._role;
+        }
+        set role(value) {
+            this._role = value;
+        }
+        get isGift() {
+            return this._isGift;
+        }
+        set isGift(value) {
+            this._isGift = value;
+        }
+    }
+    coreLib.UrlParam = UrlParam;
+    let Urls;
+    (function (Urls) {
+        /** 获取服务器时间 */
+        Urls["GAME_SERVER_TIME"] = "/game/server-time";
+        /** 优惠券投注 */
+        Urls["URL_COUPON_BET"] = "/game/coupon/bet";
+        /** 获取用户信息 */
+        Urls["URL_USER_INFO"] = "/user/info";
+        /** 获取用户账户金额 */
+        Urls["URL_USER_ACCOUNT_ASSET"] = "/account/asset";
+        /** gift 抽奖开奖结果 */
+        Urls["URL_GAME_SCRATCHER_LOTTERY"] = "/game/scratcher/handle";
+        /** 获取所有优惠券 */
+        Urls["URL_GAME_ALL_COUPON"] = "/coupon/all?";
+    })(Urls = coreLib.Urls || (coreLib.Urls = {}));
     /**
      * 统计管理器
      * @author boge
@@ -6412,605 +7011,6 @@ window.coreLib = {};
         }
     }
     coreLib.SceneManager = SceneManager;
-    /** 通信命令 */
-    let Cmd;
-    (function (Cmd) {
-        /** 大厅socket房间号 */
-        Cmd[Cmd["PROT_HOME"] = 999999] = "PROT_HOME";
-        /** 聊天内容 */
-        Cmd[Cmd["SOCKET_CHAT_MESSAGE"] = 1] = "SOCKET_CHAT_MESSAGE";
-        /** 中奖信息公告 */
-        Cmd[Cmd["SOCKET_WIN_INFO"] = 2] = "SOCKET_WIN_INFO";
-        /** 在线人数 */
-        Cmd[Cmd["SOCKET_ROOM_MONEY_MESSAGE"] = 3] = "SOCKET_ROOM_MONEY_MESSAGE";
-        /** 充值状态 */
-        Cmd[Cmd["SOCKET_RECHARGE_STATUS"] = 4] = "SOCKET_RECHARGE_STATUS";
-        /** 余额变化 */
-        Cmd[Cmd["SOCKET_MONEY_CHANGE"] = 1001] = "SOCKET_MONEY_CHANGE";
-        /** 黄金变化 */
-        Cmd[Cmd["SOCKET_GOLD_CHANGE"] = 1002] = "SOCKET_GOLD_CHANGE";
-        /** 充值成功 */
-        Cmd[Cmd["SOCKET_TOP_UP_CHANGE"] = 1004] = "SOCKET_TOP_UP_CHANGE";
-        /** 显示广播消息 */
-        Cmd[Cmd["SOCKET_SHOW_NOTICE"] = 12] = "SOCKET_SHOW_NOTICE";
-    })(Cmd = coreLib.Cmd || (coreLib.Cmd = {}));
-    /** 公用信息处理 */
-    let CommonCmd;
-    (function (CommonCmd) {
-        // 游戏id
-        /** 游戏首页 */
-        CommonCmd[CommonCmd["GAME_HOME"] = 999999] = "GAME_HOME";
-        /** 水果 */
-        CommonCmd[CommonCmd["GAME_FRUIT"] = 1] = "GAME_FRUIT";
-        /** 大转盘 */
-        CommonCmd[CommonCmd["GAME_WHEEL"] = 2] = "GAME_WHEEL";
-        /** 百家乐 低倍 */
-        CommonCmd[CommonCmd["GAME_LOW_BACCARAT"] = 30] = "GAME_LOW_BACCARAT";
-        /** 百家乐 高倍 */
-        CommonCmd[CommonCmd["GAME_HIGH_BACCARAT"] = 3] = "GAME_HIGH_BACCARAT";
-        /** 单机水果 低倍 */
-        CommonCmd[CommonCmd["GAME_ALONE_LOW_FRUIT"] = 1001] = "GAME_ALONE_LOW_FRUIT";
-        /** 单机水果 高倍 */
-        CommonCmd[CommonCmd["GAME_ALONE_HIGH_FRUIT"] = 1002] = "GAME_ALONE_HIGH_FRUIT";
-        /** 刮刮奖 */
-        CommonCmd[CommonCmd["GAME_SCRATCHER"] = 1003] = "GAME_SCRATCHER";
-        /** 单机大转盘 低倍 */
-        CommonCmd[CommonCmd["GAME_ALONE_LOW_WHEEL"] = 2001] = "GAME_ALONE_LOW_WHEEL";
-        /** 单机大转盘 高倍 */
-        CommonCmd[CommonCmd["GAME_ALONE_HIGH_WHEEL"] = 2002] = "GAME_ALONE_HIGH_WHEEL";
-        /** 翻牌机 */
-        CommonCmd[CommonCmd["GAME_FACE_UP"] = 3001] = "GAME_FACE_UP";
-        /** 单机轮盘 */
-        CommonCmd[CommonCmd["GAME_ALONE_ROULETTE"] = 3002] = "GAME_ALONE_ROULETTE";
-        /** 动物园 */
-        CommonCmd[CommonCmd["GAME_ZOO"] = 3003] = "GAME_ZOO";
-        /** 轮盘 */
-        CommonCmd[CommonCmd["GAME_ROULETTE"] = 3005] = "GAME_ROULETTE";
-        /** 百家乐单机版 */
-        CommonCmd[CommonCmd["GAME_ALONE_BACCARAT"] = 3006] = "GAME_ALONE_BACCARAT";
-        /** 翻牌机单机版 */
-        CommonCmd[CommonCmd["GAME_ALONE_FACEUP"] = 3007] = "GAME_ALONE_FACEUP";
-        /** 49游戏 */
-        CommonCmd[CommonCmd["GAME_FOUR_NINE"] = 3008] = "GAME_FOUR_NINE";
-        /** 捕鱼游戏 */
-        CommonCmd[CommonCmd["GAME_FISHING"] = 3009] = "GAME_FISHING";
-        /** 足球老虎机 */
-        CommonCmd[CommonCmd["GAME_FOOTBALL_SLOT_MACHINES"] = 3010] = "GAME_FOOTBALL_SLOT_MACHINES";
-        /** 体育足彩 */
-        CommonCmd[CommonCmd["GAME_SPORTS"] = 10000] = "GAME_SPORTS";
-        /** 虚拟体育 */
-        CommonCmd[CommonCmd["GAME_VIRTUAL_SPORTS"] = 10001] = "GAME_VIRTUAL_SPORTS";
-        /** 游客模式玩游戏到达最大值 提示玩真钱 */
-        CommonCmd[CommonCmd["GUEST_MAX_PLAY_COUNT"] = 15] = "GUEST_MAX_PLAY_COUNT";
-        /** web端玩游戏到达最大值 提示下载app */
-        CommonCmd[CommonCmd["WEB_MAX_PLAY_COUNT"] = 100] = "WEB_MAX_PLAY_COUNT";
-        /** 水果机最大下注值 */
-        CommonCmd[CommonCmd["FRUIT_MAX_BET"] = 1000] = "FRUIT_MAX_BET";
-        /** 大转盘最大下注值 */
-        CommonCmd[CommonCmd["WHEEL_MAX_BET"] = 1000] = "WHEEL_MAX_BET";
-        /** 百家乐最大下注值 */
-        CommonCmd[CommonCmd["BACCARAT_MAX_BET"] = 5000] = "BACCARAT_MAX_BET";
-        /** 动物园最大下注值 */
-        CommonCmd[CommonCmd["ZOO_MAX_BET"] = 1000] = "ZOO_MAX_BET";
-        // 开奖
-        /** 大满贯  全部中大的（除苹果核BAR）*/
-        CommonCmd[CommonCmd["GRAND_SLAM"] = 1] = "GRAND_SLAM";
-        /** 大火车   5节火车*/
-        CommonCmd[CommonCmd["MAX_CHOOCHOO"] = 2] = "MAX_CHOOCHOO";
-        /** 小火车   3节火车*/
-        CommonCmd[CommonCmd["MIN_CHOOCHOO"] = 3] = "MIN_CHOOCHOO";
-        /** 大三元   中三个大结果*/
-        CommonCmd[CommonCmd["DA_SAN_YUAN"] = 4] = "DA_SAN_YUAN";
-        /** 小满贯  全部中小的（除苹果核BAR）*/
-        CommonCmd[CommonCmd["LITTLE_SLAM"] = 5] = "LITTLE_SLAM";
-        /** 小三元 */
-        CommonCmd[CommonCmd["XIAO_SAN_YUAN"] = 6] = "XIAO_SAN_YUAN";
-        /** 大四喜  中四个苹果*/
-        CommonCmd[CommonCmd["DA_SI_XI"] = 7] = "DA_SI_XI";
-        /** 随机送灯  随机反弹一个结果*/
-        CommonCmd[CommonCmd["RANDOM"] = 8] = "RANDOM";
-        // 金币模式
-        /** 金币 */
-        CommonCmd[CommonCmd["GAME_MONEY_TYPE_COINS"] = 2] = "GAME_MONEY_TYPE_COINS";
-        /** 赠送金 */
-        CommonCmd[CommonCmd["GAME_MONEY_TYPE_GIFT"] = 3] = "GAME_MONEY_TYPE_GIFT";
-    })(CommonCmd = coreLib.CommonCmd || (coreLib.CommonCmd = {}));
-    class GameHttpRequest extends Laya.HttpRequest {
-        /**
-         * 创建一个请求
-         */
-        constructor() {
-            super();
-            /** 超时时间 */
-            this.overtime = 10000;
-            this.once(Laya.Event.COMPLETE, this, this.resultHandler);
-            this.once(Laya.Event.ERROR, this, this.httpErrorHandler);
-        }
-        onComplete(value) {
-            this.completeHandler = value;
-        }
-        onTimerOut(value) {
-            this.timerOutHandler = value;
-        }
-        onError(value) {
-            this.errorHandler = value;
-        }
-        setOvertime(value) {
-            this.overtime = value;
-        }
-        send(url, data, method, responseType, headers) {
-            if (this.overtime > 0)
-                Laya.timer.once(this.overtime, this, this.timeOut);
-            super.send(url, data, method, responseType, headers);
-        }
-        httpErrorHandler(obj) {
-            Laya.timer.clear(this, this.timeOut);
-            if (this.completeHandler && this.completeHandler instanceof Laya.Handler)
-                this.completeHandler.recover();
-            if (this.timerOutHandler && this.timerOutHandler instanceof Laya.Handler)
-                this.timerOutHandler.recover();
-            this.completeHandler = null;
-            this.timerOutHandler = null;
-            runFun(this.errorHandler, obj);
-        }
-        /** 请求返回结果数据 */
-        resultHandler(json) {
-            Laya.timer.clear(this, this.timeOut);
-            if (this.errorHandler && this.errorHandler instanceof Laya.Handler)
-                this.errorHandler.recover();
-            if (this.timerOutHandler && this.timerOutHandler instanceof Laya.Handler)
-                this.timerOutHandler.recover();
-            this.errorHandler = null;
-            this.timerOutHandler = null;
-            runFun(this.completeHandler, json);
-        }
-        timeOut() {
-            Laya.timer.clear(this, this.timeOut);
-            this.offAll(Laya.Event.COMPLETE);
-            this.offAll(Laya.Event.ERROR);
-            this.clear();
-            if (this.errorHandler && this.errorHandler instanceof Laya.Handler)
-                this.errorHandler.recover();
-            if (this.completeHandler && this.completeHandler instanceof Laya.Handler)
-                this.completeHandler.recover();
-            this.errorHandler = null;
-            this.completeHandler = null;
-            runFun(this.timerOutHandler);
-        }
-        /**
-         * 终止请求
-         */
-        abort() {
-            if (this.errorHandler && this.errorHandler instanceof Laya.Handler)
-                this.errorHandler.recover();
-            if (this.completeHandler && this.completeHandler instanceof Laya.Handler)
-                this.completeHandler.recover();
-            if (this.timerOutHandler && this.timerOutHandler instanceof Laya.Handler)
-                this.timerOutHandler.recover();
-            this.completeHandler = null;
-            this.errorHandler = null;
-            this.timerOutHandler = null;
-            this.clear();
-            Laya.timer.clear(this, this.timeOut);
-            this.offAll(Laya.Event.COMPLETE);
-            this.offAll(Laya.Event.ERROR);
-        }
-    }
-    coreLib.GameHttpRequest = GameHttpRequest;
-    class GameSocket extends Laya.EventDispatcher {
-        /**
-         * 创建一个socket
-         * @param options 参数 url 连接地址 notify 回调方法 auth 认证
-         */
-        constructor(options) {
-            super();
-            this.MAX_CONNECT_TIME = 10;
-            this.DELAY = 15000;
-            this.alive = true;
-            this.options = options;
-            this.createConnect();
-        }
-        createConnect() {
-            if (this.MAX_CONNECT_TIME <= 0) {
-                return;
-            }
-            this.connect();
-        }
-        connect() {
-            if (Laya.Render.isConchApp && !StringUtil.isEmpty(GameSocket.SOCKET_CLASS_PATH)) {
-                this.socket = NativeUtils.PlatformClass.createClass(GameSocket.SOCKET_CLASS_PATH).newObject();
-                this.socket.call("connect", this.options.url);
-            }
-            else {
-                this.socket = new Laya.Socket();
-                this.socket.disableInput = true;
-                this.auth = false;
-                this.socket.on(Laya.Event.OPEN, this, this.openHandler);
-                this.socket.on(Laya.Event.ERROR, this, this.errorHandler);
-                this.socket.on(Laya.Event.MESSAGE, this, this.messageHandler);
-                this.socket.on(Laya.Event.CLOSE, this, this.closeHandler);
-                this.socket.connectByUrl(this.options.url);
-            }
-        }
-        closeHandler(msg) {
-            if (typeof msg !== "string") {
-                msg = msg.data;
-            }
-            console.log("GameSocket.closeHandler()" + msg);
-            Laya.timer.clear(this, this.heartbeat);
-            Laya.timer.once(this.DELAY, this, this.reConnect);
-        }
-        messageHandler(evt) {
-            //		    AppManager.log(evt)
-            try {
-                if (typeof evt == "string") {
-                    evt = JSON.parse(evt);
-                }
-                // app 端的socket 发送过来的数据会被data 包裹
-                if (evt.data) {
-                    evt = evt.data;
-                }
-                for (let i = 0; i < evt.length; i++) {
-                    let data = evt[i];
-                    if (data.op == 8) {
-                        this.auth = true;
-                        this.heartbeat();
-                        Laya.timer.loop(4 * 60 * 1000, this, this.heartbeat);
-                    }
-                    if (!this.auth) {
-                        Laya.timer.once(this.DELAY, this, this.getAuth);
-                    }
-                    if (this.auth && data.op == 5) {
-                        let notify = this.options.notify;
-                        if (notify)
-                            notify(data.body);
-                    }
-                }
-            }
-            catch (e) {
-                console.log("error socket data", e + ' *** ' + evt);
-            }
-        }
-        errorHandler(e) {
-            if (typeof e !== "string") {
-                e = e.data;
-            }
-            console.log("GameSocket.errorHandler() " + e);
-            Laya.timer.clear(this, this.heartbeat);
-            Laya.timer.once(this.DELAY, this, this.reConnect);
-        }
-        openHandler() {
-            console.log("GameSocket.openHandler()");
-            this.getAuth();
-            this.event(Laya.Event.OPEN);
-        }
-        reConnect() {
-            --this.MAX_CONNECT_TIME;
-            this.DELAY *= 2;
-            if (this.alive)
-                this.createConnect();
-        }
-        heartbeat() {
-            this.send({
-                'ver': 1,
-                'op': 2,
-                'seq': 2,
-                'body': {}
-            });
-        }
-        getAuth() {
-            this.send({
-                'ver': 1,
-                'op': 7,
-                'seq': 1,
-                'body': this.options.auth
-            });
-        }
-        send(data) {
-            if (Laya.Render.isConchApp && !StringUtil.isEmpty(GameSocket.SOCKET_CLASS_PATH)) {
-                this.socket.call("send", JSON.stringify(data));
-            }
-            else {
-                this.socket.send(JSON.stringify(data));
-            }
-        }
-        close() {
-            this.MAX_CONNECT_TIME = 0;
-            if (Laya.Render.isConchApp && !StringUtil.isEmpty(GameSocket.SOCKET_CLASS_PATH)) {
-                this.socket.call("close");
-            }
-            else {
-                this.socket.close();
-            }
-        }
-    }
-    GameSocket.SOCKET_CLASS_PATH = null;
-    coreLib.GameSocket = GameSocket;
-    let HttpCode;
-    (function (HttpCode) {
-        /** 正确返回代码 */
-        HttpCode[HttpCode["OK"] = 200] = "OK";
-    })(HttpCode = coreLib.HttpCode || (coreLib.HttpCode = {}));
-    /** socket管理 */
-    class SocketManager extends BaseSocket {
-        constructor() {
-            super();
-            /** 接受到的消息 */
-            this.receiveData = [];
-        }
-        static get inst() {
-            if (this._instance == null)
-                this._instance = new SocketManager();
-            return this._instance;
-        }
-        /**
-         * 链接服务器socket
-         * @param roomId 房间号
-         * @param token token
-         * @param userId 用户id 默认 110
-         * @param url 连接地址 如果不存在 会使用 window.socketUrl
-         */
-        connect(roomId, token, userId = 110, url) {
-            if (this.isConnect) {
-                close();
-            }
-            this.isConnect = true;
-            if (StringUtil.isEmpty(url)) {
-                url = Laya.Browser.window.socketUrl;
-            }
-            this._roomId = roomId;
-            let obj = {
-                auth: { rid: this._roomId, uid: userId },
-                notify: this.onMessageReveived.bind(this),
-                url: url,
-                token: token
-            };
-            // GameSocket.SOCKET_CLASS_PATH = "com.casino.GameSocket"
-            GameSocket.SOCKET_CLASS_PATH = null;
-            // 初始化IM客户端库
-            this._client = new SocketManager.SocketClass(obj);
-            Laya.timer.loop(200, this, this.sendData);
-        }
-        sendData() {
-            if (this.receiveData.length > 0 && this.isConnect) {
-                let data;
-                let len = this.receiveData.length;
-                for (let i = 0; i < len; i++) {
-                    data = this.receiveData.shift();
-                    let msg = data.message;
-                    let roomId = msg.roomId;
-                    let obj = msg.data;
-                    let type = msg.type;
-                    this.sendEventManager(type, obj);
-                }
-            }
-        }
-        /** 关闭链接 */
-        close() {
-            console.log("close socket");
-            Laya.timer.clear(this, this.sendData);
-            this._roomId = -1;
-            if (this._client)
-                this._client.alive = false;
-            if (this._client)
-                this._client.close();
-            this._client = null;
-            this.receiveData.splice(0, this.receiveData.length);
-            super.close();
-        }
-        /** 服务器发来消息 */
-        onMessageReveived(data) {
-            if (!this.isConnect) {
-                return;
-            }
-            this.receiveData.push(data);
-        }
-        closeHandler(msg = null) {
-            if (this._client)
-                this._client.closeHandler(msg);
-        }
-        messageHandler(evt) {
-            if (this._client)
-                this._client.messageHandler(evt);
-        }
-        errorHandler(e) {
-            if (this._client)
-                this._client.errorHandler(e);
-        }
-        openHandler() {
-            if (this._client)
-                this._client.openHandler();
-        }
-        get roomId() {
-            return this._roomId;
-        }
-        test(value) {
-            if (typeof value == "string") {
-                console.log("string=" + JSON.stringify(value));
-            }
-            else {
-                console.log("json=" + JSON.stringify(value));
-            }
-        }
-    }
-    SocketManager.SocketClass = GameSocket;
-    coreLib.SocketManager = SocketManager;
-    /**
-     * url 参数
-     */
-    class UrlParam {
-        constructor() {
-            /** 国家 'ke'肯尼亚；'ug'乌干达, 'ng'尼日尼亚 */
-            this._country = "";
-            /** 语言 en zh-CN */
-            this._language = "";
-            /** 0:ai  1:people 2:friend */
-            this._playWith = "1";
-            /** 是否是赠送金 0 没有 1 有 */
-            this._isGift = 0;
-            /** 是否是debug模式 */
-            this.debug = false;
-            this.parseData(null);
-            if (Player.inst.isWeb) {
-                let url = Laya.Browser.window.location.href;
-                let newUrl = url.split("?")[0];
-                let clearCache = Laya.Utils.getQueryString("clearCache");
-                if (clearCache) {
-                    let request = UtilsTool.getRequest();
-                    delete request["clearCache"];
-                    Laya.LocalStorage.clear();
-                    let param = "?";
-                    let index = 0;
-                    for (let key in request) {
-                        if (index == 0) {
-                            param += key + "=" + request[key];
-                        }
-                        else {
-                            param += "&" + key + "=" + request[key];
-                        }
-                        index++;
-                    }
-                    Laya.Browser.window.location.href = newUrl + param;
-                }
-                //        if (Laya.Browser.window.location.protocol != "http:" && !Laya.Render.isConchApp)
-                //            Laya.Browser.window.history.pushState(null, null, newUrl)
-            }
-        }
-        parseData(json) {
-            Player.inst.parseParam = json;
-            // 获取链接附带参数
-            let isweb = this.getValue(json, "isweb");
-            if (isweb == null)
-                isweb = Laya.Render.isConchApp ? "false" : "true";
-            Player.inst.isWeb = (isweb != "false");
-            let isGuest = this.getValue(json, "isGuest");
-            if (!StringUtil.isEmpty(isGuest)) {
-                Player.inst.isGuest = isGuest == "true";
-                Player.inst.guestModel.guestUID = UtilsTool.random(1, 99999999) * 1000;
-            }
-            let debug = this.getValue(json, "debug");
-            if (debug) {
-                this.debug = debug == "true";
-            }
-            let token = this.getValue(json, "token");
-            if (token) {
-                Player.inst.token = token;
-            }
-            let tempChannel = this.getValue(json, "channel");
-            if (!StringUtil.isEmpty(tempChannel))
-                this.channel = tempChannel;
-            let tempCountry = this.getValue(json, "country");
-            if (!StringUtil.isEmpty(tempCountry))
-                this._country = tempCountry;
-            let tempLanguage = this.getValue(json, "language");
-            if (!StringUtil.isEmpty(tempLanguage))
-                this._language = tempLanguage;
-            let tempIsGift = this.getValue(json, "isGift");
-            if (!StringUtil.isEmpty(tempIsGift))
-                this._isGift = Laya.Utils.parseInt(tempIsGift);
-            let tempPlayWith = this.getValue(json, "playWith");
-            if (!StringUtil.isEmpty(tempPlayWith))
-                this._playWith = tempPlayWith;
-            let tempRoomId = this.getValue(json, "roomId");
-            if (!StringUtil.isEmpty(tempRoomId))
-                this._roomId = tempRoomId;
-            let tempRole = this.getValue(json, "role");
-            if (!StringUtil.isEmpty(tempRole))
-                this._role = Laya.Utils.parseInt(tempRole);
-            let tempAmount = this.getValue(json, "amount");
-            if (!StringUtil.isEmpty(tempAmount))
-                this._amount = tempAmount;
-            let tempInviteCode = this.getValue(json, "invite_code");
-            if (!StringUtil.isEmpty(tempInviteCode))
-                this._inviteCode = tempInviteCode;
-            let tempMusicMuted = this.getValue(json, "musicMuted");
-            if (!StringUtil.isEmpty(tempMusicMuted))
-                Laya.SoundManager.musicMuted = tempMusicMuted == "true";
-            let tempSoundMuted = this.getValue(json, "soundMuted");
-            if (!StringUtil.isEmpty(tempSoundMuted))
-                Laya.SoundManager.soundMuted = tempSoundMuted == "true";
-            // 游戏id
-            let tempOpenGame = this.getValue(json, "openGame");
-            // 游戏名字
-            let tempGameName = this.getValue(json, "gameName");
-            if (!StringUtil.isEmpty(tempOpenGame) || !StringUtil.isEmpty(tempGameName)) {
-                this.openGame = tempOpenGame;
-                AppRecordManager.executeJson = { type: 2, data: Laya.Utils.parseInt(this.openGame), gameName: tempGameName };
-            }
-        }
-        getValue(json, key) {
-            let value = Laya.Utils.getQueryString(key);
-            if (json != null && key in json) {
-                value = json[key] + "";
-            }
-            return value;
-        }
-        get amount() {
-            return this._amount;
-        }
-        get inviteCode() {
-            return this._inviteCode;
-        }
-        /**
-         * 是否是直接指定页面
-         * @return
-         */
-        isJumpPage() {
-            return AppRecordManager.executeJson != null;
-        }
-        /**
-         * 清理跳转记录
-         */
-        clearJumpPage() {
-            this.openGame = null;
-        }
-        get country() {
-            return this._country;
-        }
-        get language() {
-            return this._language;
-        }
-        get playWith() {
-            return this._playWith;
-        }
-        set playWith(value) {
-            this._playWith = value;
-        }
-        set roomId(value) {
-            this._roomId = value;
-        }
-        get roomId() {
-            return this._roomId;
-        }
-        get role() {
-            return this._role;
-        }
-        set role(value) {
-            this._role = value;
-        }
-        get isGift() {
-            return this._isGift;
-        }
-        set isGift(value) {
-            this._isGift = value;
-        }
-    }
-    coreLib.UrlParam = UrlParam;
-    let Urls;
-    (function (Urls) {
-        /** 获取服务器时间 */
-        Urls["GAME_SERVER_TIME"] = "/game/server-time";
-        /** 优惠券投注 */
-        Urls["URL_COUPON_BET"] = "/game/coupon/bet";
-        /** 获取用户信息 */
-        Urls["URL_USER_INFO"] = "/user/info";
-        /** 获取用户账户金额 */
-        Urls["URL_USER_ACCOUNT_ASSET"] = "/account/asset";
-        /** gift 抽奖开奖结果 */
-        Urls["URL_GAME_SCRATCHER_LOTTERY"] = "/game/scratcher/handle";
-        /** 获取所有优惠券 */
-        Urls["URL_GAME_ALL_COUPON"] = "/coupon/all?";
-    })(Urls = coreLib.Urls || (coreLib.Urls = {}));
     class NativeUtils {
     }
     /**@private Market对象 只有加速器模式下才有值*/
@@ -9347,9 +9347,8 @@ window.coreLib = {};
                 loaderComplete !== null && loaderComplete !== void 0 ? loaderComplete : (loaderComplete = nameOrIndex.loaderComplete);
             }
             runFun(loaderComplete);
-            if (skeleton == null || nameOrIndex == null)
-                return;
-            skeleton.play(nameOrIndex, loop);
+            if (skeleton && nameOrIndex)
+                skeleton.play(nameOrIndex, loop);
         }
         /**
          * 创建spine 骨骼动画组件
@@ -9358,24 +9357,24 @@ window.coreLib = {};
          * @param SkeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
          */
         static createSpine(url, optional, SkeletonClass) {
-            var _a, _b, _c, _d, _e, _f, _g;
+            var _a, _b, _c, _d, _e, _f;
             optional || (optional = {});
             // @ts-ignore
             SkeletonClass !== null && SkeletonClass !== void 0 ? SkeletonClass : (SkeletonClass = Laya.Utils.getFileExtension(url) === "json" ? GSpineSkeleton : GSkeleton);
             const skeleton = new SkeletonClass();
-            SpineUtils.playSpine(skeleton, url, (_a = optional.play) !== null && _a !== void 0 ? _a : 0);
+            SpineUtils.playSpine(skeleton, url, optional.play);
             if (optional.scale) {
                 skeleton.setScale(optional.scale, optional.scale);
             }
             else {
-                skeleton.setScale((_b = optional.scaleX) !== null && _b !== void 0 ? _b : skeleton.scaleX, (_c = optional.scaleY) !== null && _c !== void 0 ? _c : skeleton.scaleY);
+                skeleton.setScale((_a = optional.scaleX) !== null && _a !== void 0 ? _a : skeleton.scaleX, (_b = optional.scaleY) !== null && _b !== void 0 ? _b : skeleton.scaleY);
             }
-            skeleton.setXY((_d = optional.x) !== null && _d !== void 0 ? _d : 0, (_e = optional.y) !== null && _e !== void 0 ? _e : 0);
+            skeleton.setXY((_c = optional.x) !== null && _c !== void 0 ? _c : 0, (_d = optional.y) !== null && _d !== void 0 ? _d : 0);
             if (optional.relation) {
                 let relation = optional.relation;
                 relation.lr = relation.ud = relation.target;
-                relation.lr && skeleton.addRelation(relation.lr, fgui.RelationType.Center_Center, (_f = relation.usePercent) !== null && _f !== void 0 ? _f : true);
-                relation.ud && skeleton.addRelation(relation.ud, fgui.RelationType.Middle_Middle, (_g = relation.usePercent) !== null && _g !== void 0 ? _g : true);
+                relation.lr && skeleton.addRelation(relation.lr, fgui.RelationType.Center_Center, (_e = relation.usePercent) !== null && _e !== void 0 ? _e : true);
+                relation.ud && skeleton.addRelation(relation.ud, fgui.RelationType.Middle_Middle, (_f = relation.usePercent) !== null && _f !== void 0 ? _f : true);
             }
             return skeleton;
         }
@@ -11187,9 +11186,13 @@ window.coreLib = {};
                 return;
             this.playGroupIndex = 0;
             if (!Array.isArray(nameOrIndex) && typeof nameOrIndex === "object") {
+                if (nameOrIndex.nameOrIndex == null || (typeof nameOrIndex.nameOrIndex === "number" && nameOrIndex.nameOrIndex < 0))
+                    return;
                 this.playAni(nameOrIndex);
                 return;
             }
+            if (typeof nameOrIndex === "number" && nameOrIndex < 0)
+                return;
             this.playAni({
                 nameOrIndex: nameOrIndex, loop: loop, force: force,
                 start: start, end: end, freshSkin: freshSkin, playAudio: playAudio
@@ -11583,9 +11586,13 @@ window.coreLib = {};
                 return;
             this.playGroupIndex = 0;
             if (!Array.isArray(nameOrIndex) && typeof nameOrIndex === "object") {
+                if (nameOrIndex.nameOrIndex == null || (typeof nameOrIndex.nameOrIndex === "number" && nameOrIndex.nameOrIndex < 0))
+                    return;
                 this.playAni(nameOrIndex);
                 return;
             }
+            if (typeof nameOrIndex === "number" && nameOrIndex < 0)
+                return;
             this.playAni({
                 nameOrIndex: nameOrIndex, loop: loop, force: force,
                 start: start, end: end, freshSkin: freshSkin, playAudio: playAudio
