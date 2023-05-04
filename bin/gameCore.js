@@ -1333,19 +1333,6 @@ window.coreLib = {};
         }
     }
     coreLib.Player = Player;
-    /** 加载资源配置 */
-    class LoaderConfig {
-        /**
-         * 清理资源
-         * @param res 要清理的资源数组
-         */
-        static clear(res) {
-            for (let i = 0; i < res.length; i++) {
-                MyLoader.loader.clearRes(res[i].url);
-            }
-        }
-    }
-    coreLib.LoaderConfig = LoaderConfig;
     let ActionLib;
     (function (ActionLib) {
         // 初始化设备数据
@@ -1501,6 +1488,19 @@ window.coreLib = {};
         /** 更新bounds信息 */
         ActionLib["GAME_UPDATE_BOUNDS_INFO"] = "game_update_bounds_info";
     })(ActionLib = coreLib.ActionLib || (coreLib.ActionLib = {}));
+    /** 加载资源配置 */
+    class LoaderConfig {
+        /**
+         * 清理资源
+         * @param res 要清理的资源数组
+         */
+        static clear(res) {
+            for (let i = 0; i < res.length; i++) {
+                MyLoader.loader.clearRes(res[i].url);
+            }
+        }
+    }
+    coreLib.LoaderConfig = LoaderConfig;
     class BaseButton extends fgui.GButton {
         constructor() {
             super();
@@ -7011,6 +7011,13 @@ window.coreLib = {};
         /** 获取所有优惠券 */
         Urls["URL_GAME_ALL_COUPON"] = "/coupon/all?";
     })(Urls = coreLib.Urls || (coreLib.Urls = {}));
+    class NativeUtils {
+    }
+    /**@private Market对象 只有加速器模式下才有值*/
+    NativeUtils.conchMarket = window["conch"] ? window["conchMarket"] : null;
+    /**@private PlatformClass类，只有加速器模式下才有值 */
+    NativeUtils.PlatformClass = window["PlatformClass"];
+    coreLib.NativeUtils = NativeUtils;
     /** 卡牌 */
     class Card extends BaseLabel {
         constructor() {
@@ -7206,13 +7213,6 @@ window.coreLib = {};
         }
     }
     coreLib.Deck = Deck;
-    class NativeUtils {
-    }
-    /**@private Market对象 只有加速器模式下才有值*/
-    NativeUtils.conchMarket = window["conch"] ? window["conchMarket"] : null;
-    /**@private PlatformClass类，只有加速器模式下才有值 */
-    NativeUtils.PlatformClass = window["PlatformClass"];
-    coreLib.NativeUtils = NativeUtils;
     class BindInputButton {
         /**
          *
@@ -9358,16 +9358,15 @@ window.coreLib = {};
          */
         static createSpine(url, optional, skeletonClass) {
             var _a, _b, _c, _d, _e, _f, _g, _h, _j;
-            if (optional instanceof GSkeleton || optional instanceof GSpineSkeleton) {
+            if (!this.isInterface(optional)) {
                 skeletonClass = optional;
                 optional = null;
             }
             if (typeof url !== "string") {
-                // if ( optional == SkeletonClass) skeletonClass = optional
                 optional = url;
                 url = optional.url;
             }
-            if (optional instanceof GSkeleton || optional instanceof GSpineSkeleton) {
+            if (!this.isInterface(optional)) {
                 throw Error("error type optional=" + optional);
             }
             console.log(optional);
@@ -9398,6 +9397,13 @@ window.coreLib = {};
             }
             SpineUtils.playSpine(skeleton, url, optional.play, (_j = optional.play) === null || _j === void 0 ? void 0 : _j.loop, optional.playComplete, optional.loaderComplete, optional.aniMode);
             return skeleton;
+        }
+        /**
+         * 判断是否是接口
+         * @param optional
+         */
+        static isInterface(optional) {
+            return "aniMode" in optional && "ver" in optional;
         }
     }
     coreLib.SpineUtils = SpineUtils;

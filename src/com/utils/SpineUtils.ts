@@ -62,31 +62,35 @@ export class SpineUtils {
      * @param optional
      * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
      */
-    static createSpine(url: string, optional?: ISkeletonData, skeletonClass?: GSkeleton | GSpineSkeleton)
+    static createSpine<T extends GSkeleton | GSpineSkeleton>(url: string, optional?: ISkeletonData, skeletonClass?: {
+        new(): T
+    })
     /**
      * 创建spine 骨骼动画组件
      * @param optional
      * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
      */
-    static createSpine(optional?: ISkeletonData, skeletonClass?: GSkeleton | GSpineSkeleton)
+    static createSpine<T extends GSkeleton | GSpineSkeleton>(optional?: ISkeletonData, skeletonClass?: { new(): T })
+
     /**
      * 创建spine 骨骼动画组件
      * @param url 根据传入的json 或 sk自动创建 GSpineSkeleton、GSkeleton
      * @param optional
      * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
      */
-    static createSpine(url: string | ISkeletonData, optional?: ISkeletonData | GSkeleton | GSpineSkeleton, skeletonClass?: GSkeleton | GSpineSkeleton) {
-        if (optional instanceof GSkeleton || optional instanceof GSpineSkeleton) {
+    static createSpine<T extends GSkeleton | GSpineSkeleton>(url: string | ISkeletonData,
+                                                             optional?: ISkeletonData | { new(): T },
+                                                             skeletonClass?: { new(): T }) {
+        if (!this.isInterface(optional)) {
             skeletonClass = optional
             optional = null
         }
         if (typeof url !== "string") {
-            // if ( optional == SkeletonClass) skeletonClass = optional
             optional = url
             url = optional.url
         }
 
-        if (optional instanceof GSkeleton || optional instanceof GSpineSkeleton) {
+        if (!this.isInterface(optional)) {
             throw Error("error type optional=" + optional)
         }
         console.log(optional)
@@ -96,7 +100,7 @@ export class SpineUtils {
         // @ts-ignore
         skeletonClass ??= Laya.Utils.getFileExtension(url) === "json" ? GSpineSkeleton : GSkeleton
         // @ts-ignore
-        let skeleton: SkeletonClass
+        let skeleton: GSkeleton | GSpineSkeleton
         if (skeletonClass instanceof GSpineSkeleton) {
             skeleton = new GSpineSkeleton(optional.ver ?? SpineVersion.v3_8)
         } else {
@@ -118,5 +122,14 @@ export class SpineUtils {
         SpineUtils.playSpine(skeleton, url, optional.play, optional.play?.loop, optional.playComplete, optional.loaderComplete, optional.aniMode)
         return skeleton
     }
+
+    /**
+     * 判断是否是接口
+     * @param optional
+     */
+    static isInterface(optional): optional is ISkeletonData {
+        return "aniMode" in optional && "ver" in optional
+    }
+
 
 }
