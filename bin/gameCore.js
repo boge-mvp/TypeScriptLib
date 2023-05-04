@@ -1333,6 +1333,19 @@ window.coreLib = {};
         }
     }
     coreLib.Player = Player;
+    /** 加载资源配置 */
+    class LoaderConfig {
+        /**
+         * 清理资源
+         * @param res 要清理的资源数组
+         */
+        static clear(res) {
+            for (let i = 0; i < res.length; i++) {
+                MyLoader.loader.clearRes(res[i].url);
+            }
+        }
+    }
+    coreLib.LoaderConfig = LoaderConfig;
     let ActionLib;
     (function (ActionLib) {
         // 初始化设备数据
@@ -4431,19 +4444,6 @@ window.coreLib = {};
         }
     }
     coreLib.SlotScrollTweenModel = SlotScrollTweenModel;
-    /** 加载资源配置 */
-    class LoaderConfig {
-        /**
-         * 清理资源
-         * @param res 要清理的资源数组
-         */
-        static clear(res) {
-            for (let i = 0; i < res.length; i++) {
-                MyLoader.loader.clearRes(res[i].url);
-            }
-        }
-    }
-    coreLib.LoaderConfig = LoaderConfig;
     class GoldEffect extends View {
         constructor() {
             super();
@@ -7011,13 +7011,6 @@ window.coreLib = {};
         /** 获取所有优惠券 */
         Urls["URL_GAME_ALL_COUPON"] = "/coupon/all?";
     })(Urls = coreLib.Urls || (coreLib.Urls = {}));
-    class NativeUtils {
-    }
-    /**@private Market对象 只有加速器模式下才有值*/
-    NativeUtils.conchMarket = window["conch"] ? window["conchMarket"] : null;
-    /**@private PlatformClass类，只有加速器模式下才有值 */
-    NativeUtils.PlatformClass = window["PlatformClass"];
-    coreLib.NativeUtils = NativeUtils;
     /** 卡牌 */
     class Card extends BaseLabel {
         constructor() {
@@ -7213,6 +7206,13 @@ window.coreLib = {};
         }
     }
     coreLib.Deck = Deck;
+    class NativeUtils {
+    }
+    /**@private Market对象 只有加速器模式下才有值*/
+    NativeUtils.conchMarket = window["conch"] ? window["conchMarket"] : null;
+    /**@private PlatformClass类，只有加速器模式下才有值 */
+    NativeUtils.PlatformClass = window["PlatformClass"];
+    coreLib.NativeUtils = NativeUtils;
     class BindInputButton {
         /**
          *

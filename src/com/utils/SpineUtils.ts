@@ -1,10 +1,10 @@
 import Event = Laya.Event;
 import Templet = Laya.Templet;
 import Handler = Laya.Handler;
+import SpineVersion = Laya.SpineVersion;
 import {GSkeleton} from "../view/GSkeleton"
 import {GSpineSkeleton} from "../view/GSpineSkeleton"
 import {ISkeletonData, ISkeletonPlay} from "../interfaces/ICommon";
-import SpineVersion = Laya.SpineVersion;
 
 export class SpineUtils {
 
@@ -62,20 +62,20 @@ export class SpineUtils {
      * @param optional
      * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
      */
-    static createSpine(url: string, optional?: ISkeletonData, skeletonClass?: SkeletonClass)
+    static createSpine(url: string, optional?: ISkeletonData, skeletonClass?: GSkeleton | GSpineSkeleton)
     /**
      * 创建spine 骨骼动画组件
      * @param optional
      * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
      */
-    static createSpine(optional?: ISkeletonData, skeletonClass?: SkeletonClass)
+    static createSpine(optional?: ISkeletonData, skeletonClass?: GSkeleton | GSpineSkeleton)
     /**
      * 创建spine 骨骼动画组件
      * @param url 根据传入的json 或 sk自动创建 GSpineSkeleton、GSkeleton
      * @param optional
      * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
      */
-    static createSpine(url: string | ISkeletonData, optional?: ISkeletonData | SkeletonClass, skeletonClass?: SkeletonClass) {
+    static createSpine(url: string | ISkeletonData, optional?: ISkeletonData | GSkeleton | GSpineSkeleton, skeletonClass?: GSkeleton | GSpineSkeleton) {
         if (optional instanceof GSkeleton || optional instanceof GSpineSkeleton) {
             skeletonClass = optional
             optional = null
@@ -120,5 +120,3 @@ export class SpineUtils {
     }
 
 }
-
-declare type SkeletonClass = GSkeleton | GSpineSkeleton
