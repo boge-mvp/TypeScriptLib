@@ -1,7 +1,6 @@
 import Event = Laya.Event;
 import Templet = Laya.Templet;
 import Handler = Laya.Handler;
-import SpineVersion = Laya.SpineVersion;
 import {GSkeleton} from "../view/GSkeleton"
 import {GSpineSkeleton} from "../view/GSpineSkeleton"
 import {ISkeletonData, ISkeletonPlay} from "../interfaces/ICommon";
@@ -99,12 +98,10 @@ export class SpineUtils {
 
         // @ts-ignore
         skeletonClass ??= Laya.Utils.getFileExtension(url) === "json" ? GSpineSkeleton : GSkeleton
-        // @ts-ignore
-        let skeleton: GSkeleton | GSpineSkeleton
-        if (skeletonClass instanceof GSpineSkeleton) {
-            skeleton = new GSpineSkeleton(optional.ver ?? SpineVersion.v3_8)
-        } else {
-            skeleton = new GSkeleton(optional.aniMode ?? 0)
+
+        let skeleton = new skeletonClass()
+        if (optional.ver && skeleton instanceof GSpineSkeleton) {
+            skeleton.ver = optional.ver
         }
         optional.rotation && (skeleton.rotation = optional.rotation)
         if (optional.scale) {

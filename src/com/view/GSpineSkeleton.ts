@@ -16,7 +16,7 @@ export class GSpineSkeleton extends GComponent {
     private p3: Point
     private p4: Point
 
-    private readonly ver: SpineVersion
+    ver: SpineVersion
     private spineSkeleton: Laya.SpineSkeleton
     private template: Laya.SpineTemplet
     /** 加载路径 */
@@ -40,8 +40,6 @@ export class GSpineSkeleton extends GComponent {
     constructor(ver: SpineVersion = SpineVersion.v3_8) {
         super()
         this.ver = ver
-        this.template = new SpineTemplet(this.ver)
-        this.template.on(Event.COMPLETE, this, this.onComplete)
     }
 
     protected createDisplayObject() {
@@ -64,10 +62,16 @@ export class GSpineSkeleton extends GComponent {
      * 加载json 或 skel格式的骨骼文件
      * @param jsonOrSkelUrl
      * @param handler 回调方法
+     * @param ver
      */
-    load(jsonOrSkelUrl: string, handler: ParamHandler) {
+    load(jsonOrSkelUrl: string, handler: ParamHandler, ver?:SpineVersion) {
         this._complete = handler
         this._aniPath = jsonOrSkelUrl
+
+        if (this.template == null || (ver && this.ver != ver)) {
+            this.template = new SpineTemplet(this.ver)
+            this.template.on(Event.COMPLETE, this, this.onComplete)
+        }
         this.template.loadAni(jsonOrSkelUrl)
     }
 
