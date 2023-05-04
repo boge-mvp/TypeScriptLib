@@ -1333,19 +1333,6 @@ window.coreLib = {};
         }
     }
     coreLib.Player = Player;
-    /** 加载资源配置 */
-    class LoaderConfig {
-        /**
-         * 清理资源
-         * @param res 要清理的资源数组
-         */
-        static clear(res) {
-            for (let i = 0; i < res.length; i++) {
-                MyLoader.loader.clearRes(res[i].url);
-            }
-        }
-    }
-    coreLib.LoaderConfig = LoaderConfig;
     let ActionLib;
     (function (ActionLib) {
         // 初始化设备数据
@@ -1501,6 +1488,19 @@ window.coreLib = {};
         /** 更新bounds信息 */
         ActionLib["GAME_UPDATE_BOUNDS_INFO"] = "game_update_bounds_info";
     })(ActionLib = coreLib.ActionLib || (coreLib.ActionLib = {}));
+    /** 加载资源配置 */
+    class LoaderConfig {
+        /**
+         * 清理资源
+         * @param res 要清理的资源数组
+         */
+        static clear(res) {
+            for (let i = 0; i < res.length; i++) {
+                MyLoader.loader.clearRes(res[i].url);
+            }
+        }
+    }
+    coreLib.LoaderConfig = LoaderConfig;
     class BaseButton extends fgui.GButton {
         constructor() {
             super();
@@ -7011,13 +7011,6 @@ window.coreLib = {};
         /** 获取所有优惠券 */
         Urls["URL_GAME_ALL_COUPON"] = "/coupon/all?";
     })(Urls = coreLib.Urls || (coreLib.Urls = {}));
-    class NativeUtils {
-    }
-    /**@private Market对象 只有加速器模式下才有值*/
-    NativeUtils.conchMarket = window["conch"] ? window["conchMarket"] : null;
-    /**@private PlatformClass类，只有加速器模式下才有值 */
-    NativeUtils.PlatformClass = window["PlatformClass"];
-    coreLib.NativeUtils = NativeUtils;
     /** 卡牌 */
     class Card extends BaseLabel {
         constructor() {
@@ -7213,6 +7206,13 @@ window.coreLib = {};
         }
     }
     coreLib.Deck = Deck;
+    class NativeUtils {
+    }
+    /**@private Market对象 只有加速器模式下才有值*/
+    NativeUtils.conchMarket = window["conch"] ? window["conchMarket"] : null;
+    /**@private PlatformClass类，只有加速器模式下才有值 */
+    NativeUtils.PlatformClass = window["PlatformClass"];
+    coreLib.NativeUtils = NativeUtils;
     class ActivityButton extends BaseButton {
         constructor() {
             super();
@@ -12038,11 +12038,10 @@ window.coreLib = {};
                 optional = url;
                 url = optional.url;
             }
+            // 配置属性为null 或者不是配置属性
             if (!optional || !this.isInterface(optional)) {
-                throw Error("error type optional=" + optional);
+                optional = { url: url };
             }
-            console.log(optional);
-            optional !== null && optional !== void 0 ? optional : (optional = { url: url });
             // @ts-ignore
             skeletonClass !== null && skeletonClass !== void 0 ? skeletonClass : (skeletonClass = Laya.Utils.getFileExtension(url) === "json" ? GSpineSkeleton : GSkeleton);
             let skeleton = new skeletonClass();

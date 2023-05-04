@@ -88,12 +88,10 @@ export class SpineUtils {
             optional = url
             url = optional.url
         }
+        // 配置属性为null 或者不是配置属性
         if (!optional || !this.isInterface(optional)) {
-            throw Error("error type optional=" + optional)
+            optional = {url: url}
         }
-        console.log(optional)
-        optional ??= {url: url}
-
 
         // @ts-ignore
         skeletonClass ??= Laya.Utils.getFileExtension(url) === "json" ? GSpineSkeleton : GSkeleton
