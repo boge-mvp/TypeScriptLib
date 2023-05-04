@@ -4,6 +4,7 @@ import Handler = Laya.Handler;
 import {GSkeleton} from "../view/GSkeleton"
 import {GSpineSkeleton} from "../view/GSpineSkeleton"
 import {ISkeletonData, ISkeletonPlay} from "../interfaces/ICommon";
+import SpineVersion = Laya.SpineVersion;
 
 export class SpineUtils {
 
@@ -59,20 +60,48 @@ export class SpineUtils {
      * 创建spine 骨骼动画组件
      * @param url 根据传入的json 或 sk自动创建 GSpineSkeleton、GSkeleton
      * @param optional
-     * @param SkeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
+     * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
      */
-    static createSpine<T extends GSkeleton | GSpineSkeleton>(url: string | ISkeletonData, optional?: ISkeletonData,
-                                                             SkeletonClass?: { new(v?): T }) {
+    static createSpine(url: string, optional?: ISkeletonData, skeletonClass?: SkeletonClass)
+    /**
+     * 创建spine 骨骼动画组件
+     * @param optional
+     * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
+     */
+    static createSpine(optional?: ISkeletonData, skeletonClass?: SkeletonClass)
+    /**
+     * 创建spine 骨骼动画组件
+     * @param url 根据传入的json 或 sk自动创建 GSpineSkeleton、GSkeleton
+     * @param optional
+     * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
+     */
+    static createSpine(url: string | ISkeletonData, optional?: ISkeletonData | SkeletonClass, skeletonClass?: SkeletonClass) {
+        if (optional instanceof GSkeleton || optional instanceof GSpineSkeleton) {
+            skeletonClass = optional
+            optional = null
+        }
         if (typeof url !== "string") {
+            // if ( optional == SkeletonClass) skeletonClass = optional
             optional = url
             url = optional.url
         }
+
+        if (optional instanceof GSkeleton || optional instanceof GSpineSkeleton) {
+            throw Error("error type optional=" + optional)
+        }
+        console.log(optional)
         optional ??= {url: url}
 
-        // @ts-ignore
-        SkeletonClass ??= Laya.Utils.getFileExtension(url) === "json" ? GSpineSkeleton : GSkeleton
 
-        const skeleton = new SkeletonClass()
+        // @ts-ignore
+        skeletonClass ??= Laya.Utils.getFileExtension(url) === "json" ? GSpineSkeleton : GSkeleton
+        // @ts-ignore
+        let skeleton: SkeletonClass
+        if (skeletonClass instanceof GSpineSkeleton) {
+            skeleton = new GSpineSkeleton(optional.ver ?? SpineVersion.v3_8)
+        } else {
+            skeleton = new GSkeleton(optional.aniMode ?? 0)
+        }
         optional.rotation && (skeleton.rotation = optional.rotation)
         if (optional.scale) {
             skeleton.setScale(optional.scale, optional.scale)
@@ -90,5 +119,6 @@ export class SpineUtils {
         return skeleton
     }
 
-
 }
+
+declare type SkeletonClass = GSkeleton | GSpineSkeleton

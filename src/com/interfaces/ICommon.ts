@@ -1,3 +1,5 @@
+import SpineVersion = Laya.SpineVersion;
+
 /**
  * 对话框修改显示数据
  */
@@ -105,7 +107,7 @@ export interface ISkeletonData {
     /** xy 公用的缩放值 */
     scale?: number,
     /**
-     * 动画模式
+     * 动画模式 GSkeleton 专用
      * <table>
      *    <tr><th>模式</th><th>描述</th></tr>
      *    <tr>
@@ -121,6 +123,12 @@ export interface ISkeletonData {
      * @default GSkeleton.aniMode
      */
     aniMode?: number,
+    /**
+     * GSpineSkeleton 专用
+     * 创建spine版本
+     * @default 3.8
+     */
+    ver?: SpineVersion,
     /**
      * 旋转骨骼动画
      */

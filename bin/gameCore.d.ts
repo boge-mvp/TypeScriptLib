@@ -736,14 +736,6 @@ declare namespace coreLib {
         /** 更新bounds信息 */
         GAME_UPDATE_BOUNDS_INFO = "game_update_bounds_info"
     }
-    /** 加载资源配置 */
-    export class LoaderConfig {
-        /**
-         * 清理资源
-         * @param res 要清理的资源数组
-         */
-        static clear(res: LoadRes[]): void;
-    }
     export class BaseButton extends fgui.GButton implements IView {
         constructor();
         regAction(action: string, caller: any, method: Function, group?: string): void;
@@ -1784,6 +1776,14 @@ declare namespace coreLib {
         protected completeHandler(list: fgui.GList): void;
         dispose(): void;
     }
+    /** 加载资源配置 */
+    export class LoaderConfig {
+        /**
+         * 清理资源
+         * @param res 要清理的资源数组
+         */
+        static clear(res: LoadRes[]): void;
+    }
     export class GoldEffect extends View {
         private golds;
         private count;
@@ -2087,7 +2087,7 @@ declare namespace coreLib {
         /** xy 公用的缩放值 */
         scale?: number;
         /**
-         * 动画模式
+         * 动画模式 GSkeleton 专用
          * <table>
          *    <tr><th>模式</th><th>描述</th></tr>
          *    <tr>
@@ -2103,6 +2103,12 @@ declare namespace coreLib {
          * @default GSkeleton.aniMode
          */
         aniMode?: number;
+        /**
+         * GSpineSkeleton 专用
+         * 创建spine版本
+         * @default 3.8
+         */
+        ver?: Laya.SpineVersion;
         /**
          * 旋转骨骼动画
          */
@@ -3308,65 +3314,6 @@ declare namespace coreLib {
         /** 获取所有优惠券 */
         URL_GAME_ALL_COUPON = "/coupon/all?"
     }
-    /** 卡牌 */
-    export class Card extends BaseLabel {
-        /** 卡牌的id */
-        code: number;
-        /** 卡牌面值 */
-        value: number;
-        /** 卡牌名字 */
-        nameCard: string;
-        /** 卡牌花色 */
-        suit: number;
-        /** 卡牌花色名字 */
-        _suitName: string;
-        /** 初始化X */
-        initX: number;
-        /** 初始化Y */
-        initY: number;
-        /** XY偏移量 */
-        offset: number;
-        /** 偏移倍数 */
-        offsetMultiple: number;
-        /** 中心点 */
-        tempPivot: Laya.Point;
-        constructor();
-        init(id: number): void;
-        protected suitName(value: number): string;
-        createUI(): void;
-    }
-    export class Deck {
-        /** 存放的卡牌 */
-        cards: Card[];
-        /** 已经完成了动画个数 */
-        private completeNum;
-        /** 动画执行次数 */
-        private executeNum;
-        /** 是否正在运行动画 */
-        private isRun;
-        private handler;
-        createCard(): void;
-        /**
-         * 收集牌
-         * @param handler
-         * @param sort 是否需要排序
-         */
-        sort(handler?: ParamHandler, sort?: boolean): void;
-        /** 展示牌 铺开 */
-        bySuit(handler?: Laya.Handler): void;
-        /** 展示牌 */
-        fan(handler?: Laya.Handler): void;
-        /**
-         * 洗牌
-         * @param handler 执行完成回调
-         * @param num 执行次数 暂未实现
-         */
-        shuffle(handler?: Laya.Handler, num?: number): void;
-        private moveHandler;
-        private plusMinus;
-        setChildIndexHandler(card: Card, index: number): void;
-        dispose(): void;
-    }
     export interface IConchRenderObject {
         drawSubmesh(submesh: any, drawType: number, renderMode: number, offset: number, count: number): void;
         matrix(matrix: Float32Array): void;
@@ -3516,6 +3463,65 @@ declare namespace coreLib {
         static conchMarket: IMarket;
         /**@private PlatformClass类，只有加速器模式下才有值 */
         static PlatformClass: ICPlatformClass;
+    }
+    /** 卡牌 */
+    export class Card extends BaseLabel {
+        /** 卡牌的id */
+        code: number;
+        /** 卡牌面值 */
+        value: number;
+        /** 卡牌名字 */
+        nameCard: string;
+        /** 卡牌花色 */
+        suit: number;
+        /** 卡牌花色名字 */
+        _suitName: string;
+        /** 初始化X */
+        initX: number;
+        /** 初始化Y */
+        initY: number;
+        /** XY偏移量 */
+        offset: number;
+        /** 偏移倍数 */
+        offsetMultiple: number;
+        /** 中心点 */
+        tempPivot: Laya.Point;
+        constructor();
+        init(id: number): void;
+        protected suitName(value: number): string;
+        createUI(): void;
+    }
+    export class Deck {
+        /** 存放的卡牌 */
+        cards: Card[];
+        /** 已经完成了动画个数 */
+        private completeNum;
+        /** 动画执行次数 */
+        private executeNum;
+        /** 是否正在运行动画 */
+        private isRun;
+        private handler;
+        createCard(): void;
+        /**
+         * 收集牌
+         * @param handler
+         * @param sort 是否需要排序
+         */
+        sort(handler?: ParamHandler, sort?: boolean): void;
+        /** 展示牌 铺开 */
+        bySuit(handler?: Laya.Handler): void;
+        /** 展示牌 */
+        fan(handler?: Laya.Handler): void;
+        /**
+         * 洗牌
+         * @param handler 执行完成回调
+         * @param num 执行次数 暂未实现
+         */
+        shuffle(handler?: Laya.Handler, num?: number): void;
+        private moveHandler;
+        private plusMinus;
+        setChildIndexHandler(card: Card, index: number): void;
+        dispose(): void;
     }
     export class BindInputButton {
         btn: fgui.GButton;
@@ -4381,12 +4387,17 @@ declare namespace coreLib {
          * 创建spine 骨骼动画组件
          * @param url 根据传入的json 或 sk自动创建 GSpineSkeleton、GSkeleton
          * @param optional
-         * @param SkeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
+         * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
          */
-        static createSpine<T extends GSkeleton | GSpineSkeleton>(url: string | ISkeletonData, optional?: ISkeletonData, SkeletonClass?: {
-            new (v?: any): T;
-        }): T;
+        static createSpine(url: string, optional?: ISkeletonData, skeletonClass?: SkeletonClass): any;
+        /**
+         * 创建spine 骨骼动画组件
+         * @param optional
+         * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
+         */
+        static createSpine(optional?: ISkeletonData, skeletonClass?: SkeletonClass): any;
     }
+    type SkeletonClass = GSkeleton | GSpineSkeleton;
     /** 状态吗获取显示信息 */
     export class StateCode {
         /**

@@ -1488,19 +1488,6 @@ window.coreLib = {};
         /** 更新bounds信息 */
         ActionLib["GAME_UPDATE_BOUNDS_INFO"] = "game_update_bounds_info";
     })(ActionLib = coreLib.ActionLib || (coreLib.ActionLib = {}));
-    /** 加载资源配置 */
-    class LoaderConfig {
-        /**
-         * 清理资源
-         * @param res 要清理的资源数组
-         */
-        static clear(res) {
-            for (let i = 0; i < res.length; i++) {
-                MyLoader.loader.clearRes(res[i].url);
-            }
-        }
-    }
-    coreLib.LoaderConfig = LoaderConfig;
     class BaseButton extends fgui.GButton {
         constructor() {
             super();
@@ -4444,6 +4431,19 @@ window.coreLib = {};
         }
     }
     coreLib.SlotScrollTweenModel = SlotScrollTweenModel;
+    /** 加载资源配置 */
+    class LoaderConfig {
+        /**
+         * 清理资源
+         * @param res 要清理的资源数组
+         */
+        static clear(res) {
+            for (let i = 0; i < res.length; i++) {
+                MyLoader.loader.clearRes(res[i].url);
+            }
+        }
+    }
+    coreLib.LoaderConfig = LoaderConfig;
     class GoldEffect extends View {
         constructor() {
             super();
@@ -7011,6 +7011,13 @@ window.coreLib = {};
         /** 获取所有优惠券 */
         Urls["URL_GAME_ALL_COUPON"] = "/coupon/all?";
     })(Urls = coreLib.Urls || (coreLib.Urls = {}));
+    class NativeUtils {
+    }
+    /**@private Market对象 只有加速器模式下才有值*/
+    NativeUtils.conchMarket = window["conch"] ? window["conchMarket"] : null;
+    /**@private PlatformClass类，只有加速器模式下才有值 */
+    NativeUtils.PlatformClass = window["PlatformClass"];
+    coreLib.NativeUtils = NativeUtils;
     /** 卡牌 */
     class Card extends BaseLabel {
         constructor() {
@@ -7206,13 +7213,6 @@ window.coreLib = {};
         }
     }
     coreLib.Deck = Deck;
-    class NativeUtils {
-    }
-    /**@private Market对象 只有加速器模式下才有值*/
-    NativeUtils.conchMarket = window["conch"] ? window["conchMarket"] : null;
-    /**@private PlatformClass类，只有加速器模式下才有值 */
-    NativeUtils.PlatformClass = window["PlatformClass"];
-    coreLib.NativeUtils = NativeUtils;
     class BindInputButton {
         /**
          *
@@ -9354,33 +9354,49 @@ window.coreLib = {};
          * 创建spine 骨骼动画组件
          * @param url 根据传入的json 或 sk自动创建 GSpineSkeleton、GSkeleton
          * @param optional
-         * @param SkeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
+         * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
          */
-        static createSpine(url, optional, SkeletonClass) {
-            var _a, _b, _c, _d, _e, _f, _g;
+        static createSpine(url, optional, skeletonClass) {
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+            if (optional instanceof GSkeleton || optional instanceof GSpineSkeleton) {
+                skeletonClass = optional;
+                optional = null;
+            }
             if (typeof url !== "string") {
+                // if ( optional == SkeletonClass) skeletonClass = optional
                 optional = url;
                 url = optional.url;
             }
+            if (optional instanceof GSkeleton || optional instanceof GSpineSkeleton) {
+                throw Error("error type optional=" + optional);
+            }
+            console.log(optional);
             optional !== null && optional !== void 0 ? optional : (optional = { url: url });
             // @ts-ignore
-            SkeletonClass !== null && SkeletonClass !== void 0 ? SkeletonClass : (SkeletonClass = Laya.Utils.getFileExtension(url) === "json" ? GSpineSkeleton : GSkeleton);
-            const skeleton = new SkeletonClass();
+            skeletonClass !== null && skeletonClass !== void 0 ? skeletonClass : (skeletonClass = Laya.Utils.getFileExtension(url) === "json" ? GSpineSkeleton : GSkeleton);
+            // @ts-ignore
+            let skeleton;
+            if (skeletonClass instanceof GSpineSkeleton) {
+                skeleton = new GSpineSkeleton((_a = optional.ver) !== null && _a !== void 0 ? _a : Laya.SpineVersion.v3_8);
+            }
+            else {
+                skeleton = new GSkeleton((_b = optional.aniMode) !== null && _b !== void 0 ? _b : 0);
+            }
             optional.rotation && (skeleton.rotation = optional.rotation);
             if (optional.scale) {
                 skeleton.setScale(optional.scale, optional.scale);
             }
             else {
-                skeleton.setScale((_a = optional.scaleX) !== null && _a !== void 0 ? _a : skeleton.scaleX, (_b = optional.scaleY) !== null && _b !== void 0 ? _b : skeleton.scaleY);
+                skeleton.setScale((_c = optional.scaleX) !== null && _c !== void 0 ? _c : skeleton.scaleX, (_d = optional.scaleY) !== null && _d !== void 0 ? _d : skeleton.scaleY);
             }
-            skeleton.setXY((_c = optional.x) !== null && _c !== void 0 ? _c : 0, (_d = optional.y) !== null && _d !== void 0 ? _d : 0);
+            skeleton.setXY((_e = optional.x) !== null && _e !== void 0 ? _e : 0, (_f = optional.y) !== null && _f !== void 0 ? _f : 0);
             if (optional.relation) {
                 let relation = optional.relation;
                 relation.lr = relation.ud = relation.target;
-                relation.lr && skeleton.addRelation(relation.lr, fgui.RelationType.Center_Center, (_e = relation.usePercent) !== null && _e !== void 0 ? _e : true);
-                relation.ud && skeleton.addRelation(relation.ud, fgui.RelationType.Middle_Middle, (_f = relation.usePercent) !== null && _f !== void 0 ? _f : true);
+                relation.lr && skeleton.addRelation(relation.lr, fgui.RelationType.Center_Center, (_g = relation.usePercent) !== null && _g !== void 0 ? _g : true);
+                relation.ud && skeleton.addRelation(relation.ud, fgui.RelationType.Middle_Middle, (_h = relation.usePercent) !== null && _h !== void 0 ? _h : true);
             }
-            SpineUtils.playSpine(skeleton, url, optional.play, (_g = optional.play) === null || _g === void 0 ? void 0 : _g.loop, optional.playComplete, optional.loaderComplete, optional.aniMode);
+            SpineUtils.playSpine(skeleton, url, optional.play, (_j = optional.play) === null || _j === void 0 ? void 0 : _j.loop, optional.playComplete, optional.loaderComplete, optional.aniMode);
             return skeleton;
         }
     }
