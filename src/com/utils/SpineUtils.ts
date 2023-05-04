@@ -52,7 +52,7 @@ export class SpineUtils {
         if (!Array.isArray(nameOrIndex) && typeof nameOrIndex === "object") {
             runFun(nameOrIndex.loaderComplete)
         }
-        if (skeleton && nameOrIndex) skeleton.play(nameOrIndex, loop)
+        if (skeleton && (typeof nameOrIndex === "number" ? nameOrIndex >= 0 : nameOrIndex)) skeleton.play(nameOrIndex, loop)
     }
 
     /**

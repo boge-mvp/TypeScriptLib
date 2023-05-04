@@ -7011,6 +7011,13 @@ window.coreLib = {};
         /** 获取所有优惠券 */
         Urls["URL_GAME_ALL_COUPON"] = "/coupon/all?";
     })(Urls = coreLib.Urls || (coreLib.Urls = {}));
+    class NativeUtils {
+    }
+    /**@private Market对象 只有加速器模式下才有值*/
+    NativeUtils.conchMarket = window["conch"] ? window["conchMarket"] : null;
+    /**@private PlatformClass类，只有加速器模式下才有值 */
+    NativeUtils.PlatformClass = window["PlatformClass"];
+    coreLib.NativeUtils = NativeUtils;
     /** 卡牌 */
     class Card extends BaseLabel {
         constructor() {
@@ -7206,13 +7213,6 @@ window.coreLib = {};
         }
     }
     coreLib.Deck = Deck;
-    class NativeUtils {
-    }
-    /**@private Market对象 只有加速器模式下才有值*/
-    NativeUtils.conchMarket = window["conch"] ? window["conchMarket"] : null;
-    /**@private PlatformClass类，只有加速器模式下才有值 */
-    NativeUtils.PlatformClass = window["PlatformClass"];
-    coreLib.NativeUtils = NativeUtils;
     class BindInputButton {
         /**
          *
@@ -9347,7 +9347,7 @@ window.coreLib = {};
             if (!Array.isArray(nameOrIndex) && typeof nameOrIndex === "object") {
                 runFun(nameOrIndex.loaderComplete);
             }
-            if (skeleton && nameOrIndex)
+            if (skeleton && (typeof nameOrIndex === "number" ? nameOrIndex >= 0 : nameOrIndex))
                 skeleton.play(nameOrIndex, loop);
         }
         /**
