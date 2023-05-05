@@ -1435,6 +1435,7 @@ declare namespace coreLib {
         static init(): void;
         private static defineLaya;
         private static defineFairy;
+        private static defineSpineSkeleton;
     }
     export class GoldEffect extends View {
         private golds;

@@ -456,8 +456,10 @@ export class GSkeleton extends GComponent {
     }
 
     dispose() {
-        const tTemple: Templet = Templet["TEMPLET_DICTIONARY"][this._aniPath + this.cacheName]
-        tTemple?.destroy()
+        const obj = Templet["TEMPLET_DICTIONARY"]
+        const tTemple: Templet = obj[this._aniPath + this.cacheName]
+        if (tTemple) delete obj[this._aniPath + this.cacheName]
+        // tTemple?.destroy()
         while (this.stoppedHandler.length) {
             this.stoppedHandler.shift().clear()
         }

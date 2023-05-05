@@ -3784,41 +3784,7 @@ window.coreLib = {};
                     return this.tempSaveToCmd.call(this, fun, args);
                 }
             });
-            Object.defineProperty(Laya.SpineSkeleton.prototype, "tempDestroy", {
-                value: Laya.SpineSkeleton.prototype.destroy
-            });
-            Object.defineProperty(Laya.SpineSkeleton.prototype, "destroy", {
-                value: function (destroyChild = true) {
-                    if (this._templet == null)
-                        this._templet = new Laya.SpineTempletBase();
-                    if (this.state == null)
-                        this.state = new spine.AnimationState(null);
-                    this.tempDestroy(destroyChild);
-                }
-            });
-            Object.defineProperty(Laya.SpineSkeleton.prototype, "tempUpdate", {
-                // @ts-ignore
-                value: Laya.SpineSkeleton.prototype._update
-            });
-            Object.defineProperty(Laya.SpineSkeleton.prototype, "_update", {
-                value: function () {
-                    var _a;
-                    this.tempUpdate();
-                    let events = this._events;
-                    let slot = [];
-                    for (const key in events) {
-                        if (key.startsWith(GSkeleton.UPDATE_BONE_SLOT)) {
-                            slot.push(StringUtil.remove(key, GSkeleton.UPDATE_BONE_SLOT));
-                        }
-                    }
-                    let skeleton = this.skeleton;
-                    for (const value of skeleton.slots) {
-                        if (slot.indexOf((_a = value.data) === null || _a === void 0 ? void 0 : _a.name) > -1) {
-                            this.event(GSkeleton.UPDATE_BONE_SLOT + value.data.name, value);
-                        }
-                    }
-                }
-            });
+            DefineConfig.defineSpineSkeleton();
             Object.defineProperty(Laya.Skeleton.prototype, "getAniIndexByName", {
                 value: function (name) {
                     let index = -1;
@@ -4097,6 +4063,77 @@ window.coreLib = {};
                     r === null || r === void 0 ? void 0 : r.hidePopup(this.contentPane);
                     if (itemObject.data != null) {
                         itemObject.data.run();
+                    }
+                }
+            });
+        }
+        static defineSpineSkeleton() {
+            // 修改4.0
+            if (spine.AssetManager.prototype["success"]) {
+                Object.defineProperty(spine.AssetManager.prototype, "tempSuccess", {
+                    // @ts-ignore
+                    value: spine.AssetManager.prototype.success
+                });
+                Object.defineProperty(Laya.SpineAssetManager.prototype, "success", {
+                    value: function (callback, path, data) {
+                        this.tempSuccess(callback, path, data);
+                        if (!callback) {
+                            this.assets[path] = data.replace(/3\.8\.75/g, "3.8");
+                        }
+                    }
+                });
+            }
+            else {
+                // 修改3.x
+                Object.defineProperty(spine.AssetManager.prototype, "tempLoadText", {
+                    value: spine.AssetManager.prototype.loadText
+                });
+                Object.defineProperty(spine.AssetManager.prototype, "loadText", {
+                    value: function (path, success, error) {
+                        if (!success) {
+                            this.tempLoadText(path, (path, text) => {
+                                this.assets[path] = text.replace(/3\.8\.75/g, "3.8");
+                            });
+                        }
+                        else
+                            this.tempLoadText(path, screen, error);
+                    }
+                });
+            }
+            // 销毁 templet 检查判断
+            Object.defineProperty(Laya.SpineSkeleton.prototype, "tempDestroy", {
+                value: Laya.SpineSkeleton.prototype.destroy
+            });
+            Object.defineProperty(Laya.SpineSkeleton.prototype, "destroy", {
+                value: function (destroyChild = true) {
+                    if (this._templet == null)
+                        this._templet = new Laya.SpineTempletBase();
+                    if (this.state == null)
+                        this.state = new spine.AnimationState(null);
+                    this.tempDestroy(destroyChild);
+                }
+            });
+            // 添加动画渲染通知
+            Object.defineProperty(Laya.SpineSkeleton.prototype, "tempUpdate", {
+                // @ts-ignore
+                value: Laya.SpineSkeleton.prototype._update
+            });
+            Object.defineProperty(Laya.SpineSkeleton.prototype, "_update", {
+                value: function () {
+                    var _a;
+                    this.tempUpdate();
+                    let events = this._events;
+                    let slot = [];
+                    for (const key in events) {
+                        if (key.startsWith(GSkeleton.UPDATE_BONE_SLOT)) {
+                            slot.push(StringUtil.remove(key, GSkeleton.UPDATE_BONE_SLOT));
+                        }
+                    }
+                    let skeleton = this.skeleton;
+                    for (const value of skeleton.slots) {
+                        if (slot.indexOf((_a = value.data) === null || _a === void 0 ? void 0 : _a.name) > -1) {
+                            this.event(GSkeleton.UPDATE_BONE_SLOT + value.data.name, value);
+                        }
                     }
                 }
             });
@@ -11470,8 +11507,11 @@ window.coreLib = {};
             return this.skeletonPlay;
         }
         dispose() {
-            const tTemple = Laya.Templet["TEMPLET_DICTIONARY"][this._aniPath + this.cacheName];
-            tTemple === null || tTemple === void 0 ? void 0 : tTemple.destroy();
+            const obj = Laya.Templet["TEMPLET_DICTIONARY"];
+            const tTemple = obj[this._aniPath + this.cacheName];
+            if (tTemple)
+                delete obj[this._aniPath + this.cacheName];
+            // tTemple?.destroy()
             while (this.stoppedHandler.length) {
                 this.stoppedHandler.shift().clear();
             }

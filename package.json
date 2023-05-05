@@ -19,6 +19,7 @@
     "webpmux"
   ],
   "files": [
+    "libs",
     "assets/",
     "version_info.txt",
     "bin/gameCore.d.ts",

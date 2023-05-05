@@ -113,39 +113,7 @@ export class DefineConfig {
             }
         })
 
-        Object.defineProperty(Laya.SpineSkeleton.prototype, "tempDestroy", {
-            value: Laya.SpineSkeleton.prototype.destroy
-        })
-        Object.defineProperty(Laya.SpineSkeleton.prototype, "destroy", {
-            value: function (destroyChild = true) {
-                if (this._templet == null) this._templet = new Laya.SpineTempletBase()
-                if (this.state == null) this.state = new spine.AnimationState(null)
-                this.tempDestroy(destroyChild)
-            }
-        })
-
-        Object.defineProperty(Laya.SpineSkeleton.prototype, "tempUpdate", {
-            // @ts-ignore
-            value: Laya.SpineSkeleton.prototype._update
-        })
-        Object.defineProperty(Laya.SpineSkeleton.prototype, "_update", {
-            value: function () {
-                this.tempUpdate()
-                let events = this._events
-                let slot: string[] = []
-                for (const key in events) {
-                    if (key.startsWith(GSkeleton.UPDATE_BONE_SLOT)) {
-                        slot.push(StringUtil.remove(key, GSkeleton.UPDATE_BONE_SLOT))
-                    }
-                }
-                let skeleton: spine.Skeleton = this.skeleton
-                for (const value of skeleton.slots) {
-                    if (slot.indexOf(value.data?.name) > -1) {
-                        this.event(GSkeleton.UPDATE_BONE_SLOT + value.data.name, value)
-                    }
-                }
-            }
-        })
+        DefineConfig.defineSpineSkeleton()
 
         Object.defineProperty(Laya.Skeleton.prototype, "getAniIndexByName", {
             value: function (name: String) {
@@ -443,6 +411,75 @@ export class DefineConfig {
 
 
     }
+
+    private static defineSpineSkeleton() {
+        // 修改4.0
+        if (spine.AssetManager.prototype["success"]) {
+            Object.defineProperty(spine.AssetManager.prototype, "tempSuccess", {
+                // @ts-ignore
+                value: spine.AssetManager.prototype.success
+            })
+            Object.defineProperty(Laya.SpineAssetManager.prototype, "success", {
+                value: function (callback: (path: string, asset) => void, path: string, data: string) {
+                    this.tempSuccess(callback, path, data)
+                    if (!callback) {
+                        this.assets[path] = data.replace(/3\.8\.75/g, "3.8")
+                    }
+                }
+            })
+        } else {
+            // 修改3.x
+            Object.defineProperty(spine.AssetManager.prototype, "tempLoadText", {
+                value: spine.AssetManager.prototype.loadText
+            })
+            Object.defineProperty(spine.AssetManager.prototype, "loadText", {
+                value: function (path: string, success?: (path: string, text: string) => void, error?: (path: string, message: string) => void) {
+                    if (!success) {
+                        this.tempLoadText(path, (path: string, text: string) => {
+                            this.assets[path] = text.replace(/3\.8\.75/g, "3.8")
+                        })
+                    } else this.tempLoadText(path, screen, error)
+                }
+            })
+        }
+
+        // 销毁 templet 检查判断
+        Object.defineProperty(Laya.SpineSkeleton.prototype, "tempDestroy", {
+            value: Laya.SpineSkeleton.prototype.destroy
+        })
+        Object.defineProperty(Laya.SpineSkeleton.prototype, "destroy", {
+            value: function (destroyChild = true) {
+                if (this._templet == null) this._templet = new Laya.SpineTempletBase()
+                if (this.state == null) this.state = new spine.AnimationState(null)
+                this.tempDestroy(destroyChild)
+            }
+        })
+
+        // 添加动画渲染通知
+        Object.defineProperty(Laya.SpineSkeleton.prototype, "tempUpdate", {
+            // @ts-ignore
+            value: Laya.SpineSkeleton.prototype._update
+        })
+        Object.defineProperty(Laya.SpineSkeleton.prototype, "_update", {
+            value: function () {
+                this.tempUpdate()
+                let events = this._events
+                let slot: string[] = []
+                for (const key in events) {
+                    if (key.startsWith(GSkeleton.UPDATE_BONE_SLOT)) {
+                        slot.push(StringUtil.remove(key, GSkeleton.UPDATE_BONE_SLOT))
+                    }
+                }
+                let skeleton: spine.Skeleton = this.skeleton
+                for (const value of skeleton.slots) {
+                    if (slot.indexOf(value.data?.name) > -1) {
+                        this.event(GSkeleton.UPDATE_BONE_SLOT + value.data.name, value)
+                    }
+                }
+            }
+        })
+    }
+
 
 }
 
