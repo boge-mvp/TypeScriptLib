@@ -4254,6 +4254,24 @@ window.coreLib = {};
                         }
                     }
                 });
+                // 有预加载  立即返回  默认是延迟返回
+                Object.defineProperty(spine.Downloader.prototype, "tempDownloadText", {
+                    value: spine.Downloader.prototype.downloadText
+                });
+                Object.defineProperty(spine.Downloader.prototype, "downloadText", {
+                    value: function (url, success, error) {
+                        const content = Laya.loader.getRes(url);
+                        if (content) {
+                            if (this.rawDataUris[url])
+                                url = this.rawDataUris[url];
+                            if (this.start(url, success, error))
+                                return;
+                            this.finish(url, 200, new Uint8Array(content));
+                        }
+                        else
+                            this.tempDownloadText(url, success, error);
+                    }
+                });
             }
             else {
                 // 修改3.x
@@ -4271,7 +4289,21 @@ window.coreLib = {};
                             });
                         }
                         else
-                            this.tempLoadText(path, screen, error);
+                            this.tempLoadText(path, success, error);
+                    }
+                });
+                // 有预加载  立即返回  默认是延迟返回
+                Object.defineProperty(spine.AssetManager.prototype, "tempDownloadText", {
+                    // @ts-ignore
+                    value: spine.AssetManager.prototype.downloadText
+                });
+                Object.defineProperty(spine.AssetManager.prototype, "downloadText", {
+                    value: function (url, success, error) {
+                        const content = Laya.loader.getRes(url);
+                        if (content)
+                            success(url, content);
+                        else
+                            this.tempDownloadText(url, success, error);
                     }
                 });
             }

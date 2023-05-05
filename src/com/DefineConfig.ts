@@ -430,6 +430,22 @@ export class DefineConfig {
                     }
                 }
             })
+            // 有预加载  立即返回  默认是延迟返回
+            Object.defineProperty(spine.Downloader.prototype, "tempDownloadText", {
+                value: spine.Downloader.prototype.downloadText
+            })
+            Object.defineProperty(spine.Downloader.prototype, "downloadText", {
+                value: function (url: string, success?: (path: string, text: string) => void, error?: (path: string, message: string) => void) {
+                    const content = Laya.loader.getRes(url)
+                    if (content) {
+                        if (this.rawDataUris[url])
+                            url = this.rawDataUris[url];
+                        if (this.start(url, success, error))
+                            return;
+                        this.finish(url, 200, new Uint8Array(content))
+                    } else this.tempDownloadText(url, success, error)
+                }
+            })
         } else {
             // 修改3.x
             Object.defineProperty(spine.AssetManager.prototype, "tempLoadText", {
@@ -444,7 +460,19 @@ export class DefineConfig {
                             }
                             this.assets[path] = text.replace(/3\.8\.75/g, "3.8")
                         })
-                    } else this.tempLoadText(path, screen, error)
+                    } else this.tempLoadText(path, success, error)
+                }
+            })
+            // 有预加载  立即返回  默认是延迟返回
+            Object.defineProperty(spine.AssetManager.prototype, "tempDownloadText", {
+                // @ts-ignore
+                value: spine.AssetManager.prototype.downloadText
+            })
+            Object.defineProperty(spine.AssetManager.prototype, "downloadText", {
+                value: function (url: string, success?: (path: string, text: string) => void, error?: (path: string, message: string) => void) {
+                    const content = Laya.loader.getRes(url)
+                    if (content) success(url, content)
+                    else this.tempDownloadText(url, success, error)
                 }
             })
         }
