@@ -120,7 +120,7 @@ export abstract class BaseSkeleton extends GComponent implements ISkeleton {
                 return
             }
         } else {
-            if (this.skeletonPlay.loop && this.getAnimDuration(0) > 1 && this.getAnimFrame(0) > 1) {
+            if (this.skeletonPlay.loop && this.getAnimDuration(0) > 0 && this.getAnimFrame(0) > 1) {
                 if (this.skeletonPlay.delayLoopPlay && this.skeletonPlay.delayLoopPlay > 0) {
                     Laya.timer.once(this.skeletonPlay.delayLoopPlay, this, this.playAni, [this.skeletonPlay, this.playGroupIndex])
                 } else {
