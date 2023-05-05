@@ -365,7 +365,7 @@ export class AssetsLoader implements IFormatVer {
             if(data.findIndex(function (value, index, obj) {
                 return temp === value.url
             }) === -1) {
-                data.push({url: value.url.replace(".json", ".atlas"), type: "als", branch: value.branch})
+                data.push({url: value.url.replace(".json", ".atlas"), type: Loader.ATLAS, branch: value.branch})
             }
 
             temp = value.url.replace(".json", ".png")

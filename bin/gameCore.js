@@ -5753,7 +5753,7 @@ window.coreLib = {};
                 if (data.findIndex(function (value, index, obj) {
                     return temp === value.url;
                 }) === -1) {
-                    data.push({ url: value.url.replace(".json", ".atlas"), type: "als", branch: value.branch });
+                    data.push({ url: value.url.replace(".json", ".atlas"), type: Laya.Loader.ATLAS, branch: value.branch });
                 }
                 temp = value.url.replace(".json", ".png");
                 if (data.findIndex(function (value, index, obj) {
