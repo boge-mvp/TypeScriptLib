@@ -4078,6 +4078,9 @@ window.coreLib = {};
                     value: function (callback, path, data) {
                         this.tempSuccess(callback, path, data);
                         if (!callback) {
+                            if (typeof data !== "string") {
+                                data = JSON.stringify(data);
+                            }
                             this.assets[path] = data.replace(/3\.8\.75/g, "3.8");
                         }
                     }
@@ -4092,6 +4095,9 @@ window.coreLib = {};
                     value: function (path, success, error) {
                         if (!success) {
                             this.tempLoadText(path, (path, text) => {
+                                if (typeof text !== "string") {
+                                    text = JSON.stringify(text);
+                                }
                                 this.assets[path] = text.replace(/3\.8\.75/g, "3.8");
                             });
                         }

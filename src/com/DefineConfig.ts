@@ -420,9 +420,12 @@ export class DefineConfig {
                 value: spine.AssetManager.prototype.success
             })
             Object.defineProperty(Laya.SpineAssetManager.prototype, "success", {
-                value: function (callback: (path: string, asset) => void, path: string, data: string) {
+                value: function (callback: (path: string, asset) => void, path: string, data: any) {
                     this.tempSuccess(callback, path, data)
                     if (!callback) {
+                        if (typeof data !== "string") {
+                            data = JSON.stringify(data)
+                        }
                         this.assets[path] = data.replace(/3\.8\.75/g, "3.8")
                     }
                 }
@@ -435,7 +438,10 @@ export class DefineConfig {
             Object.defineProperty(spine.AssetManager.prototype, "loadText", {
                 value: function (path: string, success?: (path: string, text: string) => void, error?: (path: string, message: string) => void) {
                     if (!success) {
-                        this.tempLoadText(path, (path: string, text: string) => {
+                        this.tempLoadText(path, (path: string, text: any) => {
+                            if (typeof text !== "string") {
+                                text = JSON.stringify(text)
+                            }
                             this.assets[path] = text.replace(/3\.8\.75/g, "3.8")
                         })
                     } else this.tempLoadText(path, screen, error)
