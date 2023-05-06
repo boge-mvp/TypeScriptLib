@@ -53,14 +53,13 @@ export class GSpineSkeleton extends BaseSkeleton {
 
         if (this.template == null || (ver && this.ver != ver)) {
             this.template = new SpineTemplet(this.ver)
-            this.spineSkeleton["_templet"] = this.template
             this.template.on(Event.COMPLETE, this, this.onComplete)
         }
         this.template.loadAni(jsonOrSkelUrl)
     }
 
     private onComplete(spine: SpineTempletBase) {
-        this.spineSkeleton.init(spine)
+        this.spineSkeleton.init(spine ?? this.template)
         // 销毁已有的动画
         // for (let i = this.displayObject.numChildren - 1; i >= 0; i--) {
         //     let temp = this.displayObject.getChildAt(i)

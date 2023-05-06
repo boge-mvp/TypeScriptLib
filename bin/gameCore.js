@@ -11650,13 +11650,12 @@ window.coreLib = {};
             this._aniPath = jsonOrSkelUrl;
             if (this.template == null || (ver && this.ver != ver)) {
                 this.template = new Laya.SpineTemplet(this.ver);
-                this.spineSkeleton["_templet"] = this.template;
                 this.template.on(Laya.Event.COMPLETE, this, this.onComplete);
             }
             this.template.loadAni(jsonOrSkelUrl);
         }
         onComplete(spine) {
-            this.spineSkeleton.init(spine);
+            this.spineSkeleton.init(spine !== null && spine !== void 0 ? spine : this.template);
             // 销毁已有的动画
             // for (let i = this.displayObject.numChildren - 1; i >= 0; i--) {
             //     let temp = this.displayObject.getChildAt(i)
