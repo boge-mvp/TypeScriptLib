@@ -58,29 +58,7 @@ export class SpineUtils {
      * @param optional
      * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
      */
-    static createSpine<T extends new () => GSkeleton | GSpineSkeleton | undefined>(url: string, optional?: ISkeletonData, skeletonClass?: T): T extends {
-        new(): infer R
-    } ? R : (GSkeleton | GSpineSkeleton)
-
-    /**
-     * 创建spine 骨骼动画组件
-     * @param optional
-     * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
-     */
-    static createSpine<T extends new () => GSkeleton | GSpineSkeleton | undefined>(optional?: ISkeletonData, skeletonClass?: T): T extends {
-        new(): infer R
-    } ? R : (GSkeleton | GSpineSkeleton)
-
-    /**
-     * 创建spine 骨骼动画组件
-     * @param url 根据传入的json 或 sk自动创建 GSpineSkeleton、GSkeleton
-     * @param optional
-     * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
-     */
-    static createSpine<T extends new () => GSkeleton | GSpineSkeleton | undefined>(
-        url: string | ISkeletonData,
-        optional?: ISkeletonData | T,
-        skeletonClass?: T) {
+    static createSpine<T extends new () => GSkeleton | GSpineSkeleton | undefined>(url: string | ISkeletonData, optional?: ISkeletonData | T, skeletonClass?: T) {
 
         if (optional && !this.isInterface(optional)) {
             skeletonClass = optional
