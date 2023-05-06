@@ -57,7 +57,9 @@ export class SpineUtils {
      * @param optional
      * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
      */
-    static createSpine<T extends new () => GSkeleton | GSpineSkeleton | undefined>(url: string | ISkeletonData, optional?: ISkeletonData | T, skeletonClass?: T) {
+    static createSpine<T extends new () => GSkeleton | GSpineSkeleton | undefined>(url: string | ISkeletonData,
+                                                                                   optional?: ISkeletonData | T,
+                                                                                   skeletonClass?: T) {
 
         if (optional && !this.isInterface(optional)) {
             skeletonClass = optional

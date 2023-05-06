@@ -8,7 +8,7 @@ declare type AnimationNodeContent = {
     lerpType: number
     interpolationMethod: any[]
     childs: any[]
-    keyFrame: KeyFramesContent[]// = new Vector.<KeyFramesContent>
+    keyFrame: Laya.KeyFramesContent[]// = new Vector.<KeyFramesContent>
     playTime: number
     extenData: ArrayBuffer
     dataOffset: number
@@ -110,7 +110,7 @@ declare type ISkeletonData = {
      * 创建spine版本
      * @default 3.8
      */
-    ver?: SpineVersion
+    ver?: Laya.SpineVersion
     /**
      * 旋转骨骼动画
      */
@@ -192,11 +192,11 @@ declare type ISkeletonPlay = {
 declare type ISKRelation = {
 
     /** 上下左右关联对象 */
-    target?: GObject
+    target?: fgui.GObject
     /** 左右关联对象 */
-    lr?: GObject
+    lr?: fgui.GObject
     /** 上下关联对象 */
-    ud?: GObject
+    ud?: fgui.GObject
     /** 是否使用百分比关联  默认true */
     usePercent?: boolean
 
