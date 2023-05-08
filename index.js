@@ -170,6 +170,13 @@ class GenerateModule {
         return del([this.saveTempPath + "/temp/"], {force: true})
     }
 
+    print(prefix) {
+        return through2.obj(function (file, encoding, callback) {
+            console.log(prefix + ": " + file.path)
+            return callback(null, file)
+        })
+    }
+
 }
 
 
