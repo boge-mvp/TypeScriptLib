@@ -1,6 +1,6 @@
 {
   "name": "game-lib",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "webp/ToWebp.js",
   "scripts": {
     "build": "gulp build"
