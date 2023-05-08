@@ -995,7 +995,7 @@ declare namespace coreLib {
     }
     /**
      *
-     * @author xujinbo
+     * @author boge
      *
      */
     export class GameModel extends BaseProxy implements IGameModel {
@@ -1014,7 +1014,7 @@ declare namespace coreLib {
             args: any;
             handler: ParamHandler;
         }[];
-        constructor();
+        protected constructor();
         initModel(): void;
         initSocketEvent(): void;
         private showNotice;
@@ -1066,7 +1066,7 @@ declare namespace coreLib {
      * 游戏基础类
      * @author boge
      */
-    export class GameServlet extends BaseProxy implements IGameServlet {
+    export abstract class GameServlet extends BaseProxy implements IGameServlet {
         protected _gameModel: IGameModel;
         protected initHandler: ParamHandler;
         /** 开奖获取次数 */
@@ -1075,7 +1075,7 @@ declare namespace coreLib {
         protected gameStatus: number;
         /** 网络通信名字 */
         networkName: string;
-        constructor();
+        protected constructor();
         /**
          * @param url
          * @param data
@@ -1135,7 +1135,7 @@ declare namespace coreLib {
          * @param data
          *
          */
-        protected parseInitData(data: any): void;
+        protected abstract parseInitData(data: any): any;
         /**
          * 拉取账户金额
          * @param callback
@@ -1285,7 +1285,7 @@ declare namespace coreLib {
          */
         dot(v: Vector2): number;
     }
-    export class SlotModel extends GameModel {
+    export abstract class SlotModel extends GameModel {
         /** 运动 list 数组列表 */
         protected listRolls: fgui.GList[];
         /** 开奖数据  {arr isTurboMode itemCount} */
@@ -1356,14 +1356,14 @@ declare namespace coreLib {
          * @param isTurboMode 是否快速播放
          * @return 运行时长
          */
-        protected getDuration(index: number, isTurboMode: boolean): number;
+        protected abstract getDuration(index: number, isTurboMode: boolean): any;
         /**
          * 获取 Laya.Tween 运行延迟
          * @param index list 所在列
          * @param isTurboMode 是否快速播放
          * @return 延迟值
          */
-        protected getDelay(index: number, isTurboMode: boolean): number;
+        protected abstract getDelay(index: number, isTurboMode: boolean): any;
         /**
          * 判断此列表是否需要滚动
          * @param list 列表
@@ -1450,7 +1450,6 @@ declare namespace coreLib {
         protected scrollData: any[];
         /** 当前滚动的单列位置 */
         protected singleColumnIndex: number;
-        constructor();
         /**
          * 开始滚动指定列
          * @param index
@@ -1476,6 +1475,7 @@ declare namespace coreLib {
         private clearCall;
         protected setRenderListData(index: number): void;
         protected getDuration(index: number, isTurboMode: boolean): number;
+        protected getDelay(index: number, isTurboMode: boolean): number;
         /**
          * 完成一次滚动调用
          * @param list 滚动list
@@ -1488,7 +1488,6 @@ declare namespace coreLib {
      * slot游戏滚动效果类 只使用了 Laya.Tween
      */
     export class SlotScrollTweenModel extends SlotModel {
-        constructor();
         protected playLottery(value: ISlotLotteryData[]): void;
         protected setRenderListData(index: number): void;
         protected getDuration(index: number, isTurboMode: boolean): number;
@@ -1911,7 +1910,7 @@ declare namespace coreLib {
     }
     /**
      * 游戏请求接口
-     * @author xujinbo
+     * @author boge
      *
      */
     export interface IGameServlet {

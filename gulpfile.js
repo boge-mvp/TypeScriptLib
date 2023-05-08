@@ -8,13 +8,12 @@ const zlib = require('zlib')
 const AdmZip = require('adm-zip')
 const generate = require("./index")
 
-const tsProject = ts.createProject('tsconfig.json')
 // 需要添加到最前面的类
 let beforeTs = ["src/com/core/View.ts", "src/com/core/Proxys.ts",
     "src/com/core/BaseView.ts", "src/com/utils/ChangeValue.ts",
     "src/com/utils/UtilsTool.ts"]
 
-generate.tsProject = tsProject
+generate.tsProject = 'tsconfig.json'
 generate.beforeTs = beforeTs
 generate.libs = ["libs/**/*", "src/**/*.d.ts"]
 generate.project = "gameCore"

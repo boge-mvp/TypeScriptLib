@@ -8,6 +8,7 @@ const sort = require('gulp-sort')
 const babel = require('gulp-babel')
 const fs = require('fs')
 const path = require('path')
+const ts = require("gulp-typescript");
 
 
 class GenerateModule {
@@ -44,10 +45,9 @@ class GenerateModule {
     project = "core"
 
     /**
-     * 使用 ts.createProject('tsconfig.json') 创建的 Project
-     * @type {Project}
+     * tsconfig.json 配置路径
      */
-    tsProject = null
+    tsProject = 'tsconfig.json'
 
     /**
      * 清理文件目录
@@ -124,7 +124,7 @@ class GenerateModule {
 
     createJs() {
         return gulp.src([this.saveTempPath + "/temp/" + this.saveTempTs].concat(this.libs))
-            .pipe(this.tsProject())
+            .pipe(ts.createProject(this.tsProject)())
             .js
             .pipe(concat(this.project + ".js"))
             .pipe(inject.replace('var ' + this.namespace + ';', ''))
@@ -136,7 +136,7 @@ class GenerateModule {
 
     createDTs() {
         return gulp.src([this.saveTempPath + "/temp/" + this.saveTempTs].concat(this.libs))
-            .pipe(this.tsProject())
+            .pipe(ts.createProject(this.tsProject)())
             .dts
             .pipe(concat(this.project + ".d.ts"))
             .pipe(gulp.dest(this.saveTempPath))

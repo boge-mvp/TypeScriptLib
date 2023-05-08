@@ -2445,7 +2445,7 @@ window.coreLib = {};
     coreLib.Controller = Controller;
     /**
      *
-     * @author xujinbo
+     * @author boge
      *
      */
     class GameModel extends BaseProxy {
@@ -2601,11 +2601,9 @@ window.coreLib = {};
             }
         }
         /** 子类实现 */
-        insertExtension() {
-        }
+        insertExtension() { }
         /** 通知开奖结束  进入结束流程 */
-        lotteryComplete() {
-        }
+        lotteryComplete() { }
         /** 游戏进入后台执行 */
         blurGame() {
             console.log("blurGame");
@@ -2874,13 +2872,6 @@ window.coreLib = {};
          * @param data
          */
         modifyCheckState(data) {
-        }
-        /**
-         * 解析初始化数据
-         * @param data
-         *
-         */
-        parseInitData(data) {
         }
         /**
          * 拉取账户金额
@@ -3380,8 +3371,7 @@ window.coreLib = {};
          * @param index 滚动的列
          * @param lotteryData 当前滚动列数据
          */
-        onScrollTween(index, lotteryData) {
-        }
+        onScrollTween(index, lotteryData) { }
         /** 开始播放结果动画 */
         startPlayResultTween() {
         }
@@ -3413,24 +3403,6 @@ window.coreLib = {};
             return list.getChildAt(0).height;
         }
         /**
-         * 获取 Laya.Tween 运行时长
-         * @param index list 所在列
-         * @param isTurboMode 是否快速播放
-         * @return 运行时长
-         */
-        getDuration(index, isTurboMode) {
-            return 0;
-        }
-        /**
-         * 获取 Laya.Tween 运行延迟
-         * @param index list 所在列
-         * @param isTurboMode 是否快速播放
-         * @return 延迟值
-         */
-        getDelay(index, isTurboMode) {
-            return 0;
-        }
-        /**
          * 判断此列表是否需要滚动
          * @param list 列表
          * @param index 位置
@@ -3440,11 +3412,9 @@ window.coreLib = {};
             return true;
         }
         /** 滚动结束一次调用方法 */
-        oneComplete(list) {
-        }
+        oneComplete(list) { }
         /** 全部滚动结束调用方法 */
-        rollComplete() {
-        }
+        rollComplete() { }
         /**
          * 判断当前开的奖里面是否有中奖线
          * @param lotteryId 服务器返回的开奖项
@@ -3578,7 +3548,7 @@ window.coreLib = {};
      */
     class SlotScrollModel extends SlotModel {
         constructor() {
-            super();
+            super(...arguments);
             /** 当前滚动圈数 */
             this.rollCount = 0;
             /** 滚动到最大圈数  就可以播放开奖结果了 */
@@ -3753,6 +3723,9 @@ window.coreLib = {};
             }
             return duration;
         }
+        getDelay(index, isTurboMode) {
+            return 0;
+        }
         /**
          * 完成一次滚动调用
          * @param list 滚动list
@@ -3789,9 +3762,6 @@ window.coreLib = {};
      * slot游戏滚动效果类 只使用了 Laya.Tween
      */
     class SlotScrollTweenModel extends SlotModel {
-        constructor() {
-            super();
-        }
         playLottery(value) {
             super.playLottery(value);
             let list;
@@ -3825,7 +3795,6 @@ window.coreLib = {};
             list.numItems = list.data.length;
         }
         getDuration(index, isTurboMode) {
-            super.getDuration(index, isTurboMode);
             let duration = index * 150 + 2000;
             if (isTurboMode) {
                 duration = 2000;
