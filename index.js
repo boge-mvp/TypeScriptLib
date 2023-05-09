@@ -10,11 +10,12 @@ const fs = require('fs')
 const path = require('path')
 const ts = require("gulp-typescript")
 const through2 = require("through2")
-const webp2 = require("./webp/ToWebp")
-
-exports.Webp = webp2.Webp
+const webp = require("./webp/ToWebp")
 
 class GenerateModule {
+
+    webp = new webp.Webp()
+
     /**
      * 要在最前面编译的ts文件
      * @type {string[]}
@@ -179,10 +180,7 @@ class GenerateModule {
 
 }
 
-
 module.exports = new GenerateModule()
-
-
 
 /**
  * 收集所有的文件路径

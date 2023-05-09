@@ -6,38 +6,38 @@ const gifwebp = require('./gwebp.js');//get gif2webp module(convert git image to
 const webpmux = require('./webpmux.js');//get webpmux module(convert non animated webp images to animated webp)
 const buffer_utils = require('./buffer_utils.js');//get buffer utilities
 
-class Webp {
+function Webp() {
+}
+
+Webp.prototype = {
 
     //permission issue in Linux and macOS
-    grant_permission = () => {
-
+    grant_permission() {
         const arr = [enwebp(), dewebp(), gifwebp(), webpmux()];
-
         arr.forEach(exe_path => {
             fs.chmodSync(exe_path, 0o755);
         });
-
-    };
+    },
 
     //convert base64 to webp base64
-    str2webpstr = (base64str, image_type, option, extra_path) => {
+    str2webpstr(base64str, image_type, option, extra_path) {
         // base64str of image
         // base64str image type jpg,png ...
         //option: options and quality,it should be given between 0 to 100
         return buffer_utils.base64str2webp(base64str, image_type, option, extra_path).then(function (val) {
             return val
         });
-    };
+    },
 
     //convert buffer to webp buffer
-    buffer2webpbuffer = (buffer, image_type, option, extra_path) => {
+    buffer2webpbuffer(buffer, image_type, option, extra_path) {
         // buffer of image
         // buffer image type jpg,png ...
         //option: options and quality,it should be given between 0 to 100
         return buffer_utils.buffer2webp(buffer, image_type, option, extra_path).then(function (val) {
             return val
         });
-    };
+    },
 
     /**
      * now convert image to .webp format
@@ -46,7 +46,7 @@ class Webp {
      * @param option options and quality,it should be given between 0 to 100
      * @param logging
      */
-    cwebp = (input_image, output_image, option, logging = '-quiet') => {
+    cwebp(input_image, output_image, option, logging = '-quiet') {
 
         const query = `${option} "${input_image}" -o "${output_image}" "${logging}"`; //command to convert image
 
@@ -63,21 +63,19 @@ class Webp {
                 }
             });
         });
-    };
+    },
 
     /******************************************************* dwebp *****************************************************/
 
-//now convert .webp to other image format
-    dwebp = (input_image, output_image, option, logging = '-quiet') => {
+    //now convert .webp to other image format
+    dwebp(input_image, output_image, option, logging = '-quiet') {
 
-// input_image: input image .webp
-//output_image: output image(.jpeg, .pnp ....)
-//option: options and quality,it should be given between 0 to 100
-
+        // input_image: input image .webp
+        //output_image: output image(.jpeg, .pnp ....)
+        //option: options and quality,it should be given between 0 to 100
         const query = `"${input_image}" ${option} "${output_image}" "${logging}"`;//command to convert image
 
-
-//dewebp() return which platform webp library should be used for conversion
+        //dewebp() return which platform webp library should be used for conversion
         return new Promise((resolve, reject) => {
             //execute command
             exec(`"${dewebp()}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
@@ -91,21 +89,21 @@ class Webp {
             });
         });
 
-    };
+    },
 
     /******************************************************* gif2webp *****************************************************/
 
-//now convert .gif image to .webp format
-    gwebp = (input_image, output_image, option, logging = '-quiet') => {
+    //now convert .gif image to .webp format
+    gwebp(input_image, output_image, option, logging = '-quiet') {
 
-// input_image: input image(.jpeg, .pnp ....)
-//output_image: /output image .webp
-//option: options and quality,it should be given between 0 to 100
+        // input_image: input image(.jpeg, .pnp ....)
+        //output_image: /output image .webp
+        //option: options and quality,it should be given between 0 to 100
 
 
         const query = `${option} "${input_image}" -o "${output_image}" "${logging}"`;//command to convert image
 
-//gifwebp() return which platform webp library should be used for conversion
+        //gifwebp() return which platform webp library should be used for conversion
         return new Promise((resolve, reject) => {
             //execute command
             exec(`"${gifwebp()}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
@@ -118,22 +116,21 @@ class Webp {
                 }
             });
         });
-    };
+    },
 
     /******************************************************* webpmux *****************************************************/
 
-//%%%%%%%%%%% Add ICC profile,XMP metadata and EXIF metadata
+    //%%%%%%%%%%% Add ICC profile,XMP metadata and EXIF metadata
+    webpmux_add(input_image, output_image, icc_profile, option, logging = '-quiet') {
 
-    webpmux_add = (input_image, output_image, icc_profile, option, logging = '-quiet') => {
-
-// input_image: input image(.webp)
-//output_image: output image .webp
-//icc_profile: icc profile
-//option: get or set option (icc,xmp,exif)
+        // input_image: input image(.webp)
+        //output_image: output image .webp
+        //icc_profile: icc profile
+        //option: get or set option (icc,xmp,exif)
 
         const query = `-set ${option} ${icc_profile} "${input_image}" -o "${output_image}" "${logging}"`;
 
-//webpmux() return which platform webp library should be used for conversion
+        //webpmux() return which platform webp library should be used for conversion
         return new Promise((resolve, reject) => {
             //execute command
             exec(`"${webpmux()}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
@@ -146,18 +143,18 @@ class Webp {
                 }
             });
         });
-    };
+    },
 
-//%%%%%%%%%%%%% Extract ICC profile,XMP metadata and EXIF metadata
+    //%%%%%%%%%%%%% Extract ICC profile,XMP metadata and EXIF metadata
 
-    webpmux_extract = (input_image, icc_profile, option, logging = '-quiet') => {
+    webpmux_extract(input_image, icc_profile, option, logging = '-quiet') {
 
-// input_image: input image(.webp)
-//icc_profile: icc profile
+        // input_image: input image(.webp)
+        //icc_profile: icc profile
 
         const query = `-get ${option} "${input_image}" -o ${icc_profile} "${logging}"`;
 
-//webpmux() return which platform webp library should be used for conversion
+        //webpmux() return which platform webp library should be used for conversion
         return new Promise((resolve, reject) => {
             //execute command
             exec(`"${webpmux()}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
@@ -170,18 +167,18 @@ class Webp {
                 }
             });
         });
-    };
+    },
 
-//%%%%%%%% Strip ICC profile,XMP metadata and EXIF metadata
+    //%%%%%%%% Strip ICC profile,XMP metadata and EXIF metadata
 
-    webpmux_strip = (input_image, output_image, option, logging = '-quiet') => {
+    webpmux_strip(input_image, output_image, option, logging = '-quiet') {
 
-// input_image: input image(.webp)
-//output_image: output image .webp
+        // input_image: input image(.webp)
+        //output_image: output image .webp
 
         const query = `-strip ${option} "${input_image}" -o "${output_image}" "${logging}"`;
 
-//webpmux() return which platform webp library should be used for conversion
+        //webpmux() return which platform webp library should be used for conversion
         return new Promise((resolve, reject) => {
             //execute command
             exec(`"${webpmux()}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
@@ -194,16 +191,16 @@ class Webp {
                 }
             });
         });
-    };
+    },
 
-//%%%%%%%%%%% Create an animated WebP file from Webp images
+    //%%%%%%%%%%% Create an animated WebP file from Webp images
 
-    webpmux_animate = (input_images, output_image, loop, bgcolor, logging = '-quiet') => {
+    webpmux_animate(input_images, output_image, loop, bgcolor, logging = '-quiet') {
 
-// input_images: array of image(.webp)
-//output_image: animatedimage .webp
-//loop:Loop the frames n number of times
-//bgcolor: Background color of the canvas
+        // input_images: array of image(.webp)
+        //output_image: animatedimage .webp
+        //loop:Loop the frames n number of times
+        //bgcolor: Background color of the canvas
 
         let files = `-frame ${input_images[0]["path"]} ${input_images[0]["offset"]}`;
 
@@ -215,7 +212,7 @@ class Webp {
 
         const query = `${files} -loop ${loop} -bgcolor ${bgcolor} -o "${output_image}" "${logging}"`;
 
-//webpmux() return which platform webp library should be used for conversion
+        //webpmux() return which platform webp library should be used for conversion
         return new Promise((resolve, reject) => {
             //execute command
             exec(`"${webpmux()}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
@@ -228,19 +225,19 @@ class Webp {
                 }
             });
         });
-    };
+    },
 
-//%%%%%%%%%%%% Get the a frame from an animated WebP file
+    //%%%%%%%%%%%% Get the a frame from an animated WebP file
 
-    webpmux_getframe = (input_image, output_image, frame_number, logging = '-quiet') => {
+    webpmux_getframe(input_image, output_image, frame_number, logging = '-quiet') {
 
-// input_image: input image(.webp)
-//output_image: output image .webp
-//frame_number: frame number
+        // input_image: input image(.webp)
+        //output_image: output image .webp
+        //frame_number: frame number
 
         const query = `-get frame ${frame_number} "${input_image}" -o "${output_image}" "${logging}"`;
 
-//webpmux() return which platform webp library should be used for conversion
+        //webpmux() return which platform webp library should be used for conversion
         return new Promise((resolve, reject) => {
             //execute command
             exec(`"${webpmux()}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
@@ -253,7 +250,7 @@ class Webp {
                 }
             });
         });
-    };
+    }
 
 }
 
