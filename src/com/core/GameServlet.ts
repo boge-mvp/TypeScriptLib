@@ -316,12 +316,25 @@ export abstract class GameServlet extends BaseProxy implements IGameServlet {
         // })
     }
 
-    /** 发送押注数据 */
+    /**
+     * 发送押注数据
+     * @param url
+     * @param data
+     * @param callback
+     * @deprecated 使用新的 bet
+     * @see GameServlet.bet
+     */
     sendBet(url: string, data: any, callback: ParamHandler) {
+        this.bet(url, data, callback)
+    }
+
+    /** 发送押注数据 */
+    bet(url: string, data: any, callback: ParamHandler) {
         if (Player.inst.isGuest) {
             Player.inst.guestModel.guestPlayCount++
         }
-        Player.inst.webPlayCount++
+        Player.inst.playCount++
+        Player.inst.gameData.playCount++
         this.post(url, data, (data: any) => {
             if (data.code != HttpCode.OK) {
                 MessageTip.showTip(StateCode.getShowMessage(data))

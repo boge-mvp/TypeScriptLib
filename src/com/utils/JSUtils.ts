@@ -6,9 +6,6 @@ import {Player} from "../Player"
 
 export class JSUtils {
 
-    constructor() {
-    }
-
     /**
      * 刷新页面  如果有父页面  刷新父页面
      */

@@ -9,4 +9,7 @@ export interface IGameData {
     /** 上报错误数据 */
     reportError(): any
 
+    /** 玩的次数 计数 */
+    playCount?: number
+
 }

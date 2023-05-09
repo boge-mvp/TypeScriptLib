@@ -77,8 +77,8 @@ export class Player {
     data: IData
     /** 登录接口 */
     login: ILogin
-    /** web模式玩次数 */
-    webPlayCount = 0
+    /** 本玩家今日玩的次数 */
+    playCount = 0
     /**
      * 用户持有的优惠劵
      **/

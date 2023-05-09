@@ -1148,8 +1148,17 @@ declare namespace coreLib {
          *
          */
         checkGamePeriod(handler: ParamHandler): void;
-        /** 发送押注数据 */
+        /**
+         * 发送押注数据
+         * @param url
+         * @param data
+         * @param callback
+         * @deprecated 使用新的 bet
+         * @see GameServlet.bet
+         */
         sendBet(url: string, data: any, callback: ParamHandler): void;
+        /** 发送押注数据 */
+        bet(url: string, data: any, callback: ParamHandler): void;
         /**
          * 领取奖金池
          * @param id
@@ -1882,6 +1891,8 @@ declare namespace coreLib {
         getTotalBetMoney(): number;
         /** 上报错误数据 */
         reportError(): any;
+        /** 玩的次数 计数 */
+        playCount?: number;
     }
     export interface IGameModel {
         /** 获取游戏番号 */
@@ -3115,8 +3126,8 @@ declare namespace coreLib {
         data: IData;
         /** 登录接口 */
         login: ILogin;
-        /** web模式玩次数 */
-        webPlayCount: number;
+        /** 本玩家今日玩的次数 */
+        playCount: number;
         /**
          * 用户持有的优惠劵
          **/
@@ -3934,7 +3945,6 @@ declare namespace coreLib {
         private static serverTimerHandler;
     }
     export class JSUtils {
-        constructor();
         /**
          * 刷新页面  如果有父页面  刷新父页面
          */

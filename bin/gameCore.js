@@ -2924,12 +2924,24 @@ window.coreLib = {};
             //     handler.runWith(false)
             // })
         }
-        /** 发送押注数据 */
+        /**
+         * 发送押注数据
+         * @param url
+         * @param data
+         * @param callback
+         * @deprecated 使用新的 bet
+         * @see GameServlet.bet
+         */
         sendBet(url, data, callback) {
+            this.bet(url, data, callback);
+        }
+        /** 发送押注数据 */
+        bet(url, data, callback) {
             if (Player.inst.isGuest) {
                 Player.inst.guestModel.guestPlayCount++;
             }
-            Player.inst.webPlayCount++;
+            Player.inst.playCount++;
+            Player.inst.gameData.playCount++;
             this.post(url, data, (data) => {
                 if (data.code != HttpCode.OK) {
                     MessageTip.showTip(StateCode.getShowMessage(data));
@@ -7021,8 +7033,8 @@ window.coreLib = {};
             this.codeVersion = 1;
             /** 当前app游戏发布版本号 */
             this.currentAppVersion = 1;
-            /** web模式玩次数 */
-            this.webPlayCount = 0;
+            /** 本玩家今日玩的次数 */
+            this.playCount = 0;
             /**
              * 用户持有的优惠劵
              **/
@@ -8681,8 +8693,6 @@ window.coreLib = {};
     HTTPUtils.difference = 0;
     coreLib.HTTPUtils = HTTPUtils;
     class JSUtils {
-        constructor() {
-        }
         /**
          * 刷新页面  如果有父页面  刷新父页面
          */
