@@ -162,7 +162,7 @@ export class StringUtil {
     }
 
     /**
-     * 是否为空  需要用正则匹配出多个空格的情况
+     * 是否为空
      * @param    char    指定字符串
      * @return
      */
@@ -182,7 +182,7 @@ export class StringUtil {
     }
 
     /**
-     * 是否不是空  需要用正则匹配出多个空格的情况
+     * 是否不是空
      * @param    char    指定字符串
      * @return
      */

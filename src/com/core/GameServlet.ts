@@ -215,7 +215,6 @@ export abstract class GameServlet extends BaseProxy implements IGameServlet {
         Player.inst.data.period = period
         if (this.gameStatus == 1 && period > 0) {
             this.getCoupon()
-            // runFun(this.initHandler)
         } else {
             this.enterFail()
         }

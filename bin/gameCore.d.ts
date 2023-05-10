@@ -383,6 +383,64 @@ declare namespace coreLib {
         /** 更新bounds信息 */
         GAME_UPDATE_BOUNDS_INFO = "game_update_bounds_info"
     }
+    export enum EnvType {
+        DEV = 0,
+        PROD = 1,
+        TEST = 2
+    }
+    /**
+     * 配置工具
+     */
+    export class ConfigKit {
+        /**
+         * 将自动检测当前环境是否支持webp图片
+         *
+         * 如果网址携带参数webp将会强制使用webp图片
+         */
+        static useWebp(): boolean;
+        /**
+         * 运行环境检测
+         */
+        static env(): EnvType;
+    }
+    export class Environment {
+        static TEST: string;
+        static DEV: string;
+        static PROP: string;
+        /**
+         * 默认环境
+         * @default EnvType.PROD
+         */
+        static DEFAULT_ENV: EnvType;
+        /**
+         * 当前运行环境，默认有三个环境
+         * ```
+         * dev:开发环境|test:测试环境|prod:生产环境
+         * 根据域名判断环境
+         * prod: prod|production|release
+         * dev : dev|staging
+         * test: test|debug
+         * 判断依据：
+         * https://www.game-prod.com prod 环境
+         * https://www.game-prod-info.com prod环境
+         * https://www.game-prod-info.dev prod环境
+         *
+         * https://www.game-dev-prod-info.com dev环境
+         * https://dev.game-prod-test-info.com dev环境
+         * https://www.dev.game-prod.com dev环境
+         * https://www.dev-data.game.com dev环境
+         *
+         * ```
+         * @default EnvType.PROD
+         */
+        static active: EnvType;
+        /**
+         * 验证环境
+         * @param url url window.location.host
+         * @param value 判断条件
+         */
+        static verify(url: string, value: string): boolean;
+    }
     /** 加载资源配置 */
     export class LoaderConfig {
         /**
@@ -4132,7 +4190,7 @@ declare namespace coreLib {
          */
         static str2ab(str: string): ArrayBuffer;
         /**
-         * 解析角色数据
+         * 解析数据
          * @param xml
          * @param handler 解析完成回调 ( 返回数组 [xml, texture] )
          * @param content
@@ -4438,13 +4496,13 @@ declare namespace coreLib {
          */
         static isURL(char: string): boolean;
         /**
-         * 是否为空  需要用正则匹配出多个空格的情况
+         * 是否为空
          * @param    char    指定字符串
          * @return
          */
         static isEmpty(char: string): boolean;
         /**
-         * 是否不是空  需要用正则匹配出多个空格的情况
+         * 是否不是空
          * @param    char    指定字符串
          * @return
          */

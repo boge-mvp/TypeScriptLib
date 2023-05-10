@@ -6,6 +6,8 @@ import {IProxy} from "./interfaces/IProxy"
 import {IKey} from "./interfaces/IKey"
 import {Controller} from "./core/Controller"
 import Handler = Laya.Handler;
+import {MyLoader} from "./core/MyLoader";
+import {ConfigKit} from "./ConfigKit";
 
 export class Factory implements IAction {
 
@@ -36,6 +38,9 @@ export class Factory implements IAction {
     static init() {
         this._instance = new Factory()
         DefineConfig.init()
+        ConfigKit.env()
+        // 使用自定义加载器加载资源
+        fgui.AssetProxy.inst.setAsset(MyLoader.loader)
     }
 
     static initClass(...args) {

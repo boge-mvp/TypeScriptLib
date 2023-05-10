@@ -734,6 +734,94 @@ window.coreLib = {};
         /** 更新bounds信息 */
         ActionLib["GAME_UPDATE_BOUNDS_INFO"] = "game_update_bounds_info";
     })(ActionLib = coreLib.ActionLib || (coreLib.ActionLib = {}));
+    let EnvType;
+    (function (EnvType) {
+        EnvType[EnvType["DEV"] = 0] = "DEV";
+        EnvType[EnvType["PROD"] = 1] = "PROD";
+        EnvType[EnvType["TEST"] = 2] = "TEST";
+    })(EnvType = coreLib.EnvType || (coreLib.EnvType = {}));
+    /**
+     * 配置工具
+     */
+    class ConfigKit {
+        /**
+         * 将自动检测当前环境是否支持webp图片
+         *
+         * 如果网址携带参数webp将会强制使用webp图片
+         */
+        static useWebp() {
+            let isWebp = false;
+            if (!Laya.Render.isConchApp && window.location.protocol != "http:") {
+                isWebp = window.document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') == 0;
+            }
+            if (isWebp || Laya.Utils.getQueryString("webp")) {
+                MyLoader.isWebp = true;
+                console.log("Support webp");
+            }
+            return isWebp;
+        }
+        /**
+         * 运行环境检测
+         */
+        static env() {
+            const url = window.location.host;
+            Environment.active = Environment.DEFAULT_ENV;
+            if (Environment.verify(url, Environment.TEST)) {
+                Environment.active = EnvType.TEST;
+            }
+            else if (Environment.verify(url, Environment.DEV)) {
+                Environment.active = EnvType.DEV;
+            }
+            else if (Environment.verify(url, Environment.PROP)) {
+                Environment.active = EnvType.PROD;
+            }
+            return Environment.active;
+        }
+    }
+    coreLib.ConfigKit = ConfigKit;
+    class Environment {
+        /**
+         * 验证环境
+         * @param url url window.location.host
+         * @param value 判断条件
+         */
+        static verify(url, value) {
+            if (StringUtil.isEmpty(url) || StringUtil.isEmpty(value))
+                return false;
+            return new RegExp("(?<=\\/|-|(\\.))" + value + "(?=(\\.)|-)").test(url);
+        }
+    }
+    Environment.TEST = "test|debug";
+    Environment.DEV = "dev|staging";
+    Environment.PROP = "prod|production|release";
+    /**
+     * 默认环境
+     * @default EnvType.PROD
+     */
+    Environment.DEFAULT_ENV = EnvType.PROD;
+    /**
+     * 当前运行环境，默认有三个环境
+     * ```
+     * dev:开发环境|test:测试环境|prod:生产环境
+     * 根据域名判断环境
+     * prod: prod|production|release
+     * dev : dev|staging
+     * test: test|debug
+     * 判断依据：
+     * https://www.game-prod.com prod 环境
+     * https://www.game-prod-info.com prod环境
+     * https://www.game-prod-info.dev prod环境
+     *
+     * https://www.game-dev-prod-info.com dev环境
+     * https://dev.game-prod-test-info.com dev环境
+     * https://www.dev.game-prod.com dev环境
+     * https://www.dev-data.game.com dev环境
+     *
+     * ```
+     * @default EnvType.PROD
+     */
+    Environment.active = Environment.DEFAULT_ENV;
+    coreLib.Environment = Environment;
     /** 加载资源配置 */
     class LoaderConfig {
         /**
@@ -2833,7 +2921,6 @@ window.coreLib = {};
             Player.inst.data.period = period;
             if (this.gameStatus == 1 && period > 0) {
                 this.getCoupon();
-                // runFun(this.initHandler)
             }
             else {
                 this.enterFail();
@@ -4733,6 +4820,9 @@ window.coreLib = {};
         static init() {
             this._instance = new Factory();
             DefineConfig.init();
+            ConfigKit.env();
+            // 使用自定义加载器加载资源
+            fgui.AssetProxy.inst.setAsset(MyLoader.loader);
         }
         static initClass(...args) {
             for (let i = 0; i < args.length; i++) {
@@ -9147,7 +9237,7 @@ window.coreLib = {};
             return buf;
         }
         /**
-         * 解析角色数据
+         * 解析数据
          * @param xml
          * @param handler 解析完成回调 ( 返回数组 [xml, texture] )
          * @param content
@@ -9986,7 +10076,7 @@ window.coreLib = {};
             return this.checkChar(char, this.HTML_URL_REG);
         }
         /**
-         * 是否为空  需要用正则匹配出多个空格的情况
+         * 是否为空
          * @param    char    指定字符串
          * @return
          */
@@ -10005,7 +10095,7 @@ window.coreLib = {};
             }
         }
         /**
-         * 是否不是空  需要用正则匹配出多个空格的情况
+         * 是否不是空
          * @param    char    指定字符串
          * @return
          */

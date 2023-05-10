@@ -120,7 +120,7 @@ export class ObjectUtil {
     }
 
     /**
-     * 解析角色数据
+     * 解析数据
      * @param xml
      * @param handler 解析完成回调 ( 返回数组 [xml, texture] )
      * @param content
