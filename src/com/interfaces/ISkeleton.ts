@@ -1,5 +1,3 @@
-import {AnimationContent} from "../view/GSkeleton";
-
 export interface ISkeleton {
 
     /**

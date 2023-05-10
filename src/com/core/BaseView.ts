@@ -7,7 +7,7 @@ import {BaseProxy} from "./BaseProxy"
 import {LanguageUtils} from "../utils/LanguageUtils"
 import {StringUtil} from "../utils/StringUtil"
 import {View} from "./View"
-import {IRecord} from "../interfaces/IRecord"
+import {IRecord} from "../interfaces/ICommon";
 
 /** 全屏显示基类 */
 export class BaseView extends View implements IRecord {

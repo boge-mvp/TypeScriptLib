@@ -2,7 +2,6 @@ import Point = Laya.Point
 import Ease = Laya.Ease
 import Tween = Laya.Tween
 import GRoot = fgui.GRoot
-import {IView} from "../interfaces/IView"
 import {SceneManager} from "../manager/SceneManager"
 import {AppRecordManager} from "../manager/AppRecordManager"
 import {ActionLib} from "../actions/ActionLib"
@@ -10,9 +9,8 @@ import {Factory} from "../Factory"
 import {BaseProxy} from "./BaseProxy"
 import {LanguageUtils} from "../utils/LanguageUtils"
 import {StringUtil} from "../utils/StringUtil"
-import {IRecord} from "../interfaces/IRecord"
-import {IKey} from "../interfaces/IKey"
 import Handler = Laya.Handler;
+import {IKey, IRecord, IView} from "../interfaces/ICommon";
 
 export class BaseWindow extends fgui.Window implements IView, IRecord {
 
@@ -22,10 +20,6 @@ export class BaseWindow extends fgui.Window implements IView, IRecord {
     joinRecord = true
     /** 动画起始点 */
     startPoint: Point
-
-    constructor() {
-        super()
-    }
 
     protected onInit() {
         let scale = SceneManager.inst.getEqualRatioScale()

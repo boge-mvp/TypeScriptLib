@@ -12,7 +12,5 @@ export interface IGameScene {
 
     gameModel: IGameModel
 
-    /** 设置游戏逻辑类 */
-    // gameModel(value: IGameModel): void
 
 }

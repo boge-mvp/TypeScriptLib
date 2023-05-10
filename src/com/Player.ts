@@ -2,13 +2,12 @@ import Browser = Laya.Browser
 import Render = Laya.Render
 import LocalStorage = Laya.LocalStorage
 import {UrlParam} from "./net/UrlParam"
-import {IGameData} from "./interfaces/IGameData"
 import {IGuestModel} from "./runtime/IGuestModel"
 import {IData} from "./interfaces/IData"
-import {ILogin} from "./interfaces/ILogin"
 import {UtilsTool} from "./utils/UtilsTool"
 import {Cast} from "./utils/Cast"
 import {StringUtil} from "./utils/StringUtil"
+import {IGameData, ILogin} from "./interfaces/ICommon";
 
 /** 用户数据 */
 export class Player {
@@ -98,9 +97,6 @@ export class Player {
     gamePool = UtilsTool.random(1000, 99999)
     /** 获得奖励的次数 */
     jackpotCount = 0
-
-    constructor() {
-    }
 
     /**
      * 获取游客模式的优惠券

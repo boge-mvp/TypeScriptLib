@@ -6,7 +6,6 @@ import GRoot = fgui.GRoot
 import RelationType = fgui.RelationType
 import Browser = Laya.Browser
 import Utils = Laya.Utils
-import {IRecord} from "../interfaces/IRecord"
 import {AppRecordManager} from "../manager/AppRecordManager"
 import {Factory} from "../Factory"
 import {StringUtil} from "../utils/StringUtil"
@@ -16,6 +15,7 @@ import {SceneManager} from "../manager/SceneManager"
 import {ActionLib} from "../actions/ActionLib"
 import {CommonCmd} from "../net/CommonCmd"
 import {Log} from "../Log";
+import {IRecord} from "../interfaces/ICommon";
 
 export class HtmlWindow extends fgui.Window implements IRecord {
 

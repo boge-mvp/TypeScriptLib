@@ -1,11 +1,10 @@
 import GButton = fgui.GButton
 import Handler = Laya.Handler
-import {IView} from "../interfaces/IView"
 import {Factory} from "../Factory"
 import {BaseProxy} from "./BaseProxy"
 import {LanguageUtils} from "../utils/LanguageUtils"
 import {StringUtil} from "../utils/StringUtil"
-import {IKey} from "../interfaces/IKey"
+import {IKey, IView} from "../interfaces/ICommon";
 
 export class BaseButton extends GButton implements IView {
 

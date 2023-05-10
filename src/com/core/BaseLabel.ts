@@ -1,17 +1,12 @@
 import GLabel = fgui.GLabel
 import Handler = Laya.Handler
-import {IView} from "../interfaces/IView"
 import {Factory} from "../Factory"
 import {BaseProxy} from "./BaseProxy"
 import {LanguageUtils} from "../utils/LanguageUtils"
 import {StringUtil} from "../utils/StringUtil"
-import {IKey} from "../interfaces/IKey"
+import {IKey, IView} from "../interfaces/ICommon";
 
 export class BaseLabel extends GLabel implements IView {
-
-    constructor() {
-        super()
-    }
 
     regAction(action: string, caller: any, method: Function, group?: string) {
         Factory.inst.regAction(action, caller, method, group)

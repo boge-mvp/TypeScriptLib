@@ -2,7 +2,7 @@ import GList = fgui.GList
 import Tween = Laya.Tween
 import Handler = Laya.Handler
 import {SlotModel} from "./SlotModel"
-import {ISlotLotteryData} from "../interfaces/ISlotLotteryData"
+import {ISlotLotteryData} from "../interfaces/ICommon";
 
 /**
  * slot游戏滚动效果类 只使用了 Tween

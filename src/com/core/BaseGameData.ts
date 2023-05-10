@@ -1,4 +1,4 @@
-import {IGameData} from "../interfaces/IGameData"
+import {IGameData} from "../interfaces/ICommon";
 
 export class BaseGameData implements IGameData {
 

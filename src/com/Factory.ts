@@ -1,14 +1,11 @@
 import {IAction} from "./interfaces/IAction"
-import {IController} from "./interfaces/IController"
 import {DefineConfig} from "./DefineConfig"
-import {IView} from "./interfaces/IView"
-import {IProxy} from "./interfaces/IProxy"
-import {IKey} from "./interfaces/IKey"
 import {Controller} from "./core/Controller"
 import Handler = Laya.Handler;
 import {MyLoader} from "./core/MyLoader";
 import {ConfigKit, EnvType} from "./ConfigKit";
 import {Log} from "./Log";
+import {IController, IKey, IProxy, IView} from "./interfaces/ICommon";
 
 export class Factory implements IAction {
 

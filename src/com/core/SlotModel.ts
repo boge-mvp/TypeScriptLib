@@ -1,7 +1,7 @@
 import GList = fgui.GList
 import Tween = Laya.Tween
 import {GameModel} from "./GameModel"
-import {ISlotLotteryData} from "../interfaces/ISlotLotteryData"
+import {ISlotLotteryData} from "../interfaces/ICommon";
 
 export abstract class SlotModel extends GameModel {
 

@@ -1,14 +1,9 @@
-import {IView} from "../interfaces/IView"
 import {Factory} from "../Factory"
-import {IKey} from "../interfaces/IKey"
+import {IKey, IView} from "../interfaces/ICommon";
 
 export class View extends fgui.GComponent implements IView, IKey {
 
     protected key: string
-
-    constructor() {
-        super()
-    }
 
     regAction(action: string, caller: any, method: Function, group?: string) {
         Factory.inst.regAction(action, caller, method, group)

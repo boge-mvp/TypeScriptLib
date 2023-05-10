@@ -2,7 +2,6 @@ import Handler = Laya.Handler
 import Browser = Laya.Browser
 import Render = Laya.Render
 import Utils = Laya.Utils
-import {IRecord} from "../interfaces/IRecord"
 import {BaseScene} from "../core/BaseScene"
 import {Player} from "../Player"
 import {AppManager} from "./AppManager"
@@ -16,6 +15,7 @@ import {LanguageUtils} from "../utils/LanguageUtils"
 import {ActionLib} from "../actions/ActionLib"
 import {LibStr} from "../LibStr"
 import {Log} from "../Log";
+import {IRecord} from "../interfaces/ICommon";
 
 /**
  * app 访问记录管理

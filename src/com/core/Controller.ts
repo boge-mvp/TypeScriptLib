@@ -1,11 +1,8 @@
 import Handler = Laya.Handler
-import {IController} from "../interfaces/IController"
 import {StringUtil} from "../utils/StringUtil"
 import {Factory} from "../Factory"
-import {IView} from "../interfaces/IView"
-import {IProxy} from "../interfaces/IProxy"
-import {IKey} from "../interfaces/IKey"
 import {Log} from "../Log";
+import {IController, IKey, IProxy, IView} from "../interfaces/ICommon";
 
 export class Controller implements IController {
 

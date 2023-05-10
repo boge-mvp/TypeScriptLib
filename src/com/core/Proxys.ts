@@ -1,6 +1,5 @@
-import {IProxy} from "../interfaces/IProxy"
 import {Factory} from "../Factory"
-import {IKey} from "../interfaces/IKey"
+import {IKey, IProxy} from "../interfaces/ICommon";
 
 export class Proxys implements IProxy, IKey {
 
