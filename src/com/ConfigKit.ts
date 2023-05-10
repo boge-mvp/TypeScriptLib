@@ -31,8 +31,8 @@ export class ConfigKit {
     /**
      * 运行环境检测
      */
-    static env() {
-        const url = window.location.host
+    static env(url?: string) {
+        url ??= window.location.host
         Environment.active = Environment.DEFAULT_ENV
         if (Environment.verify(url, Environment.TEST)) {
             Environment.active = EnvType.TEST

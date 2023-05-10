@@ -401,7 +401,7 @@ declare namespace coreLib {
         /**
          * 运行环境检测
          */
-        static env(): EnvType;
+        static env(url?: string): EnvType;
     }
     export class Environment {
         static TEST: string;
@@ -2408,6 +2408,7 @@ declare namespace coreLib {
         static MAX_HISTORY: number;
         static history: {
             level: number;
+            time?: number;
             data: any[];
         }[];
         static trace(...value: any[]): void;
@@ -2416,8 +2417,6 @@ declare namespace coreLib {
         static warn(...value: any[]): void;
         static error(...value: any[]): void;
         static fatal(...value: any[]): void;
-        private static _log;
-        private static append;
     }
     /**
      * 统计管理器

@@ -1,4 +1,6 @@
 import {Environment, EnvType} from "./ConfigKit";
+import {DateUtils} from "./utils/DateUtils";
+import Render = Laya.Render;
 
 export enum LogLevel {
     ALL,
@@ -27,7 +29,7 @@ export class Log {
      */
     static level = LogLevel.ALL
     static MAX_HISTORY = 3000
-    static history: { level: number, data: any[] }[] = []
+    static history: { level: number, time?: number, data: any[] }[] = []
 
     static trace(...value) {
         Log.append({level: LogLevel.TRACE, data: value})
@@ -66,6 +68,9 @@ export class Log {
         console.error.apply(window, value)
     }
 
+    /**
+     * @internal
+     */
     private static _log(value: any[]) {
         console.log.apply(window, value)
     }
@@ -76,6 +81,7 @@ export class Log {
     static log() {
         const logs = Log.history.concat()
         for (const value of logs) {
+            value.data?.unshift(DateUtils.formatDate(value.time, "[HH:mm:ss]"))
             switch (value.level) {
                 case LogLevel.TRACE:
                     console.trace.apply(window, value.data)
@@ -95,7 +101,12 @@ export class Log {
         }
     }
 
-    private static append(data: { data: any[]; level: LogLevel }) {
+    /**
+     * @internal
+     */
+    private static append(data: { data: any[], time?: number, level: LogLevel }) {
+        if (Render.isConchApp) return
+        data.time ??= Date.now()
         Log.history.push(data)
         if (Log.history.length > Log.MAX_HISTORY + 500) {
             Log.history.splice(0, 500)

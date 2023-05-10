@@ -763,8 +763,8 @@ window.coreLib = {};
         /**
          * 运行环境检测
          */
-        static env() {
-            const url = window.location.host;
+        static env(url) {
+            url !== null && url !== void 0 ? url : (url = window.location.host);
             Environment.active = Environment.DEFAULT_ENV;
             if (Environment.verify(url, Environment.TEST)) {
                 Environment.active = EnvType.TEST;
@@ -4969,6 +4969,9 @@ window.coreLib = {};
                 return;
             console.error.apply(window, value);
         }
+        /**
+         * @internal
+         */
         static _log(value) {
             console.log.apply(window, value);
         }
@@ -4976,8 +4979,10 @@ window.coreLib = {};
          * @internal
          */
         static log() {
+            var _a;
             const logs = Log.history.concat();
             for (const value of logs) {
+                (_a = value.data) === null || _a === void 0 ? void 0 : _a.unshift(DateUtils.formatDate(value.time, "[HH:mm:ss]"));
                 switch (value.level) {
                     case LogLevel.TRACE:
                         console.trace.apply(window, value.data);
@@ -4996,7 +5001,14 @@ window.coreLib = {};
                 }
             }
         }
+        /**
+         * @internal
+         */
         static append(data) {
+            var _a;
+            if (Laya.Render.isConchApp)
+                return;
+            (_a = data.time) !== null && _a !== void 0 ? _a : (data.time = Date.now());
             Log.history.push(data);
             if (Log.history.length > Log.MAX_HISTORY + 500) {
                 Log.history.splice(0, 500);
