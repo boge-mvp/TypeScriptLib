@@ -47,7 +47,7 @@ export class LongPressBtn {
         Laya.timer.clear(this, this.onHold)
         Laya.stage.off(Laya.Event.MOUSE_UP, this, this.upHandler)
 
-        this.btn.displayObject.once(Laya.Event.MOUSE_DOWN, this, this.downHandler)
+        this.btn.displayObject?.once(Laya.Event.MOUSE_DOWN, this, this.downHandler)
         this.btn.onClick(this, this.clickHandler)
     }
 

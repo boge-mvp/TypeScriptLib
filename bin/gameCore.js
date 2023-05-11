@@ -9075,12 +9075,13 @@ window.coreLib = {};
         }
         /** 松开按钮 */
         upHandler() {
+            var _a;
             this._isApeHold = false;
             Laya.timer.clear(this, this.onLoopClick);
             // 如果未触发hold，终止触发hold
             Laya.timer.clear(this, this.onHold);
             Laya.stage.off(Laya.Event.MOUSE_UP, this, this.upHandler);
-            this.btn.displayObject.once(Laya.Event.MOUSE_DOWN, this, this.downHandler);
+            (_a = this.btn.displayObject) === null || _a === void 0 ? void 0 : _a.once(Laya.Event.MOUSE_DOWN, this, this.downHandler);
             this.btn.onClick(this, this.clickHandler);
         }
         onHold() {
