@@ -761,6 +761,14 @@ window.coreLib = {};
          * 运行环境检测
          */
         static env(url) {
+            let value = Laya.Utils.getQueryString("env");
+            if (StringUtil.isNotEmpty(value)) {
+                const valueEnv = Environment.findEnv(value);
+                if (valueEnv != null) {
+                    Environment.active = valueEnv;
+                    return valueEnv;
+                }
+            }
             url !== null && url !== void 0 ? url : (url = window.location.host);
             Environment.active = Environment.DEFAULT_ENV;
             if (Environment.verify(url, Environment.TEST)) {
@@ -783,14 +791,21 @@ window.coreLib = {};
          * @param value 判断条件
          */
         static verify(url, value) {
-            if (StringUtil.isEmpty(url) || StringUtil.isEmpty(value))
+            if (StringUtil.isEmpty(url) || (value === null || value === void 0 ? void 0 : value.length) < 1)
                 return false;
-            return new RegExp("(?<=\\/|-|(\\.))" + value + "(?=(\\.)|-)").test(url);
+            return new RegExp("(?<=\\/|-|(\\.))" + value.join("|") + "(?=(\\.)|-)").test(url);
+        }
+        static findEnv(value) {
+            if (Environment.TEST.indexOf(value) != -1)
+                return EnvType.TEST;
+            if (Environment.DEV.indexOf(value) != -1)
+                return EnvType.DEV;
+            return Environment.PROP.indexOf(value) != -1 ? EnvType.PROD : null;
         }
     }
-    Environment.TEST = "test|debug";
-    Environment.DEV = "dev|staging";
-    Environment.PROP = "prod|production|release";
+    Environment.TEST = ["test", "debug"];
+    Environment.DEV = ["dev", "staging"];
+    Environment.PROP = ["prod", "production", "release"];
     /**
      * 默认环境
      * @default EnvType.PROD

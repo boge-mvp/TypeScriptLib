@@ -403,9 +403,9 @@ declare namespace coreLib {
         static env(url?: string): EnvType;
     }
     export class Environment {
-        static TEST: string;
-        static DEV: string;
-        static PROP: string;
+        static TEST: string[];
+        static DEV: string[];
+        static PROP: string[];
         /**
          * 默认环境
          * @default EnvType.PROD
@@ -438,7 +438,8 @@ declare namespace coreLib {
          * @param url url window.location.host
          * @param value 判断条件
          */
-        static verify(url: string, value: string): boolean;
+        static verify(url: string, value: string[]): boolean;
+        static findEnv(value: string): EnvType;
     }
     /** 加载资源配置 */
     export class LoaderConfig {
