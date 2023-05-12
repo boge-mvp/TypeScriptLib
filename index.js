@@ -11,6 +11,7 @@ const path = require('path')
 const ts = require("gulp-typescript")
 const through2 = require("through2")
 const webp = require("./webp/ToWebp")
+const {Settings} = require("gulp-typescript");
 
 class GenerateModule {
 
@@ -52,6 +53,11 @@ class GenerateModule {
      * tsconfig.json 配置路径
      */
     tsProject = 'tsconfig.json'
+
+    /**
+     * @type {Settings}
+     */
+    settings
 
     /**
      * 清理文件目录
@@ -130,7 +136,7 @@ class GenerateModule {
 
     createJs() {
         return gulp.src([this.saveTempPath + "/temp/" + this.saveTempTs].concat(this.libs))
-            .pipe(ts.createProject(this.tsProject)())
+            .pipe(ts.createProject(this.tsProject, this.settings)())
             .js
             .pipe(concat(this.project + ".js"))
             .pipe(inject.replace('var ' + this.namespace + ';', ''))
@@ -143,7 +149,7 @@ class GenerateModule {
 
     createDTs() {
         return gulp.src([this.saveTempPath + "/temp/" + this.saveTempTs].concat(this.libs))
-            .pipe(ts.createProject(this.tsProject)())
+            .pipe(ts.createProject(this.tsProject, this.settings)())
             .dts
             .pipe(concat(this.project + ".d.ts"))
             .pipe(gulp.dest(this.saveTempPath))

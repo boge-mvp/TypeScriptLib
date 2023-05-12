@@ -7,9 +7,6 @@ export class Cast {
     /** 计算弧度的公式  Math.PI / 180 */
     static DEG_TO_RAD = Math.PI / 180
 
-    constructor() {
-    }
-
     /**
      * 角度转弧度
      * @param angle 角度

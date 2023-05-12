@@ -268,13 +268,18 @@ export abstract class GameServlet extends BaseProxy implements IGameServlet {
      * @param error
      */
     getUserMoney(callback: ParamHandler, error?: ParamHandler) {
-        let obj: any = {}
-        obj.token = Player.inst.token
+        let obj = {token: Player.inst.token}
         HTTPUtils.create()
             .setMethod("post")
             .setUrl(Player.inst.data.getWapUrl(Urls.URL_USER_ACCOUNT_ASSET))
             .setData(obj)
-            .onComplete(callback).onError(error).call()
+            .onComplete((data: any) => {
+                if (data?.code == HttpCode.OK) {
+                    runFun(callback, data)
+                } else {
+                    runFun(error, "data is null")
+                }
+            }).onError(error).call()
     }
 
     /**

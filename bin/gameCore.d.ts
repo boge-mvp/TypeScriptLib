@@ -382,6 +382,28 @@ declare namespace coreLib {
         /** 更新bounds信息 */
         GAME_UPDATE_BOUNDS_INFO = "game_update_bounds_info"
     }
+    /**
+     * 实现一个扩展的贝塞尔曲线类
+     */
+    export class BezierCurves extends fgui.GComponent {
+        /** 经过时间 */
+        private _t;
+        private p1;
+        private p2;
+        private p3;
+        private p4;
+        get t(): number;
+        set t(value: number);
+        getX(): number;
+        getY(): number;
+        setStartPoint(tempX: number, tempY: number): void;
+        setMiddlePoint(tempX: number, tempY: number): void;
+        setEndPoint(tempX: number, tempY: number): void;
+        /**
+         * 释放曲线数据
+         */
+        recoverData(): void;
+    }
     export enum EnvType {
         PROD = 0,
         DEV = 1,
@@ -1625,13 +1647,22 @@ declare namespace coreLib {
      * 具有贝塞尔曲线运动的loader
      */
     export class GoldLoader extends fgui.GLoader {
+        static readonly NAME = "GoldLoaderPool";
         /** 经过时间 */
         private _t;
         private p1;
         private p2;
         private p3;
         private p4;
+        /**
+         * 从对象池获取一个 GoldLoader
+         */
+        static create(): GoldLoader;
         constructor();
+        /**
+         * 将对象放到对应类型标识的对象池中。
+         */
+        recover(): void;
         get t(): number;
         set t(value: number);
         getX(): number;
@@ -1639,6 +1670,7 @@ declare namespace coreLib {
         setStartPoint(tempX: number, tempY: number): void;
         setMiddlePoint(tempX: number, tempY: number): void;
         setEndPoint(tempX: number, tempY: number): void;
+        dispose(): void;
     }
     export class GoldSpray extends GoldLoader {
         initX: number;
@@ -3550,7 +3582,6 @@ declare namespace coreLib {
         static RAD_TO_DEG: number;
         /** 计算弧度的公式  Math.PI / 180 */
         static DEG_TO_RAD: number;
-        constructor();
         /**
          * 角度转弧度
          * @param angle 角度
@@ -3902,9 +3933,19 @@ declare namespace coreLib {
      * 金币动画
      */
     export class GoldAniUtils {
+        /**
+         * 默认金币图标
+         */
         static defaultIcon: string;
+        /**
+         * 默认声音
+         */
+        static defaultSound: string;
+        /**
+         * 配置金币默认显示的面板
+         */
+        static defaultScene: fgui.GComponent;
         private loaders;
-        private readonly goldIconUrl;
         private count;
         private startPoint;
         private endPoint;
@@ -3914,7 +3955,10 @@ declare namespace coreLib {
         goldW: number;
         /** 高 */
         goldH: number;
-        constructor(goldIconUrl?: string);
+        icon: string;
+        sound: Laya.Sound | string;
+        parent: fgui.GComponent;
+        constructor(icon?: string, parent?: fgui.GComponent, sound?: string | Laya.Sound);
         /**
          * 播放金币动画
          * @param num 创建数量
@@ -3931,11 +3975,6 @@ declare namespace coreLib {
          * @param endHandler 结束回调
          */
         play(num: number, startPoint: Laya.Point, endPoint: Laya.Point, endHandler: ParamHandler): void;
-        /**
-         * 特殊奖品 效果 - 移动至底部然后飘直指定位置
-         * @param len 创建数量
-         */
-        private specialAward;
         /************************************  普通金币掉落动画  ***********************************/
         /**
          * 播放移动目标到指定目标位置
@@ -3945,7 +3984,7 @@ declare namespace coreLib {
          * @param parent 父对象
          * @param props 附带的属性变化 或参数 duration,delay,ease
          */
-        playGoldAni(targetObject: fgui.GObject, endObject: fgui.GObject, endHandler: ParamHandler, parent?: any, props?: any): void;
+        playGoldAni(targetObject: fgui.GObject, endObject: fgui.GObject, endHandler: ParamHandler, parent?: fgui.GComponent, props?: any): void;
         /**
          * 播放移动目标到指定位置
          * @param targetObject 要被移动的对象
@@ -3956,8 +3995,9 @@ declare namespace coreLib {
          * @param props 附带的属性变化 或参数 duration,delay,ease
          */
         playGoldPointAni(targetObject: fgui.GObject, startPoint: Laya.Point, endPoint: Laya.Point, endHandler: ParamHandler, parent?: any, props?: any): void;
-        /** 移动完成 */
-        private goldTweenHandler;
+        private addChild;
+        private globalToLocal;
+        private get scene();
         dispose(): void;
     }
     export class HTTPUtils {

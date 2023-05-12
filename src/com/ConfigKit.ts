@@ -19,7 +19,7 @@ export class ConfigKit {
     static useWebp() {
         let isWebp = false
         if (!Render.isConchApp && window.location.protocol != "http:") {
-            isWebp = window.document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') == 0
+            isWebp = window.document.createElement('canvas')?.toDataURL('image/webp')?.indexOf('data:image/webp') == 0
         }
         if (isWebp || Utils.getQueryString("webp")) {
             MyLoader.isWebp = true
@@ -96,7 +96,9 @@ export class Environment {
      */
     static verify(url: string, value: string[]) {
         if (StringUtil.isEmpty(url) || value?.length < 1) return false
-        return new RegExp("(?<=\\/|-|(\\.))" + value.join("|") + "(?=(\\.)|-)").test(url)
+        // 后行断言在旧版本的 JavaScript 以及某些浏览器和环境中是不支持的，因此使用非捕获组更具有兼容性。
+        return new RegExp("(?:\\/|-|(\\.)|^)(" + value.join("|") + ")(?=(\\.|-|$))").test(url)
+        // return new RegExp("(?<=\\/|-|(\\.))" + value.join("|") + "(?=(\\.)|-)").test(url)
     }
 
 

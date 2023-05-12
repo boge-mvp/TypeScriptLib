@@ -7,6 +7,7 @@ const http = require('https')
 const zlib = require('zlib')
 const AdmZip = require('adm-zip')
 const generate = require("./index")
+const typescript = require("typescript")
 
 // 需要添加到最前面的类
 let beforeTs = ["src/com/core/View.ts", "src/com/core/Proxys.ts",
@@ -20,6 +21,8 @@ generate.project = "gameCore"
 generate.namespace = "coreLib"
 generate.saveTempPath = "bin"
 generate.saveTempTs = "lib.ts"
+// generate.settings = {typescript: typescript}
+
 
 gulp.task("clean", () => {
     return generate.clean(["bin/**/*.*", "!bin/*.html", "!bin/webp"])

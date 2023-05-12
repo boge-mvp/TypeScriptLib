@@ -1,15 +1,9 @@
-import GLoader = fgui.GLoader;
 import Point = Laya.Point;
-import LoaderFillType = fgui.LoaderFillType;
-import Pool = Laya.Pool;
-import Tween = Laya.Tween;
 
 /**
- * 具有贝塞尔曲线运动的loader
+ * 实现一个扩展的贝塞尔曲线类
  */
-export class GoldLoader extends GLoader {
-
-    static readonly NAME = "GoldLoaderPool"
+export class BezierCurves extends fgui.GComponent {
 
     /** 经过时间 */
     private _t = 0
@@ -18,36 +12,7 @@ export class GoldLoader extends GLoader {
     private p3: Point
     private p4: Point
 
-    /**
-     * 从对象池获取一个 GoldLoader
-     */
-    static create() {
-        return Pool.getItemByClass(GoldLoader.NAME, GoldLoader)
-    }
-
-    constructor() {
-        super()
-        this.fill = LoaderFillType.Scale
-        this.setPivot(.5, .5)
-    }
-
-    /**
-     * 将对象放到对应类型标识的对象池中。
-     */
-    recover() {
-        Tween.clearAll(this)
-        Laya.timer.clearAll(this)
-        this.removeFromParent()
-        this._t = 0
-        this.icon = null
-        this.p1?.recover()
-        this.p2?.recover()
-        this.p3?.recover()
-        this.p4?.recover()
-        Pool.recover(GoldLoader.NAME, this)
-    }
-
-    get t(): number {
+    get t() {
         return this._t
     }
 
@@ -83,10 +48,17 @@ export class GoldLoader extends GLoader {
         this.p4 = Point.create().setTo(tempX, tempY)
     }
 
-    dispose() {
-        this.recover()
-        // super.dispose();
+    /**
+     * 释放曲线数据
+     */
+    recoverData() {
+        this._t = 0
+        this.p1?.recover()
+        this.p2?.recover()
+        this.p3?.recover()
+        this.p4?.recover()
     }
+
 
 
 }

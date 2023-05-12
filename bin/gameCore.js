@@ -731,6 +731,57 @@ window.coreLib = {};
         /** 更新bounds信息 */
         ActionLib["GAME_UPDATE_BOUNDS_INFO"] = "game_update_bounds_info";
     })(ActionLib = coreLib.ActionLib || (coreLib.ActionLib = {}));
+    /**
+     * 实现一个扩展的贝塞尔曲线类
+     */
+    class BezierCurves extends fgui.GComponent {
+        constructor() {
+            super(...arguments);
+            /** 经过时间 */
+            this._t = 0;
+        }
+        get t() {
+            return this._t;
+        }
+        set t(value) {
+            this._t = value;
+            this.setXY(this.getX(), this.getY());
+        }
+        getX() {
+            return Math.pow((1 - this._t), 3) * this.p1.x
+                + 3 * this.p2.x * this._t * (1 - this._t) * (1 - this._t)
+                + 3 * this.p3.x * this._t * this._t * (1 - this._t)
+                + this.p4.x * Math.pow(this._t, 3);
+        }
+        getY() {
+            return Math.pow((1 - this._t), 3) * this.p1.y
+                + 3 * this.p2.y * this._t * (1 - this._t) * (1 - this._t)
+                + 3 * this.p3.y * this._t * this._t * (1 - this._t)
+                + this.p4.y * Math.pow(this._t, 3);
+        }
+        setStartPoint(tempX, tempY) {
+            this.p1 = Laya.Point.create().setTo(tempX, tempY);
+            this._t = 0;
+        }
+        setMiddlePoint(tempX, tempY) {
+            this.p3 = this.p2 = Laya.Point.create().setTo(tempX, tempY);
+        }
+        setEndPoint(tempX, tempY) {
+            this.p4 = Laya.Point.create().setTo(tempX, tempY);
+        }
+        /**
+         * 释放曲线数据
+         */
+        recoverData() {
+            var _a, _b, _c, _d;
+            this._t = 0;
+            (_a = this.p1) === null || _a === void 0 ? void 0 : _a.recover();
+            (_b = this.p2) === null || _b === void 0 ? void 0 : _b.recover();
+            (_c = this.p3) === null || _c === void 0 ? void 0 : _c.recover();
+            (_d = this.p4) === null || _d === void 0 ? void 0 : _d.recover();
+        }
+    }
+    coreLib.BezierCurves = BezierCurves;
     let EnvType;
     (function (EnvType) {
         EnvType[EnvType["PROD"] = 0] = "PROD";
@@ -747,9 +798,10 @@ window.coreLib = {};
          * 如果网址携带参数webp将会强制使用webp图片
          */
         static useWebp() {
+            var _a, _b;
             let isWebp = false;
             if (!Laya.Render.isConchApp && window.location.protocol != "http:") {
-                isWebp = window.document.createElement('canvas').toDataURL('image/webp').indexOf('data:image/webp') == 0;
+                isWebp = ((_b = (_a = window.document.createElement('canvas')) === null || _a === void 0 ? void 0 : _a.toDataURL('image/webp')) === null || _b === void 0 ? void 0 : _b.indexOf('data:image/webp')) == 0;
             }
             if (isWebp || Laya.Utils.getQueryString("webp")) {
                 MyLoader.isWebp = true;
@@ -793,7 +845,9 @@ window.coreLib = {};
         static verify(url, value) {
             if (StringUtil.isEmpty(url) || (value === null || value === void 0 ? void 0 : value.length) < 1)
                 return false;
-            return new RegExp("(?<=\\/|-|(\\.))" + value.join("|") + "(?=(\\.)|-)").test(url);
+            // 后行断言在旧版本的 JavaScript 以及某些浏览器和环境中是不支持的，因此使用非捕获组更具有兼容性。
+            return new RegExp("(?:\\/|-|(\\.)|^)(" + value.join("|") + ")(?=(\\.|-|$))").test(url);
+            // return new RegExp("(?<=\\/|-|(\\.))" + value.join("|") + "(?=(\\.)|-)").test(url)
         }
         static findEnv(value) {
             if (Environment.TEST.indexOf(value) != -1)
@@ -2975,13 +3029,19 @@ window.coreLib = {};
          * @param error
          */
         getUserMoney(callback, error) {
-            let obj = {};
-            obj.token = Player.inst.token;
+            let obj = { token: Player.inst.token };
             HTTPUtils.create()
                 .setMethod("post")
                 .setUrl(Player.inst.data.getWapUrl(Urls.URL_USER_ACCOUNT_ASSET))
                 .setData(obj)
-                .onComplete(callback).onError(error).call();
+                .onComplete((data) => {
+                if ((data === null || data === void 0 ? void 0 : data.code) == HttpCode.OK) {
+                    runFun(callback, data);
+                }
+                else {
+                    runFun(error, "data is null");
+                }
+            }).onError(error).call();
         }
         /**
          * 检查游戏期数
@@ -4601,12 +4661,34 @@ window.coreLib = {};
      * 具有贝塞尔曲线运动的loader
      */
     class GoldLoader extends fgui.GLoader {
+        /**
+         * 从对象池获取一个 GoldLoader
+         */
+        static create() {
+            return Laya.Pool.getItemByClass(GoldLoader.NAME, GoldLoader);
+        }
         constructor() {
             super();
             /** 经过时间 */
             this._t = 0;
             this.fill = fgui.LoaderFillType.Scale;
             this.setPivot(.5, .5);
+        }
+        /**
+         * 将对象放到对应类型标识的对象池中。
+         */
+        recover() {
+            var _a, _b, _c, _d;
+            Laya.Tween.clearAll(this);
+            Laya.timer.clearAll(this);
+            this.removeFromParent();
+            this._t = 0;
+            this.icon = null;
+            (_a = this.p1) === null || _a === void 0 ? void 0 : _a.recover();
+            (_b = this.p2) === null || _b === void 0 ? void 0 : _b.recover();
+            (_c = this.p3) === null || _c === void 0 ? void 0 : _c.recover();
+            (_d = this.p4) === null || _d === void 0 ? void 0 : _d.recover();
+            Laya.Pool.recover(GoldLoader.NAME, this);
         }
         get t() {
             return this._t;
@@ -4628,17 +4710,21 @@ window.coreLib = {};
                 + this.p4.y * Math.pow(this._t, 3);
         }
         setStartPoint(tempX, tempY) {
-            this.p1 = new Laya.Point(tempX, tempY);
+            this.p1 = Laya.Point.create().setTo(tempX, tempY);
             this._t = 0;
         }
         setMiddlePoint(tempX, tempY) {
-            this.p2 = new Laya.Point(tempX, tempY);
-            this.p3 = this.p2;
+            this.p3 = this.p2 = Laya.Point.create().setTo(tempX, tempY);
         }
         setEndPoint(tempX, tempY) {
-            this.p4 = new Laya.Point(tempX, tempY);
+            this.p4 = Laya.Point.create().setTo(tempX, tempY);
+        }
+        dispose() {
+            this.recover();
+            // super.dispose();
         }
     }
+    GoldLoader.NAME = "GoldLoaderPool";
     coreLib.GoldLoader = GoldLoader;
     class GoldSpray extends GoldLoader {
         constructor() {
@@ -4817,11 +4903,11 @@ window.coreLib = {};
     }
     coreLib.GoldSprayAni = GoldSprayAni;
     class Factory {
-        constructor() {
-            this.initController();
-        }
         static get inst() {
             return this._instance;
+        }
+        constructor() {
+            this.initController();
         }
         /**
          * 初始化框架
@@ -5081,12 +5167,12 @@ window.coreLib = {};
     AnalyticsManager.isOpenAnalytics = true;
     coreLib.AnalyticsManager = AnalyticsManager;
     class APP {
-        constructor() {
-        }
         static get inst() {
             if (this._instance == null)
                 this._instance = new APP();
             return this._instance;
+        }
+        constructor() {
         }
         openGame(gameId) {
             SceneManager.inst.openGame(null, gameId);
@@ -5692,16 +5778,16 @@ window.coreLib = {};
      * 资源管理类
      */
     class AssetsLoader {
+        static get inst() {
+            if (this._instance == null)
+                this._instance = new AssetsLoader();
+            return this._instance;
+        }
         constructor() {
             /** 是否是http  */
             this.httpProtocol = Laya.Browser.window.location.protocol == "http:";
             // 添加加载路径格式化
             MyLoader.format.push(this);
-        }
-        static get inst() {
-            if (this._instance == null)
-                this._instance = new AssetsLoader();
-            return this._instance;
         }
         call(url, version) {
             if (Laya.Render.isConchApp)
@@ -6921,15 +7007,15 @@ window.coreLib = {};
     })(HttpCode = coreLib.HttpCode || (coreLib.HttpCode = {}));
     /** socket管理 */
     class SocketManager extends BaseSocket {
-        constructor() {
-            super();
-            /** 接受到的消息 */
-            this.receiveData = [];
-        }
         static get inst() {
             if (this._instance == null)
                 this._instance = new SocketManager();
             return this._instance;
+        }
+        constructor() {
+            super();
+            /** 接受到的消息 */
+            this.receiveData = [];
         }
         /**
          * 链接服务器socket
@@ -7697,8 +7783,6 @@ window.coreLib = {};
     }
     coreLib.BindInputButton = BindInputButton;
     class Cast {
-        constructor() {
-        }
         /**
          * 角度转弧度
          * @param angle 角度
@@ -8565,14 +8649,16 @@ window.coreLib = {};
      * 金币动画
      */
     class GoldAniUtils {
-        constructor(goldIconUrl) {
+        constructor(icon, parent, sound) {
+            this.loaders = [];
             this.count = 0;
             /** 宽 */
             this.goldW = 70;
             /** 高 */
             this.goldH = 70;
-            this.goldIconUrl = goldIconUrl || GoldAniUtils.defaultIcon;
-            this.loaders = [];
+            this.icon = icon || GoldAniUtils.defaultIcon;
+            this.parent = parent || GoldAniUtils.defaultScene;
+            this.sound = sound || GoldAniUtils.defaultSound;
         }
         /**
          * 播放金币动画
@@ -8583,16 +8669,16 @@ window.coreLib = {};
          */
         playObject(num, startObject, endObject, endHandler) {
             if (startObject == null || startObject.isDisposed || startObject.displayObject == null) {
-                this.startPoint = new Laya.Point((fgui.GRoot.inst.width >> 1), (fgui.GRoot.inst.height >> 1));
+                this.startPoint = Laya.Point.create().setTo((this.scene.width >> 1), (this.scene.height >> 1));
             }
             else {
                 this.startPoint = startObject.localToGlobal();
-                fgui.GRoot.inst.globalToLocal(this.startPoint.x, this.startPoint.y, this.startPoint);
+                this.globalToLocal(this.startPoint);
                 this.startPoint.x += startObject.width / 2;
                 this.startPoint.y += startObject.height / 2;
             }
             this.endPoint = endObject.localToGlobal();
-            fgui.GRoot.inst.globalToLocal(this.endPoint.x, this.endPoint.y, this.endPoint);
+            this.globalToLocal(this.endPoint);
             this.endPoint.x += endObject.width / 2;
             this.endPoint.y += endObject.height / 2;
             this.play(num, this.startPoint, this.endPoint, endHandler);
@@ -8610,26 +8696,33 @@ window.coreLib = {};
             this.endHandler = endHandler;
             this.count = 0;
             this.specialAward(num);
-            SoundUtils.playSound("sounds/gold.ogg");
+            if (this.sound instanceof Laya.Sound) {
+                this.sound.play();
+            }
+            else
+                SoundUtils.playSound(this.sound);
         }
         /**
          * 特殊奖品 效果 - 移动至底部然后飘直指定位置
          * @param len 创建数量
+         * @internal
          */
         specialAward(len) {
             for (let i = 0; i < len; i++) {
-                let loader = new GoldLoader();
-                loader.icon = this.goldIconUrl;
+                let loader = GoldLoader.create();
+                loader.icon = this.icon;
                 loader.setXY(this.startPoint.x, this.startPoint.y);
                 loader.setSize(this.goldW, this.goldH);
                 let tempX = this.startPoint.x + Math.random() * 250 - 125;
                 let tempY = this.startPoint.y + Math.random() * 50 + 100;
-                let endP = new Laya.Point(this.endPoint.x - loader.width / 2, this.endPoint.y - loader.height / 2);
+                let endP = Laya.Point.create().setTo(this.endPoint.x - loader.width / 2, this.endPoint.y - loader.height / 2);
                 loader.setStartPoint(tempX, tempY);
                 loader.setMiddlePoint(tempX + (endP.x - tempX) / 2 + UtilsTool.random(200, 300), tempY + (endP.y - tempY) / 2 + UtilsTool.random(0, 100));
                 loader.setEndPoint(endP.x, endP.y);
-                fgui.GRoot.inst.addChild(loader);
+                this.addChild(loader);
                 this.loaders.push(loader);
+                this.startPoint.recover();
+                endP.recover();
                 Laya.Tween.to(loader, { x: tempX, y: tempY }, 600, Laya.Ease.backOut, Laya.Handler.create(this, (loader, i) => {
                     Laya.Tween.to(loader, {
                         //                                    x: endP.x,
@@ -8642,7 +8735,7 @@ window.coreLib = {};
                         this.count++;
                         if (this.count == len) {
                             while (this.loaders.length) {
-                                this.loaders.shift().dispose();
+                                this.loaders.shift().recover();
                             }
                             runFun(this.endHandler);
                         }
@@ -8660,7 +8753,7 @@ window.coreLib = {};
          * @param props 附带的属性变化 或参数 duration,delay,ease
          */
         playGoldAni(targetObject, endObject, endHandler, parent, props) {
-            !parent && (parent = fgui.GRoot.inst);
+            parent !== null && parent !== void 0 ? parent : (parent = this.scene);
             let endGlobal = endObject.localToGlobal();
             parent.globalToLocal(endGlobal.x, endGlobal.y, endGlobal);
             let targetGlobal = targetObject.localToGlobal();
@@ -8677,35 +8770,45 @@ window.coreLib = {};
          * @param props 附带的属性变化 或参数 duration,delay,ease
          */
         playGoldPointAni(targetObject, startPoint, endPoint, endHandler, parent, props) {
-            !parent && (parent = fgui.GRoot.inst);
-            !props && (props = {});
+            var _a, _b;
+            parent !== null && parent !== void 0 ? parent : (parent = this.scene);
+            props !== null && props !== void 0 ? props : (props = {});
             targetObject.setXY(startPoint.x, startPoint.y);
             parent.addChild(targetObject);
             props.x = endPoint.x;
             props.y = endPoint.y;
-            props.scaleX == undefined && (props.scaleX = .5);
-            props.scaleY == undefined && (props.scaleY = .5);
-            let duration = props.duration ? props.duration : 600;
-            let delay = props.delay ? props.delay : 0;
-            let ease = props.ease ? props.ease : null;
-            this.goldTween = Laya.Tween.to(targetObject, props, duration, ease, Laya.Handler.create(this, this.goldTweenHandler, [endHandler]), delay);
+            (_a = props.scaleX) !== null && _a !== void 0 ? _a : (props.scaleX = .5);
+            (_b = props.scaleY) !== null && _b !== void 0 ? _b : (props.scaleY = .5);
+            let duration = props.duration || 600;
+            let delay = props.delay || 0;
+            let ease = props.ease;
+            this.goldTween = Laya.Tween.to(targetObject, props, duration, ease, Laya.Handler.create(this, (endHandler) => {
+                this.goldTween = null;
+                runFun(endHandler);
+            }, [endHandler]), delay);
         }
-        /** 移动完成 */
-        goldTweenHandler(endHandler) {
-            runFun(endHandler);
+        addChild(child) {
+            return this.scene.addChild(child);
+        }
+        globalToLocal(target) {
+            this.scene.globalToLocal(target.x, target.y, target);
+        }
+        get scene() {
+            return this.parent || SceneManager.inst.scene || fgui.GRoot.inst;
         }
         dispose() {
+            var _a;
             while (this.loaders.length) {
-                let loader = this.loaders.shift();
-                Laya.Tween.clearAll(loader);
-                loader.dispose();
+                this.loaders.shift().recover();
             }
-            if (this.goldTween != null)
-                this.goldTween.clear();
+            (_a = this.goldTween) === null || _a === void 0 ? void 0 : _a.clear();
             this.goldTween = null;
         }
     }
-    GoldAniUtils.defaultIcon = "";
+    /**
+     * 默认声音
+     */
+    GoldAniUtils.defaultSound = "sounds/gold.ogg";
     coreLib.GoldAniUtils = GoldAniUtils;
     class HTTPUtils {
         constructor() {
@@ -9925,14 +10028,14 @@ window.coreLib = {};
      * 流量统计
      */
     class StatFlow {
-        constructor() {
-            /** 公共流量计算接口 */
-            this.by = new Laya.Byte();
-        }
         static get inst() {
             if (this._instance == null)
                 StatFlow._instance = new StatFlow();
             return this._instance;
+        }
+        constructor() {
+            /** 公共流量计算接口 */
+            this.by = new Laya.Byte();
         }
         /**
          * 计算流量
@@ -11010,16 +11113,16 @@ window.coreLib = {};
      * @author boge
      */
     class AlertPanel extends fgui.GComponent {
+        static get inst() {
+            if (this._instance == null)
+                this._instance = new AlertPanel;
+            return this._instance;
+        }
         constructor() {
             super();
             this.touchable = false;
             Laya.stage.on(Laya.Event.RESIZE, this, this.__winResize);
             this.__winResize();
-        }
-        static get inst() {
-            if (this._instance == null)
-                this._instance = new AlertPanel;
-            return this._instance;
         }
         __winResize() {
             this.setSize(Laya.stage.width, Laya.stage.height);
@@ -11954,15 +12057,15 @@ window.coreLib = {};
     coreLib.GSpineSkeleton = GSpineSkeleton;
     /** 提示框 */
     class HomePrompt extends BaseWindow {
-        constructor() {
-            super();
-            this.modal = true;
-            this.isAction = false;
-        }
         static get instance() {
             if (this._instance == null)
                 this._instance = new HomePrompt;
             return this._instance;
+        }
+        constructor() {
+            super();
+            this.modal = true;
+            this.isAction = false;
         }
         onInit() {
             this.contentPane = fgui.UIPackage.createObjectFromURL("//init/HomePrompt").asCom;
@@ -12038,6 +12141,11 @@ window.coreLib = {};
     }
     coreLib.HomePrompt = HomePrompt;
     class HtmlWindow extends fgui.Window {
+        static get inst() {
+            if (this._instance == null)
+                this._instance = new HtmlWindow;
+            return this._instance;
+        }
         constructor() {
             super();
             this.obj = {
@@ -12048,11 +12156,6 @@ window.coreLib = {};
                 "privacy.html": "Privacy Policy",
                 "a": ""
             };
-        }
-        static get inst() {
-            if (this._instance == null)
-                this._instance = new HtmlWindow;
-            return this._instance;
         }
         onInit() {
             this.modal = true;
@@ -12262,13 +12365,13 @@ window.coreLib = {};
     coreLib.HtmlWindow = HtmlWindow;
     /** 图片窗口 */
     class ImageWindow extends BaseWindow {
-        constructor() {
-            super();
-        }
         static get inst() {
             if (this._instance == null)
                 this._instance = new ImageWindow;
             return this._instance;
+        }
+        constructor() {
+            super();
         }
         onInit() {
             this.contentPane = fgui.UIPackage.createObjectFromURL("//init/ImageWindow").asCom;
@@ -12282,15 +12385,15 @@ window.coreLib = {};
     coreLib.ImageWindow = ImageWindow;
     /** 加载界面 */
     class LoadingWindow extends BaseView {
-        constructor() {
-            super();
-            /** 当前进度 */
-            this.tempValue = 0;
-        }
         static get inst() {
             if (this._instance == null)
                 this._instance = fgui.UIPackage.createObjectFromURL("//init/LoadingWindow", LoadingWindow);
             return this._instance;
+        }
+        constructor() {
+            super();
+            /** 当前进度 */
+            this.tempValue = 0;
         }
         onInit() {
             this.controller = this.getController("c1");
@@ -12874,6 +12977,11 @@ window.coreLib = {};
     coreLib.PromptTip = PromptTip;
     /** 提示框 */
     class PromptWindow extends BaseWindow {
+        static get inst() {
+            if (PromptWindow._instance == null)
+                PromptWindow._instance = new PromptWindow();
+            return PromptWindow._instance;
+        }
         constructor() {
             super();
             /** 缓存的提示框 */
@@ -12883,11 +12991,6 @@ window.coreLib = {};
                 PromptWindow._instance = this;
             this.regAction(ActionLib.GAME_SHOW_PROMPT_CANCEL_WINDOW, this, this.showCancelTip);
             this.regAction(ActionLib.GAME_SHOW_PROMPT_WINDOW, this, this.showTip);
-        }
-        static get inst() {
-            if (PromptWindow._instance == null)
-                PromptWindow._instance = new PromptWindow();
-            return PromptWindow._instance;
         }
         onInit() {
             this.contentPane = fgui.UIPackage.createObjectFromURL("//common/PromptWindow").asCom;
@@ -12999,16 +13102,16 @@ window.coreLib = {};
     coreLib.PromptWindow = PromptWindow;
     /** 提示框 */
     class RechargeSuccessWindow extends BaseWindow {
+        static get inst() {
+            if (RechargeSuccessWindow._instance == null)
+                RechargeSuccessWindow._instance = new RechargeSuccessWindow();
+            return RechargeSuccessWindow._instance;
+        }
         constructor() {
             super();
             /** 缓存的提示框 */
             this.cacheMessage = [];
             this.modal = true;
-        }
-        static get inst() {
-            if (RechargeSuccessWindow._instance == null)
-                RechargeSuccessWindow._instance = new RechargeSuccessWindow();
-            return RechargeSuccessWindow._instance;
         }
         onInit() {
             this.contentPane = fgui.UIPackage.createObjectFromURL("//common/RechargeSuccessWindow").asCom;
@@ -13103,12 +13206,12 @@ window.coreLib = {};
      * @author boge
      */
     class Upload {
-        constructor() {
-        }
         static get inst() {
             if (this._instance == null)
                 this._instance = new Upload;
             return this._instance;
+        }
+        constructor() {
         }
         get nativeFile() {
             if (this._file == null) {
@@ -13185,15 +13288,15 @@ window.coreLib = {};
     coreLib.Upload = Upload;
     /** 加载 */
     class WaitResult extends fgui.GComponent {
-        constructor() {
-            super();
-        }
         static get inst() {
             if (this._instance == null) {
                 fgui.UIObjectFactory.setPackageItemExtension("//gameCommon/WaitResult", WaitResult);
                 this._instance = fgui.UIPackage.createObjectFromURL("//gameCommon/WaitResult");
             }
             return this._instance;
+        }
+        constructor() {
+            super();
         }
         constructFromXML(xml) {
             super.constructFromXML(xml);
