@@ -74,7 +74,7 @@ class GenerateModule {
      * @param customFun {(file)=>{}}
      * @return {*}
      */
-    createTS(files, customFun) {
+    createTS(files, customFun = null) {
         if (!fs.existsSync(this.saveTempPath + "/temp")) {
             fs.mkdirSync(this.saveTempPath + "/temp", {recursive: true})
             console.log("创建目录：" + this.saveTempPath + "/temp")
