@@ -71,9 +71,10 @@ class GenerateModule {
     /**
      *
      * @param files {string[]}
+     * @param customFun {(file)=>{}}
      * @return {*}
      */
-    createTS(files) {
+    createTS(files, customFun) {
         if (!fs.existsSync(this.saveTempPath + "/temp")) {
             fs.mkdirSync(this.saveTempPath + "/temp", {recursive: true})
             console.log("创建目录：" + this.saveTempPath + "/temp")
@@ -127,7 +128,10 @@ class GenerateModule {
                 callback(null, newContent.join("\n"))
             }))
             .pipe(concat(this.saveTempTs))
-            // .pipe(inject.replace("export\s+(?=class|enum|interface|const)", ""))
+            .pipe(through2.obj((file, encoding, callback) => {
+                customFun && customFun(file)
+                return callback(null, file)
+            }))
             .pipe(inject.prepend('namespace ' + this.namespace + ' {\n'))
             .pipe(inject.append('\n}'))
             .pipe(gulp.dest(this.saveTempPath + "/temp"))
