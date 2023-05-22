@@ -44,7 +44,10 @@ export class BaseSlotView extends BaseView {
     protected onInit() {
         super.onInit()
         let list = this.getChild("list")
-        if (list != null) this.list = list.asList
+        if (list != null) {
+            this.list = list.asList
+            this.list.touchable = false
+        }
     }
 
     /**
