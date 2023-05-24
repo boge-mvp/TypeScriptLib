@@ -18,8 +18,12 @@ export class StringUtil {
 
     /** 支持字符串格式 ("{0}"). 格式化 */
     static format(format: string, ...args) {
-        for (let i = 0; i < args.length; ++i)
-            format = format.replace(new RegExp("\\{" + i + "\\}", "g"), args[i])
+        if (args.length == 1) {
+            format = format.replace(/\\{(\\d+)\\}/g, args[0])
+        } else {
+            for (let i = 0; i < args.length; ++i)
+                format = format.replace(new RegExp("\\{" + i + "\\}", "g"), args[i])
+        }
         return format
     }
 

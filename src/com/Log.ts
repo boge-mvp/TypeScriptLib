@@ -56,12 +56,20 @@ export class Log {
         console.warn.apply(window, value)
     }
 
+    /**
+     * 错误
+     * @param value
+     */
     static error(...value) {
         Log.append({level: LogLevel.ERROR, data: value})
         if (Log.level > LogLevel.ERROR) return
         console.error.apply(window, value)
     }
 
+    /**
+     * 致命的错误
+     * @param value
+     */
     static fatal(...value) {
         Log.append({level: LogLevel.FATAL, data: value})
         if (Log.level > LogLevel.FATAL) return

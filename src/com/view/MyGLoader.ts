@@ -2,8 +2,15 @@ import GLoader = fgui.GLoader
 
 export class MyGLoader extends GLoader {
 
-    constructor() {
-        super()
+    /**
+     * 加载重试次数
+     */
+    loadRetryCount = 0
+    loadCount = 0
+
+    protected loadExternal() {
+        this.loadCount = 0
+        super.loadExternal();
     }
 
     protected onExternalLoadSuccess(texture: Laya.Texture) {
@@ -17,6 +24,11 @@ export class MyGLoader extends GLoader {
     }
 
     protected onExternalLoadFailed() {
+        if (this.loadRetryCount > 0 && this.loadCount < this.loadRetryCount) {
+            this.loadCount++
+            super.loadExternal()
+            return
+        }
         super.onExternalLoadFailed()
         if (this.displayObject) this.displayObject.event(Laya.Event.COMPLETE)
     }
