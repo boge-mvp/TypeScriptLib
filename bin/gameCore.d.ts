@@ -2445,7 +2445,15 @@ declare namespace coreLib {
         static debug(...value: any[]): void;
         static info(...value: any[]): void;
         static warn(...value: any[]): void;
+        /**
+         * 错误
+         * @param value
+         */
         static error(...value: any[]): void;
+        /**
+         * 致命的错误
+         * @param value
+         */
         static fatal(...value: any[]): void;
     }
     /**
@@ -2716,21 +2724,33 @@ declare namespace coreLib {
         /** 是否是http  */
         readonly httpProtocol: boolean;
         /**
-         * 自定义加载文件
+         * 自定义额外加载操作
          * @example
          * AssetsLoader.customLoader = (complete: ParamHandler, errorHandler: ParamHandler) => {
          *      ...
          *     runFun(complete)
          * }
          *
-         *
-         * Laya.Handler.create(this, function(complete: ParamHandler, errorHandler: ParamHandler) {
+         * AssetsLoader.customLoader = Laya.Handler.create(this, function(complete: ParamHandler, errorHandler: ParamHandler) {
          *  ...
          *  runFun(complete)
          *
          * })
          */
         customLoader: ParamHandler;
+        /**
+         * 自定义加载资源处理
+         *  @example
+         * AssetsLoader.customLoaderRes = (loadRes: LoadRes[]) => {
+         *      ...
+         * }
+         *
+         * AssetsLoader.customLoaderRes = Laya.Handler.create(this, function(loadRes: LoadRes[]) {
+         *  ...
+         *
+         * })
+         */
+        customLoaderRes: ParamHandler;
         constructor();
         call(url: string, version: any): string;
         /**
@@ -5278,7 +5298,12 @@ declare namespace coreLib {
         static clearAll(): void;
     }
     export class MyGLoader extends fgui.GLoader {
-        constructor();
+        /**
+         * 加载重试次数
+         */
+        loadRetryCount: number;
+        loadCount: number;
+        protected loadExternal(): void;
         protected onExternalLoadSuccess(texture: Laya.Texture): void;
         protected loadFromPackage(itemURL: string): void;
         protected onExternalLoadFailed(): void;
@@ -5504,7 +5529,7 @@ declare type ParamHandler = ((...args) => any) | Laya.Handler
 /**
  * 执行 ParamHandler 方法
  * @param func ParamHandler 对象
- * @param args 参数
+ * @param args 参数 传入数组会将数组当场一个参数传递
  */
 declare function runFun(func: ParamHandler, ...args): any | null
 

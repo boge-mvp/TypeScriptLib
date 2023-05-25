@@ -6,7 +6,7 @@ declare type ParamHandler = ((...args) => any) | Laya.Handler
 /**
  * 执行 ParamHandler 方法
  * @param func ParamHandler 对象
- * @param args 参数
+ * @param args 参数 传入数组会将数组当场一个参数传递
  */
 declare function runFun(func: ParamHandler, ...args): any | null
 

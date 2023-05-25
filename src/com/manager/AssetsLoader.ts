@@ -30,7 +30,6 @@ import {IFormatVer} from "../interfaces/ICommon";
 export class AssetsLoader implements IFormatVer {
 
     private static _instance: AssetsLoader
-
     static get inst(): AssetsLoader {
         if (this._instance == null) this._instance = new AssetsLoader()
         return this._instance
@@ -48,21 +47,33 @@ export class AssetsLoader implements IFormatVer {
     /** 是否是http  */
     readonly httpProtocol = Browser.window.location.protocol == "http:"
     /**
-     * 自定义加载文件
+     * 自定义额外加载操作
      * @example
      * AssetsLoader.customLoader = (complete: ParamHandler, errorHandler: ParamHandler) => {
      *      ...
      *     runFun(complete)
      * }
      *
-     *
-     * Laya.Handler.create(this, function(complete: ParamHandler, errorHandler: ParamHandler) {
+     * AssetsLoader.customLoader = Laya.Handler.create(this, function(complete: ParamHandler, errorHandler: ParamHandler) {
      *  ...
      *  runFun(complete)
      *
      * })
      */
     customLoader: ParamHandler
+    /**
+     * 自定义加载资源处理
+     *  @example
+     * AssetsLoader.customLoaderRes = (loadRes: LoadRes[]) => {
+     *      ...
+     * }
+     *
+     * AssetsLoader.customLoaderRes = Laya.Handler.create(this, function(loadRes: LoadRes[]) {
+     *  ...
+     *
+     * })
+     */
+    customLoaderRes: ParamHandler
 
     constructor() {
         // 添加加载路径格式化
@@ -270,7 +281,7 @@ export class AssetsLoader implements IFormatVer {
         this.errorHandler = errorHandler
         this.loadObj = obj
 
-        let res: LoadRes[] = obj.res
+        let res = obj.res
 
         let loadArray: LoadRes[] = []
         // 判断是否已经显示过引导页
@@ -290,6 +301,10 @@ export class AssetsLoader implements IFormatVer {
                     loadArray.push(guide)
                 }
             }
+        }
+
+        if (this.customLoaderRes) {
+            runFun(this.customLoaderRes, loadArray)
         }
 
         loadArray = loadArray.concat(this.parseRes(res))

@@ -1907,8 +1907,10 @@ window.coreLib = {};
         onInit() {
             super.onInit();
             let list = this.getChild("list");
-            if (list != null)
+            if (list != null) {
                 this.list = list.asList;
+                this.list.touchable = false;
+            }
         }
         /**
          * 显示指定按钮下的线
@@ -5052,12 +5054,20 @@ window.coreLib = {};
                 return;
             console.warn.apply(window, value);
         }
+        /**
+         * 错误
+         * @param value
+         */
         static error(...value) {
             Log.append({ level: LogLevel.ERROR, data: value });
             if (Log.level > LogLevel.ERROR)
                 return;
             console.error.apply(window, value);
         }
+        /**
+         * 致命的错误
+         * @param value
+         */
         static fatal(...value) {
             Log.append({ level: LogLevel.FATAL, data: value });
             if (Log.level > LogLevel.FATAL)
@@ -5987,6 +5997,9 @@ window.coreLib = {};
                         loadArray.push(guide);
                     }
                 }
+            }
+            if (this.customLoaderRes) {
+                runFun(this.customLoaderRes, loadArray);
             }
             loadArray = loadArray.concat(this.parseRes(res));
             if (fgui.UIPackage.getByName("gameCommon/gameCommon") == null) {
@@ -10155,8 +10168,13 @@ window.coreLib = {};
     class StringUtil {
         /** 支持字符串格式 ("{0}"). 格式化 */
         static format(format, ...args) {
-            for (let i = 0; i < args.length; ++i)
-                format = format.replace(new RegExp("\\{" + i + "\\}", "g"), args[i]);
+            if (args.length == 1) {
+                format = format.replace(/\\{(\\d+)\\}/g, args[0]);
+            }
+            else {
+                for (let i = 0; i < args.length; ++i)
+                    format = format.replace(new RegExp("\\{" + i + "\\}", "g"), args[i]);
+            }
             return format;
         }
         /**
@@ -12639,7 +12657,16 @@ window.coreLib = {};
     coreLib.MessageTip = MessageTip;
     class MyGLoader extends fgui.GLoader {
         constructor() {
-            super();
+            super(...arguments);
+            /**
+             * 加载重试次数
+             */
+            this.loadRetryCount = 0;
+            this.loadCount = 0;
+        }
+        loadExternal() {
+            this.loadCount = 0;
+            super.loadExternal();
         }
         onExternalLoadSuccess(texture) {
             super.onExternalLoadSuccess(texture);
@@ -12652,6 +12679,11 @@ window.coreLib = {};
                 this.displayObject.event(Laya.Event.COMPLETE);
         }
         onExternalLoadFailed() {
+            if (this.loadRetryCount > 0 && this.loadCount < this.loadRetryCount) {
+                this.loadCount++;
+                super.loadExternal();
+                return;
+            }
             super.onExternalLoadFailed();
             if (this.displayObject)
                 this.displayObject.event(Laya.Event.COMPLETE);
