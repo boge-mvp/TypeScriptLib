@@ -4375,7 +4375,12 @@ window.coreLib = {};
                 }
             });
             Object.defineProperty(fgui.GLoader.prototype, "temp_loadExternal", {
-                value: fgui.GLoader.prototype["loadExternal"]
+                value: function () {
+                    fgui.AssetProxy.inst.load(this._url, Laya.Handler.create(this, (url, tex) => {
+                        if (this._url === url)
+                            this.__getResCompleted(tex);
+                    }, [this._url]), null, Laya.Loader.IMAGE);
+                }
             });
             Object.defineProperty(fgui.GLoader.prototype, "loadExternal", {
                 value: function () {

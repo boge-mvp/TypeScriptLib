@@ -5593,8 +5593,13 @@ declare module fgui {
 
         /**
          * 加载重试次数
+         * @default 0
          */
         loadRetryCount: number
+        /**
+         * 当前已经重复加载的次数
+         * @default 0
+         */
         loadCount: number
 
     }
