@@ -5533,7 +5533,6 @@ declare type ParamHandler = ((...args) => any) | Laya.Handler
  */
 declare function runFun(func: ParamHandler, ...args): any | null
 
-
 declare module Laya {
 
 // @ts-ignore
@@ -5599,6 +5598,19 @@ declare module Laya {
 }
 
 
+declare module fgui {
+
+    interface GLoader {
+
+        /**
+         * 加载重试次数
+         */
+        loadRetryCount: number
+        loadCount: number
+
+    }
+
+}
 
 
 

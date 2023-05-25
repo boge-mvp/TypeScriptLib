@@ -4364,6 +4364,60 @@ window.coreLib = {};
                     }
                 }
             });
+            Object.defineProperties(fgui.GLoader.prototype, {
+                loadRetryCount: {
+                    value: 0,
+                    writable: true
+                },
+                loadCount: {
+                    value: 0,
+                    writable: true
+                }
+            });
+            Object.defineProperty(fgui.GLoader.prototype, "temp_loadExternal", {
+                value: fgui.GLoader.prototype["loadExternal"]
+            });
+            Object.defineProperty(fgui.GLoader.prototype, "loadExternal", {
+                value: function () {
+                    this.loadCount = 0;
+                    this.temp_loadExternal();
+                }
+            });
+            Object.defineProperty(fgui.GLoader.prototype, "temp_onExternalLoadSuccess", {
+                value: fgui.GLoader.prototype["onExternalLoadSuccess"]
+            });
+            Object.defineProperty(fgui.GLoader.prototype, "onExternalLoadSuccess", {
+                value: function (texture) {
+                    var _a;
+                    this.temp_onExternalLoadSuccess(texture);
+                    (_a = this.displayObject) === null || _a === void 0 ? void 0 : _a.event(Laya.Event.COMPLETE);
+                }
+            });
+            Object.defineProperty(fgui.GLoader.prototype, "temp_loadFromPackage", {
+                value: fgui.GLoader.prototype["loadFromPackage"]
+            });
+            Object.defineProperty(fgui.GLoader.prototype, "loadFromPackage", {
+                value: function (itemURL) {
+                    var _a;
+                    this.temp_loadFromPackage(itemURL);
+                    (_a = this.displayObject) === null || _a === void 0 ? void 0 : _a.event(Laya.Event.COMPLETE);
+                }
+            });
+            Object.defineProperty(fgui.GLoader.prototype, "temp_onExternalLoadFailed", {
+                value: fgui.GLoader.prototype["onExternalLoadFailed"]
+            });
+            Object.defineProperty(fgui.GLoader.prototype, "onExternalLoadFailed", {
+                value: function () {
+                    var _a;
+                    if (this.loadRetryCount > 0 && this.loadCount < this.loadRetryCount) {
+                        this.loadCount++;
+                        this.temp_loadExternal();
+                        return;
+                    }
+                    this.temp_onExternalLoadFailed();
+                    (_a = this.displayObject) === null || _a === void 0 ? void 0 : _a.event(Laya.Event.COMPLETE);
+                }
+            });
         }
         static defineTimer() {
             Object.defineProperty(Laya.Timer.prototype, "tempClearAll", {

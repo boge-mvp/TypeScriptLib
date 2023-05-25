@@ -403,6 +403,62 @@ export class DefineConfig {
             }
         })
 
+        Object.defineProperties(fgui.GLoader.prototype, {
+            loadRetryCount: {
+                value: 0,
+                writable: true
+            },
+            loadCount: {
+                value: 0,
+                writable: true
+            }
+        })
+
+        Object.defineProperty(fgui.GLoader.prototype, "temp_loadExternal", {
+            value: fgui.GLoader.prototype["loadExternal"]
+        })
+        Object.defineProperty(fgui.GLoader.prototype, "loadExternal", {
+            value: function () {
+                this.loadCount = 0
+                this.temp_loadExternal()
+            }
+        })
+
+        Object.defineProperty(fgui.GLoader.prototype, "temp_onExternalLoadSuccess", {
+            value: fgui.GLoader.prototype["onExternalLoadSuccess"]
+        })
+        Object.defineProperty(fgui.GLoader.prototype, "onExternalLoadSuccess", {
+            value: function (texture: Laya.Texture) {
+                this.temp_onExternalLoadSuccess(texture)
+                this.displayObject?.event(Laya.Event.COMPLETE)
+            }
+        })
+
+        Object.defineProperty(fgui.GLoader.prototype, "temp_loadFromPackage", {
+            value: fgui.GLoader.prototype["loadFromPackage"]
+        })
+        Object.defineProperty(fgui.GLoader.prototype, "loadFromPackage", {
+            value: function (itemURL: string) {
+                this.temp_loadFromPackage(itemURL)
+                this.displayObject?.event(Laya.Event.COMPLETE)
+            }
+        })
+
+        Object.defineProperty(fgui.GLoader.prototype, "temp_onExternalLoadFailed", {
+            value: fgui.GLoader.prototype["onExternalLoadFailed"]
+        })
+        Object.defineProperty(fgui.GLoader.prototype, "onExternalLoadFailed", {
+            value: function () {
+                if (this.loadRetryCount > 0 && this.loadCount < this.loadRetryCount) {
+                    this.loadCount++
+                    this.temp_loadExternal()
+                    return
+                }
+                this.temp_onExternalLoadFailed()
+                this.displayObject?.event(Laya.Event.COMPLETE)
+            }
+        })
+
 
     }
 
