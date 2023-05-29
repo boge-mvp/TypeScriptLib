@@ -13405,16 +13405,14 @@ window.coreLib = {};
     // 修改 mixin 函数
     function mixin(...classes) {
         class MixinClass {
-            constructor() {
-                for (const Class of classes) {
-                    const instance = new Class();
-                    copyProperties(this, instance);
-                }
-            }
         }
-        for (const Class of classes) {
-            copyProperties(MixinClass.prototype, Class.prototype);
-        }
+        // 将每个类的原型链添加到 MixinClass 的原型链上
+        classes.forEach((BaseClass) => {
+            MixinClass.prototype = Object.create(BaseClass.prototype, Object.getOwnPropertyDescriptors(MixinClass.prototype));
+        });
+        // for (const Class of classes) {
+        //     copyProperties(MixinClass.prototype, Class.prototype)
+        // }
         return MixinClass;
     }
     function copyProperties(target, source) {

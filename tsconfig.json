@@ -8,7 +8,7 @@
     "sourceMap": true,
     "skipLibCheck": true,
     "stripInternal": true,
-
+    "lib": ["DOM", "ES2017"]
   },
   "exclude": [
     "./node_modules",

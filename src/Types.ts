@@ -1,3 +1,4 @@
+
 window["runFun"] = (func?: ParamHandler, ...args) => {
     if (func != null) return func instanceof Laya.Handler ? func.runWith(args) : func.apply(null, args)
     return null
@@ -12,16 +13,28 @@ type InstanceTypeOfConstructor<T> = T extends new (...args: any[]) => infer R ? 
 // 修改 mixin 函数
 function mixin<T extends Constructor[]>(...classes: T): Constructor<UnionToIntersection<InstanceTypeOfConstructor<T[number]>>> {
     class MixinClass {
-        constructor() {
-            for (const Class of classes) {
-                const instance = new Class()
-                copyProperties(this, instance)
-            }
-        }
+        // constructor() {
+        //
+        //     let superClassIndex = 0; // 根据需要更改这个索引，以指定哪一个父类的构造函数应该被调用
+        //     const superClass = classes[superClassIndex];
+        //
+        //     // 通过调用 super() 函数在子类构造函数中调用指定父类的构造函数
+        //     superClass.call()
+        //     super(...arguments);
+        //
+        //     for (const Class of classes) {
+        //         const instance = new Class()
+        //         copyProperties(this, instance)
+        //     }
+        // }
     }
-    for (const Class of classes) {
-        copyProperties(MixinClass.prototype, Class.prototype)
-    }
+    // 将每个类的原型链添加到 MixinClass 的原型链上
+    classes.forEach((BaseClass) => {
+        MixinClass.prototype = Object.create(BaseClass.prototype, Object.getOwnPropertyDescriptors(MixinClass.prototype))
+    })
+    // for (const Class of classes) {
+    //     copyProperties(MixinClass.prototype, Class.prototype)
+    // }
     return MixinClass as any
 }
 
