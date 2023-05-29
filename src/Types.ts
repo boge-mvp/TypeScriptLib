@@ -14,22 +14,39 @@ function mixin<T extends Constructor[]>(...classes: T): Constructor<UnionToInter
     class MixinClass {
         constructor() {
             for (const Class of classes) {
-                const instance = new Class();
-                copyProperties(this, instance);
+                const instance = new Class()
+                copyProperties(this, instance)
             }
         }
     }
     for (const Class of classes) {
-        copyProperties(MixinClass.prototype, Class.prototype);
+        copyProperties(MixinClass.prototype, Class.prototype)
     }
-    return MixinClass as any;
+    return MixinClass as any
 }
 
 function copyProperties(target: any, source: any) {
-    for (const key of Reflect.ownKeys(source)) {
+    for (const key of getAllPropertyNames(source)) {
         if (key !== "constructor" && key !== "prototype" && key !== "name") {
             const descriptor = Object.getOwnPropertyDescriptor(source, key)
             Object.defineProperty(target, key, descriptor)
         }
     }
+}
+
+function getAllPropertyNames(obj) {
+    const allPropertyNames = new Set<string | symbol>()
+    let currentObj = obj
+    while (currentObj !== null) {
+        // 获取当前对象的所有属性键（不包括原型链上的属性）
+        const propertyNames = Reflect.ownKeys(currentObj)
+
+        // 将属性添加到集合中
+        propertyNames.forEach(prop => allPropertyNames.add(prop))
+
+        // 沿着原型链向上查找
+        currentObj = Object.getPrototypeOf(currentObj)
+    }
+
+    return Array.from(allPropertyNames)
 }

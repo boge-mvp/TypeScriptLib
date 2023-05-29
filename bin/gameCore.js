@@ -2800,7 +2800,7 @@ window.coreLib = {};
          * @param callback
          * @param error
          * @param timeout
-         * @param overtime 超时时间设置 毫秒
+         * @param [overtime = 0] 超时时间设置 毫秒
          */
         getData(url, data, callback, error, timeout, overtime = 0) {
             HTTPUtils.create()
@@ -2854,7 +2854,7 @@ window.coreLib = {};
          * @param error 错误调用函数
          * @param timeout 超时回调函数
          * @param headers (default = null) HTTP 请求的头部信息。参数形如key-value数组：key是头部的名称，不应该包括空白、冒号或换行；value是头部的值，不应该包括换行。比如["Content-Type", "application/json"]。
-         * @param overtime
+         * @param [overtime = 0] 超时时间设置 毫秒
          */
         postData(url, data, callback, error, timeout, headers, overtime = 0) {
             HTTPUtils.create()
@@ -2923,11 +2923,7 @@ window.coreLib = {};
         }
         /**
          * 进入游戏失败
-         * @param message 弹窗内容
-         */
-        /**
-         * 进入游戏失败
-         * @param isTip 是否需要弹窗
+         * @param [isTip = true] 是否需要弹窗
          * @param message 弹窗内容
          */
         enterFail(isTip = true, message) {
@@ -13422,11 +13418,24 @@ window.coreLib = {};
         return MixinClass;
     }
     function copyProperties(target, source) {
-        for (const key of Reflect.ownKeys(source)) {
+        for (const key of getAllPropertyNames(source)) {
             if (key !== "constructor" && key !== "prototype" && key !== "name") {
                 const descriptor = Object.getOwnPropertyDescriptor(source, key);
                 Object.defineProperty(target, key, descriptor);
             }
         }
+    }
+    function getAllPropertyNames(obj) {
+        const allPropertyNames = new Set();
+        let currentObj = obj;
+        while (currentObj !== null) {
+            // 获取当前对象的所有属性键（不包括原型链上的属性）
+            const propertyNames = Reflect.ownKeys(currentObj);
+            // 将属性添加到集合中
+            propertyNames.forEach(prop => allPropertyNames.add(prop));
+            // 沿着原型链向上查找
+            currentObj = Object.getPrototypeOf(currentObj);
+        }
+        return Array.from(allPropertyNames);
     }
 })(coreLib || (coreLib = {}));

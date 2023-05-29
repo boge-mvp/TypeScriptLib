@@ -69,7 +69,7 @@ export abstract class GameServlet extends BaseProxy implements IGameServlet {
      * @param callback
      * @param error
      * @param timeout
-     * @param overtime 超时时间设置 毫秒
+     * @param [overtime = 0] 超时时间设置 毫秒
      */
     getData(url: string, data: any, callback?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler, overtime = 0) {
         HTTPUtils.create()
@@ -117,7 +117,7 @@ export abstract class GameServlet extends BaseProxy implements IGameServlet {
      * @param error 错误调用函数
      * @param timeout 超时回调函数
      * @param headers (default = null) HTTP 请求的头部信息。参数形如key-value数组：key是头部的名称，不应该包括空白、冒号或换行；value是头部的值，不应该包括换行。比如["Content-Type", "application/json"]。
-     * @param overtime
+     * @param [overtime = 0] 超时时间设置 毫秒
      */
     postData(url: string, data: any, callback?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler, headers?: string[], overtime = 0) {
         HTTPUtils.create()
@@ -183,11 +183,7 @@ export abstract class GameServlet extends BaseProxy implements IGameServlet {
 
     /**
      * 进入游戏失败
-     * @param message 弹窗内容
-     */
-    /**
-     * 进入游戏失败
-     * @param isTip 是否需要弹窗
+     * @param [isTip = true] 是否需要弹窗
      * @param message 弹窗内容
      */
     protected enterFail(isTip = true, message?: string) {
