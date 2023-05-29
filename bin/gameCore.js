@@ -13421,7 +13421,7 @@ window.coreLib = {};
         for (const key of getAllPropertyNames(source)) {
             if (key !== "constructor" && key !== "prototype" && key !== "name") {
                 const descriptor = Object.getOwnPropertyDescriptor(source, key);
-                Object.defineProperty(target, key, descriptor);
+                descriptor && Object.defineProperty(target, key, descriptor);
             }
         }
     }

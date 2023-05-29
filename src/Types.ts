@@ -29,7 +29,7 @@ function copyProperties(target: any, source: any) {
     for (const key of getAllPropertyNames(source)) {
         if (key !== "constructor" && key !== "prototype" && key !== "name") {
             const descriptor = Object.getOwnPropertyDescriptor(source, key)
-            Object.defineProperty(target, key, descriptor)
+            descriptor && Object.defineProperty(target, key, descriptor)
         }
     }
 }
@@ -40,7 +40,6 @@ function getAllPropertyNames(obj) {
     while (currentObj !== null) {
         // 获取当前对象的所有属性键（不包括原型链上的属性）
         const propertyNames = Reflect.ownKeys(currentObj)
-
         // 将属性添加到集合中
         propertyNames.forEach(prop => allPropertyNames.add(prop))
 
