@@ -1,7 +1,7 @@
 window.coreLib = {};
 
 (function (coreLib) {
-    class View extends fgui.GComponent {
+    class ActionEvent {
         regAction(action, caller, method, group) {
             Factory.inst.regAction(action, caller, method, group);
         }
@@ -39,6 +39,9 @@ window.coreLib = {};
             args.unshift(group);
             Factory.inst.sendGroupAction.apply(Factory.inst, args);
         }
+    }
+    coreLib.ActionEvent = ActionEvent;
+    class View extends mixin(fgui.GComponent, ActionEvent) {
         addView(key, view) {
             return Factory.inst.addView(key, view);
         }
@@ -65,44 +68,7 @@ window.coreLib = {};
         }
     }
     coreLib.View = View;
-    class Proxys {
-        regAction(action, caller, method, group) {
-            Factory.inst.regAction(action, caller, method, group);
-        }
-        regActionHandler(action, handler, group) {
-            Factory.inst.regActionHandler(action, handler, group);
-        }
-        removeAllAction(...args) {
-            Factory.inst.removeAllAction.apply(Factory.inst, args);
-        }
-        removeGroup(group) {
-            Factory.inst.removeGroup(group);
-        }
-        removeGroupActions(group, ...args) {
-            args.unshift(group);
-            Factory.inst.removeGroupActions.apply(Factory.inst, args);
-        }
-        removeActionHandler(action, method, group) {
-            Factory.inst.removeActionHandler(action, method, group);
-        }
-        removeFunction(groupObj, action, method) {
-            Factory.inst.removeFunction(groupObj, action, method);
-        }
-        removeTargetAll(caller) {
-            Factory.inst.removeTargetAll(caller);
-        }
-        removeTarget(groupObj, caller) {
-            Factory.inst.removeTarget(groupObj, caller);
-        }
-        sendAction(action, ...args) {
-            args.unshift(action);
-            Factory.inst.sendAction.apply(Factory.inst, args);
-        }
-        sendGroupAction(group, action, ...args) {
-            args.unshift(action);
-            args.unshift(group);
-            Factory.inst.sendGroupAction.apply(Factory.inst, args);
-        }
+    class Proxys extends ActionEvent {
         addProxy(key, proxy) {
             return Factory.inst.addProxy(key, proxy);
         }
@@ -2834,12 +2800,13 @@ window.coreLib = {};
          * @param callback
          * @param error
          * @param timeout
+         * @param overtime 超时时间设置 毫秒
          */
-        getData(url, data, callback, error, timeout) {
+        getData(url, data, callback, error, timeout, overtime = 0) {
             HTTPUtils.create()
                 .setUrl(Player.inst.data.getGameUrl(url))
                 .setData(data)
-                .setOvertime(0)
+                .setOvertime(overtime)
                 .onComplete((data) => {
                 var _a;
                 if (Player.inst.gameModel == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode))
@@ -13439,4 +13406,27 @@ window.coreLib = {};
             return func instanceof Laya.Handler ? func.runWith(args) : func.apply(null, args);
         return null;
     };
+    // 修改 mixin 函数
+    function mixin(...classes) {
+        class MixinClass {
+            constructor() {
+                for (const Class of classes) {
+                    const instance = new Class();
+                    copyProperties(this, instance);
+                }
+            }
+        }
+        for (const Class of classes) {
+            copyProperties(MixinClass.prototype, Class.prototype);
+        }
+        return MixinClass;
+    }
+    function copyProperties(target, source) {
+        for (const key of Reflect.ownKeys(source)) {
+            if (key !== "constructor" && key !== "prototype" && key !== "name") {
+                const descriptor = Object.getOwnPropertyDescriptor(source, key);
+                Object.defineProperty(target, key, descriptor);
+            }
+        }
+    }
 })(coreLib || (coreLib = {}));

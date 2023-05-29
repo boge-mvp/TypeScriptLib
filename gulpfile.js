@@ -10,7 +10,7 @@ const generate = require("./index")
 const typescript = require("typescript")
 
 // 需要添加到最前面的类
-let beforeTs = ["src/com/core/View.ts", "src/com/core/Proxys.ts",
+let beforeTs = ["src/com/actions/ActionEvent.ts", "src/com/core/View.ts", "src/com/core/Proxys.ts",
     "src/com/core/BaseView.ts", "src/com/utils/ChangeValue.ts",
     "src/com/utils/UtilsTool.ts"]
 

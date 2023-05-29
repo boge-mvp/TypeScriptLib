@@ -10,6 +10,10 @@ declare type ParamHandler = ((...args) => any) | Laya.Handler
  */
 declare function runFun(func: ParamHandler, ...args): any | null
 
+declare type Constructor<T = {}> = new (...args: any[]) => T
+
+
+
 declare module Laya {
 
 // @ts-ignore

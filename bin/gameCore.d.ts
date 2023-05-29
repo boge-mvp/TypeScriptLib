@@ -1,17 +1,20 @@
 declare namespace coreLib {
-    export class View extends fgui.GComponent implements IView, IKey {
-        protected key: string;
+    export class ActionEvent implements IAction {
         regAction(action: string, caller: any, method: Function, group?: string): void;
         regActionHandler(action: string, handler: Laya.Handler, group?: string): void;
         removeAllAction(...args: string[]): void;
         removeGroup(group: string): void;
-        removeGroupActions(group: string, ...args: any[]): void;
+        removeGroupActions(group: string, ...args: string[]): void;
         removeActionHandler(action: string, method: Function, group?: string): void;
         removeFunction(groupObj: any, action: string, method: Function): void;
         removeTargetAll(caller: any): void;
         removeTarget(groupObj: any, caller: any): void;
         sendAction(action: string, ...args: any[]): void;
         sendGroupAction(group: string, action: string, ...args: any[]): void;
+    }
+    const View_base: Constructor<ActionEvent & fairygui.GComponent>;
+    export class View extends View_base implements IView, IKey {
+        protected key: string;
         addView<T extends IView & IKey>(key: string | {
             new (): T;
         }, view: T): boolean;
@@ -26,20 +29,9 @@ declare namespace coreLib {
         getKey(): string;
         dispose(): void;
     }
-    export class Proxys implements IProxy, IKey {
+    export class Proxys extends ActionEvent implements IProxy, IKey {
         /** 独有的名字 */
         protected key: string;
-        regAction(action: string, caller: any, method: Function, group?: string): void;
-        regActionHandler(action: string, handler: Laya.Handler, group?: string): void;
-        removeAllAction(...args: string[]): void;
-        removeGroup(group: string): void;
-        removeGroupActions(group: string, ...args: string[]): void;
-        removeActionHandler(action: string, method: Function, group?: string): void;
-        removeFunction(groupObj: any, action: string, method: Function): void;
-        removeTargetAll(caller: any): void;
-        removeTarget(groupObj: any, caller: any): void;
-        sendAction(action: string, ...args: any[]): void;
-        sendGroupAction(group: string, action: string, ...args: any[]): void;
         addProxy<T extends IProxy & IKey>(key: string | {
             new (): T;
         }, proxy: T): boolean;
@@ -1177,8 +1169,9 @@ declare namespace coreLib {
          * @param callback
          * @param error
          * @param timeout
+         * @param overtime 超时时间设置 毫秒
          */
-        getData(url: string, data: any, callback?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler): void;
+        getData(url: string, data: any, callback?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler, overtime?: number): void;
         /**
          * post 请求
          *
@@ -2147,15 +2140,18 @@ declare namespace coreLib {
          */
         getURL(url: string, data: any, callback?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler): void;
         /**
-         * get 获取数据
-         * @param url
+         * 封装的get请求
+         *
+         * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+         *
+         * @param url 使用 Player.inst.data.getGameUrl 格式化的url
          * @param data
          * @param callback
          * @param error
          * @param timeout
-         *
+         * @param overtime 超时时间设置 毫秒
          */
-        getData(url: string, data: any, callback?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler): void;
+        getData(url: string, data: any, callback?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler, overtime?: number): void;
         /**
          * post 请求数据
          * @param url
@@ -2170,15 +2166,16 @@ declare namespace coreLib {
          */
         post(url: string, data: any, callback?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler, headers?: any[], overtime?: number): void;
         /**
-         * post 请求数据
-         * @param url
-         * @param data
-         * @param callback
-         * @param error
-         * @param timeout
-         * @param headers
-         * @param overtime
+         * post 请求
          *
+         * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+         * @param url 请求连接 使用Player.inst.data.getGameUrl()格式化的url
+         * @param data 请求数据
+         * @param callback 请求完成返回调用函数
+         * @param error 错误调用函数
+         * @param timeout 超时回调函数
+         * @param headers (default = null) HTTP 请求的头部信息。参数形如key-value数组：key是头部的名称，不应该包括空白、冒号或换行；value是头部的值，不应该包括换行。比如["Content-Type", "application/json"]。
+         * @param overtime
          */
         postData(url: string, data: any, callback?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler, headers?: any[], overtime?: number): void;
         /**
@@ -5592,6 +5589,10 @@ declare type ParamHandler = ((...args) => any) | Laya.Handler
  * @param args 参数 传入数组会将数组当场一个参数传递
  */
 declare function runFun(func: ParamHandler, ...args): any | null
+
+declare type Constructor<T = {}> = new (...args: any[]) => T
+
+
 
 declare module Laya {
 

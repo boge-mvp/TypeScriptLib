@@ -69,12 +69,13 @@ export abstract class GameServlet extends BaseProxy implements IGameServlet {
      * @param callback
      * @param error
      * @param timeout
+     * @param overtime 超时时间设置 毫秒
      */
-    getData(url: string, data: any, callback?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler) {
+    getData(url: string, data: any, callback?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler, overtime = 0) {
         HTTPUtils.create()
             .setUrl(Player.inst.data.getGameUrl(url))
             .setData(data)
-            .setOvertime(0)
+            .setOvertime(overtime)
             .onComplete((data: any) => {
                 if (Player.inst.gameModel == this.gameModel?.gameCode) runFun(callback, data)
             })
