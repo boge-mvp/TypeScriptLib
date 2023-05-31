@@ -1,7 +1,98 @@
 declare namespace coreLib {
+    export class Factory implements IAction {
+        private static _instance;
+        static get inst(): Factory;
+        /** 默认的分组名
+         * @default group
+         * */
+        static DEFAULT_GROUP: string;
+        /** 默认cacheId标记头
+         * @default cache
+         * */
+        static DEFAULT_CACHE_HEAD: string;
+        /**
+         *  游戏公用组
+         */
+        static GAME_GROUP: string;
+        private controller;
+        constructor();
+        /**
+         * 初始化框架
+         */
+        static init(): void;
+        static initClass(...args: any[]): void;
+        protected initController(): void;
+        regActionHandler(action: string, handler: Laya.Handler, group?: string): void;
+        regAction(action: string, caller: any, method: Function, group?: string): void;
+        removeAllAction(...args: string[]): void;
+        removeGroup(group: string): void;
+        removeGroupActions(group: string, ...args: any[]): void;
+        removeActionHandler(action: string, method: Function, group?: string): void;
+        removeFunction(groupObj: any, action: string, method: Function): void;
+        removeTargetAll(caller: any): void;
+        removeTarget(groupObj: any, caller: any): void;
+        sendAction(action: string, ...args: any[]): void;
+        sendGroupAction(group: string, action: string, ...args: any[]): void;
+        addView<T extends IView & IKey>(key: string | {
+            new (): T;
+        }, view: T): boolean;
+        removeView<T extends IView & IKey>(key: string | T): void;
+        getView<T>(key: string | {
+            new (): T;
+        }): T;
+        getProxy<T>(name: string | {
+            new (): T;
+        }): T;
+        addProxy<T extends IProxy & IKey>(key: string | {
+            new (): T;
+        }, proxy: T): boolean;
+        removeProxy<T extends IProxy & IKey>(key: string | T): void;
+        /** 清除所有UI缓存 */
+        clearView(): void;
+        /** 清除所有分组和包含的事件 */
+        clearGroup(): void;
+    }
+    export class ViewProxy {
+        getProxy<T>(name: string | {
+            new (): T;
+        }): T;
+        getView<T>(key: string | {
+            new (): T;
+        }): T;
+    }
+    export class ViewBlock {
+        getProxy<T>(name: string | {
+            new (): T;
+        }): T;
+        addView<T extends IView & IKey>(key: string | {
+            new (): T;
+        }, view: T): boolean;
+        getView<T>(key: string | {
+            new (): T;
+        }): T;
+        removeView<T extends IView & IKey>(key: string | T): void;
+    }
+    export class ProxyBlock {
+        addProxy<T extends IProxy & IKey>(key: string | {
+            new (): T;
+        }, proxy: T): boolean;
+        getProxy<T>(key: string | {
+            new (): T;
+        }): T;
+        removeProxy<T extends IProxy & IKey>(key: string | T): void;
+        getView<T>(key: string | {
+            new (): T;
+        }): T;
+    }
+    export class StringBlock {
+        /** 根据语言包id获取字符串 */
+        getString(id: string | number, ...args: any[]): string;
+    }
     export class ActionEvent implements IAction {
         regAction(action: string, caller: any, method: Function, group?: string): void;
         regActionHandler(action: string, handler: Laya.Handler, group?: string): void;
+        /** 注册游戏数据 */
+        regGameAction(action: string, caller: any, method: Function): void;
         removeAllAction(...args: string[]): void;
         removeGroup(group: string): void;
         removeGroupActions(group: string, ...args: string[]): void;
@@ -203,7 +294,7 @@ declare namespace coreLib {
          * @return 大于第二个值  1   小于第二个值 -1 相等 0
          *
          */
-        static compare(aPrice: number, bPrice: number): 0 | 1 | -1;
+        static compare(aPrice: number, bPrice: number): 1 | -1 | 0;
         /**
          * 比较两个值  获得返回值   用于数组排序   从大到小
          * @param aPrice 第一个值
@@ -211,7 +302,7 @@ declare namespace coreLib {
          * @return 大于第二个值  1   小于第二个值 -1 相等 0
          *
          */
-        static compareOn(aPrice: number, bPrice: number): 0 | 1 | -1;
+        static compareOn(aPrice: number, bPrice: number): 1 | -1 | 0;
         /**
          * 随机生成字符串
          */
@@ -462,33 +553,8 @@ declare namespace coreLib {
          */
         static clear(res: LoadRes[]): void;
     }
-    export class BaseButton extends fgui.GButton implements IView {
-        constructor();
-        regAction(action: string, caller: any, method: Function, group?: string): void;
-        regActionHandler(action: string, handler: Laya.Handler, group?: string): void;
-        removeAllAction(...args: any[]): void;
-        removeGroup(group: string): void;
-        removeGroupActions(group: string, ...args: any[]): void;
-        removeActionHandler(action: string, method: Function, group?: string): void;
-        sendAction(action: string, ...args: any[]): void;
-        sendGroupAction(group: string, action: string, ...args: any[]): void;
-        /** 注册游戏数据 */
-        regGameAction(action: string, caller: any, method: Function): void;
-        /** 根据语言包id获取字符串 */
-        getString(id: string | number, ...args: any[]): string;
-        removeFunction(groupObj: any, action: string, method: Function): void;
-        removeTarget(groupObj: any, caller: any): void;
-        removeTargetAll(caller: any): void;
-        getProxy<T>(name: string | {
-            new (): T;
-        }): T;
-        addView<T extends IView & IKey>(key: string | {
-            new (): T;
-        }, view: T): boolean;
-        getView<T>(key: string | {
-            new (): T;
-        }): T;
-        removeView<T extends IView & IKey>(key: string | T): void;
+    const BaseButton_base: Constructor<ActionEvent & ViewBlock & StringBlock & fairygui.GButton>;
+    export class BaseButton extends BaseButton_base {
     }
     export class BaseGameData implements IGameData {
         /** 缓存的下注值 */
@@ -541,37 +607,16 @@ declare namespace coreLib {
         isSuperWin(isTotal?: boolean): boolean;
         reportError(): any;
     }
-    export class BaseLabel extends fgui.GLabel implements IView {
-        regAction(action: string, caller: any, method: Function, group?: string): void;
-        regActionHandler(action: string, handler: Laya.Handler, group?: string): void;
-        removeAllAction(...args: any[]): void;
-        removeGroup(group: string): void;
-        removeGroupActions(group: string, ...args: any[]): void;
-        removeActionHandler(action: string, method: Function, group?: string): void;
-        sendAction(action: string, ...args: any[]): void;
-        sendGroupAction(group: string, action: string, ...args: any[]): void;
-        /** 注册游戏数据 */
-        regGameAction(action: string, caller: any, method: Function): void;
-        /** 根据语言包id获取字符串 */
-        getString(id: string | number, ...args: any[]): string;
-        removeFunction(groupObj: any, action: string, method: Function): void;
-        removeTarget(groupObj: any, caller: any): void;
-        removeTargetAll(caller: any): void;
-        getProxy<T>(name: string | {
-            new (): T;
-        }): T;
-        addView<T extends IView & IKey>(key: string | {
-            new (): T;
-        }, view: T): boolean;
-        getView<T>(key: string | {
-            new (): T;
-        }): T;
-        removeView<T extends IView & IKey>(key: string | T): void;
+    const BaseLabel_base: Constructor<ActionEvent & ViewBlock & fairygui.GLabel>;
+    export class BaseLabel extends BaseLabel_base {
     }
     export class BaseProxy extends Proxys {
-        /** 游戏公用组 */
+        /**
+         *  游戏公用组
+         * @deprecated
+         * @see Factory.GAME_GROUP
+         */
         static GAME_GROUP: string;
-        constructor();
         /** 注册游戏数据 */
         regGameAction(action: string, caller: any, method: Function): void;
         /** 设置扩展 */
@@ -717,7 +762,8 @@ declare namespace coreLib {
         dispose(): void;
         protected backHandler(): void;
     }
-    export abstract class BaseSkeleton extends fgui.GComponent implements ISkeleton {
+    const BaseSkeleton_base: Constructor<ActionEvent & fairygui.GComponent>;
+    export abstract class BaseSkeleton extends BaseSkeleton_base implements ISkeleton {
         /** 经过时间 */
         private _t;
         private p1;
@@ -968,7 +1014,8 @@ declare namespace coreLib {
         /** 创建并显示一个舞台 */
         protected createShowScene(url: string, cls: any): void;
     }
-    export class BaseWindow extends fgui.Window implements IView, IRecord {
+    const BaseWindow_base: Constructor<ActionEvent & ViewProxy & fairygui.Window>;
+    export class BaseWindow extends BaseWindow_base implements IRecord {
         /** 动画显示或关闭 */
         protected isAction: boolean;
         /** 是否加入后退记录 */
@@ -1761,55 +1808,6 @@ declare namespace coreLib {
         private playEndPointAni;
         playComplete(): void;
         dispose(): void;
-    }
-    export class Factory implements IAction {
-        private static _instance;
-        static get inst(): Factory;
-        /** 默认的分组名
-         * @default group
-         * */
-        static DEFAULT_GROUP: string;
-        /** 默认cacheId标记头
-         * @default cache
-         * */
-        static DEFAULT_CACHE_HEAD: string;
-        private controller;
-        constructor();
-        /**
-         * 初始化框架
-         */
-        static init(): void;
-        static initClass(...args: any[]): void;
-        protected initController(): void;
-        regActionHandler(action: string, handler: Laya.Handler, group?: string): void;
-        regAction(action: string, caller: any, method: Function, group?: string): void;
-        removeAllAction(...args: string[]): void;
-        removeGroup(group: string): void;
-        removeGroupActions(group: string, ...args: any[]): void;
-        removeActionHandler(action: string, method: Function, group?: string): void;
-        removeFunction(groupObj: any, action: string, method: Function): void;
-        removeTargetAll(caller: any): void;
-        removeTarget(groupObj: any, caller: any): void;
-        sendAction(action: string, ...args: any[]): void;
-        sendGroupAction(group: string, action: string, ...args: any[]): void;
-        addView<T extends IView & IKey>(key: string | {
-            new (): T;
-        }, view: T): boolean;
-        removeView<T extends IView & IKey>(key: string | T): void;
-        getView<T>(key: string | {
-            new (): T;
-        }): T;
-        getProxy<T>(name: string | {
-            new (): T;
-        }): T;
-        addProxy<T extends IProxy & IKey>(key: string | {
-            new (): T;
-        }, proxy: T): boolean;
-        removeProxy<T extends IProxy & IKey>(key: string | T): void;
-        /** 清除所有UI缓存 */
-        clearView(): void;
-        /** 清除所有分组和包含的事件 */
-        clearGroup(): void;
     }
     export interface IAction {
         /**
@@ -3879,7 +3877,7 @@ declare namespace coreLib {
          * @param time1
          * @param time2
          */
-        static compareTime(time1: any, time2: any): 0 | 1 | -1;
+        static compareTime(time1: any, time2: any): 1 | -1 | 0;
         /**
          * 是否闰年
          * @param year 年份
@@ -5573,6 +5571,48 @@ declare namespace coreLib {
     }
     export {};
 }
+type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+type InstanceTypeOfConstructor<T> = T extends Constructor<infer R> ? R : never;
+/**
+ * @deprecated
+ * @param classes
+ */
+declare function mixin<T extends Constructor[]>(...classes: T): Constructor<UnionToIntersection<InstanceTypeOfConstructor<T[number]>>>;
+/**
+ * 将后续传入的类的方法和属性复制到第一个类的匿名类上
+ *
+ * 注意 後面類的屬性值会覆盖之前的
+ * @param classes
+ */
+declare function mixinProperty<T extends Constructor[]>(...classes: T): Constructor<UnionToIntersection<InstanceTypeOfConstructor<T[number]>>>;
+/**
+ * 相互继承实现
+ *
+ * 注意 如果有继承类A后面还有类B,那么A类的继承父类会被更换成类B,类A将失去原有的继承属性和方法
+ * @param classes 继承序列  第一个是父类最后一个继承值，最后一个初始类
+ */
+declare function mixinExt<T extends Constructor[]>(...classes: T): Constructor<UnionToIntersection<InstanceTypeOfConstructor<T[number]>>>;
+/**
+ *
+ * @param target
+ * @param source
+ * @param ignoreProperty
+ * @param [containsSuperClasses=false] 是否包含 super类
+ */
+declare function copyProperties(target: any, source: any, ignoreProperty?: string[], containsSuperClasses?: boolean): void;
+/**
+ * 获取属性标识符
+ * @param source 对象
+ * @param key 健名
+ * @param [containsSuperClasses=false] 是否允许到父类去找
+ */
+declare function getPropertyDescriptor(source: any, key: string | symbol, containsSuperClasses?: boolean): PropertyDescriptor;
+/**
+ * 获取方法或属性的名字
+ * @param obj 对象
+ * @param [containsSuperClasses=false] 是否要包含父类
+ */
+declare function getPropertyNames(obj: any, containsSuperClasses?: boolean): (string | symbol)[];
 
 /**
  * 动态参数 function 或 Laya.Handler
@@ -5588,6 +5628,12 @@ declare function runFun(func: ParamHandler, ...args): any | null
 
 declare type Constructor<T = {}> = new (...args: any[]) => T
 
+/**
+ * 根据语言包id获取字符串
+ * @param id 获取文案的key
+ * @param args 如果包含占位符，这里可传入占位符的替换文案
+ */
+declare function getString(id: string | number, ...args): string
 
 
 declare module Laya {

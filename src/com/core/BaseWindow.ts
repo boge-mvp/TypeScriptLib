@@ -1,18 +1,18 @@
-import Point = Laya.Point
-import Ease = Laya.Ease
-import Tween = Laya.Tween
-import GRoot = fgui.GRoot
+import Point = Laya.Point;
+import Ease = Laya.Ease;
+import Tween = Laya.Tween;
+import GRoot = fgui.GRoot;
+import Handler = Laya.Handler;
 import {SceneManager} from "../manager/SceneManager"
 import {AppRecordManager} from "../manager/AppRecordManager"
 import {ActionLib} from "../actions/ActionLib"
-import {Factory} from "../Factory"
+import {ActionEvent, Factory, ViewProxy} from "../Factory"
 import {BaseProxy} from "./BaseProxy"
 import {LanguageUtils} from "../utils/LanguageUtils"
 import {StringUtil} from "../utils/StringUtil"
-import Handler = Laya.Handler;
 import {IKey, IRecord, IView} from "../interfaces/ICommon";
 
-export class BaseWindow extends fgui.Window implements IView, IRecord {
+export class BaseWindow extends mixinExt(ViewProxy, ActionEvent, fgui.Window) implements IRecord {
 
     /** 动画显示或关闭 */
     protected isAction = true

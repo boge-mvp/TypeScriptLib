@@ -2,8 +2,9 @@ import GComponent = fgui.GComponent;
 import Point = Laya.Point;
 import {ISkeleton} from "../interfaces/ISkeleton"
 import {Log} from "../Log";
+import {ActionEvent} from "../Factory";
 
-export abstract class BaseSkeleton extends GComponent implements ISkeleton {
+export abstract class BaseSkeleton extends mixinExt(ActionEvent, GComponent) implements ISkeleton {
 
     /** 经过时间 */
     private _t = 0

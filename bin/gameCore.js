@@ -1,12 +1,165 @@
 window.coreLib = {};
 
 (function (coreLib) {
+    class Factory {
+        static get inst() {
+            return this._instance;
+        }
+        constructor() {
+            this.initController();
+        }
+        /**
+         * 初始化框架
+         */
+        static init() {
+            this._instance = new Factory();
+            DefineConfig.init();
+            let envType = ConfigKit.env();
+            Log.debug("env", EnvType[envType]);
+            // 使用自定义加载器加载资源
+            fgui.AssetProxy.inst.setAsset(MyLoader.loader);
+        }
+        static initClass(...args) {
+            for (let i = 0; i < args.length; i++) {
+                new args[i]();
+            }
+        }
+        initController() {
+            this.controller = new Controller();
+        }
+        regActionHandler(action, handler, group = null) {
+            this.controller.regActionHandler(action, handler, group);
+        }
+        regAction(action, caller, method, group = null) {
+            this.controller.regAction(action, caller, method, group);
+        }
+        removeAllAction(...args) {
+            this.controller.removeAllAction.apply(this.controller, args);
+        }
+        removeGroup(group) {
+            this.controller.removeGroup(group);
+        }
+        removeGroupActions(group, ...args) {
+            args.unshift(group);
+            this.controller.removeGroupActions.apply(this.controller, args);
+        }
+        removeActionHandler(action, method, group = null) {
+            this.controller.removeActionHandler(action, method, group);
+        }
+        removeFunction(groupObj, action, method) {
+            this.controller.removeFunction(groupObj, action, method);
+        }
+        removeTargetAll(caller) {
+            this.controller.removeTargetAll(caller);
+        }
+        removeTarget(groupObj, caller) {
+            this.controller.removeTarget(groupObj, caller);
+        }
+        sendAction(action, ...args) {
+            args.unshift(action);
+            this.controller.sendAction.apply(this.controller, args);
+        }
+        sendGroupAction(group, action, ...args) {
+            args.unshift(action);
+            args.unshift(group);
+            this.controller.sendGroupAction.apply(this.controller, args);
+        }
+        addView(key, view) {
+            return this.controller.addView(key, view);
+        }
+        removeView(key) {
+            this.controller.removeView(key);
+        }
+        getView(key) {
+            return this.controller.getView(key);
+        }
+        getProxy(name) {
+            return this.controller.getProxy(name);
+        }
+        addProxy(key, proxy) {
+            return this.controller.addProxy(key, proxy);
+        }
+        removeProxy(key) {
+            this.controller.removeProxy(key);
+        }
+        /** 清除所有UI缓存 */
+        clearView() {
+            this.controller.clearView();
+        }
+        /** 清除所有分组和包含的事件 */
+        clearGroup() {
+            this.controller.clearGroup();
+        }
+    }
+    /** 默认的分组名
+     * @default group
+     * */
+    Factory.DEFAULT_GROUP = "group";
+    /** 默认cacheId标记头
+     * @default cache
+     * */
+    Factory.DEFAULT_CACHE_HEAD = "cache";
+    /**
+     *  游戏公用组
+     */
+    Factory.GAME_GROUP = "game_group";
+    coreLib.Factory = Factory;
+    class ViewProxy {
+        getProxy(name) {
+            return Factory.inst.getProxy(name);
+        }
+        getView(key) {
+            return Factory.inst.getView(key);
+        }
+    }
+    coreLib.ViewProxy = ViewProxy;
+    class ViewBlock {
+        getProxy(name) {
+            return Factory.inst.getProxy(name);
+        }
+        addView(key, view) {
+            return Factory.inst.addView(key, view);
+        }
+        getView(key) {
+            return Factory.inst.getView(key);
+        }
+        removeView(key) {
+            Factory.inst.removeView(key);
+        }
+    }
+    coreLib.ViewBlock = ViewBlock;
+    class ProxyBlock {
+        addProxy(key, proxy) {
+            return Factory.inst.addProxy(key, proxy);
+        }
+        getProxy(key) {
+            return Factory.inst.getProxy(key);
+        }
+        removeProxy(key) {
+            Factory.inst.removeProxy(key);
+        }
+        getView(key) {
+            return Factory.inst.getView(key);
+        }
+    }
+    coreLib.ProxyBlock = ProxyBlock;
+    class StringBlock {
+        /** 根据语言包id获取字符串 */
+        getString(id, ...args) {
+            return window.getString(id, ...args);
+        }
+    }
+    coreLib.StringBlock = StringBlock;
     class ActionEvent {
         regAction(action, caller, method, group) {
             Factory.inst.regAction(action, caller, method, group);
         }
         regActionHandler(action, handler, group) {
             Factory.inst.regActionHandler(action, handler, group);
+        }
+        /** 注册游戏数据 */
+        regGameAction(action, caller, method) {
+            this.regAction(action, caller, method, Factory.GAME_GROUP);
         }
         removeAllAction(...args) {
             Factory.inst.removeAllAction.apply(Factory.inst, args);
@@ -41,7 +194,7 @@ window.coreLib = {};
         }
     }
     coreLib.ActionEvent = ActionEvent;
-    class View extends mixin(fgui.GComponent, ActionEvent) {
+    class View extends mixinExt(ActionEvent, fgui.GComponent) {
         addView(key, view) {
             return Factory.inst.addView(key, view);
         }
@@ -865,69 +1018,7 @@ window.coreLib = {};
         }
     }
     coreLib.LoaderConfig = LoaderConfig;
-    class BaseButton extends fgui.GButton {
-        constructor() {
-            super();
-        }
-        regAction(action, caller, method, group) {
-            Factory.inst.regAction(action, caller, method, group);
-        }
-        regActionHandler(action, handler, group) {
-            Factory.inst.regActionHandler(action, handler, group);
-        }
-        removeAllAction(...args) {
-            Factory.inst.removeAllAction.apply(Factory.inst, args);
-        }
-        removeGroup(group) {
-            Factory.inst.removeGroup(group);
-        }
-        removeGroupActions(group, ...args) {
-            args.unshift(group);
-            Factory.inst.removeGroupActions.apply(Factory.inst, args);
-        }
-        removeActionHandler(action, method, group) {
-            Factory.inst.removeActionHandler(action, method, group);
-        }
-        sendAction(action, ...args) {
-            args.unshift(action);
-            Factory.inst.sendAction.apply(Factory.inst, args);
-        }
-        sendGroupAction(group, action, ...args) {
-            args.unshift(action);
-            args.unshift(group);
-            Factory.inst.sendGroupAction.apply(Factory.inst, args);
-        }
-        /** 注册游戏数据 */
-        regGameAction(action, caller, method) {
-            this.regAction(action, caller, method, BaseProxy.GAME_GROUP);
-        }
-        /** 根据语言包id获取字符串 */
-        getString(id, ...args) {
-            let content = LanguageUtils.inst.getStr(id);
-            args.unshift(content);
-            return StringUtil.format.apply(null, args);
-        }
-        removeFunction(groupObj, action, method) {
-            Factory.inst.removeFunction(groupObj, action, method);
-        }
-        removeTarget(groupObj, caller) {
-            Factory.inst.removeTarget(groupObj, caller);
-        }
-        removeTargetAll(caller) {
-            Factory.inst.removeTargetAll(caller);
-        }
-        getProxy(name) {
-            return Factory.inst.getProxy(name);
-        }
-        addView(key, view) {
-            return Factory.inst.addView(key, view);
-        }
-        getView(key) {
-            return Factory.inst.getView(key);
-        }
-        removeView(key) {
-            Factory.inst.removeView(key);
-        }
+    class BaseButton extends mixinExt(StringBlock, ViewBlock, ActionEvent, fgui.GButton) {
     }
     coreLib.BaseButton = BaseButton;
     class BaseGameData {
@@ -992,75 +1083,13 @@ window.coreLib = {};
         }
     }
     coreLib.BaseGameData = BaseGameData;
-    class BaseLabel extends fgui.GLabel {
-        regAction(action, caller, method, group) {
-            Factory.inst.regAction(action, caller, method, group);
-        }
-        regActionHandler(action, handler, group) {
-            Factory.inst.regActionHandler(action, handler, group);
-        }
-        removeAllAction(...args) {
-            Factory.inst.removeAllAction.apply(Factory.inst, args);
-        }
-        removeGroup(group) {
-            Factory.inst.removeGroup(group);
-        }
-        removeGroupActions(group, ...args) {
-            args.unshift(group);
-            Factory.inst.removeGroupActions.apply(Factory.inst, args);
-        }
-        removeActionHandler(action, method, group) {
-            Factory.inst.removeActionHandler(action, method, group);
-        }
-        sendAction(action, ...args) {
-            args.unshift(action);
-            Factory.inst.sendAction.apply(Factory.inst, args);
-        }
-        sendGroupAction(group, action, ...args) {
-            args.unshift(action);
-            args.unshift(group);
-            Factory.inst.sendGroupAction.apply(Factory.inst, args);
-        }
-        /** 注册游戏数据 */
-        regGameAction(action, caller, method) {
-            this.regAction(action, caller, method, BaseProxy.GAME_GROUP);
-        }
-        /** 根据语言包id获取字符串 */
-        getString(id, ...args) {
-            let content = LanguageUtils.inst.getStr(id);
-            args.unshift(content);
-            return StringUtil.format.apply(null, args);
-        }
-        removeFunction(groupObj, action, method) {
-            Factory.inst.removeFunction(groupObj, action, method);
-        }
-        removeTarget(groupObj, caller) {
-            Factory.inst.removeTarget(groupObj, caller);
-        }
-        removeTargetAll(caller) {
-            Factory.inst.removeTargetAll(caller);
-        }
-        getProxy(name) {
-            return Factory.inst.getProxy(name);
-        }
-        addView(key, view) {
-            return Factory.inst.addView(key, view);
-        }
-        getView(key) {
-            return Factory.inst.getView(key);
-        }
-        removeView(key) {
-            Factory.inst.removeView(key);
-        }
+    class BaseLabel extends mixinExt(ViewBlock, ActionEvent, fgui.GLabel) {
     }
     coreLib.BaseLabel = BaseLabel;
     class BaseProxy extends Proxys {
-        constructor() {
-            super();
-        }
         /** 注册游戏数据 */
         regGameAction(action, caller, method) {
-            super.regAction(action, caller, method, BaseProxy.GAME_GROUP);
+            super.regAction(action, caller, method, Factory.GAME_GROUP);
         }
         /** 设置扩展 */
         insertExt(pkgName, resName, clas) {
@@ -1077,8 +1106,12 @@ window.coreLib = {};
             return StringUtil.format.apply(null, args);
         }
     }
-    /** 游戏公用组 */
-    BaseProxy.GAME_GROUP = "game_group";
+    /**
+     *  游戏公用组
+     * @deprecated
+     * @see Factory.GAME_GROUP
+     */
+    BaseProxy.GAME_GROUP = Factory.GAME_GROUP;
     coreLib.BaseProxy = BaseProxy;
     /** 游戏主页必须继承的类 */
     class BaseScene extends BaseView {
@@ -1561,7 +1594,7 @@ window.coreLib = {};
         }
     }
     coreLib.BaseScene = BaseScene;
-    class BaseSkeleton extends fgui.GComponent {
+    class BaseSkeleton extends mixinExt(ActionEvent, fgui.GComponent) {
         constructor() {
             super(...arguments);
             /** 经过时间 */
@@ -2189,7 +2222,7 @@ window.coreLib = {};
         }
     }
     coreLib.BaseStarter = BaseStarter;
-    class BaseWindow extends fgui.Window {
+    class BaseWindow extends mixinExt(ViewProxy, ActionEvent, fgui.Window) {
         constructor() {
             super(...arguments);
             /** 动画显示或关闭 */
@@ -4963,105 +4996,6 @@ window.coreLib = {};
         }
     }
     coreLib.GoldSprayAni = GoldSprayAni;
-    class Factory {
-        static get inst() {
-            return this._instance;
-        }
-        constructor() {
-            this.initController();
-        }
-        /**
-         * 初始化框架
-         */
-        static init() {
-            this._instance = new Factory();
-            DefineConfig.init();
-            let envType = ConfigKit.env();
-            Log.debug("env", EnvType[envType]);
-            // 使用自定义加载器加载资源
-            fgui.AssetProxy.inst.setAsset(MyLoader.loader);
-        }
-        static initClass(...args) {
-            for (let i = 0; i < args.length; i++) {
-                new args[i]();
-            }
-        }
-        initController() {
-            this.controller = new Controller();
-        }
-        regActionHandler(action, handler, group = null) {
-            this.controller.regActionHandler(action, handler, group);
-        }
-        regAction(action, caller, method, group = null) {
-            this.controller.regAction(action, caller, method, group);
-        }
-        removeAllAction(...args) {
-            this.controller.removeAllAction.apply(this.controller, args);
-        }
-        removeGroup(group) {
-            this.controller.removeGroup(group);
-        }
-        removeGroupActions(group, ...args) {
-            args.unshift(group);
-            this.controller.removeGroupActions.apply(this.controller, args);
-        }
-        removeActionHandler(action, method, group = null) {
-            this.controller.removeActionHandler(action, method, group);
-        }
-        removeFunction(groupObj, action, method) {
-            this.controller.removeFunction(groupObj, action, method);
-        }
-        removeTargetAll(caller) {
-            this.controller.removeTargetAll(caller);
-        }
-        removeTarget(groupObj, caller) {
-            this.controller.removeTarget(groupObj, caller);
-        }
-        sendAction(action, ...args) {
-            args.unshift(action);
-            this.controller.sendAction.apply(this.controller, args);
-        }
-        sendGroupAction(group, action, ...args) {
-            args.unshift(action);
-            args.unshift(group);
-            this.controller.sendGroupAction.apply(this.controller, args);
-        }
-        addView(key, view) {
-            return this.controller.addView(key, view);
-        }
-        removeView(key) {
-            this.controller.removeView(key);
-        }
-        getView(key) {
-            return this.controller.getView(key);
-        }
-        getProxy(name) {
-            return this.controller.getProxy(name);
-        }
-        addProxy(key, proxy) {
-            return this.controller.addProxy(key, proxy);
-        }
-        removeProxy(key) {
-            this.controller.removeProxy(key);
-        }
-        /** 清除所有UI缓存 */
-        clearView() {
-            this.controller.clearView();
-        }
-        /** 清除所有分组和包含的事件 */
-        clearGroup() {
-            this.controller.clearGroup();
-        }
-    }
-    /** 默认的分组名
-     * @default group
-     * */
-    Factory.DEFAULT_GROUP = "group";
-    /** 默认cacheId标记头
-     * @default cache
-     * */
-    Factory.DEFAULT_CACHE_HEAD = "cache";
-    coreLib.Factory = Factory;
     let Method;
     (function (Method) {
         Method["GET"] = "get";
@@ -12956,7 +12890,7 @@ window.coreLib = {};
         constructFromXML(xml) {
             super.constructFromXML(xml);
             this.touchable = false;
-            this.text = this.getString(1033 /* LibStr.CASH_GIFTS_AVAILABLE */);
+            this.text = getString(1033 /* LibStr.CASH_GIFTS_AVAILABLE */);
         }
         static createPromptTip() {
             return fgui.UIPackage.createObjectFromURL("//gameCommon/PromptTip", PromptTip);
@@ -13397,53 +13331,137 @@ window.coreLib = {};
         }
     }
     coreLib.WaitResult = WaitResult;
-    window["runFun"] = (func, ...args) => {
-        if (func != null)
-            return func instanceof Laya.Handler ? func.runWith(args) : func.apply(null, args);
-        return null;
-    };
-    // 修改 mixin 函数
-    function mixin(...classes) {
-        class MixinClass {
-        }
-        // 将每个类的原型链添加到 MixinClass 的原型链上
-        classes.forEach((BaseClass) => {
-            Object.setPrototypeOf(MixinClass.prototype, Object.create(BaseClass.prototype, Object.getOwnPropertyDescriptors(MixinClass.prototype)));
-        });
-        // for (const Class of classes) {
-        //     copyProperties(MixinClass.prototype, Class.prototype)
-        // }
-        return MixinClass;
-    }
-    function copyProperties(target, source) {
-        for (const key of getAllPropertyNames(source)) {
-            if (key !== "constructor" && key !== "prototype" && key !== "name") {
-                const descriptor = getAllPropertyDescriptor(source, key);
-                descriptor && Object.defineProperty(target, key, descriptor);
+})(coreLib || (coreLib = {}));
+window["runFun"] = (func, ...args) => {
+    if (func != null)
+        return func instanceof Laya.Handler ? func.runWith(args) : func.apply(null, args);
+    return null;
+};
+/** 根据语言包id获取字符串 */
+window["getString"] = (id, ...args) => {
+    // @ts-ignore
+    let content = coreLib.LanguageUtils.inst.getStr(id);
+    args.unshift(content);
+    // @ts-ignore
+    return coreLib.StringUtil.format.apply(null, args);
+};
+// 修改 mixin 函数
+/**
+ * @deprecated
+ * @param classes
+ */
+function mixin(...classes) {
+    class MixinClass {
+        constructor() {
+            for (const Class of classes) {
+                const instance = new Class();
+                copyProperties(this, instance);
             }
         }
     }
-    function getAllPropertyDescriptor(source, key) {
-        let currentObj = source;
-        var descriptor = Object.getOwnPropertyDescriptor(currentObj, key);
-        while (!descriptor && currentObj) {
-            // 沿着原型链向上查找
-            currentObj = Object.getPrototypeOf(currentObj);
+    for (const Class of classes) {
+        copyProperties(MixinClass.prototype, Class.prototype);
+    }
+    return MixinClass;
+}
+/**
+ * 将后续传入的类的方法和属性复制到第一个类的匿名类上
+ *
+ * 注意 後面類的屬性值会覆盖之前的
+ * @param classes
+ */
+function mixinProperty(...classes) {
+    let parentClass = classes[0];
+    class MixinClass extends parentClass {
+        constructor(...args) {
+            super(...args);
+        }
+    }
+    for (let i = 1; i < classes.length; i++) {
+        const Class = classes[i];
+        copyProperties(MixinClass.prototype, Class.prototype);
+    }
+    return MixinClass;
+}
+/**
+ * 相互继承实现
+ *
+ * 注意 如果有继承类A后面还有类B,那么A类的继承父类会被更换成类B,类A将失去原有的继承属性和方法
+ * @param classes 继承序列  第一个是父类最后一个继承值，最后一个初始类
+ */
+function mixinExt(...classes) {
+    let parentClass = classes[classes.length - 1];
+    let tempClass;
+    let resultClass;
+    const start = classes.length - 2;
+    for (let i = start; i >= 0; i--) {
+        tempClass = class extends parentClass {
+            constructor(...args) {
+                super(...args);
+            }
+        };
+        copyProperties(tempClass.prototype, classes[i].prototype, ["prototype"]);
+        parentClass = tempClass;
+    }
+    resultClass = parentClass;
+    return resultClass;
+}
+/**
+ *
+ * @param target
+ * @param source
+ * @param ignoreProperty
+ * @param [containsSuperClasses=false] 是否包含 super类
+ */
+function copyProperties(target, source, ignoreProperty = ["constructor", "prototype", "name"], containsSuperClasses = false) {
+    for (const key of getPropertyNames(source, containsSuperClasses)) {
+        // 只要有一个满足的
+        if (!ignoreProperty || ignoreProperty.every((value) => {
+            return key !== value;
+        })) {
+            const descriptor = getPropertyDescriptor(source, key, containsSuperClasses);
+            descriptor && Object.defineProperty(target, key, descriptor);
+        }
+    }
+}
+/**
+ * 获取属性标识符
+ * @param source 对象
+ * @param key 健名
+ * @param [containsSuperClasses=false] 是否允许到父类去找
+ */
+function getPropertyDescriptor(source, key, containsSuperClasses = false) {
+    let currentObj = source;
+    let descriptor = Object.getOwnPropertyDescriptor(currentObj, key);
+    while (containsSuperClasses && !descriptor && currentObj) { // 如果没找到  在允许在父类找的情况下 去父类找
+        // 沿着原型链向上查找
+        currentObj = Object.getPrototypeOf(currentObj);
+        if (currentObj)
             descriptor = Object.getOwnPropertyDescriptor(currentObj, key);
-        }
-        return descriptor;
     }
-    function getAllPropertyNames(obj) {
-        const allPropertyNames = new Set();
-        let currentObj = obj;
-        while (currentObj !== null) {
-            // 获取当前对象的所有属性键（不包括原型链上的属性）
-            const propertyNames = Reflect.ownKeys(currentObj);
-            // 将属性添加到集合中
-            propertyNames.forEach(prop => allPropertyNames.add(prop));
-            // 沿着原型链向上查找
-            currentObj = Object.getPrototypeOf(currentObj);
+    return descriptor;
+}
+/**
+ * 获取方法或属性的名字
+ * @param obj 对象
+ * @param [containsSuperClasses=false] 是否要包含父类
+ */
+function getPropertyNames(obj, containsSuperClasses = false) {
+    const allPropertyNames = new Set();
+    let currentObj = obj;
+    while (currentObj !== null) {
+        // 获取当前对象的所有属性键（不包括原型链上的属性）
+        const propertyNames = Reflect.ownKeys(currentObj);
+        // 将属性添加到集合中
+        propertyNames.forEach(prop => allPropertyNames.add(prop));
+        if (!containsSuperClasses) {
+            break;
         }
-        return Array.from(allPropertyNames);
+        // 沿着原型链向上查找
+        currentObj = Object.getPrototypeOf(currentObj);
+        if (typeof currentObj === "object") {
+            break;
+        }
     }
-})(coreLib || (coreLib = {}));
+    return Array.from(allPropertyNames);
+}

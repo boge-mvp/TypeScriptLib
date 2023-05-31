@@ -2,19 +2,20 @@ import UIObjectFactory = fgui.UIObjectFactory
 import {Proxys} from "./Proxys"
 import {LanguageUtils} from "../utils/LanguageUtils"
 import {StringUtil} from "../utils/StringUtil"
+import {Factory} from "../Factory";
 
 export class BaseProxy extends Proxys {
 
-    /** 游戏公用组 */
-    static GAME_GROUP = "game_group"
-
-    constructor() {
-        super()
-    }
+    /**
+     *  游戏公用组
+     * @deprecated
+     * @see Factory.GAME_GROUP
+     */
+    static GAME_GROUP = Factory.GAME_GROUP
 
     /** 注册游戏数据 */
     regGameAction(action: string, caller: any, method: Function) {
-        super.regAction(action, caller, method, BaseProxy.GAME_GROUP)
+        super.regAction(action, caller, method, Factory.GAME_GROUP)
     }
 
     /** 设置扩展 */

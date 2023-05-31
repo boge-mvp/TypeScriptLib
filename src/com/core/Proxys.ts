@@ -1,6 +1,5 @@
-import {Factory} from "../Factory"
+import {ActionEvent, Factory} from "../Factory"
 import {IKey, IProxy} from "../interfaces/ICommon";
-import {ActionEvent} from "../actions/ActionEvent";
 
 export class Proxys extends ActionEvent implements IProxy, IKey {
 

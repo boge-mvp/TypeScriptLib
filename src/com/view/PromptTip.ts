@@ -21,7 +21,7 @@ export class PromptTip extends BaseLabel {
     protected constructFromXML(xml: any) {
         super.constructFromXML(xml)
         this.touchable = false
-        this.text = this.getString(LibStr.CASH_GIFTS_AVAILABLE)
+        this.text = getString(LibStr.CASH_GIFTS_AVAILABLE)
     }
 
     static createPromptTip(): PromptTip {

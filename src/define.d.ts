@@ -12,6 +12,12 @@ declare function runFun(func: ParamHandler, ...args): any | null
 
 declare type Constructor<T = {}> = new (...args: any[]) => T
 
+/**
+ * 根据语言包id获取字符串
+ * @param id 获取文案的key
+ * @param args 如果包含占位符，这里可传入占位符的替换文案
+ */
+declare function getString(id: string | number, ...args): string
 
 
 declare module Laya {

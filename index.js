@@ -60,6 +60,12 @@ class GenerateModule {
     settings
 
     /**
+     * 要放到全局的ts
+     * @type {string[]}
+     */
+    global
+
+    /**
      * 清理文件目录
      * @param patterns {string | string[]}
      * @return {Promise<string[]>}
@@ -79,7 +85,14 @@ class GenerateModule {
             fs.mkdirSync(this.saveTempPath + "/temp", {recursive: true})
             console.log("创建目录：" + this.saveTempPath + "/temp")
         }
-        return gulp.src(this.beforeTs.concat(files))
+        this.global = this.global || []
+
+        let content = []
+        for (let i = 0; i < this.global.length; i++) {
+            content.push(fs.readFileSync(this.global[i], "utf-8"))
+        }
+
+        return gulp.src(this.beforeTs.concat(files, this.global.map(function (value) {return "!" + value})))
             .pipe(sort({
                 comparator: (a, b) => {
                     let aIndex = this.beforeTs.indexOf(path.relative(a.cwd, a.path).replaceAll("\\", "/"))
@@ -134,6 +147,7 @@ class GenerateModule {
             }))
             .pipe(inject.prepend('namespace ' + this.namespace + ' {\n'))
             .pipe(inject.append('\n}'))
+            .pipe(inject.append("\n\n" + content.join("\n\n")))
             .pipe(gulp.dest(this.saveTempPath + "/temp"))
             .pipe(this.print("生成代码文件"))
     }

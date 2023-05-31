@@ -1,8 +1,7 @@
-import {Factory} from "../Factory"
+import {ActionEvent, Factory} from "../Factory"
 import {IKey, IView} from "../interfaces/ICommon";
-import {ActionEvent} from "../actions/ActionEvent";
 
-export class View extends mixin(fgui.GComponent, ActionEvent) implements IView, IKey {
+export class View extends mixinExt(ActionEvent, fgui.GComponent) implements IView, IKey {
 
     protected key: string
 
