@@ -3104,7 +3104,8 @@ window.coreLib = {};
         jackPotClaimHandler(handler, data) {
             if (data.code != HttpCode.OK) {
                 WaitResult.inst.hide();
-                this.showNotResult(data, false);
+                // this.showNotResult(data, false)
+                StateCode.execute(data.code, data);
                 return;
             }
             data = data.data;
@@ -6638,28 +6639,6 @@ window.coreLib = {};
         }
     }
     coreLib.SceneManager = SceneManager;
-    /** 通信命令 */
-    let Cmd;
-    (function (Cmd) {
-        /** 大厅socket房间号 */
-        Cmd[Cmd["PROT_HOME"] = 999999] = "PROT_HOME";
-        /** 聊天内容 */
-        Cmd[Cmd["SOCKET_CHAT_MESSAGE"] = 1] = "SOCKET_CHAT_MESSAGE";
-        /** 中奖信息公告 */
-        Cmd[Cmd["SOCKET_WIN_INFO"] = 2] = "SOCKET_WIN_INFO";
-        /** 在线人数 */
-        Cmd[Cmd["SOCKET_ROOM_MONEY_MESSAGE"] = 3] = "SOCKET_ROOM_MONEY_MESSAGE";
-        /** 充值状态 */
-        Cmd[Cmd["SOCKET_RECHARGE_STATUS"] = 4] = "SOCKET_RECHARGE_STATUS";
-        /** 余额变化 */
-        Cmd[Cmd["SOCKET_MONEY_CHANGE"] = 1001] = "SOCKET_MONEY_CHANGE";
-        /** 黄金变化 */
-        Cmd[Cmd["SOCKET_GOLD_CHANGE"] = 1002] = "SOCKET_GOLD_CHANGE";
-        /** 充值成功 */
-        Cmd[Cmd["SOCKET_TOP_UP_CHANGE"] = 1004] = "SOCKET_TOP_UP_CHANGE";
-        /** 显示广播消息 */
-        Cmd[Cmd["SOCKET_SHOW_NOTICE"] = 12] = "SOCKET_SHOW_NOTICE";
-    })(Cmd = coreLib.Cmd || (coreLib.Cmd = {}));
     /** 公用信息处理 */
     let CommonCmd;
     (function (CommonCmd) {
@@ -6741,6 +6720,48 @@ window.coreLib = {};
         /** 赠送金 */
         CommonCmd[CommonCmd["GAME_MONEY_TYPE_GIFT"] = 3] = "GAME_MONEY_TYPE_GIFT";
     })(CommonCmd = coreLib.CommonCmd || (coreLib.CommonCmd = {}));
+    /** 通信命令 */
+    let Cmd;
+    (function (Cmd) {
+        /** 大厅socket房间号 */
+        Cmd[Cmd["PROT_HOME"] = 999999] = "PROT_HOME";
+        /** 聊天内容 */
+        Cmd[Cmd["SOCKET_CHAT_MESSAGE"] = 1] = "SOCKET_CHAT_MESSAGE";
+        /** 中奖信息公告 */
+        Cmd[Cmd["SOCKET_WIN_INFO"] = 2] = "SOCKET_WIN_INFO";
+        /** 在线人数 */
+        Cmd[Cmd["SOCKET_ROOM_MONEY_MESSAGE"] = 3] = "SOCKET_ROOM_MONEY_MESSAGE";
+        /** 充值状态 */
+        Cmd[Cmd["SOCKET_RECHARGE_STATUS"] = 4] = "SOCKET_RECHARGE_STATUS";
+        /** 余额变化 */
+        Cmd[Cmd["SOCKET_MONEY_CHANGE"] = 1001] = "SOCKET_MONEY_CHANGE";
+        /** 黄金变化 */
+        Cmd[Cmd["SOCKET_GOLD_CHANGE"] = 1002] = "SOCKET_GOLD_CHANGE";
+        /** 充值成功 */
+        Cmd[Cmd["SOCKET_TOP_UP_CHANGE"] = 1004] = "SOCKET_TOP_UP_CHANGE";
+        /** 显示广播消息 */
+        Cmd[Cmd["SOCKET_SHOW_NOTICE"] = 12] = "SOCKET_SHOW_NOTICE";
+    })(Cmd = coreLib.Cmd || (coreLib.Cmd = {}));
+    class HttpCode {
+    }
+    /** 正确返回代码 */
+    HttpCode.OK = 200;
+    coreLib.HttpCode = HttpCode;
+    class Urls {
+    }
+    /** 获取服务器时间 */
+    Urls.GAME_SERVER_TIME = "/game/server-time";
+    /** 优惠券投注 */
+    Urls.URL_COUPON_BET = "/game/coupon/bet";
+    /** 获取用户信息 */
+    Urls.URL_USER_INFO = "/user/info";
+    /** 获取用户账户金额 */
+    Urls.URL_USER_ACCOUNT_ASSET = "/account/asset";
+    /** gift 抽奖开奖结果 */
+    Urls.URL_GAME_SCRATCHER_LOTTERY = "/game/scratcher/handle";
+    /** 获取所有优惠券 */
+    Urls.URL_GAME_ALL_COUPON = "/coupon/all";
+    coreLib.Urls = Urls;
     class GameHttpRequest extends Laya.HttpRequest {
         /**
          * 创建一个请求
@@ -6952,11 +6973,6 @@ window.coreLib = {};
     }
     GameSocket.SOCKET_CLASS_PATH = null;
     coreLib.GameSocket = GameSocket;
-    let HttpCode;
-    (function (HttpCode) {
-        /** 正确返回代码 */
-        HttpCode[HttpCode["OK"] = 200] = "OK";
-    })(HttpCode = coreLib.HttpCode || (coreLib.HttpCode = {}));
     /** socket管理 */
     class SocketManager extends BaseSocket {
         static get inst() {
@@ -7222,21 +7238,6 @@ window.coreLib = {};
         }
     }
     coreLib.UrlParam = UrlParam;
-    class Urls {
-    }
-    /** 获取服务器时间 */
-    Urls.GAME_SERVER_TIME = "/game/server-time";
-    /** 优惠券投注 */
-    Urls.URL_COUPON_BET = "/game/coupon/bet";
-    /** 获取用户信息 */
-    Urls.URL_USER_INFO = "/user/info";
-    /** 获取用户账户金额 */
-    Urls.URL_USER_ACCOUNT_ASSET = "/account/asset";
-    /** gift 抽奖开奖结果 */
-    Urls.URL_GAME_SCRATCHER_LOTTERY = "/game/scratcher/handle";
-    /** 获取所有优惠券 */
-    Urls.URL_GAME_ALL_COUPON = "/coupon/all";
-    coreLib.Urls = Urls;
     /** 用户数据 */
     class Player {
         constructor() {
@@ -9965,6 +9966,12 @@ window.coreLib = {};
                 case 8003: // 游戏暂停中
                     Log.debug("StateCode.execute() 8003");
                     this.showGameOff();
+                    return true;
+                default:
+                    if (typeof msg !== "string")
+                        msg = this.getShowMessage(msg);
+                    msg = msg ? msg : getString(1005 /* LibStr.NET_ERROR */);
+                    PromptWindow.inst.showTip(msg);
                     return true;
             }
             return false;
@@ -13278,18 +13285,19 @@ window.coreLib = {};
     }
     coreLib.WaitResult = WaitResult;
 })(coreLib || (coreLib = {}));
-window["runFun"] = (func, ...args) => {
+window.runFun = (func, ...args) => {
     if (func != null)
         return func instanceof Laya.Handler ? func.runWith(args) : func.apply(null, args);
     return null;
 };
 /** 根据语言包id获取字符串 */
-window["getString"] = (id, ...args) => {
+window.getString = (id, ...args) => {
     // @ts-ignore
     let content = coreLib.LanguageUtils.inst.getStr(id);
-    args.unshift(content);
+    if (args.length == 0)
+        return content;
     // @ts-ignore
-    return coreLib.StringUtil.format.apply(null, args);
+    return coreLib.StringUtil.format(content, ...args);
 };
 // 修改 mixin 函数
 /**

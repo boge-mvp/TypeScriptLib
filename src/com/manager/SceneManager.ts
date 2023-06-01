@@ -32,10 +32,9 @@ import {MessageTip} from "../view/MessageTip"
 import {SoundUtils} from "../utils/SoundUtils"
 import {PromptWindow} from "../view/PromptWindow"
 import {WaitResult} from "../view/WaitResult"
-import {CommonCmd} from "../net/CommonCmd"
-import {Cmd} from "../net/Cmd"
 import {StateCode} from "../utils/StateCode";
 import {Log} from "../Log";
+import {Cmd, CommonCmd} from "../net/Common";
 
 /**
  * 舞台

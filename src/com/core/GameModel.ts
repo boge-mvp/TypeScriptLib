@@ -7,7 +7,6 @@ import {IGameScene} from "../interfaces/IGameScene"
 import {IGameServlet} from "../interfaces/IGameServlet"
 import {IHomeModel} from "../interfaces/IHomeModel"
 import {ActionLib} from "../actions/ActionLib"
-import {Cmd} from "../net/Cmd"
 import {NoticeView} from "../view/NoticeView"
 import {Player} from "../Player"
 import {PromptWindow} from "../view/PromptWindow"
@@ -20,6 +19,7 @@ import {LoaderConfig} from "../configs/LoaderConfig"
 import {SceneManager} from "../manager/SceneManager"
 import {LibStr} from "../LibStr"
 import {Log} from "../Log";
+import {Cmd} from "../net/Common";
 
 /**
  *

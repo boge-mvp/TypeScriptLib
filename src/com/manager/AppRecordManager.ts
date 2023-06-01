@@ -8,14 +8,13 @@ import {AppManager} from "./AppManager"
 import {Factory} from "../Factory"
 import {SocketManager} from "../net/SocketManager"
 import {SceneManager} from "./SceneManager"
-import {HttpCode} from "../net/HttpCode"
 import {HtmlWindow} from "../view/HtmlWindow"
-import {CommonCmd} from "../net/CommonCmd"
 import {LanguageUtils} from "../utils/LanguageUtils"
 import {ActionLib} from "../actions/ActionLib"
 import {LibStr} from "../LibStr"
 import {Log} from "../Log";
 import {IRecord} from "../interfaces/ICommon";
+import {CommonCmd, HttpCode} from "../net/Common";
 
 /**
  * app 访问记录管理

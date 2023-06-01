@@ -2957,27 +2957,6 @@ declare namespace coreLib {
          */
         sendErrorLog(data: any): void;
     }
-    /** 通信命令 */
-    export enum Cmd {
-        /** 大厅socket房间号 */
-        PROT_HOME = 999999,
-        /** 聊天内容 */
-        SOCKET_CHAT_MESSAGE = 1,
-        /** 中奖信息公告 */
-        SOCKET_WIN_INFO = 2,
-        /** 在线人数 */
-        SOCKET_ROOM_MONEY_MESSAGE = 3,
-        /** 充值状态 */
-        SOCKET_RECHARGE_STATUS = 4,
-        /** 余额变化 */
-        SOCKET_MONEY_CHANGE = 1001,
-        /** 黄金变化 */
-        SOCKET_GOLD_CHANGE = 1002,
-        /** 充值成功 */
-        SOCKET_TOP_UP_CHANGE = 1004,
-        /** 显示广播消息 */
-        SOCKET_SHOW_NOTICE = 12
-    }
     /** 公用信息处理 */
     export enum CommonCmd {
         /** 游戏首页 */
@@ -3055,6 +3034,45 @@ declare namespace coreLib {
         /** 赠送金 */
         GAME_MONEY_TYPE_GIFT = 3
     }
+    /** 通信命令 */
+    export enum Cmd {
+        /** 大厅socket房间号 */
+        PROT_HOME = 999999,
+        /** 聊天内容 */
+        SOCKET_CHAT_MESSAGE = 1,
+        /** 中奖信息公告 */
+        SOCKET_WIN_INFO = 2,
+        /** 在线人数 */
+        SOCKET_ROOM_MONEY_MESSAGE = 3,
+        /** 充值状态 */
+        SOCKET_RECHARGE_STATUS = 4,
+        /** 余额变化 */
+        SOCKET_MONEY_CHANGE = 1001,
+        /** 黄金变化 */
+        SOCKET_GOLD_CHANGE = 1002,
+        /** 充值成功 */
+        SOCKET_TOP_UP_CHANGE = 1004,
+        /** 显示广播消息 */
+        SOCKET_SHOW_NOTICE = 12
+    }
+    export class HttpCode {
+        /** 正确返回代码 */
+        static OK: number;
+    }
+    export class Urls {
+        /** 获取服务器时间 */
+        static GAME_SERVER_TIME: string;
+        /** 优惠券投注 */
+        static URL_COUPON_BET: string;
+        /** 获取用户信息 */
+        static URL_USER_INFO: string;
+        /** 获取用户账户金额 */
+        static URL_USER_ACCOUNT_ASSET: string;
+        /** gift 抽奖开奖结果 */
+        static URL_GAME_SCRATCHER_LOTTERY: string;
+        /** 获取所有优惠券 */
+        static URL_GAME_ALL_COUPON: string;
+    }
     export class GameHttpRequest extends Laya.HttpRequest {
         /** 请求数据完成 */
         private completeHandler;
@@ -3106,10 +3124,6 @@ declare namespace coreLib {
         protected getAuth(): void;
         send(data: any): void;
         close(): void;
-    }
-    export enum HttpCode {
-        /** 正确返回代码 */
-        OK = 200
     }
     export interface IHttpFilter {
         /**
@@ -3227,20 +3241,6 @@ declare namespace coreLib {
         set role(value: number);
         get isGift(): number;
         set isGift(value: number);
-    }
-    export class Urls {
-        /** 获取服务器时间 */
-        static GAME_SERVER_TIME: string;
-        /** 优惠券投注 */
-        static URL_COUPON_BET: string;
-        /** 获取用户信息 */
-        static URL_USER_INFO: string;
-        /** 获取用户账户金额 */
-        static URL_USER_ACCOUNT_ASSET: string;
-        /** gift 抽奖开奖结果 */
-        static URL_GAME_SCRATCHER_LOTTERY: string;
-        /** 获取所有优惠券 */
-        static URL_GAME_ALL_COUPON: string;
     }
     /** 用户数据 */
     export class Player {

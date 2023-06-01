@@ -1,16 +1,16 @@
 
-window["runFun"] = (func?: ParamHandler, ...args) => {
+window.runFun = (func?: ParamHandler, ...args) => {
     if (func != null) return func instanceof Laya.Handler ? func.runWith(args) : func.apply(null, args)
     return null
 }
 
 /** 根据语言包id获取字符串 */
-window["getString"] = (id: string | number, ...args) => {
+window.getString = (id: string | number, ...args) => {
     // @ts-ignore
     let content = coreLib.LanguageUtils.inst.getStr(id)
-    args.unshift(content)
+    if (args.length == 0) return content
     // @ts-ignore
-    return coreLib.StringUtil.format.apply(null, args)
+    return coreLib.StringUtil.format(content, ...args)
 }
 
 // 使用交叉类型连接多个类型

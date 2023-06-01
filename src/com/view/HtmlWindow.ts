@@ -13,9 +13,9 @@ import {Player} from "../Player"
 import {AppManager} from "../manager/AppManager"
 import {SceneManager} from "../manager/SceneManager"
 import {ActionLib} from "../actions/ActionLib"
-import {CommonCmd} from "../net/CommonCmd"
 import {Log} from "../Log";
 import {IRecord} from "../interfaces/ICommon";
+import {CommonCmd} from "../net/Common";
 
 export class HtmlWindow extends fgui.Window implements IRecord {
 

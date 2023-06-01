@@ -19,15 +19,13 @@ import {PromptWindow} from "../view/PromptWindow"
 import {StringUtil} from "../utils/StringUtil"
 import {DateUtils} from "../utils/DateUtils"
 import {LibStr} from "../LibStr"
-import {HttpCode} from "../net/HttpCode"
 import {WaitResult} from "../view/WaitResult"
 import {JSUtils} from "../utils/JSUtils"
 import {SceneManager} from "../manager/SceneManager"
 import {AppManager} from "../manager/AppManager"
 import {IGuideScene} from "../interfaces/IGuideScene"
-import {CommonCmd} from "../net/CommonCmd"
-import {Urls} from "../net/Urls"
 import {Log} from "../Log";
+import {CommonCmd, HttpCode, Urls} from "../net/Common";
 
 /** 游戏主页必须继承的类 */
 export class BaseScene extends BaseView implements IGameScene, IGuideScene {

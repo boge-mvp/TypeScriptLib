@@ -1,8 +1,8 @@
 import {IHttpFilter} from "../net/IHttpFilter"
 import {GameHttpRequest} from "../net/GameHttpRequest"
-import {HttpCode} from "../net/HttpCode"
 import {Method} from "../interfaces/ICommon";
 import {Log} from "../Log";
+import {HttpCode} from "../net/Common";
 
 export class HTTPUtils {
 

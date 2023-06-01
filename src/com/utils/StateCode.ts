@@ -11,6 +11,7 @@ import {HomePrompt} from "../view/HomePrompt"
 import {SceneManager} from "../manager/SceneManager"
 import {LibStr} from "../LibStr"
 import {Log} from "../Log";
+import {PromptWindow} from "../view/PromptWindow";
 
 /** 状态吗获取显示信息 */
 export class StateCode {
@@ -91,6 +92,11 @@ export class StateCode {
             case 8003:// 游戏暂停中
                 Log.debug("StateCode.execute() 8003")
                 this.showGameOff()
+                return true
+            default:
+                if (typeof msg !== "string") msg = this.getShowMessage(msg)
+                msg = msg ? msg : getString(LibStr.NET_ERROR)
+                PromptWindow.inst.showTip(msg)
                 return true
         }
         return false

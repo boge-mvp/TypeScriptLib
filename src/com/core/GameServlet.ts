@@ -5,7 +5,6 @@ import {IGameModel} from "../interfaces/IGameModel"
 import {ActionLib} from "../actions/ActionLib"
 import {HTTPUtils} from "../utils/HTTPUtils"
 import {Player} from "../Player"
-import {HttpCode} from "../net/HttpCode"
 import {StateCode} from "../utils/StateCode"
 import {SceneManager} from "../manager/SceneManager"
 import {LoadingWindow} from "../view/LoadingWindow"
@@ -13,12 +12,11 @@ import {JSUtils} from "../utils/JSUtils"
 import {MessageTip} from "../view/MessageTip"
 import {SocketManager} from "../net/SocketManager"
 import {LibStr} from "../LibStr"
-import {Urls} from "../net/Urls"
 import {WaitResult} from "../view/WaitResult"
 import {PromptWindow} from "../view/PromptWindow"
 import {StringUtil} from "../utils/StringUtil"
-import {CommonCmd} from "../net/CommonCmd"
 import {Cast} from "../utils/Cast"
+import {CommonCmd, HttpCode, Urls} from "../net/Common";
 
 /**
  * 游戏基础类
@@ -402,7 +400,8 @@ export abstract class GameServlet extends BaseProxy implements IGameServlet {
     protected jackPotClaimHandler(handler: ParamHandler, data: any) {
         if (data.code != HttpCode.OK) {
             WaitResult.inst.hide()
-            this.showNotResult(data, false)
+            // this.showNotResult(data, false)
+            StateCode.execute(data.code, data)
             return
         }
         data = data.data
