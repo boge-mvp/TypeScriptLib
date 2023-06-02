@@ -81,8 +81,10 @@ export interface IGameData {
 
     /** 总共要投注的钱 */
     getTotalBetMoney(): number
+
     /** 上报错误数据 */
     reportError(): any
+
     /** 本次总共盈利 */
     totalWinMoney?: number
     /** 玩的次数 计数 */
@@ -129,5 +131,22 @@ export interface ISlotLotteryData {
     itemCount: number
     /** 附带数据 */
     data?: any
+
+}
+
+/**
+ * 执行命令数据
+ */
+export interface IExecuteData {
+
+    token?: string
+    /** 执行类型 */
+    type: number
+    /** 执行数据 */
+    data?: number
+    /** 打开游戏名字 */
+    gameName?: string
+    /** 打开游戏id */
+    openGame?: number
 
 }

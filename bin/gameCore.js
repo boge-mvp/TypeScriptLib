@@ -853,10 +853,7 @@ window.coreLib = {};
         /** 更新bounds信息 */
         ActionLib["GAME_UPDATE_BOUNDS_INFO"] = "game_update_bounds_info";
     })(ActionLib = coreLib.ActionLib || (coreLib.ActionLib = {}));
-    /**
-     * 实现一个扩展的贝塞尔曲线类
-     */
-    class BezierCurves extends fgui.GComponent {
+    class BezierCurves extends View {
         constructor() {
             super(...arguments);
             /** 经过时间 */
@@ -5615,10 +5612,10 @@ window.coreLib = {};
                 case 3: // socket
                     if (value.length > 0) {
                         if (Player.inst.gameModel == CommonCmd.GAME_HOME || Player.inst.gameModel == CommonCmd.GAME_SCRATCHER) {
-                            SocketManager.inst.onMessageReveived(value[0]);
+                            SocketManager.inst.onMessageReceived(value[0]);
                         }
                         else {
-                            SocketManager.inst.onMessageReveived(value[0]);
+                            SocketManager.inst.onMessageReceived(value[0]);
                         }
                     }
                     break;
@@ -6975,15 +6972,15 @@ window.coreLib = {};
     coreLib.GameSocket = GameSocket;
     /** socket管理 */
     class SocketManager extends BaseSocket {
+        constructor() {
+            super(...arguments);
+            /** 接受到的消息 */
+            this.receiveData = [];
+        }
         static get inst() {
             if (this._instance == null)
                 this._instance = new SocketManager();
             return this._instance;
-        }
-        constructor() {
-            super();
-            /** 接受到的消息 */
-            this.receiveData = [];
         }
         /**
          * 链接服务器socket
@@ -6997,13 +6994,13 @@ window.coreLib = {};
                 close();
             }
             this.isConnect = true;
-            if (StringUtil.isEmpty(url)) {
+            if (StringUtil.isEmpty(url))
                 url = Laya.Browser.window.socketUrl;
-            }
+            this.customUrl && (url = runFun(this.customUrl, url));
             this._roomId = roomId;
             let obj = {
                 auth: { rid: this._roomId, uid: userId },
-                notify: this.onMessageReveived.bind(this),
+                notify: this.onMessageReceived.bind(this),
                 url: url,
                 token: token
             };
@@ -7041,27 +7038,27 @@ window.coreLib = {};
             super.close();
         }
         /** 服务器发来消息 */
-        onMessageReveived(data) {
+        onMessageReceived(data) {
             if (!this.isConnect) {
                 return;
             }
             this.receiveData.push(data);
         }
         closeHandler(msg = null) {
-            if (this._client)
-                this._client.closeHandler(msg);
+            var _a;
+            (_a = this._client) === null || _a === void 0 ? void 0 : _a.closeHandler(msg);
         }
         messageHandler(evt) {
-            if (this._client)
-                this._client.messageHandler(evt);
+            var _a;
+            (_a = this._client) === null || _a === void 0 ? void 0 : _a.messageHandler(evt);
         }
         errorHandler(e) {
-            if (this._client)
-                this._client.errorHandler(e);
+            var _a;
+            (_a = this._client) === null || _a === void 0 ? void 0 : _a.errorHandler(e);
         }
         openHandler() {
-            if (this._client)
-                this._client.openHandler();
+            var _a;
+            (_a = this._client) === null || _a === void 0 ? void 0 : _a.openHandler();
         }
         get roomId() {
             return this._roomId;
@@ -11121,9 +11118,6 @@ window.coreLib = {};
      *
      */
     class CardDeck extends BaseView {
-        constructor() {
-            super();
-        }
         constructFromXML(xml) {
             super.constructFromXML(xml);
             this.load = this.getChild("n0").asLoader;
@@ -11187,6 +11181,20 @@ window.coreLib = {};
             item.icon = caption;
             item.data = handler;
             item.grayed = false;
+            let c = item.getController("checked");
+            if (c != null)
+                c.selectedIndex = 0;
+            return item;
+        }
+        addSelectIconItem(caption, select, handler = null) {
+            let item = this._list.addItemFromPool().asButton;
+            item.icon = caption;
+            item.selectedIcon = select;
+            item.data = handler;
+            item.grayed = false;
+            if (select != null) {
+                item.mode = fgui.ButtonMode.Check;
+            }
             let c = item.getController("checked");
             if (c != null)
                 c.selectedIndex = 0;
@@ -12700,7 +12708,7 @@ window.coreLib = {};
     coreLib.NoticeView = NoticeView;
     class NumButton extends BaseButton {
         constructor() {
-            super();
+            super(...arguments);
             /** 偏移位置 */
             this.offX = 0;
             /** 偏移位置 */
@@ -12765,13 +12773,7 @@ window.coreLib = {};
         }
     }
     coreLib.NumButton = NumButton;
-    class ProgressBar extends fgui.GProgressBar {
-        constructor() {
-            super();
-        }
-        constructFromXML(xml) {
-            super.constructFromXML(xml);
-        }
+    class ProgressBar extends mixinExt(ActionEvent, ViewBlock, fgui.GProgressBar) {
         tweenValue2(value, duration, complete) {
             let oldValule;
             let tweener = fgui.GTween.getTween(this, this.update);
@@ -12788,50 +12790,6 @@ window.coreLib = {};
                 runFun(complete);
             })
                 .setEase(fgui.EaseType.Linear);
-        }
-        regAction(action, caller, method, group = null) {
-            Factory.inst.regAction(action, caller, method, group);
-        }
-        regActionHandler(action, handler, group = null) {
-            Factory.inst.regActionHandler(action, handler, group);
-        }
-        removeAllAction(...arge) {
-            Factory.inst.removeAllAction.apply(Factory.inst, arge);
-        }
-        removeGroup(group) {
-            Factory.inst.removeGroup(group);
-        }
-        removeGroupActions(group, ...arge) {
-            arge.unshift(group);
-            Factory.inst.removeGroupActions.apply(Factory.inst, arge);
-        }
-        removeActionHandler(action, method, group = null) {
-            Factory.inst.removeActionHandler(action, method, group);
-        }
-        sendAction(action, ...arge) {
-            arge.unshift(action);
-            Factory.inst.sendAction.apply(Factory.inst, arge);
-        }
-        sendGroupAction(group, action, ...arge) {
-            arge.unshift(action);
-            arge.unshift(group);
-            Factory.inst.sendGroupAction.apply(Factory.inst, arge);
-        }
-        /** 注册游戏数据 */
-        regGameAction(action, caller, method) {
-            this.regAction(action, caller, method, BaseProxy.GAME_GROUP);
-        }
-        addView(key, view) {
-            return Factory.inst.addView(key, view);
-        }
-        removeView(key) {
-            Factory.inst.removeView(key);
-        }
-        getView(key) {
-            return Factory.inst.getView(key);
-        }
-        getProxy(name) {
-            return Factory.inst.getProxy(name);
         }
     }
     coreLib.ProgressBar = ProgressBar;

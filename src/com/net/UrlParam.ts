@@ -7,6 +7,7 @@ import {Player} from "../Player"
 import {UtilsTool} from "../utils/UtilsTool"
 import {StringUtil} from "../utils/StringUtil"
 import {AppRecordManager} from "../manager/AppRecordManager"
+import {IExecuteData} from "../interfaces/ICommon";
 
 /**
  * url 参数
@@ -64,7 +65,7 @@ export class UrlParam {
 
     }
 
-    parseData(json: any) {
+    parseData(json: IExecuteData) {
         Player.inst.parseParam = json
         // 获取链接附带参数
         let isweb = this.getValue(json, "isweb")

@@ -39,6 +39,21 @@ export class GamePopupMenu extends PopupMenu {
         return item
     }
 
+    addSelectIconItem(caption: string, select: string, handler: Laya.Handler = null) {
+        let item: GButton = this._list.addItemFromPool().asButton;
+        item.icon = caption;
+        item.selectedIcon = select;
+        item.data = handler;
+        item.grayed = false;
+        if (select != null) {
+            item.mode = ButtonMode.Check;
+        }
+        let c: Controller = item.getController("checked");
+        if (c != null)
+            c.selectedIndex = 0;
+        return item;
+    }
+
     addIconTitleItem(title: string, caption: string, select: string, handler?: Laya.Handler) {
         let item = this._list.addItemFromPool().asButton
         item.icon = caption

@@ -469,10 +469,7 @@ declare namespace coreLib {
         /** 更新bounds信息 */
         GAME_UPDATE_BOUNDS_INFO = "game_update_bounds_info"
     }
-    /**
-     * 实现一个扩展的贝塞尔曲线类
-     */
-    export class BezierCurves extends fgui.GComponent {
+    export class BezierCurves extends View {
         /** 经过时间 */
         private _t;
         private p1;
@@ -1968,6 +1965,20 @@ declare namespace coreLib {
         /** 附带数据 */
         data?: any;
     }
+    /**
+     * 执行命令数据
+     */
+    export interface IExecuteData {
+        token?: string;
+        /** 执行类型 */
+        type: number;
+        /** 执行数据 */
+        data?: number;
+        /** 打开游戏名字 */
+        gameName?: string;
+        /** 打开游戏id */
+        openGame?: number;
+    }
     export interface IData {
         /** 用户昵称是否是第一次改名，0 是，1 不是  */
         isFirstNick: boolean;
@@ -2683,7 +2694,7 @@ declare namespace coreLib {
         /** 暂停返回上一页 */
         static pauseHistory: boolean;
         /** 进入大厅后执行命令 */
-        static executeJson: any;
+        static executeJson: IExecuteData;
         /**
          * 添加一个记录
          * @param currentPage 当前的面板
@@ -2725,7 +2736,7 @@ declare namespace coreLib {
          * java 传入要求打开的内容
          * @param json
          */
-        static JavaSendOpen(json: any): void;
+        static JavaSendOpen(json: IExecuteData): void;
         private static open;
         /**
          * 长度
@@ -3174,7 +3185,21 @@ declare namespace coreLib {
         private receiveData;
         private _client;
         static SocketClass: typeof GameSocket;
-        constructor();
+        /**
+         * 自定义额外加载操作
+         * @example
+         * AssetsLoader.customLoader = (complete: ParamHandler, errorHandler: ParamHandler) => {
+         *      ...
+         *     runFun(complete)
+         * }
+         *
+         * AssetsLoader.customLoader = Laya.Handler.create(this, function(complete: ParamHandler, errorHandler: ParamHandler) {
+         *  ...
+         *  runFun(complete)
+         *
+         * })
+         */
+        customUrl: ParamHandler;
         /**
          * 链接服务器socket
          * @param roomId 房间号
@@ -3187,7 +3212,7 @@ declare namespace coreLib {
         /** 关闭链接 */
         close(): void;
         /** 服务器发来消息 */
-        onMessageReveived(data: any): void;
+        onMessageReceived(data: any): void;
         closeHandler(msg?: any): void;
         messageHandler(evt: any): void;
         errorHandler(e: any): void;
@@ -3218,7 +3243,7 @@ declare namespace coreLib {
         /** 是否是debug模式 */
         debug: boolean;
         constructor();
-        parseData(json: any): void;
+        parseData(json: IExecuteData): void;
         getValue(json: any, key: string): string;
         get amount(): string;
         get inviteCode(): string;
@@ -3310,7 +3335,7 @@ declare namespace coreLib {
         /** 缓存上一次网络请求返回数据 */
         resultData: any;
         /** 解析的传入游戏的参数 */
-        parseParam: any;
+        parseParam: IExecuteData;
         /** 用户拥有的奖金池  */
         jackpotData: any[];
         /** 用户的真实投注 */
@@ -4918,7 +4943,6 @@ declare namespace coreLib {
         private load;
         /** 在数组中的位置 */
         pos: number;
-        constructor();
         protected constructFromXML(xml: any): void;
         shuffle(func: ParamHandler): void;
         private plusMinus;
@@ -4933,6 +4957,7 @@ declare namespace coreLib {
         private onUnDisplay;
         show(target?: fgui.GObject, dir?: fgui.PopupDirection | boolean): void;
         addIconItem(caption: string, handler?: Laya.Handler): fairygui.GButton;
+        addSelectIconItem(caption: string, select: string, handler?: Laya.Handler): fairygui.GButton;
         addIconTitleItem(title: string, caption: string, select: string, handler?: Laya.Handler): fairygui.GButton;
         dispose(): void;
     }
@@ -5370,7 +5395,6 @@ declare namespace coreLib {
         /** 偏移位置 */
         offY: number;
         private tempValue;
-        constructor();
         protected constructFromXML(xml: any): void;
         private stateChangedHandler;
         /** 更新绑定位置 */
@@ -5381,24 +5405,9 @@ declare namespace coreLib {
          */
         setCorner(value: number): void;
     }
-    export class ProgressBar extends fgui.GProgressBar {
-        constructor();
-        protected constructFromXML(xml: any): void;
+    const ProgressBar_base: Constructor<ActionEvent & ViewBlock & fairygui.GProgressBar>;
+    export class ProgressBar extends ProgressBar_base {
         tweenValue2(value: number, duration: number, complete?: ParamHandler): fgui.GTweener;
-        regAction(action: string, caller: any, method: Function, group?: string): void;
-        regActionHandler(action: string, handler: Laya.Handler, group?: string): void;
-        removeAllAction(...arge: any[]): void;
-        removeGroup(group: string): void;
-        removeGroupActions(group: string, ...arge: any[]): void;
-        removeActionHandler(action: string, method: Function, group?: string): void;
-        sendAction(action: string, ...arge: any[]): void;
-        sendGroupAction(group: string, action: string, ...arge: any[]): void;
-        /** 注册游戏数据 */
-        regGameAction(action: string, caller: any, method: Function): void;
-        addView(key: string, view: View): boolean;
-        removeView(key: string): void;
-        getView(key: string): unknown;
-        getProxy(name: string): Proxys;
     }
     /** 文案提示 */
     export class PromptTip extends BaseLabel {

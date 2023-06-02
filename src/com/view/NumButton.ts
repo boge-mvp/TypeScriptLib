@@ -20,11 +20,6 @@ export class NumButton extends BaseButton {
 
     private tempValue = 0
 
-
-    constructor() {
-        super()
-    }
-
     protected constructFromXML(xml: any) {
         super.constructFromXML(xml)
 

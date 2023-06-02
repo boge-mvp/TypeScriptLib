@@ -7,7 +7,7 @@ import {IData} from "./interfaces/IData"
 import {UtilsTool} from "./utils/UtilsTool"
 import {Cast} from "./utils/Cast"
 import {StringUtil} from "./utils/StringUtil"
-import {IGameData, ILogin} from "./interfaces/ICommon";
+import {IExecuteData, IGameData, ILogin} from "./interfaces/ICommon";
 
 /** 用户数据 */
 export class Player {
@@ -85,7 +85,7 @@ export class Player {
     /** 缓存上一次网络请求返回数据 */
     resultData: any
     /** 解析的传入游戏的参数 */
-    parseParam: any
+    parseParam: IExecuteData
     // 大奖参数
     /** 用户拥有的奖金池  */
     jackpotData = []

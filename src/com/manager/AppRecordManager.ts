@@ -13,7 +13,7 @@ import {LanguageUtils} from "../utils/LanguageUtils"
 import {ActionLib} from "../actions/ActionLib"
 import {LibStr} from "../LibStr"
 import {Log} from "../Log";
-import {IRecord} from "../interfaces/ICommon";
+import {IExecuteData, IRecord} from "../interfaces/ICommon";
 import {CommonCmd, HttpCode} from "../net/Common";
 
 /**
@@ -36,7 +36,7 @@ export class AppRecordManager {
     /** 暂停返回上一页 */
     static pauseHistory = false
     /** 进入大厅后执行命令 */
-    static executeJson: any
+    static executeJson: IExecuteData
 
     /**
      * 添加一个记录
@@ -156,9 +156,9 @@ export class AppRecordManager {
             case 3:// socket
                 if (value.length > 0) {
                     if (Player.inst.gameModel == CommonCmd.GAME_HOME || Player.inst.gameModel == CommonCmd.GAME_SCRATCHER) {
-                        SocketManager.inst.onMessageReveived(value[0])
+                        SocketManager.inst.onMessageReceived(value[0])
                     } else {
-                        SocketManager.inst.onMessageReveived(value[0])
+                        SocketManager.inst.onMessageReceived(value[0])
                     }
                 }
                 break
@@ -168,7 +168,7 @@ export class AppRecordManager {
             case 1000:// 与java交互
                 let str: string = value[0]
                 Log.info(str)
-                let json = JSON.parse(str)
+                let json: IExecuteData = JSON.parse(str)
                 let token: string = json.token
                 if (token) {
                     Player.inst.token = token
@@ -204,7 +204,7 @@ export class AppRecordManager {
      * java 传入要求打开的内容
      * @param json
      */
-    static JavaSendOpen(json: any) {
+    static JavaSendOpen(json: IExecuteData) {
         if (json == null) return
         if (typeof json === "string") {
             json = JSON.parse(json)

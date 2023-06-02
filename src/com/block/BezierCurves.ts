@@ -1,9 +1,8 @@
 import Point = Laya.Point;
+import {View} from "../core/View";
 
-/**
- * 实现一个扩展的贝塞尔曲线类
- */
-export class BezierCurves extends fgui.GComponent {
+export class BezierCurves extends View {
+
 
     /** 经过时间 */
     private _t = 0
@@ -58,7 +57,5 @@ export class BezierCurves extends fgui.GComponent {
         this.p3?.recover()
         this.p4?.recover()
     }
-
-
 
 }

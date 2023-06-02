@@ -21,10 +21,21 @@ export class SocketManager extends BaseSocket {
 
     private _client: GameSocket
     public static SocketClass = GameSocket
-
-    constructor() {
-        super()
-    }
+    /**
+     * 自定义额外加载操作
+     * @example
+     * AssetsLoader.customLoader = (complete: ParamHandler, errorHandler: ParamHandler) => {
+     *      ...
+     *     runFun(complete)
+     * }
+     *
+     * AssetsLoader.customLoader = Laya.Handler.create(this, function(complete: ParamHandler, errorHandler: ParamHandler) {
+     *  ...
+     *  runFun(complete)
+     *
+     * })
+     */
+    customUrl: ParamHandler
 
     /**
      * 链接服务器socket
@@ -38,13 +49,14 @@ export class SocketManager extends BaseSocket {
             close()
         }
         this.isConnect = true
-        if (StringUtil.isEmpty(url)) {
-            url = Browser.window.socketUrl
-        }
+        if (StringUtil.isEmpty(url)) url = Browser.window.socketUrl
+
+        this.customUrl && (url = runFun(this.customUrl, url))
+
         this._roomId = roomId
         let obj = {
             auth: {rid: this._roomId, uid: userId},
-            notify: this.onMessageReveived.bind(this),
+            notify: this.onMessageReceived.bind(this),
             url: url,
             token: token
         }
@@ -85,27 +97,27 @@ export class SocketManager extends BaseSocket {
     }
 
     /** 服务器发来消息 */
-    onMessageReveived(data: any) {
+    onMessageReceived(data) {
         if (!this.isConnect) {
             return
         }
         this.receiveData.push(data)
     }
 
-    closeHandler(msg: any = null) {
-        if (this._client) this._client.closeHandler(msg)
+    closeHandler(msg = null) {
+        this._client?.closeHandler(msg)
     }
 
     messageHandler(evt) {
-        if (this._client) this._client.messageHandler(evt)
+        this._client?.messageHandler(evt)
     }
 
     errorHandler(e) {
-        if (this._client) this._client.errorHandler(e)
+        this._client?.errorHandler(e)
     }
 
     openHandler() {
-        if (this._client) this._client.openHandler()
+        this._client?.openHandler()
     }
 
     get roomId() {
