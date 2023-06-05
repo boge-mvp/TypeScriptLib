@@ -14,7 +14,7 @@ export class SlotScrollModel extends SlotModel {
     /** 滚动到最大圈数  就可以播放开奖结果了 */
     private rollMaxCount = 100
     /** 是否已经开始播放结束动画 */
-    private isPlayEndTween = false
+    protected isPlayEndTween = false
     /** 结束动画数据 */
     protected scrollData = []
     /** 当前滚动的单列位置 */
