@@ -4208,6 +4208,11 @@ declare namespace coreLib {
         /** 语言配置文件 */
         protected xml: XMLDocument;
         /**
+         * 忽略大小写
+         * @default true
+         */
+        ignoreCase: boolean;
+        /**
          * 自定义需要转换的特殊符号 <br/>
          *
          * @example
@@ -4225,6 +4230,12 @@ declare namespace coreLib {
          */
         getStr(str: number | string): string;
         private __getStr;
+        /**
+         * 获取忽略大小写的文案
+         * @param node
+         * @param name
+         */
+        getElementsByNameIgnoreCase(node: Element | ChildNode, name: string): Element[];
     }
     /**
      * 长按、点击按钮绑定

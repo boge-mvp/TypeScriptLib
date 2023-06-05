@@ -9089,6 +9089,13 @@ window.coreLib = {};
     }
     coreLib.JSUtils = JSUtils;
     class LanguageUtils {
+        constructor() {
+            /**
+             * 忽略大小写
+             * @default true
+             */
+            this.ignoreCase = true;
+        }
         static get inst() {
             if (!LanguageUtils._instance)
                 LanguageUtils._instance = new LanguageUtils();
@@ -9118,6 +9125,12 @@ window.coreLib = {};
                     throw new Error("Language configuration has duplicate items：" + str);
                 return this.__getStr(elements.item(0));
             }
+            else if (this.ignoreCase) {
+                const els = this.getElementsByNameIgnoreCase(this.xml.documentElement, str);
+                if (els.length > 0) {
+                    return this.__getStr(els[0]);
+                }
+            }
             return str;
         }
         __getStr(element) {
@@ -9127,6 +9140,33 @@ window.coreLib = {};
             // 这里统一处理货币转换
             content = content.replace(/\{unit}/g, Player.inst.getCurrencyUnit());
             return content;
+        }
+        /**
+         * 获取忽略大小写的文案
+         * @param node
+         * @param name
+         */
+        getElementsByNameIgnoreCase(node, name) {
+            var _a;
+            if (!node || !name) {
+                return [];
+            }
+            let result = [];
+            if (node.nodeType === Node.ELEMENT_NODE) {
+                const element = node;
+                const nodeName = (_a = element.getAttribute("name")) === null || _a === void 0 ? void 0 : _a.toLowerCase();
+                if (nodeName === name.toLowerCase()) {
+                    result.push(node);
+                }
+            }
+            for (let i = 0; i < node.childNodes.length; i++) {
+                const childNode = node.childNodes[i];
+                if (childNode.nodeType == Node.ELEMENT_NODE) {
+                    const childResult = this.getElementsByNameIgnoreCase(childNode, name);
+                    result = result.concat(childResult);
+                }
+            }
+            return result;
         }
     }
     coreLib.LanguageUtils = LanguageUtils;

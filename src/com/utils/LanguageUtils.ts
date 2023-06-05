@@ -13,6 +13,11 @@ export class LanguageUtils {
     /** 语言配置文件 */
     protected xml: XMLDocument
     /**
+     * 忽略大小写
+     * @default true
+     */
+    ignoreCase = true
+    /**
      * 自定义需要转换的特殊符号 <br/>
      *
      * @example
@@ -46,6 +51,11 @@ export class LanguageUtils {
             if (elements.length > 1)
                 throw new Error("Language configuration has duplicate items：" + str)
             return this.__getStr(elements.item(0))
+        } else if (this.ignoreCase) {
+            const els = this.getElementsByNameIgnoreCase(this.xml.documentElement, str)
+            if (els.length > 0) {
+                return this.__getStr(els[0])
+            }
         }
         return str
     }
@@ -56,6 +66,34 @@ export class LanguageUtils {
         // 这里统一处理货币转换
         content = content.replace(/\{unit}/g, Player.inst.getCurrencyUnit())
         return content
+    }
+
+
+    /**
+     * 获取忽略大小写的文案
+     * @param node
+     * @param name
+     */
+    getElementsByNameIgnoreCase(node: Element | ChildNode, name: string) {
+        if (!node || !name) {
+            return []
+        }
+        let result: Element[] = []
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = <Element>node
+            const nodeName = element.getAttribute("name")?.toLowerCase()
+            if (nodeName === name.toLowerCase()) {
+                result.push(<Element>node)
+            }
+        }
+        for (let i = 0; i < node.childNodes.length; i++) {
+            const childNode = node.childNodes[i]
+            if (childNode.nodeType == Node.ELEMENT_NODE) {
+                const childResult = this.getElementsByNameIgnoreCase(childNode, name)
+                result = result.concat(childResult);
+            }
+        }
+        return result
     }
 
 }
