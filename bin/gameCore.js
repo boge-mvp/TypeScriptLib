@@ -5932,11 +5932,11 @@ window.coreLib = {};
             let guideRes = Laya.LocalStorage.getItem("GameGuide_" + Player.inst.gameModel);
             if (guideRes == null && obj.guide) {
                 let temps;
-                if (typeof obj.guide === "string") {
-                    temps = [obj.guide];
+                if (Array.isArray(obj.guide)) {
+                    temps = obj.guide;
                 }
                 else {
-                    temps = obj.guide;
+                    temps = [obj.guide];
                 }
                 for (let i = 0; i < temps.length; i++) {
                     let guide = temps[i];

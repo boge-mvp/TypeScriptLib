@@ -5762,7 +5762,7 @@ declare type ResConfig = {
     /** 引导帮助文档 */
     couponHelp?: string[]
     /** 指引 */
-    guide?: string[] | string
+    guide?: (string | LoadRes)[] | string | LoadRes
     /** 游戏赔率 */
     odds?: number[][] | any[][]
 }

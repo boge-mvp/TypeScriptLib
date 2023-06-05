@@ -204,6 +204,7 @@ export class AssetsLoader implements IFormatVer {
         }
 
         AssetsLoader.checkBranch(assets)
+
         function loadCommonErrorHandler() {
             MyLoader.loader.clearUnLoaded()
             if (!Render.isConchApp) JSUtils.openModal(LanguageUtils.inst.getStr(LibStr.NET_ERROR))
@@ -305,11 +306,11 @@ export class AssetsLoader implements IFormatVer {
         // 判断是否已经显示过引导页
         let guideRes = LocalStorage.getItem("GameGuide_" + Player.inst.gameModel)
         if (guideRes == null && obj.guide) {
-            let temps: string[]
-            if (typeof obj.guide === "string") {
-                temps = [obj.guide]
-            } else {
+            let temps: (string | LoadRes)[]
+            if (Array.isArray(obj.guide)) {
                 temps = obj.guide
+            } else {
+                temps = [obj.guide]
             }
             for (let i = 0; i < temps.length; i++) {
                 let guide = temps[i]
