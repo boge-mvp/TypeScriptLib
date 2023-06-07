@@ -133,7 +133,7 @@ export class SceneManager extends BaseProxy {
                 SceneManager.inst.starter?.gameServlet?.checkGamePeriod((sc: boolean)=>{
                     GRoot.inst.closeModalWait()
                     if (!sc) {
-                        this.sendAction(ActionLib.GAME_SHOW_PROMPT_WINDOW, LibStr.SYSTEM_BACK_LOBBY, Handler.create(this, JSUtils.gameClose))
+                        this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.SYSTEM_BACK_LOBBY, null, Handler.create(this, JSUtils.gameClose))
                     }
                 })
             } else {
@@ -163,9 +163,16 @@ export class SceneManager extends BaseProxy {
         }
     }
 
-    /** 登录提示框 */
+    /**
+     * 登录提示框
+     * @deprecated
+     */
     showloginTip() {
-        this.sendAction(ActionLib.GAME_SHOW_PROMPT_WINDOW, LibStr.LOGIN, Handler.create(this, () => {
+        this.showLoginTip()
+
+    }
+    showLoginTip() {
+        this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.LOGIN, null, Handler.create(this, () => {
             this.showLogin()
         }))
     }
@@ -376,7 +383,7 @@ export class SceneManager extends BaseProxy {
             Player.inst.gameModel = CommonCmd.GAME_HOME
             return
         }
-        this.sendAction(ActionLib.GAME_SHOW_PROMPT_WINDOW, LibStr.NET_ERROR, Handler.create(this, function () {
+        this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.NET_ERROR, null, Handler.create(this, function () {
             LoadingWindow.inst.hide()
             JSUtils.gameClose()
             Player.inst.gameModel = CommonCmd.GAME_HOME
@@ -469,7 +476,7 @@ export class SceneManager extends BaseProxy {
 
     /** 获取游戏开奖结果超时退出游戏 */
     gameGameTimeOutExit() {
-        this.sendAction(ActionLib.GAME_SHOW_PROMPT_WINDOW, LibStr.GET_GAME_RESULTS_TIME_OUT, Handler.create(this, function () {
+        this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.GET_GAME_RESULTS_TIME_OUT, null, Handler.create(this, function () {
             this.sendAction(ActionLib.GAME_RECONNECTION_NET, Handler.create(this, function () {
                 Laya.timer.callLater(this, function () {
                     if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
@@ -483,7 +490,7 @@ export class SceneManager extends BaseProxy {
 
     /** 游戏报错 退出游戏 */
     gameErrorExit() {
-        this.sendAction(ActionLib.GAME_SHOW_PROMPT_WINDOW, LibStr.GAME_ERROR, Handler.create(this, function () {
+        this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.GAME_ERROR, null, Handler.create(this, function () {
             this.sendAction(ActionLib.GAME_RECONNECTION_NET, Handler.create(this, function () {
                 Laya.timer.callLater(this, function () {
                     if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
@@ -502,7 +509,7 @@ export class SceneManager extends BaseProxy {
      */
     unexpectedExitGame(msg?: string, callback?: ParamHandler) {
         msg = msg ? msg : this.getString(LibStr.GAME_ERROR)
-        this.sendAction(ActionLib.GAME_SHOW_PROMPT_WINDOW, msg, Handler.create(this, function () {
+        this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, msg, null, Handler.create(this, function () {
             Laya.timer.callLater(this, function () {
                 if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
                     AppRecordManager.backHistory()

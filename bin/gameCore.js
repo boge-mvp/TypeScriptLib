@@ -6356,7 +6356,7 @@ window.coreLib = {};
                     (_d = (_c = SceneManager.inst.starter) === null || _c === void 0 ? void 0 : _c.gameServlet) === null || _d === void 0 ? void 0 : _d.checkGamePeriod((sc) => {
                         fgui.GRoot.inst.closeModalWait();
                         if (!sc) {
-                            this.sendAction(ActionLib.GAME_SHOW_PROMPT_WINDOW, 1012 /* LibStr.SYSTEM_BACK_LOBBY */, Laya.Handler.create(this, JSUtils.gameClose));
+                            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1012 /* LibStr.SYSTEM_BACK_LOBBY */, null, Laya.Handler.create(this, JSUtils.gameClose));
                         }
                     });
                 }
@@ -6388,9 +6388,15 @@ window.coreLib = {};
                 (_b = (_a = SceneManager.inst.starter) === null || _a === void 0 ? void 0 : _a.gameModel) === null || _b === void 0 ? void 0 : _b.blurGame();
             }
         }
-        /** 登录提示框 */
+        /**
+         * 登录提示框
+         * @deprecated
+         */
         showloginTip() {
-            this.sendAction(ActionLib.GAME_SHOW_PROMPT_WINDOW, 1023 /* LibStr.LOGIN */, Laya.Handler.create(this, () => {
+            this.showLoginTip();
+        }
+        showLoginTip() {
+            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1023 /* LibStr.LOGIN */, null, Laya.Handler.create(this, () => {
                 this.showLogin();
             }));
         }
@@ -6581,7 +6587,7 @@ window.coreLib = {};
                 Player.inst.gameModel = CommonCmd.GAME_HOME;
                 return;
             }
-            this.sendAction(ActionLib.GAME_SHOW_PROMPT_WINDOW, 1005 /* LibStr.NET_ERROR */, Laya.Handler.create(this, function () {
+            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1005 /* LibStr.NET_ERROR */, null, Laya.Handler.create(this, function () {
                 LoadingWindow.inst.hide();
                 JSUtils.gameClose();
                 Player.inst.gameModel = CommonCmd.GAME_HOME;
@@ -6664,7 +6670,7 @@ window.coreLib = {};
         }
         /** 获取游戏开奖结果超时退出游戏 */
         gameGameTimeOutExit() {
-            this.sendAction(ActionLib.GAME_SHOW_PROMPT_WINDOW, 1011 /* LibStr.GET_GAME_RESULTS_TIME_OUT */, Laya.Handler.create(this, function () {
+            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1011 /* LibStr.GET_GAME_RESULTS_TIME_OUT */, null, Laya.Handler.create(this, function () {
                 this.sendAction(ActionLib.GAME_RECONNECTION_NET, Laya.Handler.create(this, function () {
                     Laya.timer.callLater(this, function () {
                         if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
@@ -6677,7 +6683,7 @@ window.coreLib = {};
         }
         /** 游戏报错 退出游戏 */
         gameErrorExit() {
-            this.sendAction(ActionLib.GAME_SHOW_PROMPT_WINDOW, 1009 /* LibStr.GAME_ERROR */, Laya.Handler.create(this, function () {
+            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1009 /* LibStr.GAME_ERROR */, null, Laya.Handler.create(this, function () {
                 this.sendAction(ActionLib.GAME_RECONNECTION_NET, Laya.Handler.create(this, function () {
                     Laya.timer.callLater(this, function () {
                         if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
@@ -6695,7 +6701,7 @@ window.coreLib = {};
          */
         unexpectedExitGame(msg, callback) {
             msg = msg ? msg : this.getString(1009 /* LibStr.GAME_ERROR */);
-            this.sendAction(ActionLib.GAME_SHOW_PROMPT_WINDOW, msg, Laya.Handler.create(this, function () {
+            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, msg, null, Laya.Handler.create(this, function () {
                 Laya.timer.callLater(this, function () {
                     if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
                         AppRecordManager.backHistory();

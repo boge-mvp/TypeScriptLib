@@ -2923,8 +2923,12 @@ declare namespace coreLib {
         private focusHandler;
         /** 失去焦点停止渲染 */
         private blurHandler;
-        /** 登录提示框 */
+        /**
+         * 登录提示框
+         * @deprecated
+         */
         showloginTip(): void;
+        showLoginTip(): void;
         /** 获取当前屏幕等比例缩放系数 */
         getEqualRatioScale(): number;
         /** 获取当前屏幕等比例缩放系数 */
