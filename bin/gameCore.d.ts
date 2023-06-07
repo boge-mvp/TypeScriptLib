@@ -423,13 +423,24 @@ declare namespace coreLib {
          * 显示提示文案窗口 带多参数设置:
          *  ```
          *  msg:string|number|any[] 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
-         *  obj:IPromptData 附带设置 (okName:'', cancelName:'')
+         *  obj:IPromptData 附带设置 (okName:getString(LibStr.CONTINUE), cancelName: getString(LibStr.CANCEL))
          *  callback:ParamHandler 取消回调方法
          *  continueFun:ParamHandler 确定回调方法
          *  isAction = true 动画显示或关闭
          *  ```
          */
         GAME_SHOW_PROMPT_CANCEL_WINDOW = "game_show_prompt_cancel_window",
+        /**
+         * 显示常规的提示文案窗口
+         * ```
+         *  msg:string|number|any[] 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
+         *  obj:IPromptData 附带设置 (okName:'', cancelName:'')
+         *  callback:ParamHandler 取消回调方法
+         *  continueFun:ParamHandler 确定回调方法
+         *  isAction = true 动画显示或关闭
+         *
+         */
+        GAME_SHOW_PROMPT_NORMAL_WINDOW = "game_show_prompt_normal_window",
         /** 游戏新的回合开始 */
         GAME_NEW_ROUND_START = "GAME_NEW_ROUND_START",
         /** 游戏 */
@@ -5506,6 +5517,7 @@ declare namespace coreLib {
          * @see ActionLib.GAME_SHOW_PROMPT_CANCEL_WINDOW
          */
         showCancelTip(msg: string | number | any[], obj?: IPromptData, callback?: ParamHandler, continueFun?: ParamHandler, isAction?: boolean): void;
+        private _showWindow;
         dispose(): void;
     }
     /** 提示框 */

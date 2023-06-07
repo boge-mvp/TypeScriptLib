@@ -806,13 +806,24 @@ window.coreLib = {};
          * 显示提示文案窗口 带多参数设置:
          *  ```
          *  msg:string|number|any[] 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
-         *  obj:IPromptData 附带设置 (okName:'', cancelName:'')
+         *  obj:IPromptData 附带设置 (okName:getString(LibStr.CONTINUE), cancelName: getString(LibStr.CANCEL))
          *  callback:ParamHandler 取消回调方法
          *  continueFun:ParamHandler 确定回调方法
          *  isAction = true 动画显示或关闭
          *  ```
          */
         ActionLib["GAME_SHOW_PROMPT_CANCEL_WINDOW"] = "game_show_prompt_cancel_window";
+        /**
+         * 显示常规的提示文案窗口
+         * ```
+         *  msg:string|number|any[] 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
+         *  obj:IPromptData 附带设置 (okName:'', cancelName:'')
+         *  callback:ParamHandler 取消回调方法
+         *  continueFun:ParamHandler 确定回调方法
+         *  isAction = true 动画显示或关闭
+         *
+         */
+        ActionLib["GAME_SHOW_PROMPT_NORMAL_WINDOW"] = "game_show_prompt_normal_window";
         /** 游戏新的回合开始 */
         ActionLib["GAME_NEW_ROUND_START"] = "GAME_NEW_ROUND_START";
         // 游戏公用事件
@@ -13044,6 +13055,7 @@ window.coreLib = {};
                 PromptWindow._instance = this;
             this.regAction(ActionLib.GAME_SHOW_PROMPT_CANCEL_WINDOW, this, this.showCancelTip);
             this.regAction(ActionLib.GAME_SHOW_PROMPT_WINDOW, this, this.showTip);
+            this.regAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, this, this._showWindow);
         }
         onInit() {
             this.contentPane = fgui.UIPackage.createObjectFromURL("//common/PromptWindow").asCom;
@@ -13079,7 +13091,7 @@ window.coreLib = {};
             this.continueFun = null;
             if (this.cacheMessage.length > 0) {
                 let arr = this.cacheMessage.shift();
-                this.showCancelTip.apply(this, arr);
+                this._showWindow.apply(this, arr);
             }
         }
         /** 清理缓存 */
@@ -13099,7 +13111,7 @@ window.coreLib = {};
          * @see ActionLib.GAME_SHOW_PROMPT_WINDOW
          */
         showTip(msg, callback, isAction = true) {
-            this.showCancelTip(msg, { cancelName: this.getString(1066 /* LibStr.OK */) }, callback, null, isAction);
+            this._showWindow(msg, { cancelName: this.getString(1066 /* LibStr.OK */) }, callback, null, isAction);
         }
         /**
          * 带确认 取消按钮的提示框
@@ -13113,6 +13125,20 @@ window.coreLib = {};
          * @see ActionLib.GAME_SHOW_PROMPT_CANCEL_WINDOW
          */
         showCancelTip(msg, obj, callback, continueFun, isAction = true) {
+            if (obj) {
+                if (StringUtil.isEmpty(obj.okName)) {
+                    obj.okName = getString(1065 /* LibStr.CONTINUE */);
+                }
+                if (StringUtil.isEmpty(obj.cancelName)) {
+                    obj.cancelName = getString(1067 /* LibStr.CANCEL */);
+                }
+            }
+            else {
+                obj = { okName: getString(1065 /* LibStr.CONTINUE */), cancelName: getString(1067 /* LibStr.CANCEL */) };
+            }
+            this._showWindow(msg, obj, callback, continueFun, isAction);
+        }
+        _showWindow(msg, obj, callback, continueFun, isAction = true) {
             if (Array.isArray(msg)) {
                 msg = this.getString.apply(null, msg);
             }
@@ -13120,23 +13146,13 @@ window.coreLib = {};
                 msg = this.getString(msg);
             }
             if (this.parent != null) {
-                this.cacheMessage.push([msg, obj, callback, continueFun, isAction]);
+                this.cacheMessage.push({ msg: msg, obj: obj, callback: callback, continue: continueFun, isAction: isAction });
                 return;
             }
             this.isAction = isAction;
             this.show();
-            if (obj && !StringUtil.isEmpty(obj.okName)) {
-                this.continueBtn.text = obj.okName;
-            }
-            else {
-                this.continueBtn.text = this.getString(1065 /* LibStr.CONTINUE */);
-            }
-            if (obj && !StringUtil.isEmpty(obj.cancelName)) {
-                this.cancelBtn.text = obj.cancelName;
-            }
-            else {
-                this.cancelBtn.text = this.getString(1067 /* LibStr.CANCEL */);
-            }
+            (obj === null || obj === void 0 ? void 0 : obj.okName) && (this.continueBtn.text = obj.okName);
+            (obj === null || obj === void 0 ? void 0 : obj.cancelName) && (this.cancelBtn.text = obj.cancelName);
             this.controller.selectedIndex = continueFun == null ? 0 : 1;
             this.content.text = msg;
             this.callback = callback;

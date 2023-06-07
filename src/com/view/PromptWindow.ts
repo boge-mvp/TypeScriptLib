@@ -12,6 +12,7 @@ import {StringUtil} from "../utils/StringUtil"
 export class PromptWindow extends BaseWindow {
 
     private static _instance: PromptWindow
+
     static get inst(): PromptWindow {
         if (PromptWindow._instance == null) PromptWindow._instance = new PromptWindow()
         return PromptWindow._instance
@@ -27,7 +28,13 @@ export class PromptWindow extends BaseWindow {
     private controller: Controller
     private continueFun: ParamHandler
     /** 缓存的提示框 */
-    private cacheMessage: any[][] = []
+    private cacheMessage: {
+        msg: string,
+        obj?: IPromptData,
+        callback?: ParamHandler,
+        continue?: ParamHandler,
+        isAction?: boolean
+    }[] = []
 
     constructor() {
         super()
@@ -35,6 +42,7 @@ export class PromptWindow extends BaseWindow {
         if (PromptWindow._instance == null) PromptWindow._instance = this
         this.regAction(ActionLib.GAME_SHOW_PROMPT_CANCEL_WINDOW, this, this.showCancelTip)
         this.regAction(ActionLib.GAME_SHOW_PROMPT_WINDOW, this, this.showTip)
+        this.regAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, this, this._showWindow)
     }
 
     protected onInit() {
@@ -78,7 +86,7 @@ export class PromptWindow extends BaseWindow {
         this.continueFun = null
         if (this.cacheMessage.length > 0) {
             let arr = this.cacheMessage.shift()
-            this.showCancelTip.apply(this, arr)
+            this._showWindow.apply(this, arr)
         }
     }
 
@@ -99,7 +107,7 @@ export class PromptWindow extends BaseWindow {
      * @see ActionLib.GAME_SHOW_PROMPT_WINDOW
      */
     showTip(msg: string | number | any[], callback?: ParamHandler, isAction = true) {
-        this.showCancelTip(msg, {cancelName: this.getString(LibStr.OK)}, callback, null, isAction)
+        this._showWindow(msg, {cancelName: this.getString(LibStr.OK)}, callback, null, isAction)
     }
 
     /**
@@ -114,34 +122,38 @@ export class PromptWindow extends BaseWindow {
      * @see ActionLib.GAME_SHOW_PROMPT_CANCEL_WINDOW
      */
     showCancelTip(msg: string | number | any[], obj?: IPromptData, callback?: ParamHandler, continueFun?: ParamHandler, isAction = true) {
+        if (obj) {
+            if (StringUtil.isEmpty(obj.okName)) {
+                obj.okName = getString(LibStr.CONTINUE)
+            }
+            if (StringUtil.isEmpty(obj.cancelName)) {
+                obj.cancelName = getString(LibStr.CANCEL)
+            }
+        } else {
+            obj = {okName: getString(LibStr.CONTINUE), cancelName: getString(LibStr.CANCEL)}
+        }
+        this._showWindow(msg, obj, callback, continueFun, isAction)
+    }
+
+    private _showWindow(msg: string | number | any[], obj?: IPromptData, callback?: ParamHandler, continueFun?: ParamHandler, isAction = true) {
         if (Array.isArray(msg)) {
             msg = this.getString.apply(null, msg) as string
         } else {
             msg = this.getString(msg)
         }
         if (this.parent != null) {
-            this.cacheMessage.push([msg, obj, callback, continueFun, isAction])
+            this.cacheMessage.push({msg: msg, obj: obj, callback: callback, continue: continueFun, isAction: isAction})
             return
         }
         this.isAction = isAction
         this.show()
-        if (obj && !StringUtil.isEmpty(obj.okName)) {
-            this.continueBtn.text = obj.okName
-        } else {
-            this.continueBtn.text = this.getString(LibStr.CONTINUE)
-        }
-        if (obj && !StringUtil.isEmpty(obj.cancelName)) {
-            this.cancelBtn.text = obj.cancelName
-        } else {
-            this.cancelBtn.text = this.getString(LibStr.CANCEL)
-        }
+        obj?.okName && (this.continueBtn.text = obj.okName)
+        obj?.cancelName && (this.cancelBtn.text = obj.cancelName)
         this.controller.selectedIndex = continueFun == null ? 0 : 1
         this.content.text = msg
         this.callback = callback
         this.continueFun = continueFun
     }
-
-
 
     dispose() {
         this.clearCache()
