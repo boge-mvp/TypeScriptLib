@@ -3098,7 +3098,8 @@ window.coreLib = {};
             }, () => {
                 WaitResult.inst.hide();
                 this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1005 /* LibStr.NET_ERROR */, null, () => {
-                    this.sendAction(ActionLib.GAME_RESET_BET);
+                    // this.sendAction(ActionLib.GAME_RESET_BET)
+                    SceneManager.inst.gameErrorExit();
                 });
             });
         }
