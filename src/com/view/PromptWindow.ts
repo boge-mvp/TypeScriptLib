@@ -64,7 +64,7 @@ export class PromptWindow extends BaseWindow {
     }
 
     private continueHandler() {
-        this.callback = null
+        if (this.continueFun !== null) this.callback = null
         if (this.parent) AppRecordManager.backHistory()
     }
 
