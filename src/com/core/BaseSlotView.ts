@@ -37,10 +37,6 @@ export class BaseSlotView extends BaseView {
     /** 是否是第一次播放完一次完整的中奖结果 */
     protected isFirstPlayComplete = false
 
-    constructor() {
-        super()
-    }
-
     protected onInit() {
         super.onInit()
         let list = this.getChild("list")
