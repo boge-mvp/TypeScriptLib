@@ -49,7 +49,7 @@ class GenerateModule {
      * 压缩后的保存路径
      * @type {string}
      */
-    minifyPath = "./"
+    minifyPath = "./dist"
     /**
      * 命名空间  将整个库文件打包到一个对象内
      * @type {string}
@@ -83,7 +83,7 @@ class GenerateModule {
      * @param customFun {(chunk)=>{}}
      *
      */
-    createTS(files, customFun = null) {
+    createTs(files, customFun = null) {
         const tempPath = path.join(this.saveTempPath, "temp")
         if (!fs.existsSync(tempPath)) {
             fs.mkdirSync(tempPath, {recursive: true})
@@ -165,31 +165,30 @@ class GenerateModule {
             .pipe(print("生成代码文件"))
     }
 
+    createTS = this.createTs
+
     /**
      * 将ts创建成js 如果后面的流数据不为空  将当做留数据处理
-     * @param files {string[]|chunk}
-     * @param chunk {chunk|string}
-     * @param encoding {string | (()=>{}) }
-     * @param callback {()=>{}}执行完成回调
+     * @param [files=chunk] {string[]|chunk}
+     * @param [chunk=utf-8] {chunk|string}
+     * @param [encoding=null] {string | (()=>{}) }
+     * @param [callback=null] {()=>{}}执行完成回调
      */
     createJs(files, chunk, encoding, callback) {
-        if (!Array.isArray(files)) {
-            callback = encoding
-            encoding = chunk
-            chunk = files
-            files = null
+        if (files && files.stat) {
+            [files, chunk, encoding, callback] = [null, files, chunk, encoding]
         }
         let stream = null
         if (files || (!files && !chunk)) {
             files = [path.join(this.saveTempPath, "temp", this.saveTempTs), ...this.libs]
-            stream = gulp.src(files).pipe(ts.createProject(this.tsProject, this.settings))
+            stream = gulp.src(files)
         } else if (chunk) {
             // 流处理
-            const Project = ts.createProject(this.tsProject, this.settings)
-            stream = Project.src().pipe(Project())
+            stream = gulp.src([chunk.path, ...this.libs])
         }
         if (!stream) throw Error("stream is null")
-        stream
+        stream = stream
+            .pipe(ts.createProject(this.tsProject, this.settings)())
             .js
             .pipe(concat(this.project + ".js"))
             .pipe(inject.replace('var ' + this.namespace + ';', ''))
@@ -202,18 +201,77 @@ class GenerateModule {
             .pipe(run(function (k) {
                 callback && callback(null, k)
             }))
+        if (!callback) return stream
     }
 
     /**
      * 执行压缩 当被当做流处理的时候 chunk不为null
-     * @param terserOpt {MinifyOptions} gulp-terser 压缩传入参数. 默认: {timings: true, compress: {properties:false}, format: {quote_keys: true}}
-     * @param files {string[]} 文件 默认 path.join(this.distPath, this.project + ".js")
-     * @param minDir {string} 生成压缩保存位置 默认 this.minifyPath
-     * @param mapFile {string} 生成的map映射位置 相对路径是 minDir目录
+     * @param [files=null] {string[]|chunk} 文件 默认 path.join(this.distPath, this.project + ".js")
+     * @param [minDir=null] {string|chunk} 生成压缩保存位置 默认 this.minifyPath
+     * @param [chunk=utf-8] {chunk|string}
+     * @param [encoding=null] {string | (()=>{}) }
+     * @param [callback=null] {()=>{}}执行完成回调
      */
-    minifyJs(terserOpt, files = [], minDir, mapFile) {
+    minifyJs(files, minDir, chunk, encoding, callback) {
+        // 使用解构赋值获取参数值，同时设置默认参数值
+        if (files && files.stat) {
+            [files, minDir, chunk, encoding, callback] = [[files.path], null, files, minDir, chunk]
+        } else if (minDir && minDir.stat) {
+            [files, minDir, chunk, encoding, callback] = [files, null, minDir, chunk, encoding]
+        }
+        if (!files) files = []
         !files.length && files.push(path.join(this.distPath, this.project + ".js"))
         !minDir && (minDir = this.minifyPath)
+        const terserOpt = {
+            timings: true,
+            // toplevel: true,
+            compress: {
+                // dead_code: false, //删除无法访问的代码
+                // directives: false, //删除冗余或非标准指令
+                // side_effects: false, // 是否删除无副作用的代码
+                // unused: false, // 是否删除未使用的代码
+                // top_retain: ["ggg"] // 防止顶级属性混淆压缩
+                // global_defs 条件编译  根据此设置 代码动态编译删除代码  https://github.com/terser/terser#conditional-compilation
+                properties: true, // 点符号重写属性访问foo["bar"] → foo.bar
+            },
+            format: {
+                // beautify: true, // 不进行删除空白和换行
+            },
+        }
+        const stream = mJs(files, terserOpt)
+            .pipe(gulp.dest(minDir))
+            .pipe(print("生成 min.js"))
+            .pipe(run(function (k) {
+                k.history.pop()
+                callback && callback(null, k)
+            }))
+        if (!callback) return stream
+    }
+
+    /**
+     * 执行混淆压缩 当被当做流处理的时候 chunk不为null
+     * @param terserOpt {MinifyOptions} gulp-terser 压缩传入参数. 默认: {timings: true, compress: {properties:false}, format: {quote_keys: true}}
+     * @param [files=null] {string[]} 文件 默认 path.join(this.distPath, this.project + ".js")
+     * @param [minDir=null] {string} 生成压缩保存位置 默认 this.minifyPath
+     * @param [mapFile=null] {string} 生成的map映射位置 相对路径是 minDir目录
+     * @param [chunk=utf-8] {chunk|string}
+     * @param [encoding=null] {string | (()=>{}) }
+     * @param [callback=null] {()=>{}}执行完成回调
+     *
+     */
+    mangleJs(terserOpt, files, minDir, mapFile, chunk, encoding, callback) {
+        // 使用解构赋值获取参数值，同时设置默认参数值
+        if (files && files.stat) {
+            [terserOpt, files, minDir, mapFile, chunk, encoding, callback] = [terserOpt, null, null, null, files, minDir, mapFile]
+        } else if (minDir && minDir.stat) {
+            [terserOpt, files, minDir, mapFile, chunk, encoding, callback] = [terserOpt, files, null, null, minDir, mapFile, chunk]
+        } else if (mapFile && mapFile.stat) {
+            [terserOpt, files, minDir, mapFile, chunk, encoding, callback] = [terserOpt, files, minDir, null, mapFile, chunk, encoding]
+        }
+        if (!files) files = []
+        !files.length && files.push(path.join(this.distPath, this.project + ".js"))
+        !minDir && (minDir = this.minifyPath)
+
         terserOpt = defaults(terserOpt, {
             timings: true,
             // toplevel: true,
@@ -232,7 +290,6 @@ class GenerateModule {
                 quote_keys: true,
             },
         })
-
 
         if (terserOpt.mangle && terserOpt.mangle.properties) {
             let reservedCache
@@ -254,23 +311,32 @@ class GenerateModule {
                 }
             }
         }
-        return mJs(files, terserOpt)
-            .pipe(gulp.dest(minDir))
-            .pipe(print("生成 min.js"))
 
+        const stream = mJs(files, terserOpt, mapFile)
+            .pipe(gulp.dest(minDir))
+            .pipe(print("混淆 min.js", function (call) {
+                call()
+                callback && callback(null, chunk)
+            }))
+        if (!callback) return stream
     }
 
     /**
-     *
-     *
+     * @param [chunk=null] {chunk}
+     * @param [encoding="utf-8"] {string }
+     * @param [callback=null] {function():{}}执行完成回调
      */
-    createDTs() {
-        return gulp.src([path.join(this.saveTempPath, "temp", this.saveTempTs)].concat(this.libs))
+    createDTs(chunk, encoding, callback) {
+        const stream = gulp.src([path.join(this.saveTempPath, "temp", this.saveTempTs), ...this.libs])
             .pipe(ts.createProject(this.tsProject, this.settings)())
             .dts
             .pipe(concat(this.project + ".d.ts"))
             .pipe(gulp.dest(this.distPath))
-            .pipe(print("生成 d.ts 文件"))
+            .pipe(print("生成 d.ts 文件", function (call) {
+                call()
+                callback && callback(null, chunk)
+            }))
+        if (!callback) return stream
     }
 
     /**
@@ -280,10 +346,43 @@ class GenerateModule {
      */
     dtsAppend(...appendFile) {
         appendFile.unshift(path.join(this.distPath, this.project + ".d.ts"))
-        return gulp.src(appendFile)
+        const stream = gulp.src(appendFile)
             .pipe(concat(this.project + ".d.ts"))
             .pipe(gulp.dest(this.distPath))
             .pipe(print("合并完成"))
+
+
+        return stream
+    }
+
+    createJsStream() {
+        return runStream(this.createJs.bind(this))
+    }
+
+    minifyJsStream() {
+        return runStream(this.minifyJs.bind(this))
+    }
+
+    mangleJsStream(...args) {
+        return runStream(this.mangleJs.bind(this), null, ...args)
+    }
+
+    createDTsStream() {
+        return runStream(this.createDTs.bind(this))
+    }
+
+    /**
+     *
+     * @param files {string[]}
+     * @return {*}
+     */
+    dtsAppendStream(files) {
+        return runStream((files, hk, e, r) => {
+            this.dtsAppend(...files)
+                .pipe(run(function () {
+                    r()
+                }))
+        }, null, files)
     }
 
 }
@@ -299,20 +398,23 @@ class DefaultsError extends Error {
 
 /**
  * 压缩js
- * @param files {string[] | stream}
+ * @param files {string[] | chunk}
  * @param terserOpt {MinifyOptions}
+ * @param [mapFile="."] {string} map保存位置
  * @return {*}
  */
-function mJs(files, terserOpt) {
+function mJs(files, terserOpt, mapFile) {
     let stream
     if (Array.isArray(files)) {
         stream = gulp.src(files)
-    } else stream = files
-    return stream
-        .pipe(sourcemaps.init())
+    } else stream = gulp.src(files.path) // 重新获取流
+    if (!terserOpt.mangle) {
+        return stream.pipe(terser(terserOpt)).pipe(rename({extname: '.min.js', dirname: ""}))
+    }
+    return stream.pipe(sourcemaps.init())
         .pipe(terser(terserOpt))
-        .pipe(rename({extname: '.min.js'}))
-        .pipe(sourcemaps.write("."))
+        .pipe(rename({extname: '.min.js', dirname: ""}))
+        .pipe(sourcemaps.write(mapFile ? mapFile : "."))
 }
 
 /**
@@ -391,20 +493,21 @@ function createDirectory(filePath) {
 /**
  * 一个通过流传输的自定义插件，每次都会调用操作
  * @param prefix {string}
+ * @param [end=null] {function(()=>{}):{}} 结束流 参数方法需要回调不然会阻塞
  */
-function print(prefix) {
-    return through2(function (chunk, encoding, callback) {
+function print(prefix, end) {
+    return run(function (prefix, chunk, encoding) {
         console.log(prefix + ": " + chunk.path)
-        return callback(null, chunk)
-    })
+    }, end, prefix)
 }
 
 /**
- * 配合gulp pipe 流执行
- * @param func {({chunk},{enc})=>Boolean}
+ * 配合gulp pipe 流执行，必须有返回非 undefined 的值  否则阻塞
+ * @param func {({chunk},{enc},{callback})=>Boolean} 返回值不是 undefined 将会立即结束流 否者等待调用callback
+ * @param [end=null] {function(()=>{}):{}} 结束流 参数方法需要回调不然会阻塞
  * @param args {any} 附带的参数  会放在开头
  */
-function runStream(func, ...args) {
+function runStream(func, end, ...args) {
     return through2(function (chunk, encoding, callback) {
         if (func) {
             if (args.length) {
@@ -413,16 +516,17 @@ function runStream(func, ...args) {
             let result = func.apply(this, args)
             if (result !== undefined) callback(null, chunk)
         } else callback(null, chunk)
-    })
+    }, end)
 }
 
 /**
  * 运行一次流处理 function中不要执行异步数据处理，否则执行顺序会混乱
- * @param func {()=>{}} 处理方法
+ * @param func {({chunk},{enc})=>{}} 处理方法
+ * @param [end=null] {function(()=>{}):{}} 结束流 参数方法需要回调不然会阻塞
  * @param args {any} 附带的参数  会放在开头
  * @return {*}
  */
-function run(func, ...args) {
+function run(func, end, ...args) {
     return through2(function (chunk, encoding, callback) {
         if (args.length) {
             args = [...args, chunk, encoding]
@@ -430,30 +534,15 @@ function run(func, ...args) {
 
         func && func.apply(this, args)
         callback(null, chunk)
-    })
+    }, end)
 }
-
-const generate = new GenerateModule()
-
-generate.createDirectory = createDirectory
-generate.clean = clean
-
-module.exports = generate
-module.exports.generate = generate
-module.exports.print = print
-module.exports.clean = clean
-module.exports.defaults = defaults
-module.exports.createDirectory = createDirectory
-module.exports.runStream = runStream
-module.exports.run = run
-module.exports.mJs = mJs
 
 /**
  * 收集指定路径下的所有文件路径
  * @param url {string} 相对路径或绝对路径
  * @return {Promise<string[]>} 完整路径数据
  */
-module.exports.findFiles = function (url) {
+function findFiles(url) {
     return new Promise((resolve, reject) => {
         const files = []
         const read = (dir) => {
@@ -484,7 +573,7 @@ module.exports.findFiles = function (url) {
  * @param url {string} 相对路径或绝对路径
  * @return string[] 完整路径数据
  */
-module.exports.findFilesSync = (url) => {
+function findFilesSync(url) {
     const files = []
     const read = (dir) => {
         const entries = fs.readdirSync(dir, {withFileTypes: true})
@@ -501,3 +590,21 @@ module.exports.findFilesSync = (url) => {
     read(url)
     return files
 }
+
+const generate = new GenerateModule()
+
+generate.createDirectory = createDirectory
+generate.clean = clean
+
+module.exports = generate
+module.exports.generate = generate
+module.exports.print = print
+module.exports.clean = clean
+module.exports.defaults = defaults
+module.exports.createDirectory = createDirectory
+module.exports.runStream = runStream
+module.exports.run = run
+module.exports.mJs = mJs
+
+module.exports.findFiles = findFiles
+module.exports.findFilesSync = findFilesSync

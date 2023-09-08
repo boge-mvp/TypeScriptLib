@@ -1,10 +1,11 @@
 'use strict'
 
+const fs = require('fs')
+const zlib = require('zlib')
+const http = require('https')
 const gulp = require("gulp")
 const ts = require('gulp-typescript')
-const fs = require('fs')
-const http = require('https')
-const zlib = require('zlib')
+const merge2 = require('merge2')
 const AdmZip = require('adm-zip')
 // const {} = require("./index")
 const generate = require("./index")
@@ -73,11 +74,15 @@ gulp.task("resetSource", (f) => {
 })
 
 gulp.task("clean", () => {
-    return generate.clean(["dist/**/*.*", "!dist/*.json", "!dist/min/**/*.*", "!dist/map/**/*.*"])
+    return generate.clean([
+        "dist/**/gameCore**.d.ts",
+        "dist/**/gameCore**.js",
+        "dist/**/gameCore**.js.map",
+    ])
 })
 
-gulp.task('createTS', () => {
-    return generate.createTS(["src/**/*.ts", "!**/*.d.ts"])
+gulp.task('createTs', () => {
+    return generate.createTs(["src/**/*.ts", "!**/*.d.ts"])
 })
 
 gulp.task('createJs', () => {
@@ -85,6 +90,10 @@ gulp.task('createJs', () => {
 })
 
 gulp.task('minifyJs', () => {
+    return generate.minifyJs()
+})
+
+gulp.task('mangleJs', () => {
     let libFile = "./dist/libCache.json"
     let libs = {}
     if (fs.existsSync(libFile)) {
@@ -96,7 +105,7 @@ gulp.task('minifyJs', () => {
     minCaches = {}
     let nameCaches = {...libs, ...minCaches}
 
-    return generate.minifyJs({
+    return generate.mangleJs({
         sourceMap: true,
         nameCache: nameCaches,
         // keep_fnames: [],
@@ -114,7 +123,7 @@ gulp.task('minifyJs', () => {
         }
 
         // toplevel: true
-    }).on('end', function () {
+    }, null, "./dist/min", "../map").on('end', function () {
         // console.log("结束了")
         // 当 Gulp 任务结束时, 把 nameCache 写入到文件中
         // console.log(nameCaches)
@@ -131,13 +140,45 @@ gulp.task('dtsAppend', () => {
 })
 
 gulp.task('removeTemp', () => {
-    return generate.clean("bin/temp/")
+    return generate.clean("bin")
 })
 
 //完整构建
-gulp.task('build', gulp.series("clean", 'createTS', "createJs", "minifyJs", "createDTs", "dtsAppend"
+gulp.task('build', gulp.series("clean", 'createTs', "createJs", "minifyJs", "mangleJs", "createDTs", "dtsAppend"
     , "removeTemp"
 ))
+
+gulp.task('buildStream', gulp.series("clean", () => {
+    let libFile = "./dist/libCache.json"
+    let libs = {}
+    if (fs.existsSync(libFile)) {
+        libs = JSON.parse(fs.readFileSync(libFile, "utf8"))
+    }
+    let cacheFile = "dist/nameCache.json"
+    if (!fs.existsSync(cacheFile)) fs.writeFileSync(cacheFile, "{}", "utf8")
+    let minCaches = JSON.parse(fs.readFileSync(cacheFile, "utf8"))
+    minCaches = {}
+    let nameCaches = {...libs, ...minCaches}
+
+    return generate.createTs(["src/**/*.ts", "!**/*.d.ts"])
+        .pipe(generate.createJsStream())
+        .pipe(generate.minifyJsStream())
+        .pipe(generate.mangleJsStream({
+            sourceMap: true, nameCache: nameCaches, mangle: {properties: {reserved: reserved}}, format: {preserve_annotations: true}
+            // toplevel: true
+        }, null, "./dist/min", "../map"))
+        .pipe(generate.runStream(function () {
+            console.log("write cache")
+            // 把 nameCache 写入到文件中
+            // console.log(nameCaches)
+            fs.writeFileSync(cacheFile, JSON.stringify(nameCaches));
+            return true
+        }))
+        .pipe(generate.createDTsStream())
+        .pipe(generate.dtsAppendStream(["src/**/*.d.ts"]))
+
+
+}, "removeTemp"))
 
 
 let downloadWebp = "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.3.0-windows-x64.zip"
@@ -193,7 +234,7 @@ gulp.task('build-Temp', () => {
     }
     let nameCaches = JSON.parse(fs.readFileSync(cacheFile, "utf8"))
     nameCaches = {}
-    return generate.minifyJs({
+    return generate.mangleJs({
         sourceMap: true,
         nameCache: nameCaches,
         toplevel: true,
@@ -219,5 +260,6 @@ gulp.task('build-Temp', () => {
 })
 
 gulp.task("min-js", () => {
-    return generate.minifyJs(null, ["./template/domparserinone.js"], "./dist/min", "../map")
+    return generate.mangleJs(null, ["./template/domparserinone.js"],
+        "./dist/min", "../map")
 })

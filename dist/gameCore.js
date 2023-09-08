@@ -204,6 +204,20 @@ window.coreLib = {};
     }
     coreLib.ActionEvent = ActionEvent;
     class View extends mixinExt(ActionEvent, StringBlock, fgui.GComponent) {
+        /**
+         * 获取子组件
+         * @param name 传入子组件多种命名方式
+         */
+        /*@override*/
+        getChild(...name) {
+            let child = null;
+            for (const key of name) {
+                child = super.getChild(key);
+                if (child)
+                    return child;
+            }
+            return child;
+        }
         addView(key, view) {
             return Factory.inst.addView(key, view);
         }
@@ -436,7 +450,7 @@ window.coreLib = {};
             this.checkAutoEnabled();
         }
         /**
-         * 设置显示为最接近参考值的值
+         * 设置为数组中小于 value 并最接近的值
          * @param value 一个参考值
          * @param [isEvent = true] 是否派发本次改变值的事件
          */
@@ -481,9 +495,9 @@ window.coreLib = {};
             if (index > -1 && index < this.antes.length) {
                 let newValue = this.antes[index];
                 let lastValue = parseFloat(this.label.text);
+                // 值相等不发送
                 if (newValue === lastValue)
                     return;
-                // 值相等不发送
                 this.lastValue = lastValue;
                 this.label.text = newValue + "";
                 if (isEvent)
@@ -1426,7 +1440,7 @@ window.coreLib = {};
                 if (obj.code == HttpCode.OK) {
                     let data = obj.data;
                     Player.inst.money = data.balance;
-                    this.updateMoney();
+                    this.sendAction(ActionLib.GAME_UPDATE_MONEY);
                     AppRecordManager.pauseHistory = false;
                     fgui.GRoot.inst.closeModalWait();
                     runFun(callback);
@@ -5363,9 +5377,7 @@ window.coreLib = {};
             // 获取当前的游戏配置
             let gameName = (_a = ConfigUtils.gameNameCanonical(null, "_")) === null || _a === void 0 ? void 0 : _a.toLowerCase();
             if (gameName) {
-                if (Player.inst.isGuest)
-                    eventAction += "_demo";
-                AnalyticsManager.send(gameName + "_" + eventAction);
+                AnalyticsManager.send(gameName + "_" + eventAction, Player.inst.isGuest ? "demo" : "cash");
             }
             else {
                 Log.warn("sendGameAnalysis : gameId=" + Player.inst.gameModel + " not exist");
@@ -5373,15 +5385,11 @@ window.coreLib = {};
         }
         /**
          * 向Google Analytics 发送事件
-         * @param eventAction 互动类型
-         *
+         * @param eventAction 事件操作
+         * @param eventLabel  事件标签
          */
-        static send(eventAction) {
-            this.isOpenAnalytics = ConfigUtils.get("openAnalytics");
-            if (Player.inst.isWeb && this.isOpenAnalytics && Laya.Browser.window.ga)
-                Laya.Browser.window.ga('send', 'event', 'game', eventAction);
-            if (!Player.inst.isWeb && this.isOpenAnalytics)
-                AppManager.enterFeedback({ eventName: eventAction, eventValue: "" }, AppManager.nullFun);
+        static send(eventAction, eventLabel = "") {
+            AnalyticsManager.ga("event", "game" + (Environment.active == EnvType.DEV ? "_dev" : ""), eventAction, eventLabel);
         }
         /**
          * 向Google Analytics 发送用户用时
@@ -5392,9 +5400,24 @@ window.coreLib = {};
         static sendTiming(timingVar, timingValue) {
             this.isOpenAnalytics = ConfigUtils.get("openAnalytics");
             if (Player.inst.isWeb && this.isOpenAnalytics && Laya.Browser.window.ga)
-                Laya.Browser.window.ga('send', 'timing', 'game', timingVar, timingValue);
+                AnalyticsManager.ga('timing', 'game', timingVar, timingValue);
             if (!Player.inst.isWeb && this.isOpenAnalytics)
                 AppManager.enterInvite({ eventName: timingVar, eventValue: timingValue }, AppManager.nullFun);
+        }
+        /**
+         * 向 Google Analytics 发送事件
+         * @param type
+         * @param category
+         * @param action
+         * @param label
+         */
+        static ga(type, category, action, label) {
+            this.isOpenAnalytics = ConfigUtils.get("openAnalytics");
+            // @ts-ignore
+            if (this.isOpenAnalytics && Player.inst.isWeb && window.ga)
+                window.ga('send', type, category, action, label);
+            if (this.isOpenAnalytics && !Player.inst.isWeb)
+                AppManager.enterFeedback({ eventName: action, eventValue: label }, AppManager.nullFun);
         }
     }
     /** 开启数据统计 */
@@ -6773,13 +6796,12 @@ window.coreLib = {};
         }
         loadJsComplete() {
             let obj = ConfigUtils.gameRes();
-            this._starter = obj.completeFun();
+            // 延迟执行初始化  否则isCall  将失去意义
+            // this._starter = obj.completeFun()
             // 已经加载的游戏代码
             if (!Player.inst.urlParam.isJumpPage())
                 fgui.GRoot.inst.closeModalWait();
-            AnalyticsManager.openGame();
             LoadingWindow.inst.show(1, getString(1001 /* LibStr.LOADING */));
-            Player.inst.status = 1;
             AssetsLoader.inst.loadRes(obj, Laya.Handler.create(this, this.loadResComplete), Laya.Handler.create(this, this.loadResErrorHandler));
         }
         /**
@@ -6820,6 +6842,10 @@ window.coreLib = {};
                 JSUtils.gameClose();
                 return;
             }
+            let obj = ConfigUtils.gameRes();
+            this._starter = obj.completeFun();
+            AnalyticsManager.openGame();
+            Player.inst.status = 1;
             // 如果是游客模式
             if (Player.inst.isGuest) {
                 Player.inst.cacheMoney = Player.inst.money;
@@ -7574,6 +7600,9 @@ window.coreLib = {};
             let tempIsGift = this.getValue(json, "isGift");
             if (!StringUtil.isEmpty(tempIsGift))
                 this._isGift = Laya.Utils.parseInt(tempIsGift);
+            let isCall = this.getValue(json, "isCall");
+            if (!StringUtil.isEmpty(isCall))
+                SceneManager.inst.isCall = !(isCall === "false");
             let tempPlayWith = this.getValue(json, "playWith");
             if (!StringUtil.isEmpty(tempPlayWith))
                 this._playWith = tempPlayWith;
@@ -8442,12 +8471,11 @@ window.coreLib = {};
         }
         /**
          * 将天置为0，获取其上个月的最后一天
-         * @param year
-         * @param month
+         * @param year 年份 如 1992
+         * @param monthIndex 月份索引 0开始
          */
-        static getDaysOfMonth2(year, month) {
-            month = parseInt(month) + 1;
-            let date = new Date(year, month, 0);
+        static getDaysOfMonth2(year, monthIndex) {
+            let date = new Date(year, monthIndex + 1, 0);
             return date.getDate();
         }
         /**
@@ -8461,7 +8489,7 @@ window.coreLib = {};
         }
         /**
          * 计算一个日期是当年的第几天
-         * @param date
+         * @param date ms | 2023-09-01 12:00:00 | Date
          */
         static dayOfTheYear(date) {
             let obj = new Date(date);
@@ -8476,18 +8504,18 @@ window.coreLib = {};
         }
         /**
          * 获得时区名和值
-         * @param dateObj
+         * @param time ms | 2023-09-01 12:00:00 | Date
          */
-        static getZoneNameValue(dateObj) {
-            let date = new Date(dateObj);
+        static getZoneNameValue(time) {
+            let date = new Date(time);
             date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
             let arr = date.toString().match(/([A-Z]+)([-+]\d+:?\d+)/);
             return { 'name': arr[1], 'value': arr[2] };
         }
         /**
          * 判断是否是同一天
-         * @param date1 毫秒
-         * @param date2 毫秒
+         * @param date1 ms | 2023-09-01 12:00:00 | Date
+         * @param date2 ms | 2023-09-01 12:00:00 | Date
          * @return
          */
         static isSameDay(date1, date2) {
@@ -8499,7 +8527,7 @@ window.coreLib = {};
         }
         /**
          * 判断传入的时间小于今天
-         * @param time
+         * @param time ms | 2023-09-01 12:00:00 | Date
          */
         static notTomorrow(time) {
             let timeDate = new Date(time);
@@ -8518,6 +8546,28 @@ window.coreLib = {};
                 }
             }
             return false;
+        }
+        /**
+         * 获取距离传入的时间还剩的时间
+         *
+         * @example
+         *  const targetDate = new Date('2023-09-01 12:00:00')
+         *  const timeDifference = calculateTimeDifference(targetDate)
+         *  console.log(timeDifference)
+         *
+         * @param time ms | Date
+         */
+        calculateTimeDifference(time) {
+            if (time instanceof Date)
+                time = time.getTime();
+            // 计算时间差（毫秒）
+            const timeDifference = time - Date.now();
+            // 计算剩余的天数、小时数、分钟数和秒数
+            const days = Math.floor(timeDifference / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((timeDifference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((timeDifference % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((timeDifference % (1000 * 60)) / 1000);
+            return { days, hours, minutes, seconds };
         }
     }
     /** 星期 默认英文 */
@@ -9699,6 +9749,47 @@ window.coreLib = {};
             let scale = obj.width / obj.initWidth;
             obj.height = obj.initHeight * scale;
             // 如果有字体
+        }
+        /**
+         * 从 nums数组中查找 大于value并且最接近value的数据信息
+         * @param nums
+         * @param value
+         * @param equal
+         */
+        static getGreater(nums, value, equal = true) {
+            let index = -1;
+            let result = undefined;
+            for (let i = nums.length - 1; i >= 0; i--) {
+                const num = nums[i];
+                if (num > value || (equal && num === value)) {
+                    index = i;
+                    result = num;
+                }
+                else
+                    break;
+            }
+            return { index, value: result };
+        }
+        /**
+         * 从 nums数组中查找 小于value并且最接近value的数据信息
+         * @param nums
+         * @param value
+         * @param equal
+         */
+        static getLess(nums, value, equal = true) {
+            let index = -1;
+            let result = undefined;
+            for (let i = nums.length - 1; i >= 0; i--) {
+                const num = nums[i];
+                if (num <= value) {
+                    if (num === value && !equal)
+                        continue;
+                    index = i;
+                    result = num;
+                    break;
+                }
+            }
+            return { index, value: result };
         }
         static evil(fn) {
             //一个变量指向Function，防止有些前端编译工具报错

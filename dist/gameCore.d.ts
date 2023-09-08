@@ -113,6 +113,11 @@ declare namespace coreLib {
     const View_base: Constructor<StringBlock & ActionEvent & fairygui.GComponent>;
     export class View extends View_base implements IView, IKey {
         protected key: string;
+        /**
+         * 获取子组件
+         * @param name 传入子组件多种命名方式
+         */
+        getChild(...name: string[]): fgui.GObject;
         addView<T extends IView & IKey>(key: string | {
             new (): T;
         }, view: T): boolean;
@@ -186,7 +191,7 @@ declare namespace coreLib {
         private _antes;
         /** 变更值后调用 */
         dateChange: ParamHandler;
-        /** 执行变化前的调用 如果返回false 将停止继续执行 */
+        /** 执行max min 或点击加减变化前调用 如果返回false 将停止继续执行 */
         dateChangeBefore: ParamHandler;
         /** 最近的值 */
         lastValue: number;
@@ -227,7 +232,7 @@ declare namespace coreLib {
          */
         setAntes(value?: number[], defaultValue?: number, isEvent?: boolean): void;
         /**
-         * 设置显示为最接近参考值的值
+         * 设置为数组中小于 value 并最接近的值
          * @param value 一个参考值
          * @param [isEvent = true] 是否派发本次改变值的事件
          */
@@ -2617,10 +2622,10 @@ declare namespace coreLib {
         static sendGameAnalysis(eventAction: string): void;
         /**
          * 向Google Analytics 发送事件
-         * @param eventAction 互动类型
-         *
+         * @param eventAction 事件操作
+         * @param eventLabel  事件标签
          */
-        static send(eventAction: string): void;
+        static send(eventAction: string, eventLabel?: string): void;
         /**
          * 向Google Analytics 发送用户用时
          * @param timingVar 用于标识要记录的变量
@@ -2628,7 +2633,16 @@ declare namespace coreLib {
          *
          */
         static sendTiming(timingVar: string, timingValue: number): void;
+        /**
+         * 向 Google Analytics 发送事件
+         * @param type
+         * @param category
+         * @param action
+         * @param label
+         */
+        static ga(type: gaType, category: string, action: string, label: string | number): void;
     }
+    type gaType = "pageview" | "event" | "timing" | "social" | "screenview" | "transaction" | "item" | "exception";
     export class APP {
         private static _instance;
         static get inst(): APP;
@@ -3922,40 +3936,56 @@ declare namespace coreLib {
         static getDaysOfMonth(year: number, month: number): number;
         /**
          * 将天置为0，获取其上个月的最后一天
-         * @param year
-         * @param month
+         * @param year 年份 如 1992
+         * @param monthIndex 月份索引 0开始
          */
-        static getDaysOfMonth2(year: any, month: any): number;
+        static getDaysOfMonth2(year: number, monthIndex: number): number;
         /**
          * 距离现在几天的日期：
          * @param days 负数表示今天之前的日期，0表示今天，整数表示未来的日期。 如-1表示昨天的日期，0表示今天，2表示后天
          */
-        static fromToday(days: any): string;
+        static fromToday(days: number): string;
         /**
          * 计算一个日期是当年的第几天
-         * @param date
+         * @param date ms | 2023-09-01 12:00:00 | Date
          */
-        static dayOfTheYear(date: any): number;
+        static dayOfTheYear(date: number | string | Date): number;
         /**
          * 获得时区名和值
-         * @param dateObj
+         * @param time ms | 2023-09-01 12:00:00 | Date
          */
-        static getZoneNameValue(dateObj: any): {
+        static getZoneNameValue(time: number | string | Date): {
             name: string;
             value: string;
         };
         /**
          * 判断是否是同一天
-         * @param date1 毫秒
-         * @param date2 毫秒
+         * @param date1 ms | 2023-09-01 12:00:00 | Date
+         * @param date2 ms | 2023-09-01 12:00:00 | Date
          * @return
          */
-        static isSameDay(date1: number, date2: number): boolean;
+        static isSameDay(date1: number | string | Date, date2: number | string | Date): boolean;
         /**
          * 判断传入的时间小于今天
-         * @param time
+         * @param time ms | 2023-09-01 12:00:00 | Date
          */
-        static notTomorrow(time: any): boolean;
+        static notTomorrow(time: number | string | Date): boolean;
+        /**
+         * 获取距离传入的时间还剩的时间
+         *
+         * @example
+         *  const targetDate = new Date('2023-09-01 12:00:00')
+         *  const timeDifference = calculateTimeDifference(targetDate)
+         *  console.log(timeDifference)
+         *
+         * @param time ms | Date
+         */
+        calculateTimeDifference(time: number | Date): {
+            days: number;
+            hours: number;
+            minutes: number;
+            seconds: number;
+        };
     }
     /**
      * 水果机旋转动画
@@ -4451,6 +4481,26 @@ declare namespace coreLib {
          * @param obj 适配对象
          */
         static heightAdaptation(obj: fgui.GObject): void;
+        /**
+         * 从 nums数组中查找 大于value并且最接近value的数据信息
+         * @param nums
+         * @param value
+         * @param equal
+         */
+        static getGreater(nums: number[], value: number, equal?: boolean): {
+            index: number;
+            value: any;
+        };
+        /**
+         * 从 nums数组中查找 小于value并且最接近value的数据信息
+         * @param nums
+         * @param value
+         * @param equal
+         */
+        static getLess(nums: number[], value: number, equal?: boolean): {
+            index: number;
+            value: any;
+        };
         static evil(fn: any): any;
         /**
          * 添加动态代码
