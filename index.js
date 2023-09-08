@@ -485,7 +485,7 @@ function createDirectory(filePath) {
     // 检查目录是否存在
     if (fs.existsSync(dirname)) return
     // 递归创建目录
-    this.createDirectory(dirname)
+    createDirectory(dirname)
     // 创建当前目录
     fs.mkdirSync(dirname)
 }
