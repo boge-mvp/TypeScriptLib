@@ -219,7 +219,7 @@ class GenerateModule {
         } else if (minDir && minDir.stat) {
             [files, minDir, chunk, encoding, callback] = [files, null, minDir, chunk, encoding]
         }
-        if (!files) files = []
+        if (!files) files = chunk ? [chunk.path] : []
         !files.length && files.push(path.join(this.distPath, this.project + ".js"))
         !minDir && (minDir = this.minifyPath)
         const terserOpt = {
@@ -268,7 +268,7 @@ class GenerateModule {
         } else if (mapFile && mapFile.stat) {
             [terserOpt, files, minDir, mapFile, chunk, encoding, callback] = [terserOpt, files, minDir, null, mapFile, chunk, encoding]
         }
-        if (!files) files = []
+        if (!files) files = chunk ? [chunk.path] : []
         !files.length && files.push(path.join(this.distPath, this.project + ".js"))
         !minDir && (minDir = this.minifyPath)
 

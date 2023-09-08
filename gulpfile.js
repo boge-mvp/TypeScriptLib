@@ -164,7 +164,10 @@ gulp.task('buildStream', gulp.series("clean", () => {
         .pipe(generate.createJsStream())
         .pipe(generate.minifyJsStream())
         .pipe(generate.mangleJsStream({
-            sourceMap: true, nameCache: nameCaches, mangle: {properties: {reserved: reserved}}, format: {preserve_annotations: true}
+            sourceMap: true,
+            nameCache: nameCaches,
+            mangle: {properties: {reserved: reserved}},
+            format: {preserve_annotations: true}
             // toplevel: true
         }, null, "./dist/min", "../map"))
         .pipe(generate.runStream(function () {
@@ -260,6 +263,5 @@ gulp.task('build-Temp', () => {
 })
 
 gulp.task("min-js", () => {
-    return generate.mangleJs(null, ["./template/domparserinone.js"],
-        "./dist/min", "../map")
+    return generate.minifyJs(["./template/domparserinone.js"], "./template")
 })
