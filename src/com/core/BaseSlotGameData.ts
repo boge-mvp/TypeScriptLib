@@ -51,6 +51,8 @@ export class BaseSlotGameData extends BaseGameData {
     userWinArray = []
     /** 小奖 要最少满足3个的线 */
     smallPrize = [1, 2, 3, 5, 6, 7, 8, 9, 10, 11]
+    /** 默认线位置 */
+    defaultLineIndex = 0
 
     constructor() {
         super()

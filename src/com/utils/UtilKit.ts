@@ -74,13 +74,13 @@ export class UtilKit {
     }
 
     /** 绑定输入框和按钮  当输入框中都存在值后  按钮变成可点击 */
-    static bindInputBtn(confirmBtn: fgui.GButton, ...goldText) {
+    static bindInputBtn(confirmBtn: fgui.GButton, ...goldText: any[]) {
         return new BindInputButton(confirmBtn, goldText)
     }
 
     /** 绑定按钮长按、点击 */
-    static bindLongPressBtn(confirmBtn: fgui.GButton, callback: ParamHandler, ...args) {
-        return new LongPressBtn(confirmBtn, callback, args)
+    static bindLongPressBtn(confirmBtn: fgui.GButton, callback: ParamHandler, ...args: any[]) {
+        return new LongPressBtn(confirmBtn, callback, ...args)
     }
 
     /**

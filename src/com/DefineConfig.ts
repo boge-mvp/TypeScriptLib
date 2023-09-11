@@ -1,6 +1,3 @@
-import {GGraphicsAni} from "./view/GGraphicsAni"
-import {GSkeleton} from "./view/GSkeleton"
-import {MyDrawTextureCmd} from "./core/MyDrawTextureCmd"
 import ColorFilter = Laya.ColorFilter
 import Texture = Laya.Texture
 import Pool = Laya.Pool
@@ -10,9 +7,12 @@ import PopupMenu = fgui.PopupMenu;
 import GObject = fgui.GObject;
 import GButton = fgui.GButton;
 import GRoot = fgui.GRoot;
+import {GGraphicsAni} from "./view/GGraphicsAni"
+import {GSkeleton} from "./view/GSkeleton"
+import {MyDrawTextureCmd} from "./core/MyDrawTextureCmd"
 import {StringUtil} from "./utils/StringUtil";
-import {Log} from "./Log";
 import {SoundUtils} from "./utils/SoundUtils";
+import {Log} from "./Log";
 
 export class DefineConfig {
 
@@ -187,6 +187,82 @@ export class DefineConfig {
     }
 
     private static defineFairy() {
+
+        Object.defineProperty(GRoot.prototype, "playOneShotSound", {
+            value: function (url: string, volumeScale?: number) {
+                if (fgui.ToolSet.startsWith(url, "ui://"))
+                    return
+                if (!volumeScale) volumeScale = 1
+                SoundUtils.playSound(url, 1, null, volumeScale)
+            }
+        })
+        Object.defineProperty(GButton.prototype, "__click", {
+            value: function (evt: Laya.Event) {
+                if (this._sound) {
+                    let pi = fgui.UIPackage.getItemByURL(this._sound);
+                    if (pi)
+                        GRoot.inst.playOneShotSound(pi.file, this._soundVolumeScale);
+                    else
+                        GRoot.inst.playOneShotSound(this._sound, this._soundVolumeScale);
+                }
+
+                if (this._mode == fgui.ButtonMode.Check) {
+                    if (this._changeStateOnClick) {
+                        this.selected = !this._selected;
+                        fgui.Events.dispatch(fgui.Events.STATE_CHANGED, this.displayObject, evt);
+                    }
+                } else if (this._mode == fgui.ButtonMode.Radio) {
+                    if (this._changeStateOnClick && !this._selected) {
+                        this.selected = true;
+                        fgui.Events.dispatch(fgui.Events.STATE_CHANGED, this.displayObject, evt);
+                    }
+                } else {
+                    if (this._relatedController)
+                        this._relatedController.selectedPageId = this._relatedPageId;
+                }
+            }
+        })
+
+        // 给window添加排序  order
+        Object.defineProperty(GRoot.prototype, "showWindow", {
+            value: function (win: fgui.Window) {
+                this.addChild(win)
+                const cnt = this.numChildren
+                let wins: fgui.Window[] = []
+                for (let i = cnt - 1; i >= 0; i--) {
+                    const g = this.getChildAt(i)
+                    if ((g instanceof fgui.Window) && g.modal) {
+                        wins.push(g)
+                    }
+                }
+
+                let pos = -1
+                const winOrder = win.order || 0
+                for (let i = 0; i < wins.length; i++) {
+                    let order = wins[i].order || 0
+                    if (winOrder > order) {
+                        pos = i
+                        this.setChildIndexBefore(win, this.getChildIndex(wins[i]))
+                    }
+                }
+
+                if (pos == -1) {
+                    win.requestFocus()
+                }
+
+                if (win.x > this.width)
+                    win.x = this.width - win.width;
+                else if (win.x + win.width < 0)
+                    win.x = 0;
+
+                if (win.y > this.height)
+                    win.y = this.height - win.height;
+                else if (win.y + win.height < 0)
+                    win.y = 0;
+
+                this.adjustModalLayer()
+            }
+        })
 
         Object.defineProperty(PopupMenu.prototype, "__clickItem2", {
             value: function (itemObject: GObject) {

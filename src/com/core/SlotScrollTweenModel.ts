@@ -1,14 +1,15 @@
-import GList = fgui.GList
-import Tween = Laya.Tween
-import Handler = Laya.Handler
+import GList = fgui.GList;
+import Tween = Laya.Tween;
+import Handler = Laya.Handler;
 import {SlotModel} from "./SlotModel"
 import {ISlotLotteryData} from "../interfaces/ICommon";
 import {MathKit} from "../utils/MathKit";
+import {BaseSlotGameData} from "./BaseSlotGameData";
 
 /**
  * slot游戏滚动效果类 只使用了 Tween
  */
-export class SlotScrollTweenModel extends SlotModel {
+export class SlotScrollTweenModel<T extends BaseSlotGameData = BaseSlotGameData> extends SlotModel<T> {
 
     protected override playLottery(value: ISlotLotteryData[]) {
         super.playLottery(value)

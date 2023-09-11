@@ -1,3 +1,4 @@
+
 declare type AnimationNodeContent = {
     name: string
     parentIndex: number

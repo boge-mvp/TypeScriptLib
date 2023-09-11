@@ -27,9 +27,10 @@ import {IGuideScene} from "../interfaces/IGuideScene"
 import {Log} from "../Log";
 import {CommonCmd, HttpCode, Urls} from "../net/Common";
 import {ConfigUtils} from "../utils/ConfigUtils";
+import {BaseGameData} from "./BaseGameData";
 
 /** 游戏主页必须继承的类 */
-export class BaseScene extends BaseView implements IGameScene, IGuideScene {
+export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView implements IGameScene, IGuideScene {
 
     /** 选择房间事件 */
     EVENT_SELECT_ROOM = "selectRoom"
@@ -59,6 +60,10 @@ export class BaseScene extends BaseView implements IGameScene, IGuideScene {
     constructor() {
         super()
         this.autoSetupRelation = true
+    }
+
+    protected get gameData(): T {
+        return Player.inst.gameData as T
     }
 
     protected override constructFromXML(xml: any) {

@@ -8,8 +8,10 @@ import {AppRecordManager} from "../manager/AppRecordManager"
 import {ActionLib} from "../actions/ActionLib"
 import {ActionEvent, StringBlock, ViewProxy} from "../Factory"
 import {IRecord} from "../interfaces/ICommon";
+import {Player} from "../Player";
+import {BaseGameData} from "./BaseGameData";
 
-export class BaseWindow extends mixinExt(StringBlock, ViewProxy, ActionEvent, fgui.Window) implements IRecord {
+export class BaseWindow<T extends BaseGameData = BaseGameData> extends mixinExt(StringBlock, ViewProxy, ActionEvent, fgui.Window) implements IRecord {
 
     /** 动画显示或关闭 */
     protected isAction = true
@@ -30,6 +32,35 @@ export class BaseWindow extends mixinExt(StringBlock, ViewProxy, ActionEvent, fg
         if (this.isAction) {
             this.setPivot(0.5, 0.5)
         }
+    }
+
+    /**
+     * 获取子组件
+     * @param name 传入子组件多种命名方式
+     */
+    override getChild(...name: string[]): fgui.GObject {
+        let child = null
+        for (const key of name) {
+            child = this.contentPane?.getChild(key) || super.getChild(key)
+            if (child) return child
+        }
+        return child
+    }
+
+    override getTransition(transName: string): fgui.Transition {
+        return this.contentPane?.getTransition(transName) || super.getTransition(transName)
+    }
+
+    override getTransitionAt(index: number): fgui.Transition {
+        return this.contentPane?.getTransitionAt(index) || super.getTransitionAt(index)
+    }
+
+    override getController(name: string): fgui.Controller {
+        return this.contentPane?.getController(name) || super.getController(name)
+    }
+
+    override getControllerAt(index: number): fgui.Controller {
+        return this.contentPane?.getControllerAt(index) || super.getControllerAt(index)
     }
 
     protected updateSizePoint() {
@@ -107,6 +138,10 @@ export class BaseWindow extends mixinExt(StringBlock, ViewProxy, ActionEvent, fg
         Tween.clearAll(this)
         this.displayObject?.stage.off(Laya.Event.RESIZE, this, this.updateSizePoint)
         if (!this.displayObject?.destroyed) super.dispose()
+    }
+
+    protected get gameData(): T {
+        return Player.inst.gameData as T
     }
 
 }

@@ -16,12 +16,13 @@ import {WaitResult} from "../view/WaitResult"
 import {StringUtil} from "../utils/StringUtil"
 import {MathKit} from "../utils/MathKit"
 import {CommonCmd, HttpCode, Urls} from "../net/Common";
+import {BaseGameData} from "./BaseGameData";
 
 /**
  * 游戏基础类
  * @author boge
  */
-export abstract class GameServlet extends BaseProxy implements IGameServlet {
+export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends BaseProxy implements IGameServlet {
 
     protected _gameModel: IGameModel
     protected initHandler: ParamHandler
@@ -38,6 +39,10 @@ export abstract class GameServlet extends BaseProxy implements IGameServlet {
         this.regGameAction(ActionLib.GAME_INIT_SERVLET, this, this.init)
         this.regGameAction(ActionLib.GAME_CONNECT_SOCKET, this, this.connectSocket)
         this.regGameAction(ActionLib.GAME_DISPOSE, this, this.dispose)
+    }
+
+    protected get gameData(): T {
+        return Player.inst.gameData as T
     }
 
     /**

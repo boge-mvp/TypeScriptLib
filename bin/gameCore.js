@@ -646,7 +646,7 @@ window.coreLib = {};
         }
         /** 绑定按钮长按、点击 */
         static bindLongPressBtn(confirmBtn, callback, ...args) {
-            return new LongPressBtn(confirmBtn, callback, args);
+            return new LongPressBtn(confirmBtn, callback, ...args);
         }
         /**
          * 比较两个值  获得返回值   用于数组排序   从小到大
@@ -1073,6 +1073,11 @@ window.coreLib = {};
     class BaseButton extends mixinExt(StringBlock, ViewBlock, ActionEvent, fgui.GButton) {
     }
     coreLib.BaseButton = BaseButton;
+    let GameType;
+    (function (GameType) {
+        GameType[GameType["NORMAL"] = 0] = "NORMAL";
+        GameType[GameType["SLOT"] = 1] = "SLOT";
+    })(GameType = coreLib.GameType || (coreLib.GameType = {}));
     class BaseGameData {
         constructor() {
             /** 服务器发来的当前资金 */
@@ -1095,6 +1100,10 @@ window.coreLib = {};
             this.isRecommend = false;
             /** 通知数据 */
             this.noticeData = [];
+            /** 默认bet位置 */
+            this.defaultBetIndex = 0;
+            /** 游戏类型 */
+            this.gameType = GameType.NORMAL;
         }
         /**
          * 总金额 default BaseGameData.betValue
@@ -1184,6 +1193,9 @@ window.coreLib = {};
             /** 是否在执行运行事件 */
             this.isRunEvent = false;
             this.autoSetupRelation = true;
+        }
+        get gameData() {
+            return Player.inst.gameData;
         }
         /*@override*/
         constructFromXML(xml) {
@@ -1897,6 +1909,8 @@ window.coreLib = {};
             this.userWinArray = [];
             /** 小奖 要最少满足3个的线 */
             this.smallPrize = [1, 2, 3, 5, 6, 7, 8, 9, 10, 11];
+            /** 默认线位置 */
+            this.defaultLineIndex = 0;
             this.lineValue = this.lottery.length;
             const key = Player.inst.gameModel + "_isTurboMode";
             this._isTurboMode = Laya.LocalStorage.getItem(key) != null;
@@ -2370,6 +2384,41 @@ window.coreLib = {};
                 this.setPivot(0.5, 0.5);
             }
         }
+        /**
+         * 获取子组件
+         * @param name 传入子组件多种命名方式
+         */
+        /*@override*/
+        getChild(...name) {
+            var _a;
+            let child = null;
+            for (const key of name) {
+                child = ((_a = this.contentPane) === null || _a === void 0 ? void 0 : _a.getChild(key)) || super.getChild(key);
+                if (child)
+                    return child;
+            }
+            return child;
+        }
+        /*@override*/
+        getTransition(transName) {
+            var _a;
+            return ((_a = this.contentPane) === null || _a === void 0 ? void 0 : _a.getTransition(transName)) || super.getTransition(transName);
+        }
+        /*@override*/
+        getTransitionAt(index) {
+            var _a;
+            return ((_a = this.contentPane) === null || _a === void 0 ? void 0 : _a.getTransitionAt(index)) || super.getTransitionAt(index);
+        }
+        /*@override*/
+        getController(name) {
+            var _a;
+            return ((_a = this.contentPane) === null || _a === void 0 ? void 0 : _a.getController(name)) || super.getController(name);
+        }
+        /*@override*/
+        getControllerAt(index) {
+            var _a;
+            return ((_a = this.contentPane) === null || _a === void 0 ? void 0 : _a.getControllerAt(index)) || super.getControllerAt(index);
+        }
         updateSizePoint() {
             this.center();
         }
@@ -2448,6 +2497,9 @@ window.coreLib = {};
             (_a = this.displayObject) === null || _a === void 0 ? void 0 : _a.stage.off(Laya.Event.RESIZE, this, this.updateSizePoint);
             if (!((_b = this.displayObject) === null || _b === void 0 ? void 0 : _b.destroyed))
                 super.dispose();
+        }
+        get gameData() {
+            return Player.inst.gameData;
         }
     }
     coreLib.BaseWindow = BaseWindow;
@@ -2691,6 +2743,9 @@ window.coreLib = {};
             this.regGameAction(ActionLib.GAME_DISPOSE, this, this.dispose);
             this.regGameAction(ActionLib.GAME_LOTTERY_ANI_COMPLETE, this, this.lotteryComplete);
         }
+        get gameData() {
+            return Player.inst.gameData;
+        }
         initModel() {
             this.setupMusic();
         }
@@ -2828,9 +2883,11 @@ window.coreLib = {};
             }
         }
         /** 子类实现 */
-        insertExtension() { }
+        insertExtension() {
+        }
         /** 通知开奖结束  进入结束流程 */
-        lotteryComplete() { }
+        lotteryComplete() {
+        }
         /** 游戏进入后台执行 */
         blurGame() {
             Log.debug("blurGame");
@@ -2884,6 +2941,9 @@ window.coreLib = {};
             this.regGameAction(ActionLib.GAME_INIT_SERVLET, this, this.init);
             this.regGameAction(ActionLib.GAME_CONNECT_SOCKET, this, this.connectSocket);
             this.regGameAction(ActionLib.GAME_DISPOSE, this, this.dispose);
+        }
+        get gameData() {
+            return Player.inst.gameData;
         }
         /**
          * 封装的get请求
@@ -4349,6 +4409,77 @@ window.coreLib = {};
             DefineConfig.defineTimer();
         }
         static defineFairy() {
+            Object.defineProperty(fgui.GRoot.prototype, "playOneShotSound", {
+                value: function (url, volumeScale) {
+                    if (fgui.ToolSet.startsWith(url, "ui://"))
+                        return;
+                    if (!volumeScale)
+                        volumeScale = 1;
+                    SoundUtils.playSound(url, 1, null, volumeScale);
+                }
+            });
+            Object.defineProperty(fgui.GButton.prototype, "__click", {
+                value: function (evt) {
+                    if (this._sound) {
+                        let pi = fgui.UIPackage.getItemByURL(this._sound);
+                        if (pi)
+                            fgui.GRoot.inst.playOneShotSound(pi.file, this._soundVolumeScale);
+                        else
+                            fgui.GRoot.inst.playOneShotSound(this._sound, this._soundVolumeScale);
+                    }
+                    if (this._mode == fgui.ButtonMode.Check) {
+                        if (this._changeStateOnClick) {
+                            this.selected = !this._selected;
+                            fgui.Events.dispatch(fgui.Events.STATE_CHANGED, this.displayObject, evt);
+                        }
+                    }
+                    else if (this._mode == fgui.ButtonMode.Radio) {
+                        if (this._changeStateOnClick && !this._selected) {
+                            this.selected = true;
+                            fgui.Events.dispatch(fgui.Events.STATE_CHANGED, this.displayObject, evt);
+                        }
+                    }
+                    else {
+                        if (this._relatedController)
+                            this._relatedController.selectedPageId = this._relatedPageId;
+                    }
+                }
+            });
+            // 给window添加排序  order
+            Object.defineProperty(fgui.GRoot.prototype, "showWindow", {
+                value: function (win) {
+                    this.addChild(win);
+                    const cnt = this.numChildren;
+                    let wins = [];
+                    for (let i = cnt - 1; i >= 0; i--) {
+                        const g = this.getChildAt(i);
+                        if ((g instanceof fgui.Window) && g.modal) {
+                            wins.push(g);
+                        }
+                    }
+                    let pos = -1;
+                    const winOrder = win.order || 0;
+                    for (let i = 0; i < wins.length; i++) {
+                        let order = wins[i].order || 0;
+                        if (winOrder > order) {
+                            pos = i;
+                            this.setChildIndexBefore(win, this.getChildIndex(wins[i]));
+                        }
+                    }
+                    if (pos == -1) {
+                        win.requestFocus();
+                    }
+                    if (win.x > this.width)
+                        win.x = this.width - win.width;
+                    else if (win.x + win.width < 0)
+                        win.x = 0;
+                    if (win.y > this.height)
+                        win.y = this.height - win.height;
+                    else if (win.y + win.height < 0)
+                        win.y = 0;
+                    this.adjustModalLayer();
+                }
+            });
             Object.defineProperty(fgui.PopupMenu.prototype, "__clickItem2", {
                 value: function (itemObject) {
                     if (!(itemObject instanceof fgui.GButton))
@@ -5371,13 +5502,15 @@ window.coreLib = {};
         /**
          * 发送游戏事件
          * @param eventAction 互动类型 (默认会添加 _)
+         * @param eventLabel 事件标签
          */
-        static sendGameAnalysis(eventAction) {
+        static sendGameAnalysis(eventAction, eventLabel) {
             var _a;
             // 获取当前的游戏配置
             let gameName = (_a = ConfigUtils.gameNameCanonical(null, "_")) === null || _a === void 0 ? void 0 : _a.toLowerCase();
             if (gameName) {
-                AnalyticsManager.send(gameName + "_" + eventAction, Player.inst.isGuest ? "demo" : "cash");
+                eventLabel !== null && eventLabel !== void 0 ? eventLabel : (eventLabel = Player.inst.isGuest ? "demo" : "cash");
+                AnalyticsManager.send(gameName + "_" + eventAction, eventLabel);
             }
             else {
                 Log.warn("sendGameAnalysis : gameId=" + Player.inst.gameModel + " not exist");

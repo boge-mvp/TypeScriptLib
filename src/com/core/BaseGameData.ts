@@ -1,5 +1,9 @@
 import {IGameData} from "../interfaces/ICommon";
 
+export enum GameType {
+    NORMAL, SLOT,
+}
+
 export class BaseGameData implements IGameData {
 
     /** 缓存的下注值 */
@@ -26,6 +30,10 @@ export class BaseGameData implements IGameData {
     isRecommend = false
     /** 通知数据 */
     noticeData = []
+    /** 默认bet位置 */
+    defaultBetIndex = 0
+    /** 游戏类型 */
+    gameType = GameType.NORMAL
 
     /**
      * 总金额 default BaseGameData.betValue

@@ -2,9 +2,9 @@ import GList = fgui.GList;
 import Tween = Laya.Tween;
 import {GameModel} from "./GameModel"
 import {ISlotLotteryData} from "../interfaces/ICommon";
-import {MathKit} from "../utils/MathKit";
+import {BaseSlotGameData} from "./BaseSlotGameData";
 
-export abstract class SlotModel extends GameModel {
+export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> extends GameModel<T> {
 
     /** 运动 list 数组列表 */
     protected listRolls: GList[] = []

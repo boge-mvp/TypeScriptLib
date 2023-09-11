@@ -112,4 +112,11 @@ declare module fgui {
 
     }
 
+    interface Window {
+
+        /** 值越小 层级越高 */
+        order: number
+
+    }
+
 }

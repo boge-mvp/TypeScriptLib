@@ -19,13 +19,14 @@ import {SceneManager} from "../manager/SceneManager"
 import {LibStr} from "../LibStr"
 import {Log} from "../Log";
 import {Cmd} from "../net/Common";
+import {BaseGameData} from "./BaseGameData";
 
 /**
  *
  * @author boge
  *
  */
-export class GameModel extends BaseProxy implements IGameModel {
+export class GameModel<T extends BaseGameData = BaseGameData> extends BaseProxy implements IGameModel {
 
     protected _gameScene: IGameScene
     protected _gameServlet: IGameServlet
@@ -42,7 +43,6 @@ export class GameModel extends BaseProxy implements IGameModel {
 
     protected constructor() {
         super()
-
         this.regGameAction(ActionLib.GAME_CLEAR_RES, this, this.clearRes)
         this.regGameAction(ActionLib.GAME_INSERT_EXTENSION, this, this.insertExtension)
         this.regGameAction(ActionLib.GAME_INIT_SOCKET_EVENT, this, this.initSocketEvent)
@@ -50,6 +50,10 @@ export class GameModel extends BaseProxy implements IGameModel {
         this.regGameAction(ActionLib.GAME_DISPOSE, this, this.dispose)
         this.regGameAction(ActionLib.GAME_LOTTERY_ANI_COMPLETE, this, this.lotteryComplete)
 
+    }
+
+    protected get gameData(): T {
+        return Player.inst.gameData as T
     }
 
     initModel() {
@@ -200,10 +204,12 @@ export class GameModel extends BaseProxy implements IGameModel {
     }
 
     /** 子类实现 */
-    insertExtension() {}
+    insertExtension() {
+    }
 
     /** 通知开奖结束  进入结束流程 */
-    protected lotteryComplete() {}
+    protected lotteryComplete() {
+    }
 
     /** 游戏进入后台执行 */
     blurGame() {

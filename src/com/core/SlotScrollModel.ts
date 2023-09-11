@@ -3,6 +3,7 @@ import Tween = Laya.Tween;
 import Ease = Laya.Ease;
 import Handler = Laya.Handler;
 import {SlotModel} from "./SlotModel"
+import {BaseSlotGameData} from "./BaseSlotGameData";
 
 export enum SlotRunState {
     START = 1,
@@ -12,7 +13,7 @@ export enum SlotRunState {
 /**
  * slot游戏滚动效果类 使用了 FrameLoop + Tween
  */
-export class SlotScrollModel extends SlotModel {
+export class SlotScrollModel<T extends BaseSlotGameData = BaseSlotGameData> extends SlotModel<T> {
 
     /** 当前滚动圈数 */
     private rollCount = 0

@@ -19,6 +19,7 @@
     "webpmux"
   ],
   "files": [
+    "bin",
     "assets",
     "libs",
     "dist",

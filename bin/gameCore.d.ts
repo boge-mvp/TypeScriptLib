@@ -592,6 +592,10 @@ declare namespace coreLib {
     const BaseButton_base: Constructor<StringBlock & ActionEvent & ViewBlock & fairygui.GButton>;
     export class BaseButton extends BaseButton_base {
     }
+    export enum GameType {
+        NORMAL = 0,
+        SLOT = 1
+    }
     export class BaseGameData implements IGameData {
         /** 缓存的下注值 */
         cacheAnte: any;
@@ -617,6 +621,10 @@ declare namespace coreLib {
         isRecommend: boolean;
         /** 通知数据 */
         noticeData: any[];
+        /** 默认bet位置 */
+        defaultBetIndex: number;
+        /** 游戏类型 */
+        gameType: GameType;
         /**
          * 总金额 default BaseGameData.betValue
          */
@@ -666,7 +674,7 @@ declare namespace coreLib {
         protected insertExtUrl(url: string, clas: any): void;
     }
     /** 游戏主页必须继承的类 */
-    export class BaseScene extends BaseView implements IGameScene, IGuideScene {
+    export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView implements IGameScene, IGuideScene {
         /** 选择房间事件 */
         EVENT_SELECT_ROOM: string;
         /** demo场试玩事件 */
@@ -695,6 +703,7 @@ declare namespace coreLib {
         /** 是否在执行运行事件 */
         private isRunEvent;
         constructor();
+        protected get gameData(): T;
         protected constructFromXML(xml: any): void;
         /**
          * 房间号变更
@@ -891,6 +900,8 @@ declare namespace coreLib {
         userWinArray: any[];
         /** 小奖 要最少满足3个的线 */
         smallPrize: number[];
+        /** 默认线位置 */
+        defaultLineIndex: number;
         constructor();
         /** 总共要投注的钱 */
         getTotalBetMoney(): number;
@@ -1034,7 +1045,7 @@ declare namespace coreLib {
         getList(value: number): fairygui.GList;
         /** 所有的项变暗 */
         protected allSlotItemDark(): void;
-        getSlotModel(): SlotModel;
+        getSlotModel(): SlotModel<BaseSlotGameData>;
         dispose(): void;
     }
     export class BaseSocket {
@@ -1081,7 +1092,7 @@ declare namespace coreLib {
         protected createShowScene(url: string, cls: any): void;
     }
     const BaseWindow_base: Constructor<StringBlock & ActionEvent & ViewProxy & fairygui.Window>;
-    export class BaseWindow extends BaseWindow_base implements IRecord {
+    export class BaseWindow<T extends BaseGameData = BaseGameData> extends BaseWindow_base implements IRecord {
         /** 动画显示或关闭 */
         protected isAction: boolean;
         /** 是否加入后退记录 */
@@ -1094,6 +1105,15 @@ declare namespace coreLib {
          */
         isRunSceneEvent: boolean;
         protected onInit(): void;
+        /**
+         * 获取子组件
+         * @param name 传入子组件多种命名方式
+         */
+        getChild(...name: string[]): fgui.GObject;
+        getTransition(transName: string): fgui.Transition;
+        getTransitionAt(index: number): fgui.Transition;
+        getController(name: string): fgui.Controller;
+        getControllerAt(index: number): fgui.Controller;
         protected updateSizePoint(): void;
         protected doHideAnimation(): void;
         protected doShowAnimation(): void;
@@ -1102,6 +1122,7 @@ declare namespace coreLib {
         hideRecord(): void;
         showRecord(): void;
         dispose(): void;
+        protected get gameData(): T;
     }
     export class Controller implements IController {
         /** 事件缓存的所有组 组名字->组object */
@@ -1160,7 +1181,7 @@ declare namespace coreLib {
      * @author boge
      *
      */
-    export class GameModel extends BaseProxy implements IGameModel {
+    export class GameModel<T extends BaseGameData = BaseGameData> extends BaseProxy implements IGameModel {
         protected _gameScene: IGameScene;
         protected _gameServlet: IGameServlet;
         /** 游戏番号 */
@@ -1177,6 +1198,7 @@ declare namespace coreLib {
             handler: ParamHandler;
         }[];
         protected constructor();
+        protected get gameData(): T;
         initModel(): void;
         initSocketEvent(): void;
         private showNotice;
@@ -1228,7 +1250,7 @@ declare namespace coreLib {
      * 游戏基础类
      * @author boge
      */
-    export abstract class GameServlet extends BaseProxy implements IGameServlet {
+    export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends BaseProxy implements IGameServlet {
         protected _gameModel: IGameModel;
         protected initHandler: ParamHandler;
         /** 开奖获取次数 */
@@ -1238,6 +1260,7 @@ declare namespace coreLib {
         /** 网络通信名字 */
         networkName: string;
         protected constructor();
+        protected get gameData(): T;
         /**
          * 封装的get请求
          *
@@ -1481,7 +1504,7 @@ declare namespace coreLib {
          */
         dot(v: Vector2): number;
     }
-    export abstract class SlotModel extends GameModel {
+    export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> extends GameModel<T> {
         /** 运动 list 数组列表 */
         protected listRolls: fgui.GList[];
         /** 开奖数据  {arr isTurboMode itemCount} */
@@ -1647,7 +1670,7 @@ declare namespace coreLib {
     /**
      * slot游戏滚动效果类 使用了 FrameLoop + Laya.Tween
      */
-    export class SlotScrollModel extends SlotModel {
+    export class SlotScrollModel<T extends BaseSlotGameData = BaseSlotGameData> extends SlotModel<T> {
         /** 当前滚动圈数 */
         private rollCount;
         /** 滚动到最大圈数  就可以播放开奖结果了 */
@@ -1702,7 +1725,7 @@ declare namespace coreLib {
     /**
      * slot游戏滚动效果类 只使用了 Laya.Tween
      */
-    export class SlotScrollTweenModel extends SlotModel {
+    export class SlotScrollTweenModel<T extends BaseSlotGameData = BaseSlotGameData> extends SlotModel<T> {
         protected playLottery(value: ISlotLotteryData[]): void;
         protected setRenderListData(index: number): void;
         protected getDuration(index: number, isTurboMode: boolean): number;
@@ -2618,8 +2641,9 @@ declare namespace coreLib {
         /**
          * 发送游戏事件
          * @param eventAction 互动类型 (默认会添加 _)
+         * @param eventLabel 事件标签
          */
-        static sendGameAnalysis(eventAction: string): void;
+        static sendGameAnalysis(eventAction: string, eventLabel?: string): void;
         /**
          * 向Google Analytics 发送事件
          * @param eventAction 事件操作
@@ -3099,7 +3123,7 @@ declare namespace coreLib {
         /** 更新当前游戏中的游戏金币 */
         updateGlod(): void;
         get starter(): BaseStarter;
-        get scene(): BaseScene;
+        get scene(): BaseScene<BaseGameData>;
         /**
          * 上传错误日志
          * @param data json格式的错误数据
@@ -6028,7 +6052,15 @@ declare module fgui {
 
     }
 
+    interface Window {
+
+        /** 值越小 层级越高 */
+        order: number
+
+    }
+
 }
+
 
 declare type AnimationNodeContent = {
     name: string

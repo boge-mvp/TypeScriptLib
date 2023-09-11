@@ -30,12 +30,14 @@ export class AnalyticsManager {
     /**
      * 发送游戏事件
      * @param eventAction 互动类型 (默认会添加 _)
+     * @param eventLabel 事件标签
      */
-    static sendGameAnalysis(eventAction: string) {
+    static sendGameAnalysis(eventAction: string, eventLabel?: string) {
         // 获取当前的游戏配置
         let gameName = ConfigUtils.gameNameCanonical(null, "_")?.toLowerCase()
         if (gameName) {
-            AnalyticsManager.send(gameName + "_" + eventAction, Player.inst.isGuest ? "demo" : "cash")
+            eventLabel ??= Player.inst.isGuest ? "demo" : "cash"
+            AnalyticsManager.send(gameName + "_" + eventAction, eventLabel)
         } else {
             Log.warn("sendGameAnalysis : gameId=" + Player.inst.gameModel + " not exist")
         }

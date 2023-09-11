@@ -3,15 +3,13 @@
 const fs = require('fs')
 const zlib = require('zlib')
 const http = require('https')
+const path = require("path")
+
 const gulp = require("gulp")
-const ts = require('gulp-typescript')
-const merge2 = require('merge2')
 const AdmZip = require('adm-zip')
-// const {} = require("./index")
-const generate = require("./index")
-const typescript = require("typescript")
+const {generate, createDirectory, clean, runStream} = require("./index")
 const {SourceMapConsumer, SourceNode} = require('source-map');
-const path = require("path");
+const typescript = require("typescript")
 
 // 需要添加到最前面的类
 let beforeTs = ["src/com/Factory.ts", "src/com/core/View.ts", "src/com/core/Proxys.ts",
@@ -25,9 +23,11 @@ generate.libs = ["./libs/**/*", "./src/**/*.d.ts"]
 generate.project = "gameCore"
 generate.namespace = "coreLib"
 generate.saveTempPath = "./bin"
+generate.distPath = generate.minifyPath = "./bin"
 generate.saveTempTs = "lib.ts"
 // generate.settings = {typescript: typescript}
 
+const libCache = path.join(generate.distPath, "libCache.json")
 
 let reserved = [
 
@@ -75,9 +75,9 @@ gulp.task("resetSource", (f) => {
 
 gulp.task("clean", () => {
     return generate.clean([
-        "dist/**/gameCore**.d.ts",
-        "dist/**/gameCore**.js",
-        "dist/**/gameCore**.js.map",
+        ".bin/**/gameCore**.d.ts",
+        ".bin/**/gameCore**.js",
+        ".bin/**/gameCore**.js.map",
     ])
 })
 
@@ -94,12 +94,11 @@ gulp.task('minifyJs', () => {
 })
 
 gulp.task('mangleJs', () => {
-    let libFile = "./dist/libCache.json"
     let libs = {}
-    if (fs.existsSync(libFile)) {
-        libs = JSON.parse(fs.readFileSync(libFile, "utf8"))
+    if (fs.existsSync(libCache)) {
+        libs = JSON.parse(fs.readFileSync(libCache, "utf8"))
     }
-    let cacheFile = "dist/nameCache.json"
+    let cacheFile = path.join(generate.distPath, "nameCache.json")
     if (!fs.existsSync(cacheFile)) fs.writeFileSync(cacheFile, "{}", "utf8")
     let minCaches = JSON.parse(fs.readFileSync(cacheFile, "utf8"))
     minCaches = {}
@@ -123,12 +122,13 @@ gulp.task('mangleJs', () => {
         }
 
         // toplevel: true
-    }, null, "./dist/min", "../map").on('end', function () {
-        // console.log("结束了")
-        // 当 Gulp 任务结束时, 把 nameCache 写入到文件中
-        // console.log(nameCaches)
-        fs.writeFileSync(cacheFile, JSON.stringify(nameCaches));
-    })
+    }, null, generate.distPath + "/min", "../map")
+        .on('end', function () {
+            // console.log("结束了")
+            // 当 Gulp 任务结束时, 把 nameCache 写入到文件中
+            // console.log(nameCaches)
+            fs.writeFileSync(cacheFile, JSON.stringify(nameCaches));
+        })
 })
 
 gulp.task('createDTs', () => {
@@ -140,7 +140,7 @@ gulp.task('dtsAppend', () => {
 })
 
 gulp.task('removeTemp', () => {
-    return generate.clean("bin")
+    return clean("bin/temp")
 })
 
 //完整构建
@@ -149,12 +149,11 @@ gulp.task('build', gulp.series("clean", 'createTs', "createJs", "minifyJs", "man
 ))
 
 gulp.task('buildStream', gulp.series("clean", () => {
-    let libFile = "./dist/libCache.json"
     let libs = {}
-    if (fs.existsSync(libFile)) {
-        libs = JSON.parse(fs.readFileSync(libFile, "utf8"))
+    if (fs.existsSync(libCache)) {
+        libs = JSON.parse(fs.readFileSync(libCache, "utf8"))
     }
-    let cacheFile = "dist/nameCache.json"
+    let cacheFile = generate.distPath + "/nameCache.json"
     if (!fs.existsSync(cacheFile)) fs.writeFileSync(cacheFile, "{}", "utf8")
     let minCaches = JSON.parse(fs.readFileSync(cacheFile, "utf8"))
     minCaches = {}
@@ -169,8 +168,8 @@ gulp.task('buildStream', gulp.series("clean", () => {
             mangle: {properties: {reserved: reserved}},
             format: {preserve_annotations: true}
             // toplevel: true
-        }, null, "./dist/min", "../map"))
-        .pipe(generate.runStream(function () {
+        }, null, generate.distPath + "/min", "../map"))
+        .pipe(runStream(function () {
             console.log("write cache")
             // 把 nameCache 写入到文件中
             // console.log(nameCaches)
@@ -230,12 +229,11 @@ gulp.task("updateWEBP", (done) => {
 })
 
 gulp.task('build-Temp', () => {
-    let cacheFile = "dist/libCache.json"
-    if (!fs.existsSync(cacheFile)) {
-        generate.createDirectory(cacheFile)
-        fs.writeFileSync(cacheFile, "{}", "utf8")
+    if (!fs.existsSync(libCache)) {
+        createDirectory(libCache)
+        fs.writeFileSync(libCache, "{}", "utf8")
     }
-    let nameCaches = JSON.parse(fs.readFileSync(cacheFile, "utf8"))
+    let nameCaches = JSON.parse(fs.readFileSync(libCache, "utf8"))
     nameCaches = {}
     return generate.mangleJs({
         sourceMap: true,
@@ -257,9 +255,10 @@ gulp.task('build-Temp', () => {
         "./template/spine-core-3.8.js",
         "./template/laya.spine.js",
         "./template/fairygui.js",
-    ], "./dist/min", "../map").on('end', function () {
-        fs.writeFileSync(cacheFile, JSON.stringify(nameCaches));
-    })
+    ], generate.distPath + "/min", "../map")
+        .on('end', function () {
+            fs.writeFileSync(libCache, JSON.stringify(nameCaches));
+        })
 })
 
 gulp.task("min-js", () => {
