@@ -5492,7 +5492,7 @@ declare namespace coreLib {
         dispose(): void;
     }
     /** 提示框 */
-    export class HomePrompt extends BaseWindow {
+    export class HomePrompt<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
         private static _instance;
         static get instance(): HomePrompt;
         /** 当前显示面板控制器 */
@@ -5561,7 +5561,7 @@ declare namespace coreLib {
         showRecord(): void;
     }
     /** 图片窗口 */
-    export class ImageWindow extends BaseWindow {
+    export class ImageWindow<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
         private static _instance;
         static get inst(): ImageWindow;
         protected onInit(): void;
@@ -5722,7 +5722,7 @@ declare namespace coreLib {
         dispose(): void;
     }
     /** 提示框 */
-    export class PromptWindow extends BaseWindow {
+    export class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
         private static _instance;
         static get inst(): PromptWindow;
         private content;
@@ -5772,7 +5772,7 @@ declare namespace coreLib {
         dispose(): void;
     }
     /** 提示框 */
-    export class RechargeSuccessWindow extends BaseWindow {
+    export class RechargeSuccessWindow<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
         private static _instance;
         static get inst(): RechargeSuccessWindow;
         private content;
@@ -5815,7 +5815,7 @@ declare namespace coreLib {
     /**
      * 带 Skeleton 动画
      */
-    export class SkeletonWindow extends BaseWindow {
+    export class SkeletonWindow<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
         protected skeleton: GSkeleton | GSpineSkeleton;
         protected loadComplete: boolean;
         protected waitShow: boolean;
