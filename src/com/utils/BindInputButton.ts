@@ -10,7 +10,7 @@ export class BindInputButton {
      * @param btn
      * @param array
      */
-    constructor(btn: fgui.GButton, array: any[]) {
+    constructor(btn: fgui.GButton, ...array: any[]) {
         this.btn = btn
         this.array = array
 

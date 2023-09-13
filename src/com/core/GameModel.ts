@@ -258,7 +258,9 @@ export class GameModel<T = BaseGameData> extends BaseProxy implements IGameModel
     protected get gameData(): T {
         return Player.inst.gameData as T
     }
-
+    /**
+     * @deprecated
+     */
     protected set gameData(value: T) {
         Log.debug(value)
     }

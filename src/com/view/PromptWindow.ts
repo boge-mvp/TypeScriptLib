@@ -50,14 +50,14 @@ export class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWin
         this.contentPane = UIPackage.createObjectFromURL("//common/PromptWindow").asCom
 
         super.onInit()
-        this.content = this.contentPane.getChild("n2").asTextField
-        this.cancelBtn = this.contentPane.getChild("n3").asButton
-        this.continueBtn = this.contentPane.getChild("n4").asButton
+        this.content = this.getChild("n2").asTextField
+        this.cancelBtn = this.getChild("n3").asButton
+        this.continueBtn = this.getChild("n4").asButton
 
         this.cancelBtn.getTextField().bold = true
         this.continueBtn.getTextField().bold = true
 
-        this.controller = this.contentPane.getController("c1")
+        this.controller = this.getController("c1")
 
         this.cancelBtn.onClick(this, this.cancelHandler)
         this.continueBtn.onClick(this, this.continueHandler)

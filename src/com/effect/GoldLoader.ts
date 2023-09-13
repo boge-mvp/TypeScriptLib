@@ -2,9 +2,9 @@ import GLoader = fgui.GLoader;
 import LoaderFillType = fgui.LoaderFillType;
 import Pool = Laya.Pool;
 import Tween = Laya.Tween;
-import {BezierCurves} from "../block/BezierCurves";
 import TimeLine = Laya.TimeLine;
 import Event = Laya.Event;
+import {BezierCurves} from "../block/Block";
 
 /**
  * 具有贝塞尔曲线运动的loader
@@ -13,7 +13,7 @@ export class GoldLoader extends mixinExt(BezierCurves, GLoader) {
 
     static readonly NAME = "GoldLoaderPool"
     private _timeLine: TimeLine
-    private playEndCallback: ParamHandler;
+    private playEndCallback: ParamHandler
 
     /**
      * 从对象池获取一个 GoldLoader

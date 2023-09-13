@@ -65,7 +65,9 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
     protected get gameData(): T {
         return Player.inst.gameData as T
     }
-
+    /**
+     * @deprecated
+     */
     protected set gameData(value: T) {
         Log.debug(value)
     }

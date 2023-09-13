@@ -46,6 +46,9 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
         return Player.inst.gameData as T
     }
 
+    /**
+     * @deprecated
+     */
     protected set gameData(value: T) {
         Log.debug(value)
     }

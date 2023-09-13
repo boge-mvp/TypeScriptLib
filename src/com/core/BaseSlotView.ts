@@ -10,8 +10,9 @@ import {BaseSlotItem} from "./BaseSlotItem"
 import {SceneManager} from "../manager/SceneManager"
 import {BaseSlotGameData} from "./BaseSlotGameData"
 import {SlotModel} from "./SlotModel"
+import {Log} from "../Log";
 
-export class BaseSlotView extends BaseView {
+export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends BaseView {
 
     /** 线的面板 */
     protected linePanel: GComponent
@@ -39,7 +40,7 @@ export class BaseSlotView extends BaseView {
 
     protected override onInit() {
         super.onInit()
-        this.list ??= this.getChild("list").asList
+        this.list ??= this.getChild("list")?.asList
         if(this.list) this.list.touchable = false
     }
 
@@ -50,7 +51,7 @@ export class BaseSlotView extends BaseView {
      * @param lowGrade 是否包含下级 默认 false
      */
     protected showLine(value: number, alone = false, lowGrade = false) {
-        if (this.lineGraphics == null) return
+        if (!this.lineGraphics) return
         if (alone) {
             this.lineGraphics.clear()
         }
@@ -289,5 +290,17 @@ export class BaseSlotView extends BaseView {
         Laya.timer.clearAll(this)
         super.dispose()
     }
+
+    protected get gameData(): T {
+        return Player.inst.gameData as T
+    }
+
+    /**
+     * @deprecated
+     */
+    protected set gameData(value: T) {
+        Log.debug(value)
+    }
+
 
 }
