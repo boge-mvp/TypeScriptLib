@@ -6,3 +6,6 @@ gulpfile.js
 *.laya
 tsconfig.json
 dist
+EnhanceLib
+GameLib
+bin/libCache.json

@@ -484,7 +484,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
         // let value: string = LocalStorage.getItem(Player.inst.gameModel + "_demo")
         // if (Player.inst.isGuest && value == null) {
         if (Player.inst.isGuest) {
-            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.PROMPT_GUEST, () => {
+            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.PROMPT_GUEST, null, () => {
                 this.runEvent()
             })
             // LocalStorage.setItem(Player.inst.gameModel + "_demo", "1")

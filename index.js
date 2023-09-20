@@ -96,19 +96,19 @@ class GenerateModule {
             content.push(fs.readFileSync(this.global[i], "utf-8"))
         }
         return gulp.src(this.beforeTs.concat(files, this.global.map(value => "!" + value)))
-            // .pipe(sort((a, b) => {
-            //         // let aIndex = this.beforeTs.indexOf(path.relative(a.cwd, aPath).replaceAll("\\", "/"))
-            //         // let bIndex = this.beforeTs.indexOf(path.relative(b.cwd, bPath).replaceAll("\\", "/"))
-            //         if (aIndex >= 0 && bIndex >= 0) {
-            //             return aIndex - bIndex
-            //         } else if (aIndex >= 0) {
-            //             return -1
-            //         } else if (bIndex >= 0) {
-            //             return 1
-            //         }
-            //         return aPath.localeCompare(bPath)
-            //     }
-            // ))
+            .pipe(sort((a, b) => {
+                    let aIndex = this.beforeTs.indexOf(path.relative(a.cwd, a.path).replaceAll("\\", "/"))
+                    let bIndex = this.beforeTs.indexOf(path.relative(b.cwd, b.path).replaceAll("\\", "/"))
+                    if (aIndex >= 0 && bIndex >= 0) {
+                        return aIndex - bIndex
+                    } else if (aIndex >= 0) {
+                        return -1
+                    } else if (bIndex >= 0) {
+                        return 1
+                    }
+                    return a.path.localeCompare(b.path)
+                }
+            ))
             .pipe(each((content, file, callback) => {
                 // console.log(file.history[0])
                 /** @type string[] */
@@ -141,7 +141,7 @@ class GenerateModule {
                         // 将其它库文件 放到属性前面
                         for (let i = 0; i < arr.length; i++) {
                             let tar = arr[i].substring(arr[i].indexOf("import ") + 6, arr[i].indexOf("=")).trim()
-                            let reg = new RegExp("(?<=\\s|:|\\(|!|<|\\[|>)" + tar + "(?=\\s+?|\\.|\\[|,|\"|\\(|\\)|;|,|<|>|$)", "g")
+                            let reg = new RegExp("(?<=^|\\s|:|\\(|!|<|\\[|>)" + tar + "(?=\\s+?|\\.|\\[|,|\"|\\(|\\)|;|,|<|>|$)", "g")
                             if (reg.test(line)) {
                                 let endIndex = arr[i].lastIndexOf(".")
                                 let newC = arr[i].substring(arr[i].lastIndexOf("=") + 1, endIndex).trim()
@@ -455,6 +455,17 @@ function clean(patterns) {
 }
 
 /**
+ * 清理文件目录
+ * @param patterns {string | string[]}
+ * @param [end=null] {function(()=>{}):{}}
+ */
+function cleanStream(patterns, end) {
+    return run(async () => {
+        await clean(patterns)
+    }, end)
+}
+
+/**
  *
  * @param args 配置
  * @param defs 默认值
@@ -519,13 +530,13 @@ function createDirectory(filePath) {
 }
 
 /**
- * 一个通过流传输的自定义插件，每次都会调用操作
+ * 一个通过流传输的打印，每次都会调用操作
  * @param prefix {string}
  * @param [end=null] {function(()=>{}):{}} 结束流 参数方法需要回调不然会阻塞
  */
 function print(prefix, end) {
     return run(function (prefix, chunk, encoding) {
-        console.log(prefix + ": " + chunk.path)
+        console.log(prefix, chunk.path)
     }, end, prefix)
 }
 
@@ -538,10 +549,7 @@ function print(prefix, end) {
 function runStream(func, end, ...args) {
     return through2(function (chunk, encoding, callback) {
         if (func) {
-            if (args.length) {
-                args = [...args, chunk, encoding, callback]
-            } else args.push(chunk, encoding, callback)
-            let result = func.apply(this, args)
+            let result = func.apply(this, [...args, chunk, encoding, callback])
             if (result !== undefined) callback(null, chunk)
         } else callback(null, chunk)
     }, end)
@@ -556,11 +564,7 @@ function runStream(func, end, ...args) {
  */
 function run(func, end, ...args) {
     return through2(function (chunk, encoding, callback) {
-        if (args.length) {
-            args = [...args, chunk, encoding]
-        } else args.push(chunk, encoding)
-
-        func && func.apply(this, args)
+        func && func.apply(this, [...args, chunk, encoding])
         callback(null, chunk)
     }, end)
 }
@@ -630,6 +634,7 @@ module.exports.print = print
 module.exports.clean = clean
 module.exports.defaults = defaults
 module.exports.createDirectory = createDirectory
+module.exports.cleanStream = cleanStream
 module.exports.runStream = runStream
 module.exports.run = run
 module.exports.mJs = mJs

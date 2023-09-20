@@ -2,6 +2,7 @@
 
 TypeScript common lib    ( Laya 、 Fairygui)
 
+Enhance the functionality of native components
 
 ### npm使用方式 ###
 在package.json 文件中添加命令

@@ -1,0 +1,21 @@
+{
+  "extends": [
+    "../tsconfig.json"
+  ],
+  "compilerOptions": {
+    "outDir": "./bin",
+//    "rootDir": "../",
+//    "baseUrl": ".",
+//    "paths": {
+//      ".": [
+//        "./src"
+//      ],
+//      "core/*": ["./bin"]
+//    }
+  },
+  "exclude": [],
+  "include": [
+    "../libs",
+    "src"
+  ]
+}

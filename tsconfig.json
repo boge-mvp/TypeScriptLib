@@ -1,18 +1,40 @@
 {
   "compilerOptions": {
+    // 编译后的 JavaScript 代码的目标版本
     "target": "ES6",
+    //  编译后的模块系统
     "module": "ES6",
-    "declaration": true, // 生成 .d.ts 定义文件
-    "removeComments": false, // 去除注释
-    "noEmitHelpers": true,// 不在输出文件中生成帮助
+    // 生成 .d.ts 定义文件
+    "declaration": true,
+    // 去除注释
+    "removeComments": false,
+    // 不在输出文件中生成帮助
+    "noEmitHelpers": true,
     "sourceMap": true,
-    "skipLibCheck": true, // 跳过类型检查所有 .d.ts 文件。
-    "noImplicitOverride": true, // 重写必须添加override
-    "stripInternal": true, // 禁用发出在其 JSDoc 注释中包含“@internal”的声明。
-    "lib": ["DOM", "ES2017"]
+    // 跳过类型检查所有 .d.ts 文件。
+    "skipLibCheck": true,
+    // 重写必须添加override
+    "noImplicitOverride": true,
+    // 禁用发出在其 JSDoc 注释中包含“@internal”的声明。
+    "stripInternal": true,
+    // 编译器可用的类型定义和内置对象
+    "lib": [
+      "DOM",
+      "ESNext"
+    ]
   },
+  //  "references": [
+  //    {
+  //      "path": "./EnhanceLib/tsconfig.json"
+  //    },
+  //    {
+  //      "path": "./GameLib/tsconfig.json"
+  //    }
+  //  ],
   "exclude": [
     "dist",
-    "bin"
+    "bin",
+    "GameLib",
+    "EnhanceLib"
   ]
 }

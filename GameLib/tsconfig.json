@@ -1,0 +1,20 @@
+{
+  "extends": [
+    "../tsconfig.json"
+  ],
+  "compilerOptions": {
+    "outDir": "./bin",
+//    "rootDir": "../",
+//    "paths": {
+//      "tsCore/*": ["../TSCore/bin"]
+//    }
+  },
+  "include": [
+    "../libs",
+    "../TSCore/bin/tsCore.d.ts",
+    "src"
+  ],
+  "exclude": [
+    "node_modules", "bin"
+  ]
+}

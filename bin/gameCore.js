@@ -106,6 +106,60 @@ window.coreLib = {};
      */
     Factory.GAME_GROUP = "game_group";
     coreLib.Factory = Factory;
+    class BezierCurves {
+        constructor() {
+            /** 经过时间 */
+            this._t = -1;
+        }
+        get t() {
+            return this._t;
+        }
+        set t(value) {
+            if (value < 0)
+                return;
+            this._t = value;
+            // @ts-ignore
+            this.setXY(this.getX(), this.getY());
+        }
+        getX() {
+            return Math.pow((1 - this._t), 3) * this.p1.x
+                + 3 * this.p2.x * this._t * (1 - this._t) * (1 - this._t)
+                + 3 * this.p3.x * this._t * this._t * (1 - this._t)
+                + this.p4.x * Math.pow(this._t, 3);
+        }
+        getY() {
+            return Math.pow((1 - this._t), 3) * this.p1.y
+                + 3 * this.p2.y * this._t * (1 - this._t) * (1 - this._t)
+                + 3 * this.p3.y * this._t * this._t * (1 - this._t)
+                + this.p4.y * Math.pow(this._t, 3);
+        }
+        setStartPoint(x, y) {
+            this.p1 = Laya.Point.create().setTo(x, y);
+            this._t = -1;
+        }
+        setMiddlePoint(x, y) {
+            this.p3 = this.p2 = Laya.Point.create().setTo(x, y);
+        }
+        setMiddlePoint2(x1, y1, x2, y2) {
+            this.p2 = Laya.Point.create().setTo(x1, y1);
+            this.p3 = Laya.Point.create().setTo(x2, y2);
+        }
+        setEndPoint(x, y) {
+            this.p4 = Laya.Point.create().setTo(x, y);
+        }
+        /**
+         * 释放曲线数据
+         */
+        recover() {
+            var _a, _b, _c, _d;
+            this._t = -1;
+            (_a = this.p1) === null || _a === void 0 ? void 0 : _a.recover();
+            (_b = this.p2) === null || _b === void 0 ? void 0 : _b.recover();
+            (_c = this.p3) === null || _c === void 0 ? void 0 : _c.recover();
+            (_d = this.p4) === null || _d === void 0 ? void 0 : _d.recover();
+        }
+    }
+    coreLib.BezierCurves = BezierCurves;
     /**
      * 只有 getProxy 和 getView
      */
@@ -710,1170 +764,6 @@ window.coreLib = {};
      * @see UtilKit
      */
     coreLib.UtilsTool = UtilKit;
-    let EnvType;
-    (function (EnvType) {
-        EnvType[EnvType["PROD"] = 0] = "PROD";
-        EnvType[EnvType["DEV"] = 1] = "DEV";
-        EnvType[EnvType["TEST"] = 2] = "TEST";
-    })(EnvType = coreLib.EnvType || (coreLib.EnvType = {}));
-    /**
-     * 配置工具
-     */
-    class ConfigKit {
-        /**
-         * 将自动检测当前环境是否支持webp图片
-         *
-         * 如果网址携带参数webp将会强制使用webp图片
-         */
-        static useWebp() {
-            var _a, _b;
-            let isWebp = false;
-            if (!Laya.Render.isConchApp && window.location.protocol != "http:") {
-                isWebp = ((_b = (_a = window.document.createElement('canvas')) === null || _a === void 0 ? void 0 : _a.toDataURL('image/webp')) === null || _b === void 0 ? void 0 : _b.indexOf('data:image/webp')) == 0;
-            }
-            if (isWebp || Laya.Utils.getQueryString("webp")) {
-                MyLoader.isWebp = true;
-                Log.info("Support webp");
-            }
-            return isWebp;
-        }
-        /**
-         * 运行环境检测
-         */
-        static env(url) {
-            let value = Laya.Utils.getQueryString("env");
-            if (StringUtil.isNotEmpty(value)) {
-                const valueEnv = Environment.findEnv(value);
-                if (valueEnv) {
-                    Environment.active = valueEnv;
-                    return valueEnv;
-                }
-            }
-            url !== null && url !== void 0 ? url : (url = window.location.host);
-            Environment.active = Environment.DEFAULT_ENV;
-            if (Environment.verify(url, Environment.TEST)) {
-                Environment.active = EnvType.TEST;
-            }
-            else if (Environment.verify(url, Environment.DEV)) {
-                Environment.active = EnvType.DEV;
-            }
-            else if (Environment.verify(url, Environment.PROP)) {
-                Environment.active = EnvType.PROD;
-            }
-            return Environment.active;
-        }
-    }
-    coreLib.ConfigKit = ConfigKit;
-    class Environment {
-        /**
-         * 验证环境
-         * @param url url window.location.host
-         * @param value 判断条件
-         */
-        static verify(url, value) {
-            if (StringUtil.isEmpty(url) || (value === null || value === void 0 ? void 0 : value.length) < 1)
-                return false;
-            // 后行断言在旧版本的 JavaScript 以及某些浏览器和环境中是不支持的，因此使用非捕获组更具有兼容性。
-            return new RegExp("(?:\\/|-|(\\.)|^)(" + value.join("|") + ")(?=(\\.|:|-|$))").test(url);
-            // return new RegExp("(?<=\\/|-|(\\.))" + value.join("|") + "(?=(\\.)|-)").test(url)
-        }
-        /**
-         * 查询指定的环境是否存在
-         * @param value test, debug, localhost, dev, staging, prod, production, release
-         */
-        static findEnv(value) {
-            if (Environment.TEST.indexOf(value) != -1)
-                return EnvType.TEST;
-            if (Environment.DEV.indexOf(value) != -1)
-                return EnvType.DEV;
-            return Environment.PROP.indexOf(value) != -1 ? EnvType.PROD : null;
-        }
-    }
-    Environment.TEST = ["test", "debug", "localhost"];
-    Environment.DEV = ["dev", "staging"];
-    Environment.PROP = ["prod", "production", "release"];
-    /**
-     * 默认环境
-     * @default EnvType.PROD
-     */
-    Environment.DEFAULT_ENV = EnvType.PROD;
-    /**
-     * 当前运行环境，默认有三个环境
-     * ```
-     * dev:开发环境|test:测试环境|prod:生产环境
-     * 根据域名判断环境
-     * prod: prod|production|release
-     * dev : dev|staging
-     * test: test|debug
-     * 判断依据：
-     * https://www.game-prod.com prod 环境
-     * https://www.game-prod-info.com prod环境
-     * https://www.game-prod-info.dev prod环境
-     *
-     * https://www.game-dev-prod-info.com dev环境
-     * https://dev.game-prod-test-info.com dev环境
-     * https://www.dev.game-prod.com dev环境
-     * https://www.dev-data.game.com dev环境
-     *
-     * ```
-     * 默认使用 window.location.host 判断环境
-     * @default EnvType.PROD
-     */
-    Environment.active = Environment.DEFAULT_ENV;
-    coreLib.Environment = Environment;
-    class DefineConfig {
-        static init() {
-            DefineConfig.defineLaya();
-            DefineConfig.defineFairy();
-        }
-        static defineLaya() {
-            Object.defineProperty(Laya.Stage.prototype, "_changeCanvasSize", {
-                value: function () {
-                    Log.debug("_changeCanvasSize = " + Laya.Browser.clientWidth + " | " + Laya.Browser.clientHeight);
-                    if (Laya.Browser.clientHeight == Laya.Browser.clientWidth) {
-                        Log.debug("refuse =!");
-                        this.setScreenSize(this._width, this._height);
-                        return;
-                    }
-                    this.setScreenSize(Laya.Browser.clientWidth * Laya.Browser.pixelRatio, Laya.Browser.clientHeight * Laya.Browser.pixelRatio);
-                }
-            });
-            Object.defineProperty(Laya.Stage.prototype, "temp_updateTimers", {
-                // @ts-ignore
-                value: Laya.Stage.prototype._updateTimers
-            });
-            Object.defineProperty(Laya.Stage.prototype, "_updateTimers", {
-                value: function () {
-                    if (!this.pauseUpdateTimer)
-                        this.temp_updateTimers();
-                }
-            });
-            Object.defineProperty(Laya.KeyBoardManager, "_addEvent", {
-                value: function (type) {
-                    (window.parent || window).addEventListener(type, function (e) {
-                        Laya.KeyBoardManager["_dispatch"](e, type);
-                    });
-                }
-            });
-            // @ts-ignore
-            Object.defineProperty(Laya.SoundManager, "autoStopMusic", {
-                set(v) {
-                    // @ts-ignore
-                    Laya.stage.off(Laya.Event.BLUR, null, Laya.SoundManager._stageOnBlur);
-                    // @ts-ignore
-                    Laya.stage.off(Laya.Event.FOCUS, null, _stageOnFocus);
-                    // @ts-ignore
-                    Laya.stage.off(Laya.Event.VISIBILITY_CHANGE, null, _visibilityChange);
-                    // @ts-ignore
-                    Laya.SoundManager._autoStopMusic = v;
-                    if (v) {
-                        // @ts-ignore
-                        Laya.stage.on(Laya.Event.BLUR, null, Laya.SoundManager._stageOnBlur);
-                        // @ts-ignore
-                        Laya.stage.on(Laya.Event.FOCUS, null, _stageOnFocus);
-                        // @ts-ignore
-                        Laya.stage.on(Laya.Event.VISIBILITY_CHANGE, null, _visibilityChange);
-                    }
-                }
-            });
-            function _stageOnFocus() {
-                // @ts-ignore
-                Laya.SoundManager._stageOnFocus();
-                // @ts-ignore
-                if (!Laya.SoundManager._blurPaused && Laya.SoundManager._musicChannel)
-                    return;
-                let bgMusic = Laya.SoundManager["_bgMusic"];
-                // @ts-ignore
-                Laya.SoundManager._blurPaused = false;
-                // @ts-ignore
-                if (Laya.SoundManager._musicChannel) {
-                    // @ts-ignore
-                    if (Laya.SoundManager._musicChannel.isStopped) {
-                        // @ts-ignore
-                        Laya.SoundManager._musicChannel.resume();
-                    }
-                    else {
-                        // @ts-ignore
-                        Laya.SoundManager._musicChannel.play();
-                    }
-                }
-                else if (bgMusic && !Laya.SoundManager.musicMuted) {
-                    // 没有正在播放的声音  并且背景音乐又存在 不是静音状态
-                    Laya.SoundManager["_bgMusic"] = null;
-                    SoundUtils.playMusic(bgMusic);
-                }
-            }
-            function _visibilityChange() {
-                if (Laya.stage.isVisibility) {
-                    _stageOnFocus();
-                }
-                else {
-                    // @ts-ignore
-                    Laya.SoundManager._stageOnBlur();
-                }
-            }
-            Object.defineProperty(Laya.DrawTextureCmd, "create", {
-                value: function (texture, x, y, width, height, matrix, alpha, color, blendMode, uv) {
-                    const cmd = Laya.Pool.getItemByClass("DrawTextureCmd", MyDrawTextureCmd);
-                    cmd.texture = texture;
-                    texture["_addReference"]();
-                    cmd.x = x;
-                    cmd.y = y;
-                    cmd.width = width;
-                    cmd.height = height;
-                    cmd.matrix = matrix;
-                    cmd.alpha = alpha;
-                    cmd.color = color;
-                    cmd.blendMode = blendMode;
-                    cmd.uv = uv == undefined ? null : uv;
-                    if (color) {
-                        cmd.colorFlt = new Laya.ColorFilter();
-                        cmd.colorFlt.setColor(color);
-                    }
-                    return cmd;
-                }
-            });
-            Object.defineProperty(Laya.GraphicsAni, "create", {
-                value: GGraphicsAni.create
-            });
-            Object.defineProperty(Laya.GraphicsAni.prototype, "_renderAll", {
-                value: function (sprite, context, x, y) {
-                    const cmds = this.cmds;
-                    const obj = fgui.GObject.cast(sprite);
-                    let cmd;
-                    let i = 0, n = cmds.length;
-                    for (; i < n; i++) {
-                        cmd = cmds[i];
-                        if (cmd instanceof MyDrawTextureCmd) {
-                            if (obj instanceof GSkeleton && obj.blendBoneSlotNames.indexOf(cmd.name) > -1) {
-                                // cmd.blendMode = BlendMode.ADD
-                                //#__NO_MANGLE_PROP_START__
-                                cmd.blendMode = "add";
-                            }
-                        }
-                        cmd.run(context, x, y);
-                        if (cmd instanceof MyDrawTextureCmd && this._sp && this._sp.hasListener(GSkeleton.UPDATE_BONE_SLOT + cmd.name)) {
-                            this._sp.event(GSkeleton.UPDATE_BONE_SLOT + cmd.name, cmd);
-                        }
-                    }
-                }
-            });
-            // 更改值 并保留调用原始的
-            Object.defineProperty(Laya.GraphicsAni.prototype, "tempSaveToCmd", {
-                value: Laya.GraphicsAni.prototype["_saveToCmd"]
-            });
-            Object.defineProperty(Laya.GraphicsAni.prototype, "_saveToCmd", {
-                value: function (fun, args) {
-                    if (args instanceof MyDrawTextureCmd) {
-                        let sk;
-                        if (this._sp && (sk = fgui.GObject.cast(this._sp)) != null && sk instanceof GSkeleton) {
-                            if (sk.clearBoneSlotOffset.indexOf(this.boneSlotName) >= 0) {
-                                args.x = 0;
-                                args.y = 0;
-                            }
-                            else if (sk.clearBoneSlotOffsetX.indexOf(this.boneSlotName) >= 0) {
-                                args.x = 0;
-                            }
-                            else if (sk.clearBoneSlotOffsetY.indexOf(this.boneSlotName) >= 0) {
-                                args.y = 0;
-                            }
-                        }
-                        args.name = this.boneSlotName || "";
-                    }
-                    return this.tempSaveToCmd.call(this, fun, args);
-                }
-            });
-            DefineConfig.defineSpineSkeleton();
-            DefineConfig.defineSkeleton();
-            DefineConfig.defineText();
-            DefineConfig.defineTimer();
-        }
-        static defineFairy() {
-            Object.defineProperty(fgui.GRoot.prototype, "playOneShotSound", {
-                value: function (url, volumeScale) {
-                    if (fgui.ToolSet.startsWith(url, "ui://"))
-                        return;
-                    if (!volumeScale)
-                        volumeScale = 1;
-                    SoundUtils.playSound(url, 1, null, volumeScale);
-                }
-            });
-            Object.defineProperty(fgui.GButton.prototype, "__click", {
-                value: function (evt) {
-                    if (this._sound) {
-                        let pi = fgui.UIPackage.getItemByURL(this._sound);
-                        if (pi)
-                            fgui.GRoot.inst.playOneShotSound(pi.file, this._soundVolumeScale);
-                        else
-                            fgui.GRoot.inst.playOneShotSound(this._sound, this._soundVolumeScale);
-                    }
-                    if (this._mode == fgui.ButtonMode.Check) {
-                        if (this._changeStateOnClick) {
-                            this.selected = !this._selected;
-                            fgui.Events.dispatch(fgui.Events.STATE_CHANGED, this.displayObject, evt);
-                        }
-                    }
-                    else if (this._mode == fgui.ButtonMode.Radio) {
-                        if (this._changeStateOnClick && !this._selected) {
-                            this.selected = true;
-                            fgui.Events.dispatch(fgui.Events.STATE_CHANGED, this.displayObject, evt);
-                        }
-                    }
-                    else {
-                        if (this._relatedController)
-                            this._relatedController.selectedPageId = this._relatedPageId;
-                    }
-                }
-            });
-            // 给window添加排序  order
-            Object.defineProperty(fgui.GRoot.prototype, "showWindow", {
-                value: function (win) {
-                    this.addChild(win);
-                    const cnt = this.numChildren;
-                    let wins = [];
-                    for (let i = cnt - 1; i >= 0; i--) {
-                        const g = this.getChildAt(i);
-                        if ((g instanceof fgui.Window) && g.modal) {
-                            wins.push(g);
-                        }
-                    }
-                    let pos = -1;
-                    const winOrder = win.order || 0;
-                    for (let i = 0; i < wins.length; i++) {
-                        let order = wins[i].order || 0;
-                        if (winOrder > order) {
-                            pos = i;
-                            this.setChildIndexBefore(win, this.getChildIndex(wins[i]));
-                        }
-                    }
-                    if (pos == -1) {
-                        win.requestFocus();
-                    }
-                    if (win.x > this.width)
-                        win.x = this.width - win.width;
-                    else if (win.x + win.width < 0)
-                        win.x = 0;
-                    if (win.y > this.height)
-                        win.y = this.height - win.height;
-                    else if (win.y + win.height < 0)
-                        win.y = 0;
-                    this.adjustModalLayer();
-                }
-            });
-            Object.defineProperty(fgui.PopupMenu.prototype, "__clickItem2", {
-                value: function (itemObject) {
-                    if (!(itemObject instanceof fgui.GButton))
-                        return;
-                    if (itemObject.grayed) {
-                        this._list.selectedIndex = -1;
-                        return;
-                    }
-                    let c = itemObject.asCom.getController("checked");
-                    if (c && c.selectedIndex != 0) {
-                        if (c.selectedIndex == 1)
-                            c.selectedIndex = 2;
-                        else
-                            c.selectedIndex = 1;
-                    }
-                    let r = (this._contentPane.parent);
-                    r === null || r === void 0 ? void 0 : r.hidePopup(this.contentPane);
-                    runFun(itemObject.data);
-                }
-            });
-            Object.defineProperties(fgui.GLoader.prototype, {
-                loadRetryCount: {
-                    value: 0,
-                    writable: true
-                },
-                loadCount: {
-                    value: 0,
-                    writable: true
-                }
-            });
-            Object.defineProperty(fgui.GLoader.prototype, "temp_loadExternal", {
-                value: function () {
-                    fgui.AssetProxy.inst.load(this._url, Laya.Handler.create(this, (url, tex) => {
-                        if (this._url === url)
-                            this.__getResCompleted(tex);
-                    }, [this._url]), null, Laya.Loader.IMAGE);
-                }
-            });
-            Object.defineProperty(fgui.GLoader.prototype, "loadExternal", {
-                value: function () {
-                    this.loadCount = 0;
-                    this.temp_loadExternal();
-                }
-            });
-            Object.defineProperty(fgui.GLoader.prototype, "temp_onExternalLoadSuccess", {
-                value: fgui.GLoader.prototype["onExternalLoadSuccess"]
-            });
-            Object.defineProperty(fgui.GLoader.prototype, "onExternalLoadSuccess", {
-                value: function (texture) {
-                    var _a;
-                    this.temp_onExternalLoadSuccess(texture);
-                    (_a = this.displayObject) === null || _a === void 0 ? void 0 : _a.event(Laya.Event.COMPLETE);
-                }
-            });
-            Object.defineProperty(fgui.GLoader.prototype, "temp_loadFromPackage", {
-                value: fgui.GLoader.prototype["loadFromPackage"]
-            });
-            Object.defineProperty(fgui.GLoader.prototype, "loadFromPackage", {
-                value: function (itemURL) {
-                    var _a;
-                    this.temp_loadFromPackage(itemURL);
-                    (_a = this.displayObject) === null || _a === void 0 ? void 0 : _a.event(Laya.Event.COMPLETE);
-                }
-            });
-            Object.defineProperty(fgui.GLoader.prototype, "temp_onExternalLoadFailed", {
-                value: fgui.GLoader.prototype["onExternalLoadFailed"]
-            });
-            Object.defineProperty(fgui.GLoader.prototype, "onExternalLoadFailed", {
-                value: function () {
-                    var _a;
-                    if (this.loadRetryCount > 0 && this.loadCount < this.loadRetryCount) {
-                        this.loadCount++;
-                        this.temp_loadExternal();
-                        return;
-                    }
-                    this.temp_onExternalLoadFailed();
-                    (_a = this.displayObject) === null || _a === void 0 ? void 0 : _a.event(Laya.Event.COMPLETE);
-                }
-            });
-        }
-        static defineText() {
-            Object.defineProperties(Laya.Text.prototype, {
-                _isDrawRemoveLine: {
-                    value: false,
-                    writable: true,
-                    enumerable: true
-                },
-                removeLineColor: {
-                    value: null,
-                    writable: true
-                },
-                removeLineWidth: {
-                    value: 1,
-                    writable: true
-                },
-                removeLineTilt: {
-                    value: true,
-                    writable: true
-                }
-            });
-            Object.defineProperty(Laya.Text.prototype, "isDrawRemoveLine", {
-                get() {
-                    return this._isDrawRemoveLine;
-                },
-                set(v) {
-                    this.underline = v;
-                    this._isDrawRemoveLine = v;
-                }
-            });
-            Object.defineProperty(Laya.Text.prototype, "_drawUnderline", {
-                value: function (align, x, y, lineIndex) {
-                    let lineWidth = this._lineWidths[lineIndex];
-                    switch (align) {
-                        case 'center':
-                            x -= lineWidth / 2;
-                            break;
-                        case 'right':
-                            x -= lineWidth;
-                            break;
-                        case 'left':
-                        default:
-                            break;
-                    }
-                    if (this.isDrawRemoveLine) {
-                        if (this.removeLineTilt) {
-                            y += this._charSize.height;
-                            this._graphics.drawLine(x, 0, x + lineWidth, y, this.removeLineColor || this.color, this.removeLineWidth);
-                        }
-                        else {
-                            y += this._charSize.height / 2;
-                            this._graphics.drawLine(x, y, x + lineWidth, y, this.removeLineColor || this.color, this.removeLineWidth);
-                        }
-                    }
-                    else {
-                        y += this._charSize.height;
-                        this._graphics.drawLine(x, y, x + lineWidth, y, this.underlineColor || this.color, 1);
-                    }
-                }
-            });
-            //修复单行文本对齐异常
-            Object.defineProperty(Laya.HTMLDivElement.prototype, "_updateGraphic", {
-                value: function () {
-                    this._doClears();
-                    this.graphics.clear(true);
-                    this._repaintState = 0;
-                    this._element.drawToGraphic(this.graphics, -this._element.x, -this._element.y, this._recList);
-                    const bounds = this._element.getBounds();
-                    if (bounds)
-                        this.setSelfBounds(bounds);
-                    //this.hitArea = bounds;
-                    const sizeW = bounds.width > this.width ? bounds.width : this.width;
-                    this.size(sizeW, bounds.height);
-                }
-            });
-            // 修复 宽高设置无用
-            Object.defineProperty(Laya.HTMLDivElement.prototype, "width", {
-                get() {
-                    if (this.contextWidth > super.width) {
-                        return this.contextWidth;
-                    }
-                    return super.width;
-                },
-                set(value) {
-                    super.width = value;
-                    this.style.width = value;
-                }
-            });
-            Object.defineProperty(Laya.HTMLDivElement.prototype, "height", {
-                get() {
-                    if (this.contextHeight > super.height) {
-                        return this.contextHeight;
-                    }
-                    return super.height;
-                },
-                set(value) {
-                    super.height = value;
-                    this.style.height = value;
-                }
-            });
-        }
-        static defineTimer() {
-            // 清理所有数据
-            Object.defineProperty(Laya.CallLater.prototype, "clear", {
-                value: function (caller) {
-                    for (let i = 0; i < this._laters.length; i++) {
-                        const handler = this._laters[i];
-                        if (handler.caller == caller) {
-                            handler.clear();
-                        }
-                    }
-                }
-            });
-            // 清理所有数据
-            Object.defineProperty(Laya.CallLater.prototype, "clearAll", {
-                value: function () {
-                    for (let i = 0; i < this._laters.length; i++) {
-                        if (this._laters.length > i)
-                            this._laters[i].clear();
-                    }
-                }
-            });
-            Object.defineProperty(Laya.Timer.prototype, "tempClearAll", {
-                value: Laya.Timer.prototype.clearAll
-            });
-            Object.defineProperty(Laya.Timer.prototype, "clearAll", {
-                value: function (caller) {
-                    this.tempClearAll(caller);
-                    Laya.CallLater.I.clear(caller);
-                }
-            });
-            Object.defineProperty(Laya.Timer.prototype, "clearAllTimer", {
-                value: function () {
-                    //处理handler
-                    for (let i = 0; i < this._handlers.length; i++) {
-                        if (i < this._handlers.length)
-                            this._handlers[i].clear();
-                    }
-                    Laya.CallLater.I.clearAll();
-                }
-            });
-        }
-        static defineSkeleton() {
-            Object.defineProperty(Laya.Skeleton.prototype, "getAniIndexByName", {
-                value: function (name) {
-                    let index = -1;
-                    let i = 0, n = this._templet.getAnimationCount();
-                    for (; i < n; i++) {
-                        const animation = this._templet.getAnimation(i);
-                        if (animation && name == animation.name) {
-                            index = i;
-                            break;
-                        }
-                    }
-                    return index;
-                }
-            });
-            Object.defineProperty(Laya.Skeleton.prototype, "getBoneCoords", {
-                value: function (nameOrIndex, boneName) {
-                    const arrCoords = [];
-                    let aniClipIndex;
-                    if (typeof nameOrIndex === "string") {
-                        aniClipIndex = this.getAniIndexByName(nameOrIndex);
-                    }
-                    else {
-                        aniClipIndex = nameOrIndex;
-                    }
-                    const curOriginalData = new Float32Array(this._templet.getTotalkeyframesLength(aniClipIndex));
-                    const interval = 1000.0 / this._player.cacheFrameRate;
-                    const playTime = this._templet.getAniDuration(aniClipIndex);
-                    const lenJ = playTime / interval;
-                    for (let j = 0; j < lenJ; j++) {
-                        const curTime = j * this._player.cacheFrameRateInterval;
-                        this._templet.getOriginalData(aniClipIndex, curOriginalData, this._player.templet._fullFrames[aniClipIndex], j, curTime);
-                        let tStartIndex = 0;
-                        let tParentTransform;
-                        let tSrcBone;
-                        const boneCount = this._templet.srcBoneMatrixArr.length;
-                        const tSectionArr = this._aniSectionDic[aniClipIndex];
-                        let i = 0, n = 0;
-                        for (i = 0, n = tSectionArr[0]; i < boneCount; i++) {
-                            tSrcBone = this._boneList[i];
-                            tParentTransform = this._templet.srcBoneMatrixArr[i];
-                            tStartIndex++;
-                            tStartIndex++;
-                            tStartIndex++;
-                            tStartIndex++;
-                            const boneX = tParentTransform.x + curOriginalData[tStartIndex++];
-                            const boneY = tParentTransform.y + curOriginalData[tStartIndex++];
-                            if (tSrcBone.name == boneName) {
-                                arrCoords.push(boneX);
-                                arrCoords.push(boneY);
-                                break;
-                            }
-                            if (this._templet.tMatrixDataLen === 8) {
-                                tStartIndex++;
-                                tStartIndex++;
-                            }
-                        }
-                    }
-                    return arrCoords;
-                }
-            });
-            Object.defineProperty(Laya.BoneSlot.prototype, "tempDraw", {
-                value: Laya.BoneSlot.prototype.draw
-            });
-            Object.defineProperty(Laya.BoneSlot.prototype, "draw", {
-                value: function (graphics, boneMatrixArray, noUseSave = false, alpha = 1) {
-                    graphics.boneSlotName = this.name;
-                    this.tempDraw.call(this, graphics, boneMatrixArray, noUseSave, alpha);
-                }
-            });
-            Object.defineProperty(Laya.Templet.prototype, "_parseTexturePath", {
-                value: function () {
-                    if (this._isDestroyed) {
-                        this.destroy();
-                        return;
-                    }
-                    let i = 0;
-                    this._loadList = [];
-                    let tByte = new Laya.Byte(this.getPublicExtData());
-                    let tX = 0, tY = 0, tWidth = 0, tHeight = 0;
-                    let tFrameX = 0, tFrameY = 0, tFrameWidth = 0, tFrameHeight = 0;
-                    let tTempleData = 0;
-                    let tTextureLen = tByte.getInt32();
-                    let tTextureName = tByte.readUTFString();
-                    let tTextureNameArr = tTextureName.split("\n");
-                    let tSrcTexturePath;
-                    for (i = 0; i < tTextureLen; i++) {
-                        tSrcTexturePath = this._path + tTextureNameArr[i * 2];
-                        tTextureName = tTextureNameArr[i * 2 + 1];
-                        tX = tByte.getFloat32();
-                        tY = tByte.getFloat32();
-                        tWidth = tByte.getFloat32();
-                        tHeight = tByte.getFloat32();
-                        tTempleData = tByte.getFloat32();
-                        tFrameX = isNaN(tTempleData) ? 0 : tTempleData;
-                        tTempleData = tByte.getFloat32();
-                        tFrameY = isNaN(tTempleData) ? 0 : tTempleData;
-                        tTempleData = tByte.getFloat32();
-                        tFrameWidth = isNaN(tTempleData) ? tWidth : tTempleData;
-                        tTempleData = tByte.getFloat32();
-                        tFrameHeight = isNaN(tTempleData) ? tHeight : tTempleData;
-                        if (this._loadList.indexOf(tSrcTexturePath) == -1) {
-                            this._loadList.push(tSrcTexturePath);
-                        }
-                    }
-                    let loadFile = this._loadList.filter(function (loadPath) {
-                        const content = Laya.loader.getRes(loadPath);
-                        return content == null;
-                    });
-                    if (loadFile.length > 0) {
-                        Laya.loader.load(loadFile, Laya.Handler.create(this, this._textureComplete));
-                    }
-                    else {
-                        this._textureComplete();
-                    }
-                }
-            });
-            Object.defineProperty(Laya.Templet.prototype, "deleteAniData", {
-                value: function (aniIndex) {
-                }
-            });
-        }
-        static defineSpineSkeleton() {
-            // 修改4.0
-            if (spine.AssetManager.prototype["success"]) {
-                Object.defineProperty(spine.AssetManager.prototype, "tempSuccess", {
-                    // @ts-ignore
-                    value: spine.AssetManager.prototype.success
-                });
-                Object.defineProperty(Laya.SpineAssetManager.prototype, "success", {
-                    value: function (callback, path, data) {
-                        this.tempSuccess(callback, path, data);
-                        if (!callback) {
-                            if (typeof data !== "string") {
-                                data = JSON.stringify(data);
-                            }
-                            this.assets[path] = data.replace(/3\.8\.75/g, "3.8");
-                        }
-                    }
-                });
-            }
-            else {
-                // 修改3.x
-                Object.defineProperty(spine.AssetManager.prototype, "tempLoadText", {
-                    value: spine.AssetManager.prototype.loadText
-                });
-                Object.defineProperty(spine.AssetManager.prototype, "loadText", {
-                    value: function (path, success, error) {
-                        if (!success) {
-                            this.tempLoadText(path, (path, text) => {
-                                if (typeof text !== "string") {
-                                    text = JSON.stringify(text);
-                                }
-                                this.assets[path] = text.replace(/3\.8\.75/g, "3.8");
-                            });
-                        }
-                        else
-                            this.tempLoadText(path, success, error);
-                    }
-                });
-            }
-            // 销毁 templet 检查判断
-            Object.defineProperty(Laya.SpineSkeleton.prototype, "tempDestroy", {
-                value: Laya.SpineSkeleton.prototype.destroy
-            });
-            Object.defineProperty(Laya.SpineSkeleton.prototype, "destroy", {
-                value: function (destroyChild = true) {
-                    if (this._templet == null)
-                        this._templet = new Laya.SpineTempletBase();
-                    if (this.state == null)
-                        this.state = new spine.AnimationState(null);
-                    this.tempDestroy(destroyChild);
-                }
-            });
-            Object.defineProperty(Laya.SpineSkeleton.prototype, "temp_init", {
-                value: Laya.SpineSkeleton.prototype.init
-            });
-            Object.defineProperty(Laya.SpineSkeleton.prototype, "init", {
-                value: function (templet) {
-                    let that = this;
-                    this.temp_init(templet);
-                    this.state.listeners[0].event = function (entry, event) {
-                        let eventData = {
-                            audioValue: event.data.audioPath,
-                            audioPath: event.data.audioPath,
-                            floatValue: event.floatValue,
-                            intValue: event.intValue,
-                            name: event.data.name,
-                            stringValue: event.stringValue,
-                            time: event.time * 1000,
-                            balance: event.balance,
-                            volume: event.volume
-                        };
-                        // console.log("event:", entry, event);
-                        that.event(Laya.Event.LABEL, eventData);
-                        if (that._playAudio && eventData.audioValue) {
-                            let time = (that.currentPlayTime * 1000 - eventData.time) / 1000;
-                            if (time < 0)
-                                time = 0;
-                            SoundUtils.playSound(templet["_textureDic"].root + eventData.audioValue, 1, null, 1, time);
-                            Laya.SoundManager.playbackRate = that._playbackRate;
-                        }
-                    };
-                }
-            });
-            Object.defineProperty(Laya.SpineSkeleton.prototype, "_onAniSoundStoped", {
-                value: function (force) {
-                    let _channel;
-                    for (let len = this._soundChannelArr.length, i = 0; i < len; i++) {
-                        _channel = this._soundChannelArr[i];
-                        if (_channel && (_channel.isStopped || force)) {
-                            !_channel.isStopped && _channel.stop();
-                            this._soundChannelArr.splice(i, 1);
-                            // SoundManager.removeChannel(_channel); //  是否需要? 去掉有什么好处? 是否还需要其他操作?
-                            len--;
-                            i--;
-                        }
-                    }
-                }
-            });
-            // 添加动画渲染通知
-            Object.defineProperty(Laya.SpineSkeleton.prototype, "tempUpdate", {
-                // @ts-ignore
-                value: Laya.SpineSkeleton.prototype._update
-            });
-            Object.defineProperty(Laya.SpineSkeleton.prototype, "_update", {
-                value: function () {
-                    var _a;
-                    this.tempUpdate();
-                    let events = this._events;
-                    let slot = [];
-                    for (const key in events) {
-                        if (key.startsWith(GSkeleton.UPDATE_BONE_SLOT)) {
-                            slot.push(StringUtil.remove(key, GSkeleton.UPDATE_BONE_SLOT));
-                        }
-                    }
-                    let skeleton = this.skeleton;
-                    for (const value of skeleton.slots) {
-                        if (slot.indexOf((_a = value.data) === null || _a === void 0 ? void 0 : _a.name) > -1) {
-                            this.event(GSkeleton.UPDATE_BONE_SLOT + value.data.name, value);
-                        }
-                    }
-                }
-            });
-        }
-    }
-    coreLib.DefineConfig = DefineConfig;
-    let LogLevel;
-    (function (LogLevel) {
-        LogLevel[LogLevel["ALL"] = 0] = "ALL";
-        /**
-         * 跟踪
-         */
-        LogLevel[LogLevel["TRACE"] = 100] = "TRACE";
-        LogLevel[LogLevel["DEBUG"] = 200] = "DEBUG";
-        LogLevel[LogLevel["INFO"] = 300] = "INFO";
-        LogLevel[LogLevel["WARN"] = 400] = "WARN";
-        LogLevel[LogLevel["ERROR"] = 500] = "ERROR";
-        /**
-         * 致命错误
-         */
-        LogLevel[LogLevel["FATAL"] = 600] = "FATAL";
-        LogLevel[LogLevel["OFF"] = 700] = "OFF";
-    })(LogLevel = coreLib.LogLevel || (coreLib.LogLevel = {}));
-    /**
-     * 定义日志格式
-     */
-    class Log {
-        static trace(...value) {
-            Log.append({ level: LogLevel.TRACE, data: value });
-            if (Environment.active === EnvType.PROD || Log.level > LogLevel.TRACE)
-                return;
-            // Log._log(value)
-            console.trace(...value);
-        }
-        static debug(...value) {
-            Log.append({ level: LogLevel.DEBUG, data: value });
-            if (Environment.active === EnvType.PROD || Log.level > LogLevel.DEBUG)
-                return;
-            console.debug(...value);
-        }
-        static info(...value) {
-            Log.append({ level: LogLevel.INFO, data: value });
-            if (Log.level > LogLevel.INFO)
-                return;
-            console.log(...value);
-        }
-        static warn(...value) {
-            Log.append({ level: LogLevel.INFO, data: value });
-            if (Log.level > LogLevel.WARN)
-                return;
-            console.warn(...value);
-        }
-        /**
-         * 错误
-         * @param value
-         */
-        static error(...value) {
-            Log.append({ level: LogLevel.ERROR, data: value });
-            if (Log.level > LogLevel.ERROR)
-                return;
-            console.error(...value);
-        }
-        /**
-         * 致命的错误
-         * @param value
-         */
-        static fatal(...value) {
-            Log.append({ level: LogLevel.FATAL, data: value });
-            if (Log.level > LogLevel.FATAL)
-                return;
-            console.error(...value);
-        }
-        /**
-         * @internal
-         */
-        static log(fmt = "[HH:mm:ss]") {
-            const logs = Log.history.concat();
-            let time;
-            for (const value of logs) {
-                time = [DateUtils.formatDate(value.time, fmt), LogLevel[value.level]];
-                console.log.apply(window, time.concat(value.data));
-            }
-        }
-        /**
-         * @internal
-         */
-        static append(data) {
-            var _a;
-            if (Laya.Render.isConchApp)
-                return;
-            (_a = data.time) !== null && _a !== void 0 ? _a : (data.time = Date.now());
-            Log.history.push(data);
-            if (Log.history.length > Log.MAX_HISTORY + 500) {
-                Log.history.splice(0, 500);
-            }
-        }
-    }
-    /**
-     * @default LogLevel.ALL
-     */
-    Log.level = LogLevel.ALL;
-    Log.MAX_HISTORY = 3000;
-    Log.history = [];
-    coreLib.Log = Log;
-    /** 用户数据 */
-    class Player {
-        constructor() {
-            /** 渠道名字 */
-            this.channelName = "wap";
-            this._icon = "ui://cw0f8xaqgn9s6x";
-            /** 玩家身上主账户的钱 */
-            this.money = 0;
-            /** 金币 */
-            this.coins = 0;
-            /** 玩家身上赠送的钱 */
-            this.freeBet = 0;
-            /** 缓存玩家身上的钱 */
-            this.cacheMoney = 0;
-            /** 玩家昵称 */
-            this.nickname = "admin";
-            /** 玩家id */
-            this.userId = 110;
-            /** 用户身份码 */
-            this.token = null;
-            /** 游戏类型  id */
-            this.gameModel = -1;
-            /** 是否是web端口 */
-            this.isWeb = true;
-            /** 游戏发布版本号 */
-            this.codeVersion = 1;
-            /** 当前app游戏发布版本号 */
-            this.currentAppVersion = 1;
-            /** 本玩家今日玩的次数 */
-            this.playCount = 0;
-            /**
-             * 用户持有的优惠劵
-             **/
-            this.coupons = [];
-            // 大奖参数
-            /** 用户拥有的奖金池  */
-            this.jackpotData = [];
-            /** 用户的真实投注 */
-            this.userReallyBet = 0;
-            /** 每次投注达到多少 就可以获得刮刮卡 */
-            this.getTicketIncBet = 100;
-            /** 当前游戏的奖金池 */
-            this.gamePool = UtilKit.random(1000, 99999);
-            /** 获得奖励的次数 */
-            this.jackpotCount = 0;
-        }
-        static get inst() {
-            if (this._instance == null)
-                this._instance = new Player();
-            return this._instance;
-        }
-        /**
-         * 获取游客模式的优惠券
-         * @return
-         */
-        getGuestCoupons() {
-            return window["guestCoupons"];
-        }
-        /**
-         * 设置当前拥有的优惠券
-         * @param value 新优惠券
-         */
-        addCoupons(value) {
-            this.coupons = value;
-        }
-        /** 获取所有的优惠券 */
-        getCoupons() {
-            return this.coupons;
-        }
-        /**
-         * 根据优惠劵类型  获取优惠劵
-         * @param type 1抵用券 2投注劵
-         * @return
-         */
-        getCoupon(type) {
-            let temps = [];
-            for (let i = 0; i < this.coupons.length; i++) {
-                let arr = this.coupons[i];
-                if (arr.type == type && arr.num > 0) {
-                    temps.push(arr);
-                }
-            }
-            return temps;
-        }
-        /**
-         * 根据游戏ID  获取优惠劵
-         * @param gameId 游戏ID
-         * @return
-         */
-        getCouponGame(gameId) {
-            let temps = [];
-            for (let i = 0; i < this.coupons.length; i++) {
-                let arr = this.coupons[i];
-                if (arr.games.indexOf(gameId) != -1 && arr.num > 0) {
-                    temps.push(arr);
-                }
-            }
-            return temps;
-        }
-        /** 使用活动劵的次数 */
-        useCouponNum() {
-            let useObj = this.getUseCoupon();
-            if (useObj && useObj.num > 0) {
-                useObj.num -= 1;
-            }
-        }
-        /**
-         * 获取正在使用的优惠劵
-         * @return
-         */
-        getUseCoupon() {
-            let useObj = null;
-            for (let i = 0; i < this.coupons.length; i++) {
-                let arr = this.coupons[i];
-                if (arr.isUse) {
-                    useObj = arr;
-                }
-            }
-            return useObj;
-        }
-        /**
-         * 获取正在使用的优惠劵
-         */
-        removeCoupon(obj) {
-            for (let i = 0; i < this.coupons.length; i++) {
-                let arr = this.coupons[i];
-                if (arr.id == obj.id) {
-                    this.coupons.splice(i, 1);
-                    break;
-                }
-            }
-        }
-        /**
-         * 判断当前游戏可有使用的优惠券
-         */
-        getCanUseCoupon() {
-            let betValue = Player.inst.gameData.getTotalBetMoney();
-            let arr = Player.inst.getCouponGame(Player.inst.gameModel);
-            for (let i = 0; i < arr.length; i++) {
-                const useObj = arr[i];
-                if (useObj.type == 1) { // 判断是否有可以使用的抵用券
-                    if (useObj.bet_limit == useObj.faceValue || useObj.bet_limit <= betValue) { // 满足最低投注额
-                        return true;
-                    }
-                }
-                else if (useObj.type == 2) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        /** 停止所有的优惠价使用 */
-        stopAllCoupon() {
-            for (let i = 0; i < this.coupons.length; i++) {
-                let obj = this.coupons[i];
-                obj.isUse = false;
-            }
-        }
-        /** 获取请求发送的  token */
-        getRequestToken() {
-            return "token=" + this.token;
-        }
-        /** 玩家头像 */
-        get icon() {
-            return this._icon;
-        }
-        /**
-         * @private
-         */
-        set icon(value) {
-            this._icon = value;
-        }
-        /** 1=>投注中，2=>计算中，3=>开奖  4=>收取金币  5=>比分中 */
-        get status() {
-            return this._status;
-        }
-        /**
-         * @private
-         */
-        set status(value) {
-            this._status = value;
-        }
-        windowOpen(url) {
-            let window = Laya.Browser.window.open(url);
-            if (!window) {
-                Laya.Browser.window.location.href = url;
-            }
-        }
-        get guestModel() {
-            return this._guestModel;
-        }
-        set guestModel(value) {
-            this._guestModel = value;
-            this._guestModel.guestUID = UtilKit.random(1, 99999999) * 1000;
-        }
-        /**
-         * 获取设备号
-         * @return
-         */
-        getDevice() {
-            let device;
-            if (Laya.Render.isConchApp) {
-                device = Player.inst.device;
-            }
-            else {
-                device = Laya.Browser.userAgent;
-            }
-            return device;
-        }
-        /**
-         * 保存账号密码
-         * @param login
-         * @param psd
-         */
-        saveUser(login, psd) {
-            let user = { name: login, psd: psd };
-            let s = MathKit.encrypt(JSON.stringify(user));
-            Laya.LocalStorage.setItem("userData", s);
-        }
-        /**
-         * 获取渠道type
-         * @return
-         */
-        getChannelType() {
-            return Laya.Render.isConchApp ? 3 : 1; // 如果是app端 3
-        }
-        /**
-         * 获取当前国家的货币单位(大写)
-         */
-        getCurrencyUnit() {
-            let currencyMap = Laya.Browser.window.currencyUnit;
-            let unit = "";
-            if (currencyMap) {
-                let country = this.data.getCountry(this.urlParam);
-                if (!StringUtil.isEmpty(country)) {
-                    unit = currencyMap[country];
-                }
-            }
-            return unit;
-        }
-        /**
-         * 获取当前国家的货币单位(首字母大写格式化)
-         */
-        getCurrencyUnitFormat() {
-            return this.getCurrencyUnit().toLowerCase().replace(/( |^)[a-z]/g, (L) => L.toUpperCase());
-        }
-    }
-    coreLib.Player = Player;
     let ActionLib;
     (function (ActionLib) {
         // 初始化设备数据
@@ -2044,60 +934,130 @@ window.coreLib = {};
         /** 更新bounds信息 */
         ActionLib["GAME_UPDATE_BOUNDS_INFO"] = "game_update_bounds_info";
     })(ActionLib = coreLib.ActionLib || (coreLib.ActionLib = {}));
-    class BezierCurves {
-        constructor() {
-            /** 经过时间 */
-            this._t = -1;
-        }
-        get t() {
-            return this._t;
-        }
-        set t(value) {
-            if (value < 0)
-                return;
-            this._t = value;
-            // @ts-ignore
-            this.setXY(this.getX(), this.getY());
-        }
-        getX() {
-            return Math.pow((1 - this._t), 3) * this.p1.x
-                + 3 * this.p2.x * this._t * (1 - this._t) * (1 - this._t)
-                + 3 * this.p3.x * this._t * this._t * (1 - this._t)
-                + this.p4.x * Math.pow(this._t, 3);
-        }
-        getY() {
-            return Math.pow((1 - this._t), 3) * this.p1.y
-                + 3 * this.p2.y * this._t * (1 - this._t) * (1 - this._t)
-                + 3 * this.p3.y * this._t * this._t * (1 - this._t)
-                + this.p4.y * Math.pow(this._t, 3);
-        }
-        setStartPoint(x, y) {
-            this.p1 = Laya.Point.create().setTo(x, y);
-            this._t = -1;
-        }
-        setMiddlePoint(x, y) {
-            this.p3 = this.p2 = Laya.Point.create().setTo(x, y);
-        }
-        setMiddlePoint2(x1, y1, x2, y2) {
-            this.p2 = Laya.Point.create().setTo(x1, y1);
-            this.p3 = Laya.Point.create().setTo(x2, y2);
-        }
-        setEndPoint(x, y) {
-            this.p4 = Laya.Point.create().setTo(x, y);
+    let EnvType;
+    (function (EnvType) {
+        EnvType[EnvType["PROD"] = 0] = "PROD";
+        EnvType[EnvType["DEV"] = 1] = "DEV";
+        EnvType[EnvType["TEST"] = 2] = "TEST";
+    })(EnvType = coreLib.EnvType || (coreLib.EnvType = {}));
+    /**
+     * 配置工具
+     */
+    class ConfigKit {
+        /**
+         * 将自动检测当前环境是否支持webp图片
+         *
+         * 如果网址携带参数webp将会强制使用webp图片
+         */
+        static useWebp() {
+            var _a, _b;
+            let isWebp = false;
+            if (!Laya.Render.isConchApp && window.location.protocol != "http:") {
+                isWebp = ((_b = (_a = window.document.createElement('canvas')) === null || _a === void 0 ? void 0 : _a.toDataURL('image/webp')) === null || _b === void 0 ? void 0 : _b.indexOf('data:image/webp')) == 0;
+            }
+            if (isWebp || Laya.Utils.getQueryString("webp")) {
+                MyLoader.isWebp = true;
+                Log.info("Support webp");
+            }
+            return isWebp;
         }
         /**
-         * 释放曲线数据
+         * 运行环境检测
          */
-        recover() {
-            var _a, _b, _c, _d;
-            this._t = -1;
-            (_a = this.p1) === null || _a === void 0 ? void 0 : _a.recover();
-            (_b = this.p2) === null || _b === void 0 ? void 0 : _b.recover();
-            (_c = this.p3) === null || _c === void 0 ? void 0 : _c.recover();
-            (_d = this.p4) === null || _d === void 0 ? void 0 : _d.recover();
+        static env(url) {
+            let value = Laya.Utils.getQueryString("env");
+            if (StringUtil.isNotEmpty(value)) {
+                const valueEnv = Environment.findEnv(value);
+                if (valueEnv) {
+                    Environment.active = valueEnv;
+                    return valueEnv;
+                }
+            }
+            url !== null && url !== void 0 ? url : (url = window.location.host);
+            Environment.active = Environment.DEFAULT_ENV;
+            if (Environment.verify(url, Environment.TEST)) {
+                Environment.active = EnvType.TEST;
+            }
+            else if (Environment.verify(url, Environment.DEV)) {
+                Environment.active = EnvType.DEV;
+            }
+            else if (Environment.verify(url, Environment.PROP)) {
+                Environment.active = EnvType.PROD;
+            }
+            return Environment.active;
         }
     }
-    coreLib.BezierCurves = BezierCurves;
+    coreLib.ConfigKit = ConfigKit;
+    class Environment {
+        /**
+         * 验证环境
+         * @param url url window.location.host
+         * @param value 判断条件
+         */
+        static verify(url, value) {
+            if (StringUtil.isEmpty(url) || (value === null || value === void 0 ? void 0 : value.length) < 1)
+                return false;
+            // 后行断言在旧版本的 JavaScript 以及某些浏览器和环境中是不支持的，因此使用非捕获组更具有兼容性。
+            return new RegExp("(?:\\/|-|(\\.)|^)(" + value.join("|") + ")(?=(\\.|:|-|$))").test(url);
+            // return new RegExp("(?<=\\/|-|(\\.))" + value.join("|") + "(?=(\\.)|-)").test(url)
+        }
+        /**
+         * 查询指定的环境是否存在
+         * @param value test, debug, localhost, dev, staging, prod, production, release
+         */
+        static findEnv(value) {
+            if (Environment.TEST.indexOf(value) != -1)
+                return EnvType.TEST;
+            if (Environment.DEV.indexOf(value) != -1)
+                return EnvType.DEV;
+            return Environment.PROP.indexOf(value) != -1 ? EnvType.PROD : null;
+        }
+    }
+    Environment.TEST = ["test", "debug", "localhost"];
+    Environment.DEV = ["dev", "staging"];
+    Environment.PROP = ["prod", "production", "release"];
+    /**
+     * 默认环境
+     * @default EnvType.PROD
+     */
+    Environment.DEFAULT_ENV = EnvType.PROD;
+    /**
+     * 当前运行环境，默认有三个环境
+     * ```
+     * dev:开发环境|test:测试环境|prod:生产环境
+     * 根据域名判断环境
+     * prod: prod|production|release
+     * dev : dev|staging
+     * test: test|debug
+     * 判断依据：
+     * https://www.game-prod.com prod 环境
+     * https://www.game-prod-info.com prod环境
+     * https://www.game-prod-info.dev prod环境
+     *
+     * https://www.game-dev-prod-info.com dev环境
+     * https://dev.game-prod-test-info.com dev环境
+     * https://www.dev.game-prod.com dev环境
+     * https://www.dev-data.game.com dev环境
+     *
+     * ```
+     * 默认使用 window.location.host 判断环境
+     * @default EnvType.PROD
+     */
+    Environment.active = Environment.DEFAULT_ENV;
+    coreLib.Environment = Environment;
+    /** 加载资源配置 */
+    class LoaderConfig {
+        /**
+         * 清理资源
+         * @param res 要清理的资源数组
+         */
+        static clear(res) {
+            for (let i = 0; i < res.length; i++) {
+                MyLoader.loader.clearRes(res[i].url);
+            }
+        }
+    }
+    coreLib.LoaderConfig = LoaderConfig;
     class BaseButton extends mixinExt(StringBlock, ViewBlock, ActionEvent, fgui.GButton) {
     }
     coreLib.BaseButton = BaseButton;
@@ -2225,6 +1185,9 @@ window.coreLib = {};
         get gameData() {
             return Player.inst.gameData;
         }
+        /**
+         * @deprecated
+         */
         set gameData(value) {
             Log.debug(value);
         }
@@ -3073,9 +2036,9 @@ window.coreLib = {};
         }
         /*@override*/
         onInit() {
-            var _a;
+            var _a, _b;
             super.onInit();
-            (_a = this.list) !== null && _a !== void 0 ? _a : (this.list = this.getChild("list").asList);
+            (_a = this.list) !== null && _a !== void 0 ? _a : (this.list = (_b = this.getChild("list")) === null || _b === void 0 ? void 0 : _b.asList);
             if (this.list)
                 this.list.touchable = false;
         }
@@ -3086,7 +2049,7 @@ window.coreLib = {};
          * @param lowGrade 是否包含下级 默认 false
          */
         showLine(value, alone = false, lowGrade = false) {
-            if (this.lineGraphics == null)
+            if (!this.lineGraphics)
                 return;
             if (alone) {
                 this.lineGraphics.clear();
@@ -3320,6 +2283,15 @@ window.coreLib = {};
             Laya.timer.clearAll(this);
             super.dispose();
         }
+        get gameData() {
+            return Player.inst.gameData;
+        }
+        /**
+         * @deprecated
+         */
+        set gameData(value) {
+            Log.debug(value);
+        }
     }
     coreLib.BaseSlotView = BaseSlotView;
     class BaseSocket {
@@ -3532,6 +2504,9 @@ window.coreLib = {};
         get gameData() {
             return Player.inst.gameData;
         }
+        /**
+         * @deprecated
+         */
         set gameData(value) {
             Log.debug(value);
         }
@@ -3962,6 +2937,9 @@ window.coreLib = {};
         get gameData() {
             return Player.inst.gameData;
         }
+        /**
+         * @deprecated
+         */
         set gameData(value) {
             Log.debug(value);
         }
@@ -3982,6 +2960,9 @@ window.coreLib = {};
         get gameData() {
             return Player.inst.gameData;
         }
+        /**
+         * @deprecated
+         */
         set gameData(value) {
             Log.debug(value);
         }
@@ -5281,19 +4262,713 @@ window.coreLib = {};
         }
     }
     coreLib.SlotScrollTweenModel = SlotScrollTweenModel;
-    /** 加载资源配置 */
-    class LoaderConfig {
-        /**
-         * 清理资源
-         * @param res 要清理的资源数组
-         */
-        static clear(res) {
-            for (let i = 0; i < res.length; i++) {
-                MyLoader.loader.clearRes(res[i].url);
+    class DefineConfig {
+        static init() {
+            DefineConfig.defineLaya();
+            DefineConfig.defineFairy();
+        }
+        static defineLaya() {
+            Object.defineProperty(Laya.Stage.prototype, "_changeCanvasSize", {
+                value: function () {
+                    Log.debug("_changeCanvasSize = " + Laya.Browser.clientWidth + " | " + Laya.Browser.clientHeight);
+                    if (Laya.Browser.clientHeight == Laya.Browser.clientWidth) {
+                        Log.debug("refuse =!");
+                        this.setScreenSize(this._width, this._height);
+                        return;
+                    }
+                    this.setScreenSize(Laya.Browser.clientWidth * Laya.Browser.pixelRatio, Laya.Browser.clientHeight * Laya.Browser.pixelRatio);
+                }
+            });
+            Object.defineProperty(Laya.Stage.prototype, "temp_updateTimers", {
+                // @ts-ignore
+                value: Laya.Stage.prototype._updateTimers
+            });
+            Object.defineProperty(Laya.Stage.prototype, "_updateTimers", {
+                value: function () {
+                    if (!this.pauseUpdateTimer)
+                        this.temp_updateTimers();
+                }
+            });
+            Object.defineProperty(Laya.KeyBoardManager, "_addEvent", {
+                value: function (type) {
+                    (window.parent || window).addEventListener(type, function (e) {
+                        Laya.KeyBoardManager["_dispatch"](e, type);
+                    });
+                }
+            });
+            // @ts-ignore
+            Object.defineProperty(Laya.SoundManager, "autoStopMusic", {
+                set(v) {
+                    // @ts-ignore
+                    Laya.stage.off(Laya.Event.BLUR, null, Laya.SoundManager._stageOnBlur);
+                    // @ts-ignore
+                    Laya.stage.off(Laya.Event.FOCUS, null, _stageOnFocus);
+                    // @ts-ignore
+                    Laya.stage.off(Laya.Event.VISIBILITY_CHANGE, null, _visibilityChange);
+                    // @ts-ignore
+                    Laya.SoundManager._autoStopMusic = v;
+                    if (v) {
+                        // @ts-ignore
+                        Laya.stage.on(Laya.Event.BLUR, null, Laya.SoundManager._stageOnBlur);
+                        // @ts-ignore
+                        Laya.stage.on(Laya.Event.FOCUS, null, _stageOnFocus);
+                        // @ts-ignore
+                        Laya.stage.on(Laya.Event.VISIBILITY_CHANGE, null, _visibilityChange);
+                    }
+                }
+            });
+            function _stageOnFocus() {
+                // @ts-ignore
+                Laya.SoundManager._stageOnFocus();
+                // @ts-ignore
+                if (!Laya.SoundManager._blurPaused && Laya.SoundManager._musicChannel)
+                    return;
+                let bgMusic = Laya.SoundManager["_bgMusic"];
+                // @ts-ignore
+                Laya.SoundManager._blurPaused = false;
+                // @ts-ignore
+                if (Laya.SoundManager._musicChannel) {
+                    // @ts-ignore
+                    if (Laya.SoundManager._musicChannel.isStopped) {
+                        // @ts-ignore
+                        Laya.SoundManager._musicChannel.resume();
+                    }
+                    else {
+                        // @ts-ignore
+                        Laya.SoundManager._musicChannel.play();
+                    }
+                }
+                else if (bgMusic && !Laya.SoundManager.musicMuted) {
+                    // 没有正在播放的声音  并且背景音乐又存在 不是静音状态
+                    Laya.SoundManager["_bgMusic"] = null;
+                    SoundUtils.playMusic(bgMusic);
+                }
             }
+            function _visibilityChange() {
+                if (Laya.stage.isVisibility) {
+                    _stageOnFocus();
+                }
+                else {
+                    // @ts-ignore
+                    Laya.SoundManager._stageOnBlur();
+                }
+            }
+            Object.defineProperty(Laya.DrawTextureCmd, "create", {
+                value: function (texture, x, y, width, height, matrix, alpha, color, blendMode, uv) {
+                    const cmd = Laya.Pool.getItemByClass("DrawTextureCmd", MyDrawTextureCmd);
+                    cmd.texture = texture;
+                    texture["_addReference"]();
+                    cmd.x = x;
+                    cmd.y = y;
+                    cmd.width = width;
+                    cmd.height = height;
+                    cmd.matrix = matrix;
+                    cmd.alpha = alpha;
+                    cmd.color = color;
+                    cmd.blendMode = blendMode;
+                    cmd.uv = uv == undefined ? null : uv;
+                    if (color) {
+                        cmd.colorFlt = new Laya.ColorFilter();
+                        cmd.colorFlt.setColor(color);
+                    }
+                    return cmd;
+                }
+            });
+            Object.defineProperty(Laya.GraphicsAni, "create", {
+                value: GGraphicsAni.create
+            });
+            Object.defineProperty(Laya.GraphicsAni.prototype, "_renderAll", {
+                value: function (sprite, context, x, y) {
+                    const cmds = this.cmds;
+                    const obj = fgui.GObject.cast(sprite);
+                    let cmd;
+                    let i = 0, n = cmds.length;
+                    for (; i < n; i++) {
+                        cmd = cmds[i];
+                        if (cmd instanceof MyDrawTextureCmd) {
+                            if (obj instanceof GSkeleton && obj.blendBoneSlotNames.indexOf(cmd.name) > -1) {
+                                // cmd.blendMode = BlendMode.ADD
+                                //#__NO_MANGLE_PROP_START__
+                                cmd.blendMode = "add";
+                            }
+                        }
+                        cmd.run(context, x, y);
+                        if (cmd instanceof MyDrawTextureCmd && this._sp && this._sp.hasListener(GSkeleton.UPDATE_BONE_SLOT + cmd.name)) {
+                            this._sp.event(GSkeleton.UPDATE_BONE_SLOT + cmd.name, cmd);
+                        }
+                    }
+                }
+            });
+            // 更改值 并保留调用原始的
+            Object.defineProperty(Laya.GraphicsAni.prototype, "tempSaveToCmd", {
+                value: Laya.GraphicsAni.prototype["_saveToCmd"]
+            });
+            Object.defineProperty(Laya.GraphicsAni.prototype, "_saveToCmd", {
+                value: function (fun, args) {
+                    if (args instanceof MyDrawTextureCmd) {
+                        let sk;
+                        if (this._sp && (sk = fgui.GObject.cast(this._sp)) != null && sk instanceof GSkeleton) {
+                            if (sk.clearBoneSlotOffset.indexOf(this.boneSlotName) >= 0) {
+                                args.x = 0;
+                                args.y = 0;
+                            }
+                            else if (sk.clearBoneSlotOffsetX.indexOf(this.boneSlotName) >= 0) {
+                                args.x = 0;
+                            }
+                            else if (sk.clearBoneSlotOffsetY.indexOf(this.boneSlotName) >= 0) {
+                                args.y = 0;
+                            }
+                        }
+                        args.name = this.boneSlotName || "";
+                    }
+                    return this.tempSaveToCmd.call(this, fun, args);
+                }
+            });
+            DefineConfig.defineSpineSkeleton();
+            DefineConfig.defineSkeleton();
+            DefineConfig.defineText();
+            DefineConfig.defineTimer();
+        }
+        static defineFairy() {
+            Object.defineProperty(fgui.GRoot.prototype, "playOneShotSound", {
+                value: function (url, volumeScale) {
+                    if (fgui.ToolSet.startsWith(url, "ui://"))
+                        return;
+                    if (!volumeScale)
+                        volumeScale = 1;
+                    SoundUtils.playSound(url, 1, null, volumeScale);
+                }
+            });
+            Object.defineProperty(fgui.GButton.prototype, "__click", {
+                value: function (evt) {
+                    if (this._sound) {
+                        let pi = fgui.UIPackage.getItemByURL(this._sound);
+                        if (pi)
+                            fgui.GRoot.inst.playOneShotSound(pi.file, this._soundVolumeScale);
+                        else
+                            fgui.GRoot.inst.playOneShotSound(this._sound, this._soundVolumeScale);
+                    }
+                    if (this._mode == fgui.ButtonMode.Check) {
+                        if (this._changeStateOnClick) {
+                            this.selected = !this._selected;
+                            fgui.Events.dispatch(fgui.Events.STATE_CHANGED, this.displayObject, evt);
+                        }
+                    }
+                    else if (this._mode == fgui.ButtonMode.Radio) {
+                        if (this._changeStateOnClick && !this._selected) {
+                            this.selected = true;
+                            fgui.Events.dispatch(fgui.Events.STATE_CHANGED, this.displayObject, evt);
+                        }
+                    }
+                    else {
+                        if (this._relatedController)
+                            this._relatedController.selectedPageId = this._relatedPageId;
+                    }
+                }
+            });
+            // 给window添加排序  order
+            Object.defineProperty(fgui.GRoot.prototype, "showWindow", {
+                value: function (win) {
+                    this.addChild(win);
+                    const cnt = this.numChildren;
+                    let wins = [];
+                    for (let i = cnt - 1; i >= 0; i--) {
+                        const g = this.getChildAt(i);
+                        if ((g instanceof fgui.Window) && g.modal) {
+                            wins.push(g);
+                        }
+                    }
+                    let pos = -1;
+                    const winOrder = win.order || 0;
+                    for (let i = 0; i < wins.length; i++) {
+                        let order = wins[i].order || 0;
+                        if (winOrder > order) {
+                            pos = i;
+                            this.setChildIndexBefore(win, this.getChildIndex(wins[i]));
+                        }
+                    }
+                    if (pos == -1) {
+                        win.requestFocus();
+                    }
+                    if (win.x > this.width)
+                        win.x = this.width - win.width;
+                    else if (win.x + win.width < 0)
+                        win.x = 0;
+                    if (win.y > this.height)
+                        win.y = this.height - win.height;
+                    else if (win.y + win.height < 0)
+                        win.y = 0;
+                    this.adjustModalLayer();
+                }
+            });
+            Object.defineProperty(fgui.PopupMenu.prototype, "__clickItem2", {
+                value: function (itemObject) {
+                    if (!(itemObject instanceof fgui.GButton))
+                        return;
+                    if (itemObject.grayed) {
+                        this._list.selectedIndex = -1;
+                        return;
+                    }
+                    let c = itemObject.asCom.getController("checked");
+                    if (c && c.selectedIndex != 0) {
+                        if (c.selectedIndex == 1)
+                            c.selectedIndex = 2;
+                        else
+                            c.selectedIndex = 1;
+                    }
+                    let r = (this._contentPane.parent);
+                    r === null || r === void 0 ? void 0 : r.hidePopup(this.contentPane);
+                    runFun(itemObject.data);
+                }
+            });
+            Object.defineProperties(fgui.GLoader.prototype, {
+                loadRetryCount: {
+                    value: 0,
+                    writable: true
+                },
+                loadCount: {
+                    value: 0,
+                    writable: true
+                }
+            });
+            Object.defineProperty(fgui.GLoader.prototype, "temp_loadExternal", {
+                value: function () {
+                    fgui.AssetProxy.inst.load(this._url, Laya.Handler.create(this, (url, tex) => {
+                        if (this._url === url)
+                            this.__getResCompleted(tex);
+                    }, [this._url]), null, Laya.Loader.IMAGE);
+                }
+            });
+            Object.defineProperty(fgui.GLoader.prototype, "loadExternal", {
+                value: function () {
+                    this.loadCount = 0;
+                    this.temp_loadExternal();
+                }
+            });
+            Object.defineProperty(fgui.GLoader.prototype, "temp_onExternalLoadSuccess", {
+                value: fgui.GLoader.prototype["onExternalLoadSuccess"]
+            });
+            Object.defineProperty(fgui.GLoader.prototype, "onExternalLoadSuccess", {
+                value: function (texture) {
+                    var _a;
+                    this.temp_onExternalLoadSuccess(texture);
+                    (_a = this.displayObject) === null || _a === void 0 ? void 0 : _a.event(Laya.Event.COMPLETE);
+                }
+            });
+            Object.defineProperty(fgui.GLoader.prototype, "temp_loadFromPackage", {
+                value: fgui.GLoader.prototype["loadFromPackage"]
+            });
+            Object.defineProperty(fgui.GLoader.prototype, "loadFromPackage", {
+                value: function (itemURL) {
+                    var _a;
+                    this.temp_loadFromPackage(itemURL);
+                    (_a = this.displayObject) === null || _a === void 0 ? void 0 : _a.event(Laya.Event.COMPLETE);
+                }
+            });
+            Object.defineProperty(fgui.GLoader.prototype, "temp_onExternalLoadFailed", {
+                value: fgui.GLoader.prototype["onExternalLoadFailed"]
+            });
+            Object.defineProperty(fgui.GLoader.prototype, "onExternalLoadFailed", {
+                value: function () {
+                    var _a;
+                    if (this.loadRetryCount > 0 && this.loadCount < this.loadRetryCount) {
+                        this.loadCount++;
+                        this.temp_loadExternal();
+                        return;
+                    }
+                    this.temp_onExternalLoadFailed();
+                    (_a = this.displayObject) === null || _a === void 0 ? void 0 : _a.event(Laya.Event.COMPLETE);
+                }
+            });
+        }
+        static defineText() {
+            Object.defineProperties(Laya.Text.prototype, {
+                _isDrawRemoveLine: {
+                    value: false,
+                    writable: true,
+                    enumerable: true
+                },
+                removeLineColor: {
+                    value: null,
+                    writable: true
+                },
+                removeLineWidth: {
+                    value: 1,
+                    writable: true
+                },
+                removeLineTilt: {
+                    value: true,
+                    writable: true
+                }
+            });
+            Object.defineProperty(Laya.Text.prototype, "isDrawRemoveLine", {
+                get() {
+                    return this._isDrawRemoveLine;
+                },
+                set(v) {
+                    this.underline = v;
+                    this._isDrawRemoveLine = v;
+                }
+            });
+            Object.defineProperty(Laya.Text.prototype, "_drawUnderline", {
+                value: function (align, x, y, lineIndex) {
+                    let lineWidth = this._lineWidths[lineIndex];
+                    switch (align) {
+                        case 'center':
+                            x -= lineWidth / 2;
+                            break;
+                        case 'right':
+                            x -= lineWidth;
+                            break;
+                        case 'left':
+                        default:
+                            break;
+                    }
+                    if (this.isDrawRemoveLine) {
+                        if (this.removeLineTilt) {
+                            y += this._charSize.height;
+                            this._graphics.drawLine(x, 0, x + lineWidth, y, this.removeLineColor || this.color, this.removeLineWidth);
+                        }
+                        else {
+                            y += this._charSize.height / 2;
+                            this._graphics.drawLine(x, y, x + lineWidth, y, this.removeLineColor || this.color, this.removeLineWidth);
+                        }
+                    }
+                    else {
+                        y += this._charSize.height;
+                        this._graphics.drawLine(x, y, x + lineWidth, y, this.underlineColor || this.color, 1);
+                    }
+                }
+            });
+            //修复单行文本对齐异常
+            Object.defineProperty(Laya.HTMLDivElement.prototype, "_updateGraphic", {
+                value: function () {
+                    this._doClears();
+                    this.graphics.clear(true);
+                    this._repaintState = 0;
+                    this._element.drawToGraphic(this.graphics, -this._element.x, -this._element.y, this._recList);
+                    const bounds = this._element.getBounds();
+                    if (bounds)
+                        this.setSelfBounds(bounds);
+                    //this.hitArea = bounds;
+                    const sizeW = bounds.width > this.width ? bounds.width : this.width;
+                    this.size(sizeW, bounds.height);
+                }
+            });
+            // 修复 宽高设置无用
+            Object.defineProperty(Laya.HTMLDivElement.prototype, "width", {
+                get() {
+                    if (this.contextWidth > super.width) {
+                        return this.contextWidth;
+                    }
+                    return super.width;
+                },
+                set(value) {
+                    super.width = value;
+                    this.style.width = value;
+                }
+            });
+            Object.defineProperty(Laya.HTMLDivElement.prototype, "height", {
+                get() {
+                    if (this.contextHeight > super.height) {
+                        return this.contextHeight;
+                    }
+                    return super.height;
+                },
+                set(value) {
+                    super.height = value;
+                    this.style.height = value;
+                }
+            });
+        }
+        static defineTimer() {
+            // 清理所有数据
+            Object.defineProperty(Laya.CallLater.prototype, "clear", {
+                value: function (caller) {
+                    for (let i = 0; i < this._laters.length; i++) {
+                        const handler = this._laters[i];
+                        if (handler.caller == caller) {
+                            handler.clear();
+                        }
+                    }
+                }
+            });
+            // 清理所有数据
+            Object.defineProperty(Laya.CallLater.prototype, "clearAll", {
+                value: function () {
+                    for (let i = 0; i < this._laters.length; i++) {
+                        if (this._laters.length > i)
+                            this._laters[i].clear();
+                    }
+                }
+            });
+            Object.defineProperty(Laya.Timer.prototype, "tempClearAll", {
+                value: Laya.Timer.prototype.clearAll
+            });
+            Object.defineProperty(Laya.Timer.prototype, "clearAll", {
+                value: function (caller) {
+                    this.tempClearAll(caller);
+                    Laya.CallLater.I.clear(caller);
+                }
+            });
+            Object.defineProperty(Laya.Timer.prototype, "clearAllTimer", {
+                value: function () {
+                    //处理handler
+                    for (let i = 0; i < this._handlers.length; i++) {
+                        if (i < this._handlers.length)
+                            this._handlers[i].clear();
+                    }
+                    Laya.CallLater.I.clearAll();
+                }
+            });
+        }
+        static defineSkeleton() {
+            Object.defineProperty(Laya.Skeleton.prototype, "getAniIndexByName", {
+                value: function (name) {
+                    let index = -1;
+                    let i = 0, n = this._templet.getAnimationCount();
+                    for (; i < n; i++) {
+                        const animation = this._templet.getAnimation(i);
+                        if (animation && name == animation.name) {
+                            index = i;
+                            break;
+                        }
+                    }
+                    return index;
+                }
+            });
+            Object.defineProperty(Laya.Skeleton.prototype, "getBoneCoords", {
+                value: function (nameOrIndex, boneName) {
+                    const arrCoords = [];
+                    let aniClipIndex;
+                    if (typeof nameOrIndex === "string") {
+                        aniClipIndex = this.getAniIndexByName(nameOrIndex);
+                    }
+                    else {
+                        aniClipIndex = nameOrIndex;
+                    }
+                    const curOriginalData = new Float32Array(this._templet.getTotalkeyframesLength(aniClipIndex));
+                    const interval = 1000.0 / this._player.cacheFrameRate;
+                    const playTime = this._templet.getAniDuration(aniClipIndex);
+                    const lenJ = playTime / interval;
+                    for (let j = 0; j < lenJ; j++) {
+                        const curTime = j * this._player.cacheFrameRateInterval;
+                        this._templet.getOriginalData(aniClipIndex, curOriginalData, this._player.templet._fullFrames[aniClipIndex], j, curTime);
+                        let tStartIndex = 0;
+                        let tParentTransform;
+                        let tSrcBone;
+                        const boneCount = this._templet.srcBoneMatrixArr.length;
+                        const tSectionArr = this._aniSectionDic[aniClipIndex];
+                        let i = 0, n = 0;
+                        for (i = 0, n = tSectionArr[0]; i < boneCount; i++) {
+                            tSrcBone = this._boneList[i];
+                            tParentTransform = this._templet.srcBoneMatrixArr[i];
+                            tStartIndex++;
+                            tStartIndex++;
+                            tStartIndex++;
+                            tStartIndex++;
+                            const boneX = tParentTransform.x + curOriginalData[tStartIndex++];
+                            const boneY = tParentTransform.y + curOriginalData[tStartIndex++];
+                            if (tSrcBone.name == boneName) {
+                                arrCoords.push(boneX);
+                                arrCoords.push(boneY);
+                                break;
+                            }
+                            if (this._templet.tMatrixDataLen === 8) {
+                                tStartIndex++;
+                                tStartIndex++;
+                            }
+                        }
+                    }
+                    return arrCoords;
+                }
+            });
+            Object.defineProperty(Laya.BoneSlot.prototype, "tempDraw", {
+                value: Laya.BoneSlot.prototype.draw
+            });
+            Object.defineProperty(Laya.BoneSlot.prototype, "draw", {
+                value: function (graphics, boneMatrixArray, noUseSave = false, alpha = 1) {
+                    graphics.boneSlotName = this.name;
+                    this.tempDraw.call(this, graphics, boneMatrixArray, noUseSave, alpha);
+                }
+            });
+            Object.defineProperty(Laya.Templet.prototype, "_parseTexturePath", {
+                value: function () {
+                    if (this._isDestroyed) {
+                        this.destroy();
+                        return;
+                    }
+                    let i = 0;
+                    this._loadList = [];
+                    let tByte = new Laya.Byte(this.getPublicExtData());
+                    let tX = 0, tY = 0, tWidth = 0, tHeight = 0;
+                    let tFrameX = 0, tFrameY = 0, tFrameWidth = 0, tFrameHeight = 0;
+                    let tTempleData = 0;
+                    let tTextureLen = tByte.getInt32();
+                    let tTextureName = tByte.readUTFString();
+                    let tTextureNameArr = tTextureName.split("\n");
+                    let tSrcTexturePath;
+                    for (i = 0; i < tTextureLen; i++) {
+                        tSrcTexturePath = this._path + tTextureNameArr[i * 2];
+                        tTextureName = tTextureNameArr[i * 2 + 1];
+                        tX = tByte.getFloat32();
+                        tY = tByte.getFloat32();
+                        tWidth = tByte.getFloat32();
+                        tHeight = tByte.getFloat32();
+                        tTempleData = tByte.getFloat32();
+                        tFrameX = isNaN(tTempleData) ? 0 : tTempleData;
+                        tTempleData = tByte.getFloat32();
+                        tFrameY = isNaN(tTempleData) ? 0 : tTempleData;
+                        tTempleData = tByte.getFloat32();
+                        tFrameWidth = isNaN(tTempleData) ? tWidth : tTempleData;
+                        tTempleData = tByte.getFloat32();
+                        tFrameHeight = isNaN(tTempleData) ? tHeight : tTempleData;
+                        if (this._loadList.indexOf(tSrcTexturePath) == -1) {
+                            this._loadList.push(tSrcTexturePath);
+                        }
+                    }
+                    let loadFile = this._loadList.filter(function (loadPath) {
+                        const content = Laya.loader.getRes(loadPath);
+                        return content == null;
+                    });
+                    if (loadFile.length > 0) {
+                        Laya.loader.load(loadFile, Laya.Handler.create(this, this._textureComplete));
+                    }
+                    else {
+                        this._textureComplete();
+                    }
+                }
+            });
+            Object.defineProperty(Laya.Templet.prototype, "deleteAniData", {
+                value: function (aniIndex) {
+                }
+            });
+        }
+        static defineSpineSkeleton() {
+            // 修改4.0
+            if (spine.AssetManager.prototype["success"]) {
+                Object.defineProperty(spine.AssetManager.prototype, "tempSuccess", {
+                    // @ts-ignore
+                    value: spine.AssetManager.prototype.success
+                });
+                Object.defineProperty(Laya.SpineAssetManager.prototype, "success", {
+                    value: function (callback, path, data) {
+                        this.tempSuccess(callback, path, data);
+                        if (!callback) {
+                            if (typeof data !== "string") {
+                                data = JSON.stringify(data);
+                            }
+                            this.assets[path] = data.replace(/3\.8\.75/g, "3.8");
+                        }
+                    }
+                });
+            }
+            else {
+                // 修改3.x
+                Object.defineProperty(spine.AssetManager.prototype, "tempLoadText", {
+                    value: spine.AssetManager.prototype.loadText
+                });
+                Object.defineProperty(spine.AssetManager.prototype, "loadText", {
+                    value: function (path, success, error) {
+                        if (!success) {
+                            this.tempLoadText(path, (path, text) => {
+                                if (typeof text !== "string") {
+                                    text = JSON.stringify(text);
+                                }
+                                this.assets[path] = text.replace(/3\.8\.75/g, "3.8");
+                            });
+                        }
+                        else
+                            this.tempLoadText(path, success, error);
+                    }
+                });
+            }
+            // 销毁 templet 检查判断
+            Object.defineProperty(Laya.SpineSkeleton.prototype, "tempDestroy", {
+                value: Laya.SpineSkeleton.prototype.destroy
+            });
+            Object.defineProperty(Laya.SpineSkeleton.prototype, "destroy", {
+                value: function (destroyChild = true) {
+                    if (this._templet == null)
+                        this._templet = new Laya.SpineTempletBase();
+                    if (this.state == null)
+                        this.state = new spine.AnimationState(null);
+                    this.tempDestroy(destroyChild);
+                }
+            });
+            Object.defineProperty(Laya.SpineSkeleton.prototype, "temp_init", {
+                value: Laya.SpineSkeleton.prototype.init
+            });
+            Object.defineProperty(Laya.SpineSkeleton.prototype, "init", {
+                value: function (templet) {
+                    let that = this;
+                    this.temp_init(templet);
+                    this.state.listeners[0].event = function (entry, event) {
+                        let eventData = {
+                            audioValue: event.data.audioPath,
+                            audioPath: event.data.audioPath,
+                            floatValue: event.floatValue,
+                            intValue: event.intValue,
+                            name: event.data.name,
+                            stringValue: event.stringValue,
+                            time: event.time * 1000,
+                            balance: event.balance,
+                            volume: event.volume
+                        };
+                        // console.log("event:", entry, event);
+                        that.event(Laya.Event.LABEL, eventData);
+                        if (that._playAudio && eventData.audioValue) {
+                            let time = (that.currentPlayTime * 1000 - eventData.time) / 1000;
+                            if (time < 0)
+                                time = 0;
+                            SoundUtils.playSound(templet["_textureDic"].root + eventData.audioValue, 1, null, 1, time);
+                            Laya.SoundManager.playbackRate = that._playbackRate;
+                        }
+                    };
+                }
+            });
+            Object.defineProperty(Laya.SpineSkeleton.prototype, "_onAniSoundStoped", {
+                value: function (force) {
+                    let _channel;
+                    for (let len = this._soundChannelArr.length, i = 0; i < len; i++) {
+                        _channel = this._soundChannelArr[i];
+                        if (_channel && (_channel.isStopped || force)) {
+                            !_channel.isStopped && _channel.stop();
+                            this._soundChannelArr.splice(i, 1);
+                            // SoundManager.removeChannel(_channel); //  是否需要? 去掉有什么好处? 是否还需要其他操作?
+                            len--;
+                            i--;
+                        }
+                    }
+                }
+            });
+            // 添加动画渲染通知
+            Object.defineProperty(Laya.SpineSkeleton.prototype, "tempUpdate", {
+                // @ts-ignore
+                value: Laya.SpineSkeleton.prototype._update
+            });
+            Object.defineProperty(Laya.SpineSkeleton.prototype, "_update", {
+                value: function () {
+                    var _a;
+                    this.tempUpdate();
+                    let events = this._events;
+                    let slot = [];
+                    for (const key in events) {
+                        if (key.startsWith(GSkeleton.UPDATE_BONE_SLOT)) {
+                            slot.push(StringUtil.remove(key, GSkeleton.UPDATE_BONE_SLOT));
+                        }
+                    }
+                    let skeleton = this.skeleton;
+                    for (const value of skeleton.slots) {
+                        if (slot.indexOf((_a = value.data) === null || _a === void 0 ? void 0 : _a.name) > -1) {
+                            this.event(GSkeleton.UPDATE_BONE_SLOT + value.data.name, value);
+                        }
+                    }
+                }
+            });
         }
     }
-    coreLib.LoaderConfig = LoaderConfig;
+    coreLib.DefineConfig = DefineConfig;
     class GoldEffect extends View {
         constructor() {
             super();
@@ -5731,6 +5406,104 @@ window.coreLib = {};
         Method["GET"] = "get";
         Method["POST"] = "post";
     })(Method = coreLib.Method || (coreLib.Method = {}));
+    let LogLevel;
+    (function (LogLevel) {
+        LogLevel[LogLevel["ALL"] = 0] = "ALL";
+        /**
+         * 跟踪
+         */
+        LogLevel[LogLevel["TRACE"] = 100] = "TRACE";
+        LogLevel[LogLevel["DEBUG"] = 200] = "DEBUG";
+        LogLevel[LogLevel["INFO"] = 300] = "INFO";
+        LogLevel[LogLevel["WARN"] = 400] = "WARN";
+        LogLevel[LogLevel["ERROR"] = 500] = "ERROR";
+        /**
+         * 致命错误
+         */
+        LogLevel[LogLevel["FATAL"] = 600] = "FATAL";
+        LogLevel[LogLevel["OFF"] = 700] = "OFF";
+    })(LogLevel = coreLib.LogLevel || (coreLib.LogLevel = {}));
+    /**
+     * 定义日志格式
+     */
+    class Log {
+        static trace(...value) {
+            Log.append({ level: LogLevel.TRACE, data: value });
+            if (Environment.active === EnvType.PROD || Log.level > LogLevel.TRACE)
+                return;
+            // Log._log(value)
+            console.trace(...value);
+        }
+        static debug(...value) {
+            Log.append({ level: LogLevel.DEBUG, data: value });
+            if (Environment.active === EnvType.PROD || Log.level > LogLevel.DEBUG)
+                return;
+            console.debug(...value);
+        }
+        static info(...value) {
+            Log.append({ level: LogLevel.INFO, data: value });
+            if (Log.level > LogLevel.INFO)
+                return;
+            console.log(...value);
+        }
+        static warn(...value) {
+            Log.append({ level: LogLevel.INFO, data: value });
+            if (Log.level > LogLevel.WARN)
+                return;
+            console.warn(...value);
+        }
+        /**
+         * 错误
+         * @param value
+         */
+        static error(...value) {
+            Log.append({ level: LogLevel.ERROR, data: value });
+            if (Log.level > LogLevel.ERROR)
+                return;
+            console.error(...value);
+        }
+        /**
+         * 致命的错误
+         * @param value
+         */
+        static fatal(...value) {
+            Log.append({ level: LogLevel.FATAL, data: value });
+            if (Log.level > LogLevel.FATAL)
+                return;
+            console.error(...value);
+        }
+        /**
+         * @internal
+         */
+        static log(fmt = "[HH:mm:ss]") {
+            const logs = Log.history.concat();
+            let time;
+            for (const value of logs) {
+                time = [DateUtils.formatDate(value.time, fmt), LogLevel[value.level]];
+                console.log.apply(window, time.concat(value.data));
+            }
+        }
+        /**
+         * @internal
+         */
+        static append(data) {
+            var _a;
+            if (Laya.Render.isConchApp)
+                return;
+            (_a = data.time) !== null && _a !== void 0 ? _a : (data.time = Date.now());
+            Log.history.push(data);
+            if (Log.history.length > Log.MAX_HISTORY + 500) {
+                Log.history.splice(0, 500);
+            }
+        }
+    }
+    /**
+     * @default LogLevel.ALL
+     */
+    Log.level = LogLevel.ALL;
+    Log.MAX_HISTORY = 3000;
+    Log.history = [];
+    coreLib.Log = Log;
     /**
      * 统计管理器
      * @author boge
@@ -8072,6 +7845,254 @@ window.coreLib = {};
         }
     }
     coreLib.UrlParam = UrlParam;
+    /** 用户数据 */
+    class Player {
+        constructor() {
+            /** 渠道名字 */
+            this.channelName = "wap";
+            this._icon = "ui://cw0f8xaqgn9s6x";
+            /** 玩家身上主账户的钱 */
+            this.money = 0;
+            /** 金币 */
+            this.coins = 0;
+            /** 玩家身上赠送的钱 */
+            this.freeBet = 0;
+            /** 缓存玩家身上的钱 */
+            this.cacheMoney = 0;
+            /** 玩家昵称 */
+            this.nickname = "admin";
+            /** 玩家id */
+            this.userId = 110;
+            /** 用户身份码 */
+            this.token = null;
+            /** 游戏类型  id */
+            this.gameModel = -1;
+            /** 是否是web端口 */
+            this.isWeb = true;
+            /** 游戏发布版本号 */
+            this.codeVersion = 1;
+            /** 当前app游戏发布版本号 */
+            this.currentAppVersion = 1;
+            /** 本玩家今日玩的次数 */
+            this.playCount = 0;
+            /**
+             * 用户持有的优惠劵
+             **/
+            this.coupons = [];
+            // 大奖参数
+            /** 用户拥有的奖金池  */
+            this.jackpotData = [];
+            /** 用户的真实投注 */
+            this.userReallyBet = 0;
+            /** 每次投注达到多少 就可以获得刮刮卡 */
+            this.getTicketIncBet = 100;
+            /** 当前游戏的奖金池 */
+            this.gamePool = UtilKit.random(1000, 99999);
+            /** 获得奖励的次数 */
+            this.jackpotCount = 0;
+        }
+        static get inst() {
+            if (this._instance == null)
+                this._instance = new Player();
+            return this._instance;
+        }
+        /**
+         * 获取游客模式的优惠券
+         * @return
+         */
+        getGuestCoupons() {
+            return window["guestCoupons"];
+        }
+        /**
+         * 设置当前拥有的优惠券
+         * @param value 新优惠券
+         */
+        addCoupons(value) {
+            this.coupons = value;
+        }
+        /** 获取所有的优惠券 */
+        getCoupons() {
+            return this.coupons;
+        }
+        /**
+         * 根据优惠劵类型  获取优惠劵
+         * @param type 1抵用券 2投注劵
+         * @return
+         */
+        getCoupon(type) {
+            let temps = [];
+            for (let i = 0; i < this.coupons.length; i++) {
+                let arr = this.coupons[i];
+                if (arr.type == type && arr.num > 0) {
+                    temps.push(arr);
+                }
+            }
+            return temps;
+        }
+        /**
+         * 根据游戏ID  获取优惠劵
+         * @param gameId 游戏ID
+         * @return
+         */
+        getCouponGame(gameId) {
+            let temps = [];
+            for (let i = 0; i < this.coupons.length; i++) {
+                let arr = this.coupons[i];
+                if (arr.games.indexOf(gameId) != -1 && arr.num > 0) {
+                    temps.push(arr);
+                }
+            }
+            return temps;
+        }
+        /** 使用活动劵的次数 */
+        useCouponNum() {
+            let useObj = this.getUseCoupon();
+            if (useObj && useObj.num > 0) {
+                useObj.num -= 1;
+            }
+        }
+        /**
+         * 获取正在使用的优惠劵
+         * @return
+         */
+        getUseCoupon() {
+            let useObj = null;
+            for (let i = 0; i < this.coupons.length; i++) {
+                let arr = this.coupons[i];
+                if (arr.isUse) {
+                    useObj = arr;
+                }
+            }
+            return useObj;
+        }
+        /**
+         * 获取正在使用的优惠劵
+         */
+        removeCoupon(obj) {
+            for (let i = 0; i < this.coupons.length; i++) {
+                let arr = this.coupons[i];
+                if (arr.id == obj.id) {
+                    this.coupons.splice(i, 1);
+                    break;
+                }
+            }
+        }
+        /**
+         * 判断当前游戏可有使用的优惠券
+         */
+        getCanUseCoupon() {
+            let betValue = Player.inst.gameData.getTotalBetMoney();
+            let arr = Player.inst.getCouponGame(Player.inst.gameModel);
+            for (let i = 0; i < arr.length; i++) {
+                const useObj = arr[i];
+                if (useObj.type == 1) { // 判断是否有可以使用的抵用券
+                    if (useObj.bet_limit == useObj.faceValue || useObj.bet_limit <= betValue) { // 满足最低投注额
+                        return true;
+                    }
+                }
+                else if (useObj.type == 2) {
+                    return true;
+                }
+            }
+            return false;
+        }
+        /** 停止所有的优惠价使用 */
+        stopAllCoupon() {
+            for (let i = 0; i < this.coupons.length; i++) {
+                let obj = this.coupons[i];
+                obj.isUse = false;
+            }
+        }
+        /** 获取请求发送的  token */
+        getRequestToken() {
+            return "token=" + this.token;
+        }
+        /** 玩家头像 */
+        get icon() {
+            return this._icon;
+        }
+        /**
+         * @private
+         */
+        set icon(value) {
+            this._icon = value;
+        }
+        /** 1=>投注中，2=>计算中，3=>开奖  4=>收取金币  5=>比分中 */
+        get status() {
+            return this._status;
+        }
+        /**
+         * @private
+         */
+        set status(value) {
+            this._status = value;
+        }
+        windowOpen(url) {
+            let window = Laya.Browser.window.open(url);
+            if (!window) {
+                Laya.Browser.window.location.href = url;
+            }
+        }
+        get guestModel() {
+            return this._guestModel;
+        }
+        set guestModel(value) {
+            this._guestModel = value;
+            this._guestModel.guestUID = UtilKit.random(1, 99999999) * 1000;
+        }
+        /**
+         * 获取设备号
+         * @return
+         */
+        getDevice() {
+            let device;
+            if (Laya.Render.isConchApp) {
+                device = Player.inst.device;
+            }
+            else {
+                device = Laya.Browser.userAgent;
+            }
+            return device;
+        }
+        /**
+         * 保存账号密码
+         * @param login
+         * @param psd
+         */
+        saveUser(login, psd) {
+            let user = { name: login, psd: psd };
+            let s = MathKit.encrypt(JSON.stringify(user));
+            Laya.LocalStorage.setItem("userData", s);
+        }
+        /**
+         * 获取渠道type
+         * @return
+         */
+        getChannelType() {
+            return Laya.Render.isConchApp ? 3 : 1; // 如果是app端 3
+        }
+        /**
+         * 获取当前国家的货币单位(大写)
+         */
+        getCurrencyUnit() {
+            let currencyMap = Laya.Browser.window.currencyUnit;
+            let unit = "";
+            if (currencyMap) {
+                let country = this.data.getCountry(this.urlParam);
+                if (!StringUtil.isEmpty(country)) {
+                    unit = currencyMap[country];
+                }
+            }
+            return unit;
+        }
+        /**
+         * 获取当前国家的货币单位(首字母大写格式化)
+         */
+        getCurrencyUnitFormat() {
+            return this.getCurrencyUnit().toLowerCase().replace(/( |^)[a-z]/g, (L) => L.toUpperCase());
+        }
+    }
+    coreLib.Player = Player;
     class NativeUtils {
     }
     /**@private Market对象 只有加速器模式下才有值*/
@@ -8279,7 +8300,7 @@ window.coreLib = {};
          * @param btn
          * @param array
          */
-        constructor(btn, array) {
+        constructor(btn, ...array) {
             this.btn = btn;
             this.array = array;
             let value;
@@ -13829,12 +13850,12 @@ window.coreLib = {};
         onInit() {
             this.contentPane = fgui.UIPackage.createObjectFromURL("//common/PromptWindow").asCom;
             super.onInit();
-            this.content = this.contentPane.getChild("n2").asTextField;
-            this.cancelBtn = this.contentPane.getChild("n3").asButton;
-            this.continueBtn = this.contentPane.getChild("n4").asButton;
+            this.content = this.getChild("n2").asTextField;
+            this.cancelBtn = this.getChild("n3").asButton;
+            this.continueBtn = this.getChild("n4").asButton;
             this.cancelBtn.getTextField().bold = true;
             this.continueBtn.getTextField().bold = true;
-            this.controller = this.contentPane.getController("c1");
+            this.controller = this.getController("c1");
             this.cancelBtn.onClick(this, this.cancelHandler);
             this.continueBtn.onClick(this, this.continueHandler);
         }

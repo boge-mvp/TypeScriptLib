@@ -28,6 +28,7 @@
     "nameCache.json",
     "version_info.txt",
     "index.js",
+    "reserved.js",
     "types.js"
   ]
 }

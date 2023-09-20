@@ -52,6 +52,26 @@ declare namespace coreLib {
         /** 清除所有分组和包含的事件 */
         clearGroup(): void;
     }
+    export class BezierCurves {
+        /** 经过时间 */
+        private _t;
+        private p1;
+        private p2;
+        private p3;
+        private p4;
+        get t(): number;
+        set t(value: number);
+        getX(): number;
+        getY(): number;
+        setStartPoint(x: number, y: number): void;
+        setMiddlePoint(x: number, y: number): void;
+        setMiddlePoint2(x1: number, y1: number, x2: number, y2: number): void;
+        setEndPoint(x: number, y: number): void;
+        /**
+         * 释放曲线数据
+         */
+        recover(): void;
+    }
     /**
      * 只有 getProxy 和 getView
      */
@@ -322,424 +342,6 @@ declare namespace coreLib {
      * @see UtilKit
      */
     export const UtilsTool: typeof UtilKit;
-    export enum EnvType {
-        PROD = 0,
-        DEV = 1,
-        TEST = 2
-    }
-    /**
-     * 配置工具
-     */
-    export class ConfigKit {
-        /**
-         * 将自动检测当前环境是否支持webp图片
-         *
-         * 如果网址携带参数webp将会强制使用webp图片
-         */
-        static useWebp(): boolean;
-        /**
-         * 运行环境检测
-         */
-        static env(url?: string): EnvType;
-    }
-    export class Environment {
-        static TEST: string[];
-        static DEV: string[];
-        static PROP: string[];
-        /**
-         * 默认环境
-         * @default EnvType.PROD
-         */
-        static DEFAULT_ENV: EnvType;
-        /**
-         * 当前运行环境，默认有三个环境
-         * ```
-         * dev:开发环境|test:测试环境|prod:生产环境
-         * 根据域名判断环境
-         * prod: prod|production|release
-         * dev : dev|staging
-         * test: test|debug
-         * 判断依据：
-         * https://www.game-prod.com prod 环境
-         * https://www.game-prod-info.com prod环境
-         * https://www.game-prod-info.dev prod环境
-         *
-         * https://www.game-dev-prod-info.com dev环境
-         * https://dev.game-prod-test-info.com dev环境
-         * https://www.dev.game-prod.com dev环境
-         * https://www.dev-data.game.com dev环境
-         *
-         * ```
-         * 默认使用 window.location.host 判断环境
-         * @default EnvType.PROD
-         */
-        static active: EnvType;
-        /**
-         * 验证环境
-         * @param url url window.location.host
-         * @param value 判断条件
-         */
-        static verify(url: string, value: string[]): boolean;
-        /**
-         * 查询指定的环境是否存在
-         * @param value test, debug, localhost, dev, staging, prod, production, release
-         */
-        static findEnv(value: string): EnvType;
-    }
-    export class DefineConfig {
-        static init(): void;
-        private static defineLaya;
-        private static defineFairy;
-        private static defineText;
-        private static defineTimer;
-        private static defineSkeleton;
-        private static defineSpineSkeleton;
-    }
-    export const enum LibStr {
-        /** 等待处理 */
-        WAITING = 1000,
-        /** 进入游戏中 */
-        LOADING = 1001,
-        /** 游戏暂停中 */
-        GAME_OFF = 1002,
-        /** 投注金币大于最大值 */
-        ANTE_MAX_MONEY = 1003,
-        /** 还需XX秒才可以再次发言 */
-        SEND_CHAT_TIMER_ERROR = 1004,
-        /** 网络访问失败，请检查网络 */
-        NET_ERROR = 1005,
-        /** 当前不可投注 */
-        CANNOT_BET = 1006,
-        /** 未登陆，请先登陆 */
-        FIRST_LOG = 1007,
-        /** 中奖结果正在计算中 */
-        WINING_RESULTS = 1008,
-        /** 游戏错误 退出游戏 */
-        GAME_ERROR = 1009,
-        /** 押注失败 */
-        BET_FAIL = 1010,
-        /** 获取游戏开奖超时 */
-        GET_GAME_RESULTS_TIME_OUT = 1011,
-        /** 你离开游戏太久了，将你剔除游戏 */
-        SYSTEM_BACK_LOBBY = 1012,
-        /** demo 游戏币无法提现  提示 */
-        PROMPT_GUEST = 1013,
-        /** 当前版本过低 */
-        APP_VERSION_TOO_LOW = 1014,
-        /** 提示玩家玩真钱场 */
-        SHOW_INVITE_REAL_MONEY = 1015,
-        /** 提示玩家没有满足使用优惠券的需要 */
-        REQUIREMENT_STAKE = 1016,
-        /** 未找到游戏 */
-        GAME_NOT_FOUND = 1017,
-        /** 充值成功提示语 */
-        RECHARGE_SUCCESS = 1018,
-        /** 需要押注的最大钱 */
-        NEED_BET_BONUS = 1019,
-        /** 错误 */
-        ERR = 1020,
-        /** 钱不够了 快充值 */
-        RECHARGE = 1021,
-        /** 余额不足 */
-        INSUFFICIENT = 1022,
-        /** 登录 */
-        LOGIN = 1023,
-        /** 踢出游戏 */
-        OUT_GAME = 1024,
-        /** 提示玩法 */
-        TIPS_FOR_PLAYING = 1025,
-        /** 赢钱数 */
-        WON_MONEY = 1026,
-        /** coins 赢钱数 */
-        WON_COINS = 1027,
-        /** 输钱了 */
-        LOST = 1028,
-        /** 硬币不足 */
-        INSUFFICIENT_COINS = 1029,
-        /** 输入 PIN 继续充值 */
-        ENTER_PIN_CONTINUE = 1030,
-        /** 下载app提示 */
-        DOWNLOAD_MSG = 1031,
-        /** 礼包不可用 */
-        GIFT_NOT_AVAILABLE = 1032,
-        /** 提供可用礼包 */
-        CASH_GIFTS_AVAILABLE = 1033,
-        /** 退出app */
-        EXIT_APP = 1034,
-        /** 存款玩游戏 */
-        DEPOSIT_PLAY = 1035,
-        /** 登录玩游戏 */
-        LOGIN_PLAY = 1036,
-        /** 当前投注额 */
-        CURRENT_BET_AMOUNT = 1037,
-        /** gift投注提示 */
-        GIFT_BET_TIP = 1038,
-        /** 中奖通告 */
-        WIN_NOTICE = 1039,
-        /** 当前没有可用gift */
-        NOT_GIFT = 1040,
-        /** 正在使用的劵 */
-        USE_IN_GIFT = 1041,
-        /** gift消费提示 */
-        DEDUCT_TIP = 1042,
-        /** gift拒绝消费提示 */
-        DEDUCT_REFUSE_TIP = 1043,
-        /** 赌注限制 */
-        STAKES_RESTRICT = 1044,
-        /** 赌注需求 */
-        STAKES_NEEDS = 1045,
-        /** 获得更多礼包 */
-        GET_MORE_GIFT = 1046,
-        HOW_TO_PLAY = 1047,
-        /** 点击按钮 */
-        PRESS_BET_BUTTONS = 1048,
-        GIFT_HELP = 1049,
-        FREE_SPIN = 1050,
-        WILD_RESPIN = 1051,
-        /** bonus 游戏 */
-        BONUS_GAME = 1052,
-        /** 总赢 */
-        TOTAL_WIN = 1053,
-        /** 需要支付 */
-        ABOUT_TO_PAY = 1054,
-        /** 欢迎提示 */
-        WELCOME_TO_GAME = 1055,
-        /** 赢的线 */
-        WON_LINE = 1056,
-        /** 自动spin */
-        AUTO_SPINS = 1057,
-        /** 充值 */
-        DEPOSIT = 1058,
-        /** 提示切换余额会导致倍数归零 */
-        CHANGE_BET_PROMPT = 1059,
-        /** 再来一次 */
-        TRY_AGAIN = 1060,
-        /** 货币单位 */
-        UNIT = 1061,
-        /** 金币单位 */
-        COINS = 1062,
-        /** stop */
-        STOP = 1063,
-        /** Confirm Use */
-        CONFIRM_USE = 1064,
-        /** 继续 */
-        CONTINUE = 1065,
-        /** OK */
-        OK = 1066,
-        /** 取消 */
-        CANCEL = 1067,
-        /** 重发 */
-        RESEND = 1068,
-        /** 赢钱展示 */
-        WINS = 1069
-    }
-    export enum LogLevel {
-        ALL = 0,
-        /**
-         * 跟踪
-         */
-        TRACE = 100,
-        DEBUG = 200,
-        INFO = 300,
-        WARN = 400,
-        ERROR = 500,
-        /**
-         * 致命错误
-         */
-        FATAL = 600,
-        OFF = 700
-    }
-    /**
-     * 定义日志格式
-     */
-    export class Log {
-        /**
-         * @default LogLevel.ALL
-         */
-        static level: LogLevel;
-        static MAX_HISTORY: number;
-        static history: {
-            level: number;
-            time?: number;
-            data: any[];
-        }[];
-        static trace(...value: any[]): void;
-        static debug(...value: any[]): void;
-        static info(...value: any[]): void;
-        static warn(...value: any[]): void;
-        /**
-         * 错误
-         * @param value
-         */
-        static error(...value: any[]): void;
-        /**
-         * 致命的错误
-         * @param value
-         */
-        static fatal(...value: any[]): void;
-    }
-    /** 用户数据 */
-    export class Player {
-        private static _instance;
-        static get inst(): Player;
-        /** apk下载 */
-        static DOWNLOAD_APK_URL: string;
-        /** 版本名字 */
-        static VERSION: string;
-        /** 最新版本号 */
-        static VERSION_CODE: string;
-        /** 进入大厅的地址 */
-        static HOME_URL: string;
-        /** 渠道名字 */
-        channelName: string;
-        private _icon;
-        /** 玩家身上主账户的钱 */
-        money: number;
-        /** 金币 */
-        coins: number;
-        /** 玩家身上赠送的钱 */
-        freeBet: number;
-        /** 缓存玩家身上的钱 */
-        cacheMoney: number;
-        /** 玩家昵称 */
-        nickname: string;
-        /** 玩家id */
-        userId: number;
-        /** 客户端生成的唯一ID */
-        uuid: string;
-        /** 用户身份码 */
-        token: string;
-        /** 手机号 */
-        mobile: string;
-        /** 设备号 */
-        device: string;
-        /** url参数 */
-        urlParam: UrlParam;
-        /** 游戏数据 */
-        gameData: IGameData;
-        /** 游戏类型  id */
-        gameModel: number;
-        /** 游戏类型  id */
-        gameName: string;
-        /** 是否是web端口 */
-        isWeb: boolean;
-        /** 1=>投注中，2=>计算中，3=>开奖  4=>收取金币  5=>比分中 */
-        private _status;
-        /** 游戏发布版本号 */
-        codeVersion: number;
-        /** 当前app游戏发布版本号 */
-        currentAppVersion: number;
-        /** 是否是游客模式 */
-        isGuest: boolean;
-        /** 游客数据 */
-        private _guestModel;
-        /** 项目数据 */
-        data: IData;
-        /** 登录接口 */
-        login: ILogin;
-        /** 本玩家今日玩的次数 */
-        playCount: number;
-        /**
-         * 用户持有的优惠劵
-         **/
-        private coupons;
-        /** 缓存上一次网络请求返回数据 */
-        resultData: any;
-        /** 解析的传入游戏的参数 */
-        parseParam: IExecuteData;
-        /** 用户拥有的奖金池  */
-        jackpotData: any[];
-        /** 用户的真实投注 */
-        userReallyBet: number;
-        /** 每次投注达到多少 就可以获得刮刮卡 */
-        getTicketIncBet: number;
-        /** 当前游戏的奖金池 */
-        gamePool: number;
-        /** 获得奖励的次数 */
-        jackpotCount: number;
-        /**
-         * 获取游客模式的优惠券
-         * @return
-         */
-        getGuestCoupons(): Coupons[];
-        /**
-         * 设置当前拥有的优惠券
-         * @param value 新优惠券
-         */
-        addCoupons(value: Coupons[]): void;
-        /** 获取所有的优惠券 */
-        getCoupons(): Coupons[];
-        /**
-         * 根据优惠劵类型  获取优惠劵
-         * @param type 1抵用券 2投注劵
-         * @return
-         */
-        getCoupon(type: number): Coupons[];
-        /**
-         * 根据游戏ID  获取优惠劵
-         * @param gameId 游戏ID
-         * @return
-         */
-        getCouponGame(gameId: number): Coupons[];
-        /** 使用活动劵的次数 */
-        useCouponNum(): void;
-        /**
-         * 获取正在使用的优惠劵
-         * @return
-         */
-        getUseCoupon(): Coupons;
-        /**
-         * 获取正在使用的优惠劵
-         */
-        removeCoupon(obj: Coupons): void;
-        /**
-         * 判断当前游戏可有使用的优惠券
-         */
-        getCanUseCoupon(): boolean;
-        /** 停止所有的优惠价使用 */
-        stopAllCoupon(): void;
-        /** 获取请求发送的  token */
-        getRequestToken(): string;
-        /** 玩家头像 */
-        get icon(): string;
-        /**
-         * @private
-         */
-        set icon(value: string);
-        /** 1=>投注中，2=>计算中，3=>开奖  4=>收取金币  5=>比分中 */
-        get status(): number;
-        /**
-         * @private
-         */
-        set status(value: number);
-        windowOpen(url: string): void;
-        get guestModel(): IGuestModel;
-        set guestModel(value: IGuestModel);
-        /**
-         * 获取设备号
-         * @return
-         */
-        getDevice(): string;
-        /**
-         * 保存账号密码
-         * @param login
-         * @param psd
-         */
-        saveUser(login: string, psd: string): void;
-        /**
-         * 获取渠道type
-         * @return
-         */
-        getChannelType(): 1 | 3;
-        /**
-         * 获取当前国家的货币单位(大写)
-         */
-        getCurrencyUnit(): string;
-        /**
-         * 获取当前国家的货币单位(首字母大写格式化)
-         */
-        getCurrencyUnitFormat(): string;
-    }
     export enum ActionLib {
         INIT_DEVICE_DATA = "init_device_data",
         CHECK_LOGIN_STATE = "check_login_state",
@@ -905,25 +507,77 @@ declare namespace coreLib {
         /** 更新bounds信息 */
         GAME_UPDATE_BOUNDS_INFO = "game_update_bounds_info"
     }
-    export class BezierCurves {
-        /** 经过时间 */
-        private _t;
-        private p1;
-        private p2;
-        private p3;
-        private p4;
-        get t(): number;
-        set t(value: number);
-        getX(): number;
-        getY(): number;
-        setStartPoint(x: number, y: number): void;
-        setMiddlePoint(x: number, y: number): void;
-        setMiddlePoint2(x1: number, y1: number, x2: number, y2: number): void;
-        setEndPoint(x: number, y: number): void;
+    export enum EnvType {
+        PROD = 0,
+        DEV = 1,
+        TEST = 2
+    }
+    /**
+     * 配置工具
+     */
+    export class ConfigKit {
         /**
-         * 释放曲线数据
+         * 将自动检测当前环境是否支持webp图片
+         *
+         * 如果网址携带参数webp将会强制使用webp图片
          */
-        recover(): void;
+        static useWebp(): boolean;
+        /**
+         * 运行环境检测
+         */
+        static env(url?: string): EnvType;
+    }
+    export class Environment {
+        static TEST: string[];
+        static DEV: string[];
+        static PROP: string[];
+        /**
+         * 默认环境
+         * @default EnvType.PROD
+         */
+        static DEFAULT_ENV: EnvType;
+        /**
+         * 当前运行环境，默认有三个环境
+         * ```
+         * dev:开发环境|test:测试环境|prod:生产环境
+         * 根据域名判断环境
+         * prod: prod|production|release
+         * dev : dev|staging
+         * test: test|debug
+         * 判断依据：
+         * https://www.game-prod.com prod 环境
+         * https://www.game-prod-info.com prod环境
+         * https://www.game-prod-info.dev prod环境
+         *
+         * https://www.game-dev-prod-info.com dev环境
+         * https://dev.game-prod-test-info.com dev环境
+         * https://www.dev.game-prod.com dev环境
+         * https://www.dev-data.game.com dev环境
+         *
+         * ```
+         * 默认使用 window.location.host 判断环境
+         * @default EnvType.PROD
+         */
+        static active: EnvType;
+        /**
+         * 验证环境
+         * @param url url window.location.host
+         * @param value 判断条件
+         */
+        static verify(url: string, value: string[]): boolean;
+        /**
+         * 查询指定的环境是否存在
+         * @param value test, debug, localhost, dev, staging, prod, production, release
+         */
+        static findEnv(value: string): EnvType;
+    }
+    /** 加载资源配置 */
+    export class LoaderConfig {
+        /**
+         * 清理资源
+         * @param res 要清理的资源数组
+         */
+        static clear(res: LoadRes[]): void;
     }
     const BaseButton_base: Constructor<StringBlock & ActionEvent & ViewBlock & fairygui.GButton>;
     export class BaseButton extends BaseButton_base {
@@ -1040,6 +694,9 @@ declare namespace coreLib {
         private isRunEvent;
         constructor();
         protected get gameData(): T;
+        /**
+         * @deprecated
+         */
         protected set gameData(value: T);
         protected constructFromXML(xml: any): void;
         /**
@@ -1306,7 +963,7 @@ declare namespace coreLib {
          */
         darkCancel(): void;
     }
-    export class BaseSlotView extends BaseView {
+    export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends BaseView {
         /** 线的面板 */
         protected linePanel: fgui.GComponent;
         /** 绘制线 */
@@ -1384,6 +1041,11 @@ declare namespace coreLib {
         protected allSlotItemDark(): void;
         getSlotModel(): SlotModel<BaseSlotGameData>;
         dispose(): void;
+        protected get gameData(): T;
+        /**
+         * @deprecated
+         */
+        protected set gameData(value: T);
     }
     export class BaseSocket {
         /** 是否已经连接 */
@@ -1460,6 +1122,9 @@ declare namespace coreLib {
         showRecord(): void;
         dispose(): void;
         protected get gameData(): T;
+        /**
+         * @deprecated
+         */
         protected set gameData(value: T);
     }
     export class Controller implements IController {
@@ -1583,6 +1248,9 @@ declare namespace coreLib {
         set gameScene(value: IGameScene);
         set gameServlet(value: IGameServlet);
         protected get gameData(): T;
+        /**
+         * @deprecated
+         */
         protected set gameData(value: T);
     }
     /**
@@ -1600,6 +1268,9 @@ declare namespace coreLib {
         networkName: string;
         protected constructor();
         protected get gameData(): T;
+        /**
+         * @deprecated
+         */
         protected set gameData(value: T);
         /**
          * 封装的get请求
@@ -2077,13 +1748,14 @@ declare namespace coreLib {
         protected completeHandler(list: fgui.GList): void;
         dispose(): void;
     }
-    /** 加载资源配置 */
-    export class LoaderConfig {
-        /**
-         * 清理资源
-         * @param res 要清理的资源数组
-         */
-        static clear(res: LoadRes[]): void;
+    export class DefineConfig {
+        static init(): void;
+        private static defineLaya;
+        private static defineFairy;
+        private static defineText;
+        private static defineTimer;
+        private static defineSkeleton;
+        private static defineSpineSkeleton;
     }
     export class GoldEffect extends View {
         private golds;
@@ -2780,6 +2452,189 @@ declare namespace coreLib {
          * 当前播放的索引
          */
         readonly currAniIndex: number;
+    }
+    export const enum LibStr {
+        /** 等待处理 */
+        WAITING = 1000,
+        /** 进入游戏中 */
+        LOADING = 1001,
+        /** 游戏暂停中 */
+        GAME_OFF = 1002,
+        /** 投注金币大于最大值 */
+        ANTE_MAX_MONEY = 1003,
+        /** 还需XX秒才可以再次发言 */
+        SEND_CHAT_TIMER_ERROR = 1004,
+        /** 网络访问失败，请检查网络 */
+        NET_ERROR = 1005,
+        /** 当前不可投注 */
+        CANNOT_BET = 1006,
+        /** 未登陆，请先登陆 */
+        FIRST_LOG = 1007,
+        /** 中奖结果正在计算中 */
+        WINING_RESULTS = 1008,
+        /** 游戏错误 退出游戏 */
+        GAME_ERROR = 1009,
+        /** 押注失败 */
+        BET_FAIL = 1010,
+        /** 获取游戏开奖超时 */
+        GET_GAME_RESULTS_TIME_OUT = 1011,
+        /** 你离开游戏太久了，将你剔除游戏 */
+        SYSTEM_BACK_LOBBY = 1012,
+        /** demo 游戏币无法提现  提示 */
+        PROMPT_GUEST = 1013,
+        /** 当前版本过低 */
+        APP_VERSION_TOO_LOW = 1014,
+        /** 提示玩家玩真钱场 */
+        SHOW_INVITE_REAL_MONEY = 1015,
+        /** 提示玩家没有满足使用优惠券的需要 */
+        REQUIREMENT_STAKE = 1016,
+        /** 未找到游戏 */
+        GAME_NOT_FOUND = 1017,
+        /** 充值成功提示语 */
+        RECHARGE_SUCCESS = 1018,
+        /** 需要押注的最大钱 */
+        NEED_BET_BONUS = 1019,
+        /** 错误 */
+        ERR = 1020,
+        /** 钱不够了 快充值 */
+        RECHARGE = 1021,
+        /** 余额不足 */
+        INSUFFICIENT = 1022,
+        /** 登录 */
+        LOGIN = 1023,
+        /** 踢出游戏 */
+        OUT_GAME = 1024,
+        /** 提示玩法 */
+        TIPS_FOR_PLAYING = 1025,
+        /** 赢钱数 */
+        WON_MONEY = 1026,
+        /** coins 赢钱数 */
+        WON_COINS = 1027,
+        /** 输钱了 */
+        LOST = 1028,
+        /** 硬币不足 */
+        INSUFFICIENT_COINS = 1029,
+        /** 输入 PIN 继续充值 */
+        ENTER_PIN_CONTINUE = 1030,
+        /** 下载app提示 */
+        DOWNLOAD_MSG = 1031,
+        /** 礼包不可用 */
+        GIFT_NOT_AVAILABLE = 1032,
+        /** 提供可用礼包 */
+        CASH_GIFTS_AVAILABLE = 1033,
+        /** 退出app */
+        EXIT_APP = 1034,
+        /** 存款玩游戏 */
+        DEPOSIT_PLAY = 1035,
+        /** 登录玩游戏 */
+        LOGIN_PLAY = 1036,
+        /** 当前投注额 */
+        CURRENT_BET_AMOUNT = 1037,
+        /** gift投注提示 */
+        GIFT_BET_TIP = 1038,
+        /** 中奖通告 */
+        WIN_NOTICE = 1039,
+        /** 当前没有可用gift */
+        NOT_GIFT = 1040,
+        /** 正在使用的劵 */
+        USE_IN_GIFT = 1041,
+        /** gift消费提示 */
+        DEDUCT_TIP = 1042,
+        /** gift拒绝消费提示 */
+        DEDUCT_REFUSE_TIP = 1043,
+        /** 赌注限制 */
+        STAKES_RESTRICT = 1044,
+        /** 赌注需求 */
+        STAKES_NEEDS = 1045,
+        /** 获得更多礼包 */
+        GET_MORE_GIFT = 1046,
+        HOW_TO_PLAY = 1047,
+        /** 点击按钮 */
+        PRESS_BET_BUTTONS = 1048,
+        GIFT_HELP = 1049,
+        FREE_SPIN = 1050,
+        WILD_RESPIN = 1051,
+        /** bonus 游戏 */
+        BONUS_GAME = 1052,
+        /** 总赢 */
+        TOTAL_WIN = 1053,
+        /** 需要支付 */
+        ABOUT_TO_PAY = 1054,
+        /** 欢迎提示 */
+        WELCOME_TO_GAME = 1055,
+        /** 赢的线 */
+        WON_LINE = 1056,
+        /** 自动spin */
+        AUTO_SPINS = 1057,
+        /** 充值 */
+        DEPOSIT = 1058,
+        /** 提示切换余额会导致倍数归零 */
+        CHANGE_BET_PROMPT = 1059,
+        /** 再来一次 */
+        TRY_AGAIN = 1060,
+        /** 货币单位 */
+        UNIT = 1061,
+        /** 金币单位 */
+        COINS = 1062,
+        /** stop */
+        STOP = 1063,
+        /** Confirm Use */
+        CONFIRM_USE = 1064,
+        /** 继续 */
+        CONTINUE = 1065,
+        /** OK */
+        OK = 1066,
+        /** 取消 */
+        CANCEL = 1067,
+        /** 重发 */
+        RESEND = 1068,
+        /** 赢钱展示 */
+        WINS = 1069
+    }
+    export enum LogLevel {
+        ALL = 0,
+        /**
+         * 跟踪
+         */
+        TRACE = 100,
+        DEBUG = 200,
+        INFO = 300,
+        WARN = 400,
+        ERROR = 500,
+        /**
+         * 致命错误
+         */
+        FATAL = 600,
+        OFF = 700
+    }
+    /**
+     * 定义日志格式
+     */
+    export class Log {
+        /**
+         * @default LogLevel.ALL
+         */
+        static level: LogLevel;
+        static MAX_HISTORY: number;
+        static history: {
+            level: number;
+            time?: number;
+            data: any[];
+        }[];
+        static trace(...value: any[]): void;
+        static debug(...value: any[]): void;
+        static info(...value: any[]): void;
+        static warn(...value: any[]): void;
+        /**
+         * 错误
+         * @param value
+         */
+        static error(...value: any[]): void;
+        /**
+         * 致命的错误
+         * @param value
+         */
+        static fatal(...value: any[]): void;
     }
     /**
      * 统计管理器
@@ -3618,6 +3473,168 @@ declare namespace coreLib {
         get isGift(): number;
         set isGift(value: number);
     }
+    /** 用户数据 */
+    export class Player {
+        private static _instance;
+        static get inst(): Player;
+        /** apk下载 */
+        static DOWNLOAD_APK_URL: string;
+        /** 版本名字 */
+        static VERSION: string;
+        /** 最新版本号 */
+        static VERSION_CODE: string;
+        /** 进入大厅的地址 */
+        static HOME_URL: string;
+        /** 渠道名字 */
+        channelName: string;
+        private _icon;
+        /** 玩家身上主账户的钱 */
+        money: number;
+        /** 金币 */
+        coins: number;
+        /** 玩家身上赠送的钱 */
+        freeBet: number;
+        /** 缓存玩家身上的钱 */
+        cacheMoney: number;
+        /** 玩家昵称 */
+        nickname: string;
+        /** 玩家id */
+        userId: number;
+        /** 客户端生成的唯一ID */
+        uuid: string;
+        /** 用户身份码 */
+        token: string;
+        /** 手机号 */
+        mobile: string;
+        /** 设备号 */
+        device: string;
+        /** url参数 */
+        urlParam: UrlParam;
+        /** 游戏数据 */
+        gameData: IGameData;
+        /** 游戏类型  id */
+        gameModel: number;
+        /** 游戏类型  id */
+        gameName: string;
+        /** 是否是web端口 */
+        isWeb: boolean;
+        /** 1=>投注中，2=>计算中，3=>开奖  4=>收取金币  5=>比分中 */
+        private _status;
+        /** 游戏发布版本号 */
+        codeVersion: number;
+        /** 当前app游戏发布版本号 */
+        currentAppVersion: number;
+        /** 是否是游客模式 */
+        isGuest: boolean;
+        /** 游客数据 */
+        private _guestModel;
+        /** 项目数据 */
+        data: IData;
+        /** 登录接口 */
+        login: ILogin;
+        /** 本玩家今日玩的次数 */
+        playCount: number;
+        /**
+         * 用户持有的优惠劵
+         **/
+        private coupons;
+        /** 缓存上一次网络请求返回数据 */
+        resultData: any;
+        /** 解析的传入游戏的参数 */
+        parseParam: IExecuteData;
+        /** 用户拥有的奖金池  */
+        jackpotData: any[];
+        /** 用户的真实投注 */
+        userReallyBet: number;
+        /** 每次投注达到多少 就可以获得刮刮卡 */
+        getTicketIncBet: number;
+        /** 当前游戏的奖金池 */
+        gamePool: number;
+        /** 获得奖励的次数 */
+        jackpotCount: number;
+        /**
+         * 获取游客模式的优惠券
+         * @return
+         */
+        getGuestCoupons(): Coupons[];
+        /**
+         * 设置当前拥有的优惠券
+         * @param value 新优惠券
+         */
+        addCoupons(value: Coupons[]): void;
+        /** 获取所有的优惠券 */
+        getCoupons(): Coupons[];
+        /**
+         * 根据优惠劵类型  获取优惠劵
+         * @param type 1抵用券 2投注劵
+         * @return
+         */
+        getCoupon(type: number): Coupons[];
+        /**
+         * 根据游戏ID  获取优惠劵
+         * @param gameId 游戏ID
+         * @return
+         */
+        getCouponGame(gameId: number): Coupons[];
+        /** 使用活动劵的次数 */
+        useCouponNum(): void;
+        /**
+         * 获取正在使用的优惠劵
+         * @return
+         */
+        getUseCoupon(): Coupons;
+        /**
+         * 获取正在使用的优惠劵
+         */
+        removeCoupon(obj: Coupons): void;
+        /**
+         * 判断当前游戏可有使用的优惠券
+         */
+        getCanUseCoupon(): boolean;
+        /** 停止所有的优惠价使用 */
+        stopAllCoupon(): void;
+        /** 获取请求发送的  token */
+        getRequestToken(): string;
+        /** 玩家头像 */
+        get icon(): string;
+        /**
+         * @private
+         */
+        set icon(value: string);
+        /** 1=>投注中，2=>计算中，3=>开奖  4=>收取金币  5=>比分中 */
+        get status(): number;
+        /**
+         * @private
+         */
+        set status(value: number);
+        windowOpen(url: string): void;
+        get guestModel(): IGuestModel;
+        set guestModel(value: IGuestModel);
+        /**
+         * 获取设备号
+         * @return
+         */
+        getDevice(): string;
+        /**
+         * 保存账号密码
+         * @param login
+         * @param psd
+         */
+        saveUser(login: string, psd: string): void;
+        /**
+         * 获取渠道type
+         * @return
+         */
+        getChannelType(): 1 | 3;
+        /**
+         * 获取当前国家的货币单位(大写)
+         */
+        getCurrencyUnit(): string;
+        /**
+         * 获取当前国家的货币单位(首字母大写格式化)
+         */
+        getCurrencyUnitFormat(): string;
+    }
     export interface IConchRenderObject {
         drawSubmesh(submesh: any, drawType: number, renderMode: number, offset: number, count: number): void;
         matrix(matrix: Float32Array): void;
@@ -3836,7 +3853,7 @@ declare namespace coreLib {
          * @param btn
          * @param array
          */
-        constructor(btn: fgui.GButton, array: any[]);
+        constructor(btn: fgui.GButton, ...array: any[]);
         /** 检查一次状态 */
         check(): void;
         private changeHandler;

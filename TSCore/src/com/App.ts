@@ -1,0 +1,240 @@
+import {IAction} from "./interfaces/IAction"
+import {DefineConfig} from "./DefineConfig"
+import {EventController} from "./core/EventController"
+import {ELoader} from "./core/ELoader";
+import {ConfigKit, EnvType} from "./kit/ConfigKit";
+import {Log} from "./Log";
+import {IController, IInitEngine, IKey, IProxy, IView} from "./interfaces/ICommon";
+import {HistoryManager} from "./manager/HistoryManager";
+import Handler = Laya.Handler;
+
+export class App implements IAction {
+
+    private static _instance: App
+
+    static get inst(): App {
+        return this._instance
+    }
+
+    /** 默认的分组名
+     * @default group
+     * */
+    static DEFAULT_GROUP = "group"
+    /** 默认cacheId标记头
+     * @default cache
+     * */
+    static DEFAULT_CACHE_HEAD = "cache"
+    /**
+     *  游戏公用组
+     */
+    static GAME_GROUP = "game_group"
+
+    private options: InitApp
+    private _controller: IController
+
+    /**
+     *
+     * @param init
+     * @param [w=720]
+     * @param [h=1280]
+     * @param options
+     */
+    static run(init?: IInitEngine, w = 720, h = 1280, options?: InitApp) {
+        App._init()
+        App.inst.options = options ??= {laya: {init: true, renders: [Laya.WebGL]}, resize: true}
+        init?.run()
+        if (options.laya && !options.laya.init) return
+        Laya.init(w, h, ...options.laya.renders)
+        Laya.timer.callLater(this, this.startSize)
+    }
+
+    /** 设置默认竖屏布局 */
+    static updateDefaultScreen() {
+        // 设置竖屏
+        const conchConfig: any = ConfigKit.get("conchConfig")
+        if (conchConfig) {
+            // landscape: 0, portrait: 1, user: 2, behind: 3, sensor: 4, nosensor: 5, sensor_landscape: 6, sensor_portrait: 7, reverse_landscape: 8, reverse_portrait: 9, full_sensor: 10,
+            conchConfig.setScreenOrientation(1)
+        }
+        //设置横竖屏
+        if (Laya.Browser.onPC && !Laya.Browser.onLayaRuntime) {
+            Laya.stage.alignV = Laya.Stage.ALIGN_TOP
+            Laya.stage.alignH = Laya.Stage.ALIGN_CENTER
+            Laya.stage.screenMode = Laya.Stage.SCREEN_NONE
+            Laya.stage.scaleMode = Laya.Stage.SCALE_SHOWALL
+        } else {
+            Laya.stage.alignV = Laya.Stage.ALIGN_TOP
+            Laya.stage.alignH = Laya.Stage.ALIGN_LEFT
+            Laya.stage.screenMode = Laya.Stage.SCREEN_VERTICAL
+            Laya.stage.scaleMode = Laya.Stage.SCALE_FIXED_AUTO
+        }
+    }
+
+    /**
+     * 初始化框架
+     * @deprecated
+     * @see run
+     */
+    static init() {
+        App._init()
+    }
+
+    private static _init() {
+        this._instance = new App()
+        DefineConfig.init()
+        let envType = ConfigKit.env()
+        Log.debug("env", EnvType[envType])
+        // 使用自定义加载器加载资源
+        fgui.AssetProxy.inst.setAsset(ELoader.loader)
+        HistoryManager.init()
+    }
+
+    static initClass(...args) {
+        for (let i = 0; i < args.length; i++) {
+            new args[i]()
+        }
+    }
+
+    constructor() {
+        this.initController()
+    }
+
+    private static startSize() {
+        if (App.inst.options.resize) {
+            Laya.stage.on(Laya.Event.RESIZE, App.inst, App.inst.onResize)
+            App.inst.onResize()
+        }
+    }
+
+    private onResize() {
+        let screenWidth = Laya.stage.width
+        let screenHeight = Laya.stage.height
+        let dx = Laya.stage.designWidth
+        let dy = Laya.stage.designHeight
+        if (screenWidth > screenHeight && dx < dy || screenWidth < screenHeight && dx > dy) {
+            //scale should not change when orientation change
+            let tmp = dx
+            dx = dy
+            dy = tmp
+        }
+        let s1 = screenWidth / dx
+        let s2 = screenHeight / dy
+        let contentScaleFactor = Math.min(s1, s2)
+        fgui.GRoot.inst.setSize(Math.round(screenWidth / contentScaleFactor), Math.round(screenHeight / contentScaleFactor))
+        fgui.GRoot.inst.setScale(contentScaleFactor, contentScaleFactor)
+        Log.debug(screenWidth, screenHeight, contentScaleFactor)
+    }
+
+    protected initController() {
+        this._controller = new EventController()
+    }
+
+    regActionHandler(action: string, handler: Handler, group: string = null) {
+        this._controller.regActionHandler(action, handler, group)
+    }
+
+    regAction(action: string, caller: any, method: Function, group: string = null) {
+        this._controller.regAction(action, caller, method, group)
+    }
+
+    removeAllAction(...args: string[]) {
+        this._controller.removeAllAction.apply(this._controller, args)
+    }
+
+    removeGroup(group: string) {
+        this._controller.removeGroup(group)
+    }
+
+    removeGroupActions(group: string, ...args) {
+        args.unshift(group)
+        this._controller.removeGroupActions.apply(this._controller, args)
+    }
+
+    removeActionHandler(action: string, method: Function, group: string = null) {
+        this._controller.removeActionHandler(action, method, group)
+    }
+
+    removeFunction(groupObj: any, action: string, method: Function) {
+        this._controller.removeFunction(groupObj, action, method)
+    }
+
+    removeTargetAll(caller: any) {
+        this._controller.removeTargetAll(caller)
+    }
+
+    removeTarget(groupObj: any, caller: any) {
+        this._controller.removeTarget(groupObj, caller)
+    }
+
+    sendAction(action: string, ...args) {
+        args.unshift(action)
+        this._controller.sendAction.apply(this._controller, args)
+    }
+
+    sendGroupAction(group: string, action: string, ...args) {
+        args.unshift(action)
+        args.unshift(group)
+        this._controller.sendGroupAction.apply(this._controller, args)
+    }
+
+
+    addView<T extends IView & IKey>(key: string | { new(): T }, view: T) {
+        return this._controller.addView(key, view)
+    }
+
+    removeView<T extends IView & IKey>(key: string | T) {
+        this._controller.removeView(key)
+    }
+
+    getView<T>(key: string | { new(): T }): T {
+        return this._controller.getView(key)
+    }
+
+    getProxy<T>(name: string | { new(): T }): T {
+        return this._controller.getProxy(name)
+    }
+
+    addProxy<T extends IProxy & IKey>(key: string | { new(): T }, proxy: T) {
+        return this._controller.addProxy(key, proxy)
+    }
+
+    removeProxy<T extends IProxy & IKey>(key: string | T) {
+        this._controller.removeProxy(key)
+    }
+
+    /** 清除所有UI缓存 */
+    clearView() {
+        this._controller.clearView()
+    }
+
+    /** 清除所有分组和包含的事件 */
+    clearGroup() {
+        this._controller.clearGroup()
+    }
+
+
+    /** 获取当前屏幕等比例缩放系数 */
+    getEqualRatioScale() {
+        let point = this.getEqualRatioRatio(fgui.GRoot.inst.width, fgui.GRoot.inst.height)
+        return Math.min(point.x, point.y)
+    }
+
+    /**
+     * 获取当前屏幕等比例缩放系数
+     * @param [w=Laya.stage.width] 当前屏幕实际渲染宽度
+     * @param [h=Laya.stage.height] 当前屏幕实际渲染高度
+     */
+    getEqualRatioRatio(w?: number, h?: number) {
+        w ??= Laya.stage.width
+        h ??= Laya.stage.height
+        let s1 = w / Laya.stage.designWidth
+        let s2 = h / Laya.stage.designHeight
+        if (Laya.stage.screenMode == Laya.Stage.SCREEN_HORIZONTAL) {
+            s1 = w / Laya.stage.designHeight
+            s2 = h / Laya.stage.designWidth
+        }
+        return new Laya.Point(s1, s2)
+    }
+
+
+}
