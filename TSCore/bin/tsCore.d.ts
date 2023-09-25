@@ -1862,7 +1862,7 @@ declare namespace tsCore {
          * @param format 带占位符的字符串
          * @param args 替换文本，如果只有一个值，将会被用来替换所有的占位符
          */
-        static format(format: string, ...args: any[]): string;
+        static format(format: string, ...args: string[]): string;
         /**
          * 忽略大小字母比较字符是否相等
          * @param char1 字符串一
@@ -1973,7 +1973,8 @@ declare namespace tsCore {
         /**
          * 去除首位的空白部分
          * @param input 要被处理的字符串
-         * @return
+         * @deprecated
+         * @see String.trim
          */
         static trim(input: string): string;
         /**
@@ -1986,7 +1987,8 @@ declare namespace tsCore {
         /**
          * 从前面指定的字符串中删除空格。
          * @param input 输入字符串开始的空白将被删除。
-         * @return
+         * @deprecated
+         * @see trimStart()
          *
          */
         static ltrim(input: string): string;
@@ -1995,32 +1997,40 @@ declare namespace tsCore {
          * 从指定的字符串的结尾删除空格。
          *
          * @param input 输入字符串结尾的空白将被删除。
-         * @return
-         *
+         * @deprecated
+         * @see trimEnd()
          */
         static rtrim(input: string): string;
         /**
          * 确定是否按指定字符串开始。
          * @param input 要被处理的字符串
          * @param prefix 字符串的前缀
+         * @deprecated
+         * @see startsWith
          */
         static beginsWith(input: string, prefix: string): boolean;
         /**
          * 确定是否按指定字符串开始。
          * @param input 要被处理的字符串
          * @param prefix 字符串的前缀
+         * @deprecated
+         * @see String.startsWithAny
          */
         static beginsWithAny(input: string, ...prefix: string[]): boolean;
         /**
          * 确定是否按指定字符串结束。
          * @param input 要被处理的字符串
          * @param suffix 字符串的后缀
+         * @deprecated
+         * @see String.endsWith
          */
         static endsWith(input: string, suffix: string): boolean;
         /**
          * 确定是否按指定字符串结束。  只要满足一个就返回 true
          * @param input 要被处理的字符串
          * @param prefix 字符串的后缀
+         * @deprecated
+         * @see String.endsWithAny
          */
         static endsWithAny(input: string, ...prefix: string[]): boolean;
         /**
@@ -2047,6 +2057,10 @@ declare namespace tsCore {
          * @example
          * var str = "ssdw/aa"
          * StringUtils.endsCode(str, "/") = aa
+         *
+         * @deprecated
+         * @see String.substringAfter
+         * @see String.substringAfterLast
          */
         static endsCode(input: string, suffix: string, retain?: boolean, direction?: boolean): string;
         /**
@@ -2056,7 +2070,9 @@ declare namespace tsCore {
          * @param retain 是否要保留作为依据的符号 (默认不保留)
          * @param direction 是从前开始还是从后开始 (默认从后)
          *
-         * @return
+         * @deprecated
+         * @see String.substringBefore
+         * @see String.substringBeforeLast
          *
          */
         static beginsCode(input: string, suffix: string, retain?: boolean, direction?: boolean): string;
@@ -2079,7 +2095,8 @@ declare namespace tsCore {
          * 判断此字符串中是否包含
          * @param value
          * @param arge
-         * @return
+         * @deprecated
+         * @see String.contains
          */
         static contains(value: string, ...arge: any[]): boolean;
         /**
@@ -2721,7 +2738,6 @@ declare module Laya {
     }
 
 
-
 }
 
 
@@ -2751,6 +2767,62 @@ declare module fgui {
 
 }
 
+
+//  **********************         扩展原生方法         *****************************
+
+declare interface String {
+
+    /**
+     * 确定是否按指定字符串开始.满足一个返回 true
+     * @param search
+     */
+    startsWithAny(...search: string []): boolean
+
+    /**
+     * 确定是否按指定字符串结束.满足一个返回 true
+     * @param search
+     */
+    endsWithAny(...search: string []): boolean
+
+    /**
+     * 判断此字符串中是否包含
+     * @param search
+     */
+    contains(...search: string[]): boolean
+    /**
+     * 获取指定符号之后的字符串
+     * @param separator
+     */
+    substringAfter(separator: string): string
+    /**
+     * 获取指定符号之后的字符串 从最后一个符合的开始
+     * @param separator
+     */
+    substringAfterLast(separator: string): string
+    /**
+     * 获取指定符号之前的字符串
+     * @param separator
+     */
+    substringBefore(separator: string): string
+    /**
+     * 获取指定符号之前的字符串 从最后一个符合的开始
+     * @param separator
+     */
+    substringBeforeLast(separator: string): string
+    /**
+     * 获取指定开始和结束的符号之间的字符串
+     * @param open
+     * @param close
+     */
+    substringBetween(open: string, close:string): string
+    /**
+     * 获取指定开始和结束的符号之间的所有字符串
+     * @param open
+     * @param close
+     */
+    substringsBetween(open: string, close:string): string[]
+
+}
 declare type InitApp = {
     /** 初始化Laya */
     laya: {

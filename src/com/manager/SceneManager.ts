@@ -434,7 +434,7 @@ export class SceneManager extends BaseProxy {
                 Player.inst.money = Player.inst.cacheMoney
 
             Player.inst.cacheMoney = 0
-            Player.inst.gameData = null
+            // Player.inst.gameData = null
             Player.inst.isGuest = false
             Player.inst.gameModel = CommonCmd.GAME_HOME
         }

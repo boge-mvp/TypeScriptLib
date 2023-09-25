@@ -97,7 +97,6 @@ declare module Laya {
     }
 
 
-
 }
 
 
@@ -124,5 +123,62 @@ declare module fgui {
         order: number
 
     }
+
+}
+
+
+//  **********************         扩展原生方法         *****************************
+
+declare interface String {
+
+    /**
+     * 确定是否按指定字符串开始.满足一个返回 true
+     * @param search
+     */
+    startsWithAny(...search: string []): boolean
+
+    /**
+     * 确定是否按指定字符串结束.满足一个返回 true
+     * @param search
+     */
+    endsWithAny(...search: string []): boolean
+
+    /**
+     * 判断此字符串中是否包含
+     * @param search
+     */
+    contains(...search: string[]): boolean
+    /**
+     * 获取指定符号之后的字符串
+     * @param separator
+     */
+    substringAfter(separator: string): string
+    /**
+     * 获取指定符号之后的字符串 从最后一个符合的开始
+     * @param separator
+     */
+    substringAfterLast(separator: string): string
+    /**
+     * 获取指定符号之前的字符串
+     * @param separator
+     */
+    substringBefore(separator: string): string
+    /**
+     * 获取指定符号之前的字符串 从最后一个符合的开始
+     * @param separator
+     */
+    substringBeforeLast(separator: string): string
+    /**
+     * 获取指定开始和结束的符号之间的字符串
+     * @param open
+     * @param close
+     */
+    substringBetween(open: string, close:string): string
+    /**
+     * 获取指定开始和结束的符号之间的所有字符串
+     * @param open
+     * @param close
+     */
+    substringsBetween(open: string, close:string): string[]
 
 }

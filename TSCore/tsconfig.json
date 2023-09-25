@@ -3,7 +3,7 @@
     "../tsconfig.json"
   ],
   "compilerOptions": {
-    "outDir": "./bin",
+    "outDir": "./bin"
 //    "rootDir": "../",
 //    "baseUrl": ".",
 //    "paths": {

@@ -1,10 +1,9 @@
-import Browser = Laya.Browser;
-import {Player} from "../Player"
-import {AppManager} from "./AppManager"
 import Log = tsCore.Log;
 import Environment = tsCore.Environment;
 import EnvType = tsCore.EnvType;
 import ConfigKit = tsCore.ConfigKit;
+import {Player} from "../Player"
+import {AppManager} from "./AppManager"
 import {GameConfigKit} from "../kit/GameConfigKit";
 
 /**
@@ -62,8 +61,7 @@ export class AnalyticsManager {
      */
     static sendTiming(timingVar: string, timingValue: number) {
         this.isOpenAnalytics = ConfigKit.get("openAnalytics")
-        if (Player.inst.isWeb && this.isOpenAnalytics && Browser.window.ga)
-            AnalyticsManager.ga('timing', 'game', timingVar, timingValue)
+        if (Player.inst.isWeb && this.isOpenAnalytics && window.ga) gaTiming({timingCategory: "game", timingVar: timingVar, timingValue: timingValue})
         if (!Player.inst.isWeb && this.isOpenAnalytics)
             AppManager.enterInvite({eventName: timingVar, eventValue: timingValue}, AppManager.nullFun)
     }
@@ -78,7 +76,7 @@ export class AnalyticsManager {
     static ga(type: gaType, category: string, action: string, label: string | number) {
         this.isOpenAnalytics = ConfigKit.get("openAnalytics")
         // @ts-ignore
-        if (this.isOpenAnalytics && Player.inst.isWeb && window.ga) window.ga('send', type, category, action, label)
+        if (this.isOpenAnalytics && Player.inst.isWeb && window.ga) ga('send', type, category, action, label)
         if (this.isOpenAnalytics && !Player.inst.isWeb)
             AppManager.enterFeedback({eventName: action, eventValue: label}, AppManager.nullFun)
     }

@@ -356,7 +356,7 @@ declare namespace gameLib {
         /** 新游戏开始  这里可以处理一些逻辑 */
         newGameStartLogic(handler?: ParamHandler): void;
         /**
-         * 显示邀请进入真钱场
+         * 显示邀请进入cash场
          * @param handler 回调
          */
         showInviteRealMoney(handler?: ParamHandler): void;
@@ -2926,15 +2926,6 @@ declare namespace gameLib {
         static getProgress: typeof JSUtils.progress;
         /** 通知进入游戏了 */
         static gameOnload(): void;
-        /**
-         * 通知服务器直接离开的房间
-         */
-        static outGameHttp(): void;
-        /**
-         * 分析邀请
-         * @param type 1 开  2 关
-         */
-        static shareDetail(type: number): void;
         /** 上传头像 */
         static uploadAvatar(): void;
         static updateHead: typeof JSUtils.uploadAvatar;

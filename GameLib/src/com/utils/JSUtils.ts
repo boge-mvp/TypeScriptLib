@@ -2,7 +2,6 @@ import Browser = Laya.Browser
 import Render = Laya.Render
 import {AppManager} from "../manager/AppManager"
 import {SceneManager} from "../manager/SceneManager"
-import {Player} from "../Player"
 
 export class JSUtils {
 
@@ -76,19 +75,22 @@ export class JSUtils {
     static openPage(page: string, isCloseGame = true) {
         if (isCloseGame) {
             Browser.window.parent?.GameToHall?.comeWebPage?.(page)
-            AppManager.showWeb({javascript: `window.GameToHall.comeWebPage('${page}')`})
+            AppManager.showWeb({javascript: `window.GameToHall.comeWebPage && window.GameToHall.comeWebPage('${page}')`})
             SceneManager.inst.closeGame()
         } else {
             Browser.window.parent?.GameToHall?.openWebPageWithoutLeaveGame?.(page)
             AppManager.showWeb({javascript: `window.GameToHall.openWebPageWithoutLeaveGame('${page}')`})
         }
+        Browser.window.parent?.GameToHall?.openPage?.(page)
+        AppManager.showWeb({javascript: `window.GameToHall.openPage && window.GameToHall.openPage('${page}', ${isCloseGame})`})
     }
 
     /** 进入游戏进度条 */
     static progress(value: number) {
         Browser.window.parent?.GameToHall?.progress?.(value)
         Browser.window.parent?.GameToHall?.getProgress?.(value)
-        AppManager.executionJavascript("window.GameToHall.getProgress", value)
+        AppManager.executionJavascript("window.GameToHall.progress && window.GameToHall.progress", value)
+        AppManager.executionJavascript("window.GameToHall.getProgress && window.GameToHall.getProgress", value)
     }
 
     static getProgress = JSUtils.progress
@@ -99,26 +101,12 @@ export class JSUtils {
         AppManager.executionJavascript("window.GameToHall.gameOnload", null)
     }
 
-    /**
-     * 通知服务器直接离开的房间
-     */
-    static outGameHttp() {
-        Browser.window.parent?.GameToHall?.outGameHttp?.(Player.inst.urlParam.roomId)
-    }
-
-    /**
-     * 分析邀请
-     * @param type 1 开  2 关
-     */
-    static shareDetail(type: number) {
-        Browser.window.parent?.GameToHall?.shareDetail?.(Player.inst.gameModel, type)
-    }
-
     /** 上传头像 */
     static uploadAvatar() {
         Browser.window.parent?.GameToHall?.uploadAvatar?.()
         Browser.window.parent?.GameToHall?.openReviseAvatarNickNameDrawer?.()
-        AppManager.showWeb({javascript: "window.GameToHall.openReviseAvatarNickNameDrawer()"})
+        AppManager.showWeb({javascript: "window.GameToHall.uploadAvatar && window.GameToHall.uploadAvatar()"})
+        AppManager.showWeb({javascript: "window.GameToHall.openReviseAvatarNickNameDrawer && window.GameToHall.openReviseAvatarNickNameDrawer()"})
     }
 
     static updateHead = JSUtils.uploadAvatar

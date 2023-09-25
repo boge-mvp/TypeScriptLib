@@ -1,4 +1,3 @@
-
 function runFun(func?: ParamHandler, ...args) {
     if (func) return func instanceof Laya.Handler ? func.runWith(args) : func.apply(null, args)
     return null
@@ -27,6 +26,7 @@ function mixin<T extends Constructor[]>(...classes: T): Constructor<UnionToInter
             }
         }
     }
+
     for (const Class of classes) {
         copyProperties(MixinClass.prototype, Class.prototype)
     }
@@ -41,6 +41,7 @@ function mixin<T extends Constructor[]>(...classes: T): Constructor<UnionToInter
  */
 function mixinProperty<T extends Constructor[]>(...classes: T): Constructor<UnionToIntersection<InstanceTypeOfConstructor<T[number]>>> {
     let parentClass = classes[0]
+
     class MixinClass extends parentClass {
         constructor(...args: any[]) {
             super(...args)
@@ -150,4 +151,97 @@ function getPropertyNames(obj, containsSuperClasses = false) {
         }
     }
     return Array.from(allPropertyNames)
+}
+
+String.prototype.startsWithAny = function (...search: string []) {
+    return search.some((value) => this.startsWith(value))
+}
+
+String.prototype.endsWithAny = function (...search: string []) {
+    return search.some((value) => this.endsWith(value))
+}
+
+String.prototype.contains = function (...search: string []) {
+    return search.some((value) => this.includes(value))
+}
+
+String.prototype.substringAfter = function (separator: string) {
+    if (!this || !separator) return ""
+    const pos = this.indexOf(separator)
+    if (pos == -1) return ""
+    return this.substring(pos + separator.length)
+}
+
+String.prototype.substringAfterLast = function (separator: string) {
+    if (!this || !separator) return ""
+    const pos = this.lastIndexOf(separator)
+    if (pos == -1 || pos == this.length - separator.length) return ""
+    return this.substring(pos + separator.length)
+}
+
+String.prototype.substringBefore = function (separator: string) {
+    if (!this || !separator) return ""
+    const pos = this.indexOf(separator)
+    if (pos == -1) return ""
+    return this.substring(0, pos)
+}
+
+String.prototype.substringBeforeLast = function (separator: string) {
+    if (!this || !separator) return ""
+    const pos = this.lastIndexOf(separator)
+    if (pos == -1) return ""
+    return this.substring(0, pos)
+}
+
+String.prototype.substringBetween = function (open: string, close: string) {
+    if (!this || !open || !close) return ""
+    const start = this.indexOf(open)
+    if (start != -1) {
+        const end = this.indexOf(close, start + open.length)
+        if (end != -1) return this.substring(start + open.length, end)
+    }
+    return ""
+}
+
+String.prototype.substringsBetween = function (open: string, close: string) {
+    const list: string[] = []
+    if (!this || !open || !close) return list
+    const strLen = this.length
+    if (strLen == 0) {
+        return list
+    }
+    const closeLen = close.length
+    const openLen = open.length
+    let pos = 0
+    while (pos < strLen - closeLen) {
+        let start = this.indexOf(open, pos)
+        if (start < 0) {
+            break
+        }
+        start += openLen
+        const end = this.indexOf(close, start)
+        if (end < 0) {
+            break
+        }
+        list.push(this.substring(start, end))
+        pos = end + closeLen
+    }
+    return list
+}
+
+
+function gaSend(hitType: HitType, data: EventType | ExceptionType | TimingType) {
+    ga("send", hitType, data)
+}
+
+function gaEvent(data: EventType) {
+    gaSend("event", data)
+}
+
+function gaException(data: ExceptionType) {
+    gaSend("exception", data)
+}
+
+function gaTiming(data: TimingType) {
+    gaSend("timing", data)
 }

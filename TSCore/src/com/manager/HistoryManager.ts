@@ -61,7 +61,7 @@ export class HistoryManager {
         array?.current?.showRecord()
         if (isBack) {
             // 键盘返回
-            if (!Browser.onLayaRuntime) Browser.window.addNewHistory()
+            if (!Browser.onLayaRuntime) HistoryManager.addNewHistory()
         } else {
 
         }

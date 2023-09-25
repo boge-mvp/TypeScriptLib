@@ -375,7 +375,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
     }
 
     /**
-     * 显示邀请进入真钱场
+     * 显示邀请进入cash场
      * @param handler 回调
      */
     showInviteRealMoney(handler?: ParamHandler) {

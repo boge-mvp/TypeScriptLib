@@ -21,7 +21,7 @@ export class StringUtil {
      * @param format 带占位符的字符串
      * @param args 替换文本，如果只有一个值，将会被用来替换所有的占位符
      */
-    static format(format: string, ...args) {
+    static format(format: string, ...args: string[]) {
         if (args.length == 1) {
             format = format.replace(/\{(\d+)}/g, args[0])
         } else {
@@ -61,10 +61,7 @@ export class StringUtil {
      */
     static removeHtml(value: string) {
         let str = value.replace(this.HTML_TAG_REG, "")
-        if (str) {
-            return this.trim(str)
-        }
-        return value
+        return str ? str.trim() : value
     }
 
     /**
@@ -204,8 +201,7 @@ export class StringUtil {
      * @return
      */
     static hasChineseChar(char: string) {
-        let pattern = /[^\x00-\xff]/
-        return this.checkChar(char, pattern)
+        return this.checkChar(char, /[^\x00-\xff]/)
     }
 
     /**
@@ -215,11 +211,7 @@ export class StringUtil {
      * @return
      */
     static checkChar(char: string, pattern: RegExp) {
-        if (!char) {
-            return false
-        }
-        char = this.trim(char)
-        return pattern.test(char)
+        return char ? pattern.test(char.trim()) : false
     }
 
     /**
@@ -240,10 +232,11 @@ export class StringUtil {
     /**
      * 去除首位的空白部分
      * @param input 要被处理的字符串
-     * @return
+     * @deprecated
+     * @see String.trim
      */
     static trim(input: string) {
-        return StringUtil.ltrim(StringUtil.rtrim(input))
+        return input?.trim()
     }
 
     /**
@@ -267,17 +260,12 @@ export class StringUtil {
     /**
      * 从前面指定的字符串中删除空格。
      * @param input 输入字符串开始的空白将被删除。
-     * @return
+     * @deprecated
+     * @see trimStart()
      *
      */
     static ltrim(input: string) {
-        let size = input.length
-        for (let i = 0; i < size; i++) {
-            if (input.charCodeAt(i) > 32) {
-                return input.substring(i)
-            }
-        }
-        return ""
+        return input?.trimStart()
     }
 
     /**
@@ -285,71 +273,55 @@ export class StringUtil {
      * 从指定的字符串的结尾删除空格。
      *
      * @param input 输入字符串结尾的空白将被删除。
-     * @return
-     *
+     * @deprecated
+     * @see trimEnd()
      */
     static rtrim(input: string) {
-        let size = input.length
-        for (let i = size; i > 0; i--) {
-            if (input.charCodeAt(i - 1) > 32) {
-                return input.substring(0, i)
-            }
-        }
-        return ""
+        return input?.trimEnd()
     }
 
     /**
      * 确定是否按指定字符串开始。
      * @param input 要被处理的字符串
      * @param prefix 字符串的前缀
+     * @deprecated
+     * @see startsWith
      */
     static beginsWith(input: string, prefix: string) {
-        if (!input) {
-            return false
-        }
-        return (prefix == input.substring(0, prefix.length))
+        return input?.startsWith(prefix)
     }
 
     /**
      * 确定是否按指定字符串开始。
      * @param input 要被处理的字符串
      * @param prefix 字符串的前缀
+     * @deprecated
+     * @see String.startsWithAny
      */
     static beginsWithAny(input: string, ...prefix: string[]) {
-        if (StringUtil.isEmpty(input)) {
-            return false
-        }
-        for (let i = 0; i < prefix.length; i++) {
-            if (StringUtil.beginsWith(input, prefix[i])) return true
-        }
-        return false
+        return input?.startsWithAny(...prefix)
     }
 
     /**
      * 确定是否按指定字符串结束。
      * @param input 要被处理的字符串
      * @param suffix 字符串的后缀
+     * @deprecated
+     * @see String.endsWith
      */
     static endsWith(input: string, suffix: string) {
-        if (!input) {
-            return false
-        }
-        return (suffix == input.substring(input.length - suffix.length))
+        return input?.endsWith(suffix)
     }
 
     /**
      * 确定是否按指定字符串结束。  只要满足一个就返回 true
      * @param input 要被处理的字符串
      * @param prefix 字符串的后缀
+     * @deprecated
+     * @see String.endsWithAny
      */
     static endsWithAny(input: string, ...prefix: string[]) {
-        if (StringUtil.isEmpty(input)) {
-            return false
-        }
-        for (let i = 0; i < prefix.length; i++) {
-            if (StringUtil.endsWith(input, prefix[i])) return true
-        }
-        return false
+        return input?.endsWithAny(...prefix)
     }
 
     /**
@@ -382,6 +354,10 @@ export class StringUtil {
      * @example
      * var str = "ssdw/aa"
      * StringUtils.endsCode(str, "/") = aa
+     *
+     * @deprecated
+     * @see String.substringAfter
+     * @see String.substringAfterLast
      */
     static endsCode(input: string, suffix: string, retain = false, direction = false) {
         let index: number
@@ -407,7 +383,9 @@ export class StringUtil {
      * @param retain 是否要保留作为依据的符号 (默认不保留)
      * @param direction 是从前开始还是从后开始 (默认从后)
      *
-     * @return
+     * @deprecated
+     * @see String.substringBefore
+     * @see String.substringBeforeLast
      *
      */
     static beginsCode(input: string, suffix: string, retain = false, direction = false) {
@@ -474,16 +452,11 @@ export class StringUtil {
      * 判断此字符串中是否包含
      * @param value
      * @param arge
-     * @return
+     * @deprecated
+     * @see String.contains
      */
     static contains(value: string, ...arge) {
-        for (let i = 0; i < arge.length; i++) {
-            let items: string = arge[i]
-            if (value.indexOf(items) != -1) {
-                return true
-            }
-        }
-        return false
+        return value?.contains(...arge)
     }
 
     /**

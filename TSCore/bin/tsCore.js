@@ -3255,7 +3255,7 @@ window.tsCore = {};
             if (isBack) {
                 // 键盘返回
                 if (!Laya.Browser.onLayaRuntime)
-                    Laya.Browser.window.addNewHistory();
+                    HistoryManager.addNewHistory();
             }
             else {
             }
@@ -4405,10 +4405,7 @@ window.tsCore = {};
          */
         static removeHtml(value) {
             let str = value.replace(this.HTML_TAG_REG, "");
-            if (str) {
-                return this.trim(str);
-            }
-            return value;
+            return str ? str.trim() : value;
         }
         /**
          * 是否为合法 Email
@@ -4536,8 +4533,7 @@ window.tsCore = {};
          * @return
          */
         static hasChineseChar(char) {
-            let pattern = /[^\x00-\xff]/;
-            return this.checkChar(char, pattern);
+            return this.checkChar(char, /[^\x00-\xff]/);
         }
         /**
          * 检测指定字符串是否匹配指定模式
@@ -4546,11 +4542,7 @@ window.tsCore = {};
          * @return
          */
         static checkChar(char, pattern) {
-            if (!char) {
-                return false;
-            }
-            char = this.trim(char);
-            return pattern.test(char);
+            return char ? pattern.test(char.trim()) : false;
         }
         /**
          * 比较两个字符串是否相等
@@ -4570,10 +4562,11 @@ window.tsCore = {};
         /**
          * 去除首位的空白部分
          * @param input 要被处理的字符串
-         * @return
+         * @deprecated
+         * @see String.trim
          */
         static trim(input) {
-            return StringUtil.ltrim(StringUtil.rtrim(input));
+            return input === null || input === void 0 ? void 0 : input.trim();
         }
         /**
          * 去除所有的空白部分
@@ -4596,86 +4589,63 @@ window.tsCore = {};
         /**
          * 从前面指定的字符串中删除空格。
          * @param input 输入字符串开始的空白将被删除。
-         * @return
+         * @deprecated
+         * @see trimStart()
          *
          */
         static ltrim(input) {
-            let size = input.length;
-            for (let i = 0; i < size; i++) {
-                if (input.charCodeAt(i) > 32) {
-                    return input.substring(i);
-                }
-            }
-            return "";
+            return input === null || input === void 0 ? void 0 : input.trimStart();
         }
         /**
          *
          * 从指定的字符串的结尾删除空格。
          *
          * @param input 输入字符串结尾的空白将被删除。
-         * @return
-         *
+         * @deprecated
+         * @see trimEnd()
          */
         static rtrim(input) {
-            let size = input.length;
-            for (let i = size; i > 0; i--) {
-                if (input.charCodeAt(i - 1) > 32) {
-                    return input.substring(0, i);
-                }
-            }
-            return "";
+            return input === null || input === void 0 ? void 0 : input.trimEnd();
         }
         /**
          * 确定是否按指定字符串开始。
          * @param input 要被处理的字符串
          * @param prefix 字符串的前缀
+         * @deprecated
+         * @see startsWith
          */
         static beginsWith(input, prefix) {
-            if (!input) {
-                return false;
-            }
-            return (prefix == input.substring(0, prefix.length));
+            return input === null || input === void 0 ? void 0 : input.startsWith(prefix);
         }
         /**
          * 确定是否按指定字符串开始。
          * @param input 要被处理的字符串
          * @param prefix 字符串的前缀
+         * @deprecated
+         * @see String.startsWithAny
          */
         static beginsWithAny(input, ...prefix) {
-            if (StringUtil.isEmpty(input)) {
-                return false;
-            }
-            for (let i = 0; i < prefix.length; i++) {
-                if (StringUtil.beginsWith(input, prefix[i]))
-                    return true;
-            }
-            return false;
+            return input === null || input === void 0 ? void 0 : input.startsWithAny(...prefix);
         }
         /**
          * 确定是否按指定字符串结束。
          * @param input 要被处理的字符串
          * @param suffix 字符串的后缀
+         * @deprecated
+         * @see String.endsWith
          */
         static endsWith(input, suffix) {
-            if (!input) {
-                return false;
-            }
-            return (suffix == input.substring(input.length - suffix.length));
+            return input === null || input === void 0 ? void 0 : input.endsWith(suffix);
         }
         /**
          * 确定是否按指定字符串结束。  只要满足一个就返回 true
          * @param input 要被处理的字符串
          * @param prefix 字符串的后缀
+         * @deprecated
+         * @see String.endsWithAny
          */
         static endsWithAny(input, ...prefix) {
-            if (StringUtil.isEmpty(input)) {
-                return false;
-            }
-            for (let i = 0; i < prefix.length; i++) {
-                if (StringUtil.endsWith(input, prefix[i]))
-                    return true;
-            }
-            return false;
+            return input === null || input === void 0 ? void 0 : input.endsWithAny(...prefix);
         }
         /**
          * 删除在输入字符串中删除字符串的所有实例。
@@ -4705,6 +4675,10 @@ window.tsCore = {};
          * @example
          * var str = "ssdw/aa"
          * StringUtils.endsCode(str, "/") = aa
+         *
+         * @deprecated
+         * @see String.substringAfter
+         * @see String.substringAfterLast
          */
         static endsCode(input, suffix, retain = false, direction = false) {
             let index;
@@ -4731,7 +4705,9 @@ window.tsCore = {};
          * @param retain 是否要保留作为依据的符号 (默认不保留)
          * @param direction 是从前开始还是从后开始 (默认从后)
          *
-         * @return
+         * @deprecated
+         * @see String.substringBefore
+         * @see String.substringBeforeLast
          *
          */
         static beginsCode(input, suffix, retain = false, direction = false) {
@@ -4798,16 +4774,11 @@ window.tsCore = {};
          * 判断此字符串中是否包含
          * @param value
          * @param arge
-         * @return
+         * @deprecated
+         * @see String.contains
          */
         static contains(value, ...arge) {
-            for (let i = 0; i < arge.length; i++) {
-                let items = arge[i];
-                if (value.indexOf(items) != -1) {
-                    return true;
-                }
-            }
-            return false;
+            return value === null || value === void 0 ? void 0 : value.contains(...arge);
         }
         /**
          * 将 Uint8Array 转换成16进制颜色值  至少保证3个值
@@ -6655,4 +6626,94 @@ function getPropertyNames(obj, containsSuperClasses = false) {
         }
     }
     return Array.from(allPropertyNames);
+}
+String.prototype.startsWithAny = function (...search) {
+    return search.some((value) => this.startsWith(value));
+};
+String.prototype.endsWithAny = function (...search) {
+    return search.some((value) => this.endsWith(value));
+};
+String.prototype.contains = function (...search) {
+    return search.some((value) => this.includes(value));
+};
+String.prototype.substringAfter = function (separator) {
+    if (!this || !separator)
+        return "";
+    const pos = this.indexOf(separator);
+    if (pos == -1)
+        return "";
+    return this.substring(pos + separator.length);
+};
+String.prototype.substringAfterLast = function (separator) {
+    if (!this || !separator)
+        return "";
+    const pos = this.lastIndexOf(separator);
+    if (pos == -1 || pos == this.length - separator.length)
+        return "";
+    return this.substring(pos + separator.length);
+};
+String.prototype.substringBefore = function (separator) {
+    if (!this || !separator)
+        return "";
+    const pos = this.indexOf(separator);
+    if (pos == -1)
+        return "";
+    return this.substring(0, pos);
+};
+String.prototype.substringBeforeLast = function (separator) {
+    if (!this || !separator)
+        return "";
+    const pos = this.lastIndexOf(separator);
+    if (pos == -1)
+        return "";
+    return this.substring(0, pos);
+};
+String.prototype.substringBetween = function (open, close) {
+    if (!this || !open || !close)
+        return "";
+    const start = this.indexOf(open);
+    if (start != -1) {
+        const end = this.indexOf(close, start + open.length);
+        if (end != -1)
+            return this.substring(start + open.length, end);
+    }
+    return "";
+};
+String.prototype.substringsBetween = function (open, close) {
+    const list = [];
+    if (!this || !open || !close)
+        return list;
+    const strLen = this.length;
+    if (strLen == 0) {
+        return list;
+    }
+    const closeLen = close.length;
+    const openLen = open.length;
+    let pos = 0;
+    while (pos < strLen - closeLen) {
+        let start = this.indexOf(open, pos);
+        if (start < 0) {
+            break;
+        }
+        start += openLen;
+        const end = this.indexOf(close, start);
+        if (end < 0) {
+            break;
+        }
+        list.push(this.substring(start, end));
+        pos = end + closeLen;
+    }
+    return list;
+};
+function gaSend(hitType, data) {
+    ga("send", hitType, data);
+}
+function gaEvent(data) {
+    gaSend("event", data);
+}
+function gaException(data) {
+    gaSend("exception", data);
+}
+function gaTiming(data) {
+    gaSend("timing", data);
 }

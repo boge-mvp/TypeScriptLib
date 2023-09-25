@@ -581,7 +581,7 @@ window.gameLib = {};
             runFun(handler);
         }
         /**
-         * 显示邀请进入真钱场
+         * 显示邀请进入cash场
          * @param handler 回调
          */
         showInviteRealMoney(handler) {
@@ -3084,8 +3084,8 @@ window.gameLib = {};
          */
         static sendTiming(timingVar, timingValue) {
             this.isOpenAnalytics = tsCore.ConfigKit.get("openAnalytics");
-            if (Player.inst.isWeb && this.isOpenAnalytics && Laya.Browser.window.ga)
-                AnalyticsManager.ga('timing', 'game', timingVar, timingValue);
+            if (Player.inst.isWeb && this.isOpenAnalytics && window.ga)
+                gaTiming({ timingCategory: "game", timingVar: timingVar, timingValue: timingValue });
             if (!Player.inst.isWeb && this.isOpenAnalytics)
                 AppManager.enterInvite({ eventName: timingVar, eventValue: timingValue }, AppManager.nullFun);
         }
@@ -3100,7 +3100,7 @@ window.gameLib = {};
             this.isOpenAnalytics = tsCore.ConfigKit.get("openAnalytics");
             // @ts-ignore
             if (this.isOpenAnalytics && Player.inst.isWeb && window.ga)
-                window.ga('send', type, category, action, label);
+                ga('send', type, category, action, label);
             if (this.isOpenAnalytics && !Player.inst.isWeb)
                 AppManager.enterFeedback({ eventName: action, eventValue: label }, AppManager.nullFun);
         }
@@ -6090,23 +6090,26 @@ window.gameLib = {};
          * @param [isCloseGame=true] 是否关闭游戏
          */
         static openPage(page, isCloseGame = true) {
-            var _a, _b, _c, _d, _e, _f;
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j;
             if (isCloseGame) {
                 (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.comeWebPage) === null || _c === void 0 ? void 0 : _c.call(_b, page);
-                AppManager.showWeb({ javascript: `window.GameToHall.comeWebPage('${page}')` });
+                AppManager.showWeb({ javascript: `window.GameToHall.comeWebPage && window.GameToHall.comeWebPage('${page}')` });
                 SceneManager.inst.closeGame();
             }
             else {
                 (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.openWebPageWithoutLeaveGame) === null || _f === void 0 ? void 0 : _f.call(_e, page);
                 AppManager.showWeb({ javascript: `window.GameToHall.openWebPageWithoutLeaveGame('${page}')` });
             }
+            (_j = (_h = (_g = Laya.Browser.window.parent) === null || _g === void 0 ? void 0 : _g.GameToHall) === null || _h === void 0 ? void 0 : _h.openPage) === null || _j === void 0 ? void 0 : _j.call(_h, page);
+            AppManager.showWeb({ javascript: `window.GameToHall.openPage && window.GameToHall.openPage('${page}', ${isCloseGame})` });
         }
         /** 进入游戏进度条 */
         static progress(value) {
             var _a, _b, _c, _d, _e, _f;
             (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.progress) === null || _c === void 0 ? void 0 : _c.call(_b, value);
             (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.getProgress) === null || _f === void 0 ? void 0 : _f.call(_e, value);
-            AppManager.executionJavascript("window.GameToHall.getProgress", value);
+            AppManager.executionJavascript("window.GameToHall.progress && window.GameToHall.progress", value);
+            AppManager.executionJavascript("window.GameToHall.getProgress && window.GameToHall.getProgress", value);
         }
         /** 通知进入游戏了 */
         static gameOnload() {
@@ -6114,27 +6117,13 @@ window.gameLib = {};
             (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.gameOnload) === null || _c === void 0 ? void 0 : _c.call(_b);
             AppManager.executionJavascript("window.GameToHall.gameOnload", null);
         }
-        /**
-         * 通知服务器直接离开的房间
-         */
-        static outGameHttp() {
-            var _a, _b, _c;
-            (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.outGameHttp) === null || _c === void 0 ? void 0 : _c.call(_b, Player.inst.urlParam.roomId);
-        }
-        /**
-         * 分析邀请
-         * @param type 1 开  2 关
-         */
-        static shareDetail(type) {
-            var _a, _b, _c;
-            (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.shareDetail) === null || _c === void 0 ? void 0 : _c.call(_b, Player.inst.gameModel, type);
-        }
         /** 上传头像 */
         static uploadAvatar() {
             var _a, _b, _c, _d, _e, _f;
             (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.uploadAvatar) === null || _c === void 0 ? void 0 : _c.call(_b);
             (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.openReviseAvatarNickNameDrawer) === null || _f === void 0 ? void 0 : _f.call(_e);
-            AppManager.showWeb({ javascript: "window.GameToHall.openReviseAvatarNickNameDrawer()" });
+            AppManager.showWeb({ javascript: "window.GameToHall.uploadAvatar && window.GameToHall.uploadAvatar()" });
+            AppManager.showWeb({ javascript: "window.GameToHall.openReviseAvatarNickNameDrawer && window.GameToHall.openReviseAvatarNickNameDrawer()" });
         }
     }
     JSUtils.getProgress = JSUtils.progress;
