@@ -1,0 +1,88 @@
+## 需要给游戏端开启的方法 2.0 (游戏已兼容老版本)
+
+### 进入游戏进度条 进度值  0-100
+
+> progress(value: number)  
+~~getProgress(value: number)~~ //openPage替代‘,游戏已兼容后续删除该调用
+
+### 通知进入游戏了
+
+> gameOnload()
+
+### 打开指定的web页面 并关闭游戏
+
+用openPage代替 游戏已做兼容后续删除
+
+> ~~comeWebPage()~~  *已弃用* //openPage替代‘,游戏已兼容后续删除该调用
+
+### 打开指定的web页面 不关闭游戏的前提下
+
+value 路径 如： "/giftPage?token=***"
+
+
+> ~~openWebPageWithoutLeaveGame(value: string)~~
+>
+> *已弃用* //openPage替代‘,游戏已兼容后续删除该调用
+
+### 打开一个原生页面
+
+page 页面 如： "/giftPage?token=***"
+isCloseGame 是否关闭游戏 默认true
+
+> openPage(page: string, isCloseGame = true)
+>
+> 至少需要提供 login deposit 页面
+>
+> 例如：
+>
+> openPage("login") or openPage("deposit") or openPage("https://demo.com/login")
+
+### 打开大厅或原生的默认弹窗  value 提示文案
+
+> ~~openModal(value: string)~~  
+> alert(string)
+
+### 关闭游戏 type: 0.默认直接退出 1.退出切换到新游戏 data:附带其它数据
+
+> gameClose(type = 0, data = null)
+
+### 进行用户上传头像
+
+> uploadAvatar()  
+> ~~openReviseAvatarNickNameDrawer~~  
+> *已弃用* // 游戏已兼容后续删除该调用
+
+### Toast
+
+> toast(string)
+
+### 添加数据到复制面板
+
+> clipData(string)
+
+### 获取国家码
+
+> getCountryIso()
+
+### analytics
+
+> reportFbEvent(json)
+
+> 参数参考的谷歌 ga analytics
+> {eventCategory: string, eventAction: string,
+> eventLabel?: string, eventValue?: number, fieldsObject?: any}
+>
+> 指定事件类别。值不能为空。  
+> eventCategory: string
+>
+>指定事件操作。值不能为空。  
+> eventAction: string,
+>
+> 指定事件标签。  
+> eventLabel?: string
+>
+>指定事件值。值不得为负数。  
+> eventValue?: number
+> 
+> 自定义事件维度  
+> fieldsObject

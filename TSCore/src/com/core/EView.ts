@@ -83,20 +83,6 @@ export class EView extends View implements IRecord {
         UIObjectFactory.setPackageItemExtension(url, clas)
     }
 
-    /**
-     * 资源url解析
-     * @param url
-     */
-    protected parseUrl(url: any) {
-        if (Render.isConchApp) return
-        let childs: any[] = url.firstChild.childNodes
-        let child: any
-        for (let i = 0; i < childs.length; i++) {
-            child = childs[i]
-            Laya.URL.version[child.getAttribute("url")] = child.getAttribute("crc")
-        }
-    }
-
     /** 注册游戏数据 */
     override regGameAction(action: string, caller: any, method: Function) {
         super.regAction(action, caller, method, App.GAME_GROUP)

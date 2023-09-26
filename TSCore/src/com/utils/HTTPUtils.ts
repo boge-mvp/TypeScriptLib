@@ -41,13 +41,34 @@ export class HTTPUtils {
     private error: ParamHandler
     /** 超时 */
     private timeout: ParamHandler
+    private static https: HTTPUtils[] = []
 
     constructor() {
         this.ghr = new AjaxRequest()
     }
 
+    /**
+     * 创建新的http请求
+     */
     static create(): HTTPUtils {
-        return new HTTPUtils()
+        const http = new HTTPUtils()
+        HTTPUtils.https.push(http)
+        return http
+    }
+
+    /**
+     * 清除所有正在执行的请求已经监听方法
+     */
+    static clear(http: HTTPUtils) {
+        if (http) {
+            const index = HTTPUtils.https.findIndex((value)=> value === http)
+            HTTPUtils.https.splice(index, 1)
+            return
+        }
+        if (HTTPUtils.https.length < 1) return
+        const runs = [...HTTPUtils.https]
+        HTTPUtils.https.length = 0
+        for (const http of runs) http.abort()
     }
 
     setUrl(url: string): HTTPUtils {
@@ -127,12 +148,14 @@ export class HTTPUtils {
         HTTPUtils.filter?.timeout(this.http)
         if (this.timeout) runFun(this.timeout)
         else if (this.error) runFun(this.error, "time out")
+        HTTPUtils.clear(this)
     }
 
     private errorHandler(e: any) {
         Log.debug("HTTPUtils.errorHandler()", e)
         HTTPUtils.filter?.errorResult(e, this.http)
         runFun(this.error, e)
+        HTTPUtils.clear(this)
     }
 
 
@@ -148,8 +171,12 @@ export class HTTPUtils {
             return
         }
         runFun(this.complete, data)
+        HTTPUtils.clear(this)
     }
 
+    /**
+     * 终止请求
+     */
     abort() {
         this.ghr.abort()
     }
@@ -160,7 +187,7 @@ export class HTTPUtils {
     }
 
     getHttp() {
-      return this.http
+        return this.http
     }
 
     /** 解析时间 */

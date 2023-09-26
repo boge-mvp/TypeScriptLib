@@ -1,6 +1,6 @@
-import {BaseGameData} from "./BaseGameData"
+import {BaseGameData, GameType} from "./BaseGameData"
 import {Player} from "../Player"
-import LocalStorage = Laya.LocalStorage
+import LocalStorage = Laya.LocalStorage;
 import MathKit = tsCore.MathKit;
 
 
@@ -57,6 +57,7 @@ export class BaseSlotGameData extends BaseGameData {
     constructor() {
         super()
         this.lineValue = this.lottery.length
+        this.gameType = GameType.SLOT
         const key = Player.inst.gameModel + "_isTurboMode"
         this._isTurboMode = LocalStorage.getItem(key) != null
     }

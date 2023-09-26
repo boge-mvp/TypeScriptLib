@@ -30,10 +30,10 @@ export class EWindow extends mixinExt(StringBlock, ViewProxy, ActionEvent, fgui.
      * 获取子组件
      * @param name 传入子组件多种命名方式
      */
-    override getChild(...name: string[]): fgui.GObject {
+    override getChild<T = fgui.GObject>(...name: string[]): T {
         let child = null
         for (const key of name) {
-            child = this.contentPane?.getChild(key) || super.getChild(key)
+            child = super.getChild(key)
             if (child) return child
         }
         return child

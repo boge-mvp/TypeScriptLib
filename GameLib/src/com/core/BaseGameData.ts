@@ -1,24 +1,33 @@
 import {IGameData} from "../Interfaces";
 
+/**
+ * 游戏类型
+ */
 export enum GameType {
-    NORMAL, SLOT,
+    /** 正常游戏 */
+    NORMAL,
+    /** 连线游戏 */
+    SLOT,
 }
 
+/**
+ * 游戏数据的基类
+ */
 export class BaseGameData implements IGameData {
 
     /** 缓存的下注值 */
     cacheAnte: any
-    /** 服务器发来的当前资金 */
+    /** 服务器发来的当前余额 */
     currentBalance = 0
-    /** 后端计算   当前赢的钱 */
+    /** 后端计算   当前盈利 */
     serverWinMoney = 0
     totalWinMoney = 0
     playCount = 0
-    /** 缓存 后端计算 当前赢的钱 */
+    /** 缓存 后端计算 当前盈利 */
     tempServerWinMoney = 0
-    /** 当前玩家选择的自动下注次数 */
+    /** 当前玩家选择的自动bet次数 */
     autoBetCount = 0
-    /** 当前玩家选择的自动下注次数 (缓存) */
+    /** 当前玩家选择的自动bet次数 (缓存) */
     tempAutoBetCount = 0
     /** 下注额度切换值 */
     betMoney = []

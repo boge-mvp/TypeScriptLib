@@ -38,9 +38,15 @@ export class Player {
     freeBet = 0
     /** 缓存玩家身上的钱 */
     cacheMoney = 0
-    /** 玩家昵称 */
+    /**
+     * 玩家昵称
+     * @default admin
+     */
     nickname = "admin"
-    /** 玩家id */
+    /**
+     * 玩家id
+     * @default 100
+     */
     userId = 110
     /** 客户端生成的唯一ID */
     uuid: string
@@ -55,11 +61,18 @@ export class Player {
     /** 游戏数据 */
     gameData: IGameData
 
-    /** 游戏类型  id */
+    /**
+     * 游戏类型  id
+     * @default -1
+     */
     gameModel = -1
     /** 游戏类型  id */
     gameName: string
-    /** 是否是web端口 */
+    /**
+     *  是否是web端口
+     *  @default true
+     *  @deprecated
+     */
     isWeb = true
     /** 1=>投注中，2=>计算中，3=>开奖  4=>收取金币  5=>比分中 */
     private _status: number
@@ -99,7 +112,6 @@ export class Player {
 
     /**
      * 获取游客模式的优惠券
-     * @return
      */
     getGuestCoupons(): Coupons[] {
         return window["guestCoupons"]
@@ -236,7 +248,6 @@ export class Player {
     }
 
     /**
-     * @private
      */
     set status(value: number) {
         this._status = value

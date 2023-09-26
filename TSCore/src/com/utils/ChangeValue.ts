@@ -100,18 +100,27 @@ export class ChangeValue {
     }
 
     /**
-     * 赌注值
+     * 设置切换值
      * @param value 值
      * @param [defaultValue = 1] 默认取值
      * @param [isEvent = true] 是否派发本次改变值的事件
      */
-    setAntes(value?: number[], defaultValue = 1, isEvent = true) {
+    setValues(value?: number[], defaultValue = 1, isEvent = true) {
         if (value) this._nums = value
         this.label.text = this.nums[defaultValue] + ""
         this.lastValue = parseFloat(this.label.text)
         if (isEvent) this.sendEventValue(this.nums[defaultValue])
         // 初始化的时候就判断是否可以点击
         this.checkAutoEnabled()
+    }
+
+    /**
+     * @deprecated
+     * @see setValues
+     * @borrows ChangeValue#setValues
+     */
+    setAntes(value?: number[], defaultValue = 1, isEvent = true) {
+        this.setValues(value, defaultValue, isEvent)
     }
 
     /**
@@ -172,7 +181,9 @@ export class ChangeValue {
 
     /**
      * @deprecated
-     * 兼容老版本 */
+     * 兼容老版本
+     * @see nums
+     */
     getAntes(): number[] {
         return this.nums
     }
@@ -226,7 +237,9 @@ export class ChangeValue {
 
     /**
      * @deprecated
-     * 获取当前显示文本的数字 */
+     * 获取当前显示文本的数字
+     * @see textToNumber
+     */
     getTextToNumber() {
         return this.textToNumber
     }

@@ -39,6 +39,7 @@ import {AssetsLoader} from "./AssetsLoader";
 import {StateCode} from "../utils/StateCode";
 import MouseManager = Laya.MouseManager;
 import TouchManager = Laya.TouchManager;
+import KeyBoardManager = Laya.KeyBoardManager;
 
 /**
  * 舞台
@@ -66,6 +67,10 @@ export class SceneManager extends EProxy {
     isLoaderResComplete = false
     /** 是否需要唤醒进入游戏 */
     isCall = false
+    /**
+     * 判断是否已关闭游戏
+     */
+    private isCloseGame: boolean
 
     showHomeScene() {
         Player.inst.gameModel = CommonCmd.GAME_HOME
@@ -114,10 +119,25 @@ export class SceneManager extends EProxy {
         JSUtils.login()
     }
 
+    private visibleId = 0
+    private visibles: (() => void)[] = []
+
+    onVisibleChange(fun: () => void) {
+        fun["$vid"] = this.visibleId++
+        this.visibles.push(fun)
+    }
+
+    offVisibleChange(fun: () => void) {
+        if (fun["$vid"]) {
+            let index = this.visibles.findIndex((value) => fun["$vid"] === value["$vid"])
+            this.visibles.splice(index, 1)
+        }
+    }
 
     /** 游戏是否进入后台 */
     private visibilityChange() {
 //		Log.debug("visibilityChange="+Laya.stage.isVisibility)
+        if (!this.isCloseGame) this.visibles.forEach((value) => value())
         if (Laya.stage.isVisibility) {
             this.focusHandler()
         } else {
@@ -134,7 +154,7 @@ export class SceneManager extends EProxy {
             SceneManager.inst.starter?.gameModel?.focusGame()
             if (HTTPUtils.getTimerSecond() - this.blurTimer >= 3) { // 超过3秒离开焦点
                 // 检查当前游戏
-                SceneManager.inst.starter?.gameServlet?.checkGamePeriod((sc: boolean)=>{
+                SceneManager.inst.starter?.gameServlet?.checkGamePeriod((sc: boolean) => {
                     GRoot.inst.closeModalWait()
                     if (!sc) {
                         this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.SYSTEM_BACK_LOBBY, null, Handler.create(this, JSUtils.gameClose))
@@ -175,6 +195,7 @@ export class SceneManager extends EProxy {
         this.showLoginTip()
 
     }
+
     showLoginTip() {
         this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.LOGIN, null, Handler.create(this, () => {
             this.showLogin()
@@ -222,7 +243,7 @@ export class SceneManager extends EProxy {
             return
         }
         Player.inst.gameName = config
-
+        this.isCloseGame = false
         //		// 如果是未登陆状态
 //		if (!Player.inst.isGuest && !Player.inst.token) {
 //			LoadingWindow.inst.hide()
@@ -371,7 +392,7 @@ export class SceneManager extends EProxy {
             // 开始加载运行加载的资源
             AssetsLoader.inst.runLoad()
             // 启动按键
-            TouchManager.I.enable = MouseManager.enabled = true
+            TouchManager.I.enable = MouseManager.enabled = KeyBoardManager.enabled = true
 //                // 放到下一帧去播放  不然 进入需要旋转的游戏 渲染跟不上
             Laya.timer.callLater(this, function () {
                 Log.debug("call close loading")
@@ -413,8 +434,9 @@ export class SceneManager extends EProxy {
     closeGame() {
         Log.debug("SceneManager.closeGame")
         if (!Laya.loader) return
+        this.isCloseGame = true
         // 关闭所有按键
-        TouchManager.I.enable = MouseManager.enabled = false
+        TouchManager.I.enable = MouseManager.enabled = KeyBoardManager.enabled = false
         Laya.stage.pauseUpdateTimer = true
         Laya.timer.clearAllTimer()
 

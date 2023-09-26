@@ -152,8 +152,16 @@ window.gameLib = {};
         ActionLib["GAME_ALL_BTN_CHANGE_STATE"] = "game_all_btn_change_state";
         /** 更新赢钱的值 */
         ActionLib["GAME_UPDATE_WIN_VALUE"] = "game_update_win_value";
-        /** 游戏更新免费次数 */
+        /**
+         * 游戏更新免费次数
+         * @deprecated
+         * @see GAME_UPDATE_AUTO_BET_NUMBER
+         */
         ActionLib["GAME_UPDATE_FREE_COUNT"] = "game_update_free_count";
+        /**
+         * 游戏更新自动bet次数
+         */
+        ActionLib["GAME_UPDATE_AUTO_BET_NUMBER"] = "game_update_auto_bet_number";
         /** 播放收金币动画 */
         ActionLib["GAME_PLAY_COLLECT_GOLD_COINS_ANI"] = "game_play_collect_gold_coins_ani";
         /** 显示free窗口 */
@@ -190,24 +198,32 @@ window.gameLib = {};
         }
     }
     gameLib.LoaderConfig = LoaderConfig;
+    /**
+     * 游戏类型
+     */
     let GameType;
     (function (GameType) {
+        /** 正常游戏 */
         GameType[GameType["NORMAL"] = 0] = "NORMAL";
+        /** 连线游戏 */
         GameType[GameType["SLOT"] = 1] = "SLOT";
     })(GameType = gameLib.GameType || (gameLib.GameType = {}));
+    /**
+     * 游戏数据的基类
+     */
     class BaseGameData {
         constructor() {
-            /** 服务器发来的当前资金 */
+            /** 服务器发来的当前余额 */
             this.currentBalance = 0;
-            /** 后端计算   当前赢的钱 */
+            /** 后端计算   当前盈利 */
             this.serverWinMoney = 0;
             this.totalWinMoney = 0;
             this.playCount = 0;
-            /** 缓存 后端计算 当前赢的钱 */
+            /** 缓存 后端计算 当前盈利 */
             this.tempServerWinMoney = 0;
-            /** 当前玩家选择的自动下注次数 */
+            /** 当前玩家选择的自动bet次数 */
             this.autoBetCount = 0;
-            /** 当前玩家选择的自动下注次数 (缓存) */
+            /** 当前玩家选择的自动bet次数 (缓存) */
             this.tempAutoBetCount = 0;
             /** 下注额度切换值 */
             this.betMoney = [];
@@ -828,6 +844,7 @@ window.gameLib = {};
             /** 默认线位置 */
             this.defaultLineIndex = 0;
             this.lineValue = this.lottery.length;
+            this.gameType = GameType.SLOT;
             const key = Player.inst.gameModel + "_isTurboMode";
             this._isTurboMode = Laya.LocalStorage.getItem(key) != null;
         }
@@ -4213,6 +4230,8 @@ window.gameLib = {};
             this.isLoaderResComplete = false;
             /** 是否需要唤醒进入游戏 */
             this.isCall = false;
+            this.visibleId = 0;
+            this.visibles = [];
         }
         static get inst() {
             var _a;
@@ -4258,9 +4277,21 @@ window.gameLib = {};
             tsCore.HistoryManager.clearHistory();
             JSUtils.login();
         }
+        onVisibleChange(fun) {
+            fun["$vid"] = this.visibleId++;
+            this.visibles.push(fun);
+        }
+        offVisibleChange(fun) {
+            if (fun["$vid"]) {
+                let index = this.visibles.findIndex((value) => fun["$vid"] === value["$vid"]);
+                this.visibles.splice(index, 1);
+            }
+        }
         /** 游戏是否进入后台 */
         visibilityChange() {
             //		tsCore.Log.debug("visibilityChange="+Laya.stage.isVisibility)
+            if (!this.isCloseGame)
+                this.visibles.forEach((value) => value());
             if (Laya.stage.isVisibility) {
                 this.focusHandler();
             }
@@ -4366,6 +4397,7 @@ window.gameLib = {};
                 return;
             }
             Player.inst.gameName = config;
+            this.isCloseGame = false;
             //		// 如果是未登陆状态
             //		if (!Player.inst.isGuest && !Player.inst.token) {
             //			LoadingWindow.inst.hide()
@@ -4498,7 +4530,7 @@ window.gameLib = {};
                 // 开始加载运行加载的资源
                 AssetsLoader.inst.runLoad();
                 // 启动按键
-                Laya.TouchManager.I.enable = Laya.MouseManager.enabled = true;
+                Laya.TouchManager.I.enable = Laya.MouseManager.enabled = Laya.KeyBoardManager.enabled = true;
                 //                // 放到下一帧去播放  不然 进入需要旋转的游戏 渲染跟不上
                 Laya.timer.callLater(this, function () {
                     tsCore.Log.debug("call close loading");
@@ -4538,8 +4570,9 @@ window.gameLib = {};
             tsCore.Log.debug("SceneManager.closeGame");
             if (!Laya.loader)
                 return;
+            this.isCloseGame = true;
             // 关闭所有按键
-            Laya.TouchManager.I.enable = Laya.MouseManager.enabled = false;
+            Laya.TouchManager.I.enable = Laya.MouseManager.enabled = Laya.KeyBoardManager.enabled = false;
             Laya.stage.pauseUpdateTimer = true;
             Laya.timer.clearAllTimer();
             Laya.loader.clearUnLoaded();
@@ -4980,7 +5013,7 @@ window.gameLib = {};
             let isweb = this.getValue(json, "isweb");
             isweb !== null && isweb !== void 0 ? isweb : (isweb = Laya.Render.isConchApp ? "false" : "true");
             Player.inst.isWeb = (isweb != "false");
-            let isGuest = this.getValue(json, "isGuest");
+            let isGuest = this.getValue(json, "isGuest", "demo");
             if (!tsCore.StringUtil.isEmpty(isGuest)) {
                 Player.inst.isGuest = isGuest == "true";
             }
@@ -4998,7 +5031,7 @@ window.gameLib = {};
             let tempCountry = this.getValue(json, "country");
             if (!tsCore.StringUtil.isEmpty(tempCountry))
                 this._country = tempCountry;
-            let tempLanguage = this.getValue(json, "language");
+            let tempLanguage = this.getValue(json, "language", "lang");
             if (!tsCore.StringUtil.isEmpty(tempLanguage))
                 this._language = tempLanguage;
             let tempIsGift = this.getValue(json, "isGift");
@@ -5029,7 +5062,7 @@ window.gameLib = {};
             if (!tsCore.StringUtil.isEmpty(tempSoundMuted))
                 Laya.SoundManager.soundMuted = tempSoundMuted == "true";
             // 游戏id
-            let tempOpenGame = this.getValue(json, "openGame");
+            let tempOpenGame = this.getValue(json, "openGame", "gameId");
             // 游戏名字
             let tempGameName = this.getValue(json, "gameName");
             if (!tsCore.StringUtil.isEmpty(tempOpenGame) || !tsCore.StringUtil.isEmpty(tempGameName)) {
@@ -5037,10 +5070,18 @@ window.gameLib = {};
                 AppRecordManager.executeJson = { type: 2, data: Laya.Utils.parseInt(this.openGame), gameName: tempGameName };
             }
         }
-        getValue(json, key) {
-            let value = Laya.Utils.getQueryString(key);
-            if (json && key in json) {
-                value = json[key] + "";
+        getValue(json, ...keys) {
+            let value;
+            for (const key of keys) {
+                if (json && key in json) {
+                    value = json[key] + "";
+                    break;
+                }
+                else {
+                    value = Laya.Utils.getQueryString(key);
+                    if (value)
+                        break;
+                }
             }
             return value;
         }
@@ -5109,13 +5150,26 @@ window.gameLib = {};
             this.freeBet = 0;
             /** 缓存玩家身上的钱 */
             this.cacheMoney = 0;
-            /** 玩家昵称 */
+            /**
+             * 玩家昵称
+             * @default admin
+             */
             this.nickname = "admin";
-            /** 玩家id */
+            /**
+             * 玩家id
+             * @default 100
+             */
             this.userId = 110;
-            /** 游戏类型  id */
+            /**
+             * 游戏类型  id
+             * @default -1
+             */
             this.gameModel = -1;
-            /** 是否是web端口 */
+            /**
+             *  是否是web端口
+             *  @default true
+             *  @deprecated
+             */
             this.isWeb = true;
             /** 游戏发布版本号 */
             this.codeVersion = 1;
@@ -5146,7 +5200,6 @@ window.gameLib = {};
         }
         /**
          * 获取游客模式的优惠券
-         * @return
          */
         getGuestCoupons() {
             return window["guestCoupons"];
@@ -5270,7 +5323,6 @@ window.gameLib = {};
             return this._status;
         }
         /**
-         * @private
          */
         set status(value) {
             this._status = value;

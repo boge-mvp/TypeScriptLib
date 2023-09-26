@@ -142,8 +142,16 @@ declare namespace gameLib {
         GAME_ALL_BTN_CHANGE_STATE = "game_all_btn_change_state",
         /** 更新赢钱的值 */
         GAME_UPDATE_WIN_VALUE = "game_update_win_value",
-        /** 游戏更新免费次数 */
+        /**
+         * 游戏更新免费次数
+         * @deprecated
+         * @see GAME_UPDATE_AUTO_BET_NUMBER
+         */
         GAME_UPDATE_FREE_COUNT = "game_update_free_count",
+        /**
+         * 游戏更新自动bet次数
+         */
+        GAME_UPDATE_AUTO_BET_NUMBER = "game_update_auto_bet_number",
         /** 播放收金币动画 */
         GAME_PLAY_COLLECT_GOLD_COINS_ANI = "game_play_collect_gold_coins_ani",
         /** 显示free窗口 */
@@ -175,24 +183,32 @@ declare namespace gameLib {
          */
         static clear(res: LoadRes[]): void;
     }
+    /**
+     * 游戏类型
+     */
     export enum GameType {
+        /** 正常游戏 */
         NORMAL = 0,
+        /** 连线游戏 */
         SLOT = 1
     }
+    /**
+     * 游戏数据的基类
+     */
     export class BaseGameData implements IGameData {
         /** 缓存的下注值 */
         cacheAnte: any;
-        /** 服务器发来的当前资金 */
+        /** 服务器发来的当前余额 */
         currentBalance: number;
-        /** 后端计算   当前赢的钱 */
+        /** 后端计算   当前盈利 */
         serverWinMoney: number;
         totalWinMoney: number;
         playCount: number;
-        /** 缓存 后端计算 当前赢的钱 */
+        /** 缓存 后端计算 当前盈利 */
         tempServerWinMoney: number;
-        /** 当前玩家选择的自动下注次数 */
+        /** 当前玩家选择的自动bet次数 */
         autoBetCount: number;
-        /** 当前玩家选择的自动下注次数 (缓存) */
+        /** 当前玩家选择的自动bet次数 (缓存) */
         tempAutoBetCount: number;
         /** 下注额度切换值 */
         betMoney: any[];
@@ -2159,11 +2175,19 @@ declare namespace gameLib {
         isLoaderResComplete: boolean;
         /** 是否需要唤醒进入游戏 */
         isCall: boolean;
+        /**
+         * 判断是否已关闭游戏
+         */
+        private isCloseGame;
         showHomeScene(): void;
         /** 显示登录界面 */
         showLogin(): void;
         /** 退出登录 */
         logout(): void;
+        private visibleId;
+        private visibles;
+        onVisibleChange(fun: () => void): void;
+        offVisibleChange(fun: () => void): void;
         /** 游戏是否进入后台 */
         private visibilityChange;
         /** 得到焦点开始渲染 */
@@ -2474,7 +2498,7 @@ declare namespace gameLib {
             debug?: boolean;
         });
         parseData(json: IExecuteData): void;
-        getValue(json: any, key: string): string;
+        getValue(json: any, ...keys: string[]): string;
         get amount(): string;
         get inviteCode(): string;
         /**
@@ -2520,9 +2544,15 @@ declare namespace gameLib {
         freeBet: number;
         /** 缓存玩家身上的钱 */
         cacheMoney: number;
-        /** 玩家昵称 */
+        /**
+         * 玩家昵称
+         * @default admin
+         */
         nickname: string;
-        /** 玩家id */
+        /**
+         * 玩家id
+         * @default 100
+         */
         userId: number;
         /** 客户端生成的唯一ID */
         uuid: string;
@@ -2536,11 +2566,18 @@ declare namespace gameLib {
         urlParam: UrlParam;
         /** 游戏数据 */
         gameData: IGameData;
-        /** 游戏类型  id */
+        /**
+         * 游戏类型  id
+         * @default -1
+         */
         gameModel: number;
         /** 游戏类型  id */
         gameName: string;
-        /** 是否是web端口 */
+        /**
+         *  是否是web端口
+         *  @default true
+         *  @deprecated
+         */
         isWeb: boolean;
         /** 1=>投注中，2=>计算中，3=>开奖  4=>收取金币  5=>比分中 */
         private _status;
@@ -2578,7 +2615,6 @@ declare namespace gameLib {
         jackpotCount: number;
         /**
          * 获取游客模式的优惠券
-         * @return
          */
         getGuestCoupons(): Coupons[];
         /**
@@ -2628,7 +2664,6 @@ declare namespace gameLib {
         /** 1=>投注中，2=>计算中，3=>开奖  4=>收取金币  5=>比分中 */
         get status(): number;
         /**
-         * @private
          */
         set status(value: number);
         windowOpen(url: string): void;

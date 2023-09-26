@@ -154,24 +154,14 @@ declare namespace tsCore {
         sendAction(action: string, ...args: any[]): void;
         sendGroupAction(group: string, action: string, ...args: any[]): void;
     }
-    const View_base: Constructor<fairygui.GComponent & StringBlock & ActionEvent>;
+    const View_base: Constructor<fairygui.GComponent & ViewBlock & StringBlock & ActionEvent>;
     export class View extends View_base implements IView, IKey {
         protected key: string;
         /**
          * 获取子组件
          * @param name 传入子组件多种命名方式
          */
-        getChild(...name: string[]): fgui.GObject;
-        addView<T extends IView & IKey>(key: string | {
-            new (): T;
-        }, view: T): boolean;
-        getView<T>(key: string | {
-            new (): T;
-        }): T;
-        removeView<T extends IView & IKey>(key: string | T): void;
-        getProxy<T>(key: string | {
-            new (): T;
-        }): T;
+        getChild<T = fgui.GObject>(...name: string[]): T;
         setKey(key: string): void;
         getKey(): string;
         dispose(): void;
@@ -201,11 +191,6 @@ declare namespace tsCore {
         protected insertExt(pkgName: string, resName: string, clas: any): void;
         /** 设置扩展 */
         protected insertExtUrl(url: string, clas: any): void;
-        /**
-         * 资源url解析
-         * @param url
-         */
-        protected parseUrl(url: any): void;
         /** 注册游戏数据 */
         regGameAction(action: string, caller: any, method: Function): void;
     }
@@ -259,10 +244,16 @@ declare namespace tsCore {
         min(isEvent?: boolean): void;
         set enabled(value: boolean);
         /**
-         * 赌注值
+         * 设置切换值
          * @param value 值
          * @param [defaultValue = 1] 默认取值
          * @param [isEvent = true] 是否派发本次改变值的事件
+         */
+        setValues(value?: number[], defaultValue?: number, isEvent?: boolean): void;
+        /**
+         * @deprecated
+         * @see setValues
+         * @borrows ChangeValue#setValues
          */
         setAntes(value?: number[], defaultValue?: number, isEvent?: boolean): void;
         /**
@@ -285,7 +276,9 @@ declare namespace tsCore {
         get nums(): number[];
         /**
          * @deprecated
-         * 兼容老版本 */
+         * 兼容老版本
+         * @see nums
+         */
         getAntes(): number[];
         /**
          * 触发监听事件
@@ -297,7 +290,9 @@ declare namespace tsCore {
         get textToNumber(): number;
         /**
          * @deprecated
-         * 获取当前显示文本的数字 */
+         * 获取当前显示文本的数字
+         * @see textToNumber
+         */
         getTextToNumber(): number;
         /** 获取当前显示文本 */
         get text(): string;
@@ -430,10 +425,15 @@ declare namespace tsCore {
      * @see UtilKit
      */
     export const UtilsTool: typeof UtilKit;
-    const EButton_base: Constructor<StringBlock & ActionEvent & ViewBlock & fairygui.GButton>;
+    const EButton_base: Constructor<ViewBlock & StringBlock & ActionEvent & fairygui.GButton>;
     export class EButton extends EButton_base {
         protected onConstruct(): void;
         protected onInit(): void;
+        /**
+         * 获取子组件
+         * @param name 传入子组件多种命名方式
+         */
+        getChild<T = fgui.GObject>(...name: string[]): T;
     }
     export class EDrawTextureCmd extends Laya.DrawTextureCmd {
         /** 骨骼名字
@@ -441,10 +441,15 @@ declare namespace tsCore {
         name: string;
         recover(): void;
     }
-    const ELabel_base: Constructor<ActionEvent & ViewBlock & fairygui.GLabel>;
+    const ELabel_base: Constructor<ViewBlock & ActionEvent & fairygui.GLabel>;
     export class ELabel extends ELabel_base {
         protected onConstruct(): void;
         protected onInit(): void;
+        /**
+         * 获取子组件
+         * @param name 传入子组件多种命名方式
+         */
+        getChild<T = fgui.GObject>(...name: string[]): T;
     }
     export class ELoader {
         /** 加载域名备用 */
@@ -663,7 +668,7 @@ declare namespace tsCore {
          * 获取子组件
          * @param name 传入子组件多种命名方式
          */
-        getChild(...name: string[]): fgui.GObject;
+        getChild<T = fgui.GObject>(...name: string[]): T;
         getTransition(transName: string): fgui.Transition;
         getTransitionAt(index: number): fgui.Transition;
         getController(name: string): fgui.Controller;
@@ -1276,8 +1281,6 @@ declare namespace tsCore {
         private errorHandler;
         /** 超时 */
         private timerOutHandler;
-        /** 超时时间 默认 10s */
-        private overtime;
         /**
          * 创建一个请求
          */
@@ -1285,7 +1288,12 @@ declare namespace tsCore {
         onComplete(value: ParamHandler): void;
         onTimerOut(value: ParamHandler): void;
         onError(value: ParamHandler): void;
-        setOvertime(value: number): void;
+        /**
+         * 请求在自动终止之前可能需要的毫秒数。<br>
+         * 值为 0，表示没有超时。
+         * @default 0
+         */
+        setOvertime(value?: number): void;
         send(url: string, data?: any, method?: string, responseType?: string, headers?: string[] | null): void;
         private onHttpError;
         /** 请求返回结果数据 */
@@ -1297,6 +1305,8 @@ declare namespace tsCore {
         abort(): void;
         /** 清除处理器 */
         private clearHandler;
+        private clearEvent;
+        get http(): XMLHttpRequest;
     }
     export interface IHttpFilter {
         /**
@@ -1641,8 +1651,16 @@ declare namespace tsCore {
         private error;
         /** 超时 */
         private timeout;
+        private static https;
         constructor();
+        /**
+         * 创建新的http请求
+         */
         static create(): HTTPUtils;
+        /**
+         * 清除所有正在执行的请求已经监听方法
+         */
+        static clear(http: HTTPUtils): void;
         setUrl(url: string): HTTPUtils;
         setData(data: any): HTTPUtils;
         setMethod(data: Method | string): HTTPUtils;
@@ -1659,6 +1677,9 @@ declare namespace tsCore {
         private timeOutHandler;
         private errorHandler;
         private completeHandler;
+        /**
+         * 终止请求
+         */
         abort(): void;
         get http(): AjaxRequest;
         getHttp(): AjaxRequest;
@@ -2521,7 +2542,7 @@ declare namespace tsCore {
          */
         setCorner(value: number): void;
     }
-    const ProgressBar_base: Constructor<ActionEvent & ViewBlock & fairygui.GProgressBar>;
+    const ProgressBar_base: Constructor<ViewBlock & ActionEvent & fairygui.GProgressBar>;
     export class ProgressBar extends ProgressBar_base {
         tweenValue2(value: number, duration: number, complete?: ParamHandler): fgui.GTweener;
     }

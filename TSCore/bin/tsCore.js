@@ -344,7 +344,7 @@ window.tsCore = {};
         }
     }
     tsCore.ActionEvent = ActionEvent;
-    class View extends mixinExt(ActionEvent, StringBlock, fgui.GComponent) {
+    class View extends mixinExt(ActionEvent, StringBlock, ViewBlock, fgui.GComponent) {
         /**
          * 获取子组件
          * @param name 传入子组件多种命名方式
@@ -358,18 +358,6 @@ window.tsCore = {};
                     return child;
             }
             return child;
-        }
-        addView(key, view) {
-            return App.inst.addView(key, view);
-        }
-        getView(key) {
-            return App.inst.getView(key);
-        }
-        removeView(key) {
-            App.inst.removeView(key);
-        }
-        getProxy(key) {
-            return App.inst.getProxy(key);
         }
         setKey(key) {
             this.key = key;
@@ -466,20 +454,6 @@ window.tsCore = {};
         insertExtUrl(url, clas) {
             fgui.UIObjectFactory.setPackageItemExtension(url, clas);
         }
-        /**
-         * 资源url解析
-         * @param url
-         */
-        parseUrl(url) {
-            if (Laya.Render.isConchApp)
-                return;
-            let childs = url.firstChild.childNodes;
-            let child;
-            for (let i = 0; i < childs.length; i++) {
-                child = childs[i];
-                Laya.URL.version[child.getAttribute("url")] = child.getAttribute("crc");
-            }
-        }
         /** 注册游戏数据 */
         /*@override*/
         regGameAction(action, caller, method) {
@@ -561,12 +535,12 @@ window.tsCore = {};
             this.checkAutoEnabled();
         }
         /**
-         * 赌注值
+         * 设置切换值
          * @param value 值
          * @param [defaultValue = 1] 默认取值
          * @param [isEvent = true] 是否派发本次改变值的事件
          */
-        setAntes(value, defaultValue = 1, isEvent = true) {
+        setValues(value, defaultValue = 1, isEvent = true) {
             if (value)
                 this._nums = value;
             this.label.text = this.nums[defaultValue] + "";
@@ -575,6 +549,14 @@ window.tsCore = {};
                 this.sendEventValue(this.nums[defaultValue]);
             // 初始化的时候就判断是否可以点击
             this.checkAutoEnabled();
+        }
+        /**
+         * @deprecated
+         * @see setValues
+         * @borrows ChangeValue#setValues
+         */
+        setAntes(value, defaultValue = 1, isEvent = true) {
+            this.setValues(value, defaultValue, isEvent);
         }
         /**
          * 设置为数组中小于 value 并最接近的值
@@ -637,7 +619,9 @@ window.tsCore = {};
         }
         /**
          * @deprecated
-         * 兼容老版本 */
+         * 兼容老版本
+         * @see nums
+         */
         getAntes() {
             return this.nums;
         }
@@ -688,7 +672,9 @@ window.tsCore = {};
         }
         /**
          * @deprecated
-         * 获取当前显示文本的数字 */
+         * 获取当前显示文本的数字
+         * @see textToNumber
+         */
         getTextToNumber() {
             return this.textToNumber;
         }
@@ -988,6 +974,20 @@ window.tsCore = {};
             this.onInit();
         }
         onInit() { }
+        /**
+         * 获取子组件
+         * @param name 传入子组件多种命名方式
+         */
+        /*@override*/
+        getChild(...name) {
+            let child = null;
+            for (const key of name) {
+                child = super.getChild(key);
+                if (child)
+                    return child;
+            }
+            return child;
+        }
     }
     tsCore.EButton = EButton;
     class EDrawTextureCmd extends Laya.DrawTextureCmd {
@@ -1005,6 +1005,20 @@ window.tsCore = {};
             this.onInit();
         }
         onInit() { }
+        /**
+         * 获取子组件
+         * @param name 传入子组件多种命名方式
+         */
+        /*@override*/
+        getChild(...name) {
+            let child = null;
+            for (const key of name) {
+                child = super.getChild(key);
+                if (child)
+                    return child;
+            }
+            return child;
+        }
     }
     tsCore.ELabel = ELabel;
     class ELoader {
@@ -1695,10 +1709,9 @@ window.tsCore = {};
          */
         /*@override*/
         getChild(...name) {
-            var _a;
             let child = null;
             for (const key of name) {
-                child = ((_a = this.contentPane) === null || _a === void 0 ? void 0 : _a.getChild(key)) || super.getChild(key);
+                child = super.getChild(key);
                 if (child)
                     return child;
             }
@@ -3309,10 +3322,9 @@ window.tsCore = {};
          */
         constructor() {
             super();
-            /** 超时时间 默认 10s */
-            this.overtime = 10000;
             this.once(Laya.Event.COMPLETE, this, this.onResult);
             this.once(Laya.Event.ERROR, this, this.onHttpError);
+            this.http.ontimeout = this.timeOut.bind(this);
         }
         onComplete(value) {
             this.completeHandler = value;
@@ -3323,45 +3335,40 @@ window.tsCore = {};
         onError(value) {
             this.errorHandler = value;
         }
-        setOvertime(value) {
-            this.overtime = value;
+        /**
+         * 请求在自动终止之前可能需要的毫秒数。<br>
+         * 值为 0，表示没有超时。
+         * @default 0
+         */
+        setOvertime(value = 0) {
+            this.http.timeout = value;
         }
         /*@override*/
         send(url, data, method, responseType, headers) {
-            if (this.overtime > 0)
-                Laya.timer.once(this.overtime, this, this.timeOut);
             super.send(url, data, method, responseType, headers);
         }
         onHttpError(obj) {
-            Laya.timer.clear(this, this.timeOut);
             runFun(this.errorHandler, obj);
-            this.clearHandler(this.errorHandler, this.completeHandler, this.timerOutHandler);
-            this.errorHandler = this.completeHandler = this.timerOutHandler = null;
+            this.clearEvent();
         }
         /** 请求返回结果数据 */
         onResult(json) {
-            Laya.timer.clear(this, this.timeOut);
             runFun(this.completeHandler, json);
-            this.clearHandler(this.errorHandler, this.completeHandler, this.timerOutHandler);
-            this.errorHandler = this.completeHandler = this.timerOutHandler = null;
+            this.clearEvent();
         }
         timeOut() {
-            Laya.timer.clear(this, this.timeOut);
             this.offAll(Laya.Event.COMPLETE);
             this.offAll(Laya.Event.ERROR);
             this.clear();
             runFun(this.timerOutHandler);
-            this.clearHandler(this.errorHandler, this.completeHandler, this.timerOutHandler);
-            this.errorHandler = this.completeHandler = this.timerOutHandler = null;
+            this.clearEvent();
         }
         /**
          * 终止请求
          */
         abort() {
-            this.clearHandler(this.errorHandler, this.completeHandler, this.timerOutHandler);
-            this.completeHandler = this.errorHandler = this.timerOutHandler = null;
+            this.clearEvent();
             this.clear();
-            Laya.timer.clear(this, this.timeOut);
             this.offAll(Laya.Event.COMPLETE);
             this.offAll(Laya.Event.ERROR);
         }
@@ -3371,6 +3378,14 @@ window.tsCore = {};
                 if (value instanceof Laya.Handler)
                     value.recover();
             }
+        }
+        clearEvent() {
+            this.clearHandler(this.errorHandler, this.completeHandler, this.timerOutHandler);
+            this.errorHandler = this.completeHandler = this.timerOutHandler = null;
+        }
+        /*@override*/
+        get http() {
+            return super.http;
         }
     }
     tsCore.AjaxRequest = AjaxRequest;
@@ -3722,8 +3737,29 @@ window.tsCore = {};
             this.responseType = HTTPUtils.defaultResponseType;
             this.ghr = new AjaxRequest();
         }
+        /**
+         * 创建新的http请求
+         */
         static create() {
-            return new HTTPUtils();
+            const http = new HTTPUtils();
+            HTTPUtils.https.push(http);
+            return http;
+        }
+        /**
+         * 清除所有正在执行的请求已经监听方法
+         */
+        static clear(http) {
+            if (http) {
+                const index = HTTPUtils.https.findIndex((value) => value === http);
+                HTTPUtils.https.splice(index, 1);
+                return;
+            }
+            if (HTTPUtils.https.length < 1)
+                return;
+            const runs = [...HTTPUtils.https];
+            HTTPUtils.https.length = 0;
+            for (const http of runs)
+                http.abort();
         }
         setUrl(url) {
             this.url = url;
@@ -3796,12 +3832,14 @@ window.tsCore = {};
                 runFun(this.timeout);
             else if (this.error)
                 runFun(this.error, "time out");
+            HTTPUtils.clear(this);
         }
         errorHandler(e) {
             var _a;
             Log.debug("HTTPUtils.errorHandler()", e);
             (_a = HTTPUtils.filter) === null || _a === void 0 ? void 0 : _a.errorResult(e, this.http);
             runFun(this.error, e);
+            HTTPUtils.clear(this);
         }
         completeHandler(data) {
             if (!data) {
@@ -3815,7 +3853,11 @@ window.tsCore = {};
                 return;
             }
             runFun(this.complete, data);
+            HTTPUtils.clear(this);
         }
+        /**
+         * 终止请求
+         */
         abort() {
             this.ghr.abort();
         }
@@ -3875,6 +3917,7 @@ window.tsCore = {};
     HTTPUtils.checkTimer = 1000 * 60;
     /** 差值 */
     HTTPUtils.difference = 0;
+    HTTPUtils.https = [];
     tsCore.HTTPUtils = HTTPUtils;
     // import {Player} from "../Player"
     class LanguageUtils {

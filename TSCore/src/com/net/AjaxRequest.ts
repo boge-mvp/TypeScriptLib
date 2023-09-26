@@ -10,8 +10,6 @@ export class AjaxRequest extends Laya.HttpRequest {
     private errorHandler: ParamHandler
     /** 超时 */
     private timerOutHandler: ParamHandler
-    /** 超时时间 默认 10s */
-    private overtime = 10000
 
     /**
      * 创建一个请求
@@ -20,6 +18,7 @@ export class AjaxRequest extends Laya.HttpRequest {
         super()
         this.once(Laya.Event.COMPLETE, this, this.onResult)
         this.once(Laya.Event.ERROR, this, this.onHttpError)
+        this.http.ontimeout = this.timeOut.bind(this)
     }
 
     onComplete(value: ParamHandler) {
@@ -34,48 +33,44 @@ export class AjaxRequest extends Laya.HttpRequest {
         this.errorHandler = value
     }
 
-    setOvertime(value: number) {
-        this.overtime = value
+    /**
+     * 请求在自动终止之前可能需要的毫秒数。<br>
+     * 值为 0，表示没有超时。
+     * @default 0
+     */
+    setOvertime(value = 0) {
+        this.http.timeout = value
     }
 
     override send(url: string, data?: any, method?: string, responseType?: string, headers?: string[] | null) {
-        if (this.overtime > 0) Laya.timer.once(this.overtime, this, this.timeOut)
         super.send(url, data, method, responseType, headers)
     }
 
     private onHttpError(obj: any) {
-        Laya.timer.clear(this, this.timeOut)
         runFun(this.errorHandler, obj)
-        this.clearHandler(this.errorHandler, this.completeHandler, this.timerOutHandler)
-        this.errorHandler = this.completeHandler = this.timerOutHandler = null
+        this.clearEvent()
     }
 
     /** 请求返回结果数据 */
     private onResult(json: any) {
-        Laya.timer.clear(this, this.timeOut)
         runFun(this.completeHandler, json)
-        this.clearHandler(this.errorHandler, this.completeHandler, this.timerOutHandler)
-        this.errorHandler = this.completeHandler = this.timerOutHandler = null
+        this.clearEvent()
     }
 
     private timeOut() {
-        Laya.timer.clear(this, this.timeOut)
         this.offAll(Laya.Event.COMPLETE)
         this.offAll(Laya.Event.ERROR)
         this.clear()
         runFun(this.timerOutHandler)
-        this.clearHandler(this.errorHandler, this.completeHandler, this.timerOutHandler)
-        this.errorHandler = this.completeHandler = this.timerOutHandler = null
+        this.clearEvent()
     }
 
     /**
      * 终止请求
      */
     abort() {
-        this.clearHandler(this.errorHandler, this.completeHandler, this.timerOutHandler)
-        this.completeHandler = this.errorHandler = this.timerOutHandler = null
+        this.clearEvent()
         this.clear()
-        Laya.timer.clear(this, this.timeOut)
         this.offAll(Laya.Event.COMPLETE)
         this.offAll(Laya.Event.ERROR)
     }
@@ -87,4 +82,12 @@ export class AjaxRequest extends Laya.HttpRequest {
         }
     }
 
+    private clearEvent() {
+        this.clearHandler(this.errorHandler, this.completeHandler, this.timerOutHandler)
+        this.errorHandler = this.completeHandler = this.timerOutHandler = null
+    }
+
+    override get http(): XMLHttpRequest {
+        return super.http;
+    }
 }

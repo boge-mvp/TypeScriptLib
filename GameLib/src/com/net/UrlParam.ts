@@ -79,7 +79,7 @@ export class UrlParam {
         isweb ??= Render.isConchApp ? "false" : "true"
         Player.inst.isWeb = (isweb != "false")
 
-        let isGuest = this.getValue(json, "isGuest")
+        let isGuest = this.getValue(json, "isGuest", "demo")
         if (!StringUtil.isEmpty(isGuest)) {
             Player.inst.isGuest = isGuest == "true"
         }
@@ -100,7 +100,7 @@ export class UrlParam {
         let tempCountry = this.getValue(json, "country")
         if (!StringUtil.isEmpty(tempCountry)) this._country = tempCountry
 
-        let tempLanguage = this.getValue(json, "language")
+        let tempLanguage = this.getValue(json, "language", "lang")
         if (!StringUtil.isEmpty(tempLanguage)) this._language = tempLanguage
 
         let tempIsGift = this.getValue(json, "isGift")
@@ -130,7 +130,7 @@ export class UrlParam {
         let tempSoundMuted = this.getValue(json, "soundMuted")
         if (!StringUtil.isEmpty(tempSoundMuted)) SoundManager.soundMuted = tempSoundMuted == "true"
         // 游戏id
-        let tempOpenGame = this.getValue(json, "openGame")
+        let tempOpenGame = this.getValue(json, "openGame", "gameId")
         // 游戏名字
         let tempGameName = this.getValue(json, "gameName")
         if (!StringUtil.isEmpty(tempOpenGame) || !StringUtil.isEmpty(tempGameName)) {
@@ -140,10 +140,16 @@ export class UrlParam {
 
     }
 
-    getValue(json: any, key: string) {
-        let value = Utils.getQueryString(key)
-        if (json && key in json) {
-            value = json[key] + ""
+    getValue(json: any, ...keys: string[]) {
+        let value: string
+        for (const key of keys) {
+            if (json && key in json) {
+                value = json[key] + ""
+                break
+            } else {
+                value = Utils.getQueryString(key)
+                if (value) break
+            }
         }
         return value
     }
