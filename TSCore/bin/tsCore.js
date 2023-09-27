@@ -3883,7 +3883,8 @@ window.tsCore = {};
         }
         /** 解析时间 */
         static parseDate(data) {
-            let serverTime = HTTPUtils.filter ? HTTPUtils.filter.parseData(data) : 0;
+            var _a, _b;
+            let serverTime = (_b = (_a = HTTPUtils.filter) === null || _a === void 0 ? void 0 : _a.parseData(data)) !== null && _b !== void 0 ? _b : 0;
             this.castDifference(serverTime);
         }
         static castDifference(serverTime) {

@@ -439,6 +439,24 @@ declare namespace gameLib {
         smallPrize: number[];
         /** 默认线位置 */
         defaultLineIndex: number;
+        /** 是否有免费游戏 1 就是免费游戏 */
+        hasFreeSpin: number;
+        /** 是否进入免费模式开奖流程 */
+        isFreeModel: boolean;
+        /** 免费游戏押注参数 */
+        freeBetTotalObj: any;
+        /** free spin 原始数据 */
+        freeSpinObj: any;
+        /** 免费游戏剩余次数 */
+        freeCount: number;
+        /** 第一列是否存在 bounds */
+        firstExistBounds: boolean;
+        /** 当前开出免费游戏的个数 */
+        freeBoundsCount: number;
+        /**
+         * 是否有 reSpin
+         */
+        hasReSpin: number;
         constructor();
         /** 总共要投注的钱 */
         getTotalBetMoney(): number;
@@ -701,8 +719,6 @@ declare namespace gameLib {
     export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends tsCore.EProxy implements IGameServlet {
         protected _gameModel: IGameModel;
         protected initHandler: ParamHandler;
-        /** 开奖获取次数 */
-        getLotteryCount: number;
         /** 当前访问接口获得游戏状态 */
         protected gameStatus: number;
         /** 网络通信名字 */
@@ -716,7 +732,7 @@ declare namespace gameLib {
         /**
          * 封装的get请求
          *
-         * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+         * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
          *
          * @param url 使用 Player.inst.data.getGameUrl 格式化的url
          * @param data
@@ -730,7 +746,7 @@ declare namespace gameLib {
         /**
          * 封装的get请求
          *
-         * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+         * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
          *
          * @param url 使用 Player.inst.data.getGameUrl 格式化的url
          * @param data
@@ -743,7 +759,7 @@ declare namespace gameLib {
         /**
          * post 请求
          *
-         * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+         * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
          * @param url 请求连接 使用Player.inst.data.getGameUrl()格式化的url
          * @param data 请求数据
          * @param callback 请求完成返回调用函数
@@ -758,7 +774,7 @@ declare namespace gameLib {
         /**
          * post 请求
          *
-         * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+         * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
          * @param url 请求连接 使用Player.inst.data.getGameUrl()格式化的url
          * @param data 请求数据
          * @param callback 请求完成返回调用函数
@@ -789,18 +805,18 @@ declare namespace gameLib {
          * 读取奖金池数据
          * @param data
          */
-        readJackpotData(data: any): void;
+        readJackpotData(data: HttpData): void;
         /** 获取投注劵 */
         protected getCoupon(): void;
         /** 收到投注劵数据 */
-        protected couponHandler(data: any): void;
+        protected couponHandler(data: HttpResponse): void;
         initComplete(): void;
         /**
          * 解析初始化数据
          * @param data
          *
          */
-        protected abstract parseInitData(data: any): any;
+        protected abstract parseInitData(data: HttpResponse): any;
         /**
          * 拉取账户金额
          * @param callback
@@ -1349,15 +1365,15 @@ declare namespace gameLib {
         /** 游客id */
         guestUID: number;
         /** 游客模式玩次数 */
-        guestPlayCount: any;
+        guestPlayCount: number;
         /** 清除数据  */
-        clearData(): any;
+        clearData(): void;
         /**
          * post请求 返回数据  可以在这里对返回数据进行修改
          * @param url 访问网址
          * @param data 押注额度
          */
-        playAdd(url: string, data: any): any;
+        playAdd(url: string, data: HttpData): void;
     }
     export interface IFruit {
         /**
@@ -1475,7 +1491,7 @@ declare namespace gameLib {
         /**
          * 封装的get请求
          *
-         * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+         * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
          *
          * @param url 使用 Player.inst.data.getGameUrl 格式化的url
          * @param data
@@ -1501,7 +1517,7 @@ declare namespace gameLib {
         /**
          * post 请求
          *
-         * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+         * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
          * @param url 请求连接 使用Player.inst.data.getGameUrl()格式化的url
          * @param data 请求数据
          * @param callback 请求完成返回调用函数
@@ -1867,7 +1883,10 @@ declare namespace gameLib {
          * @param callback
          *
          */
-        static enterFeedback(sData: any, callback: Function): void;
+        static enterFeedback(sData: {
+            eventName: string;
+            eventValue?: string;
+        }, callback: Function): void;
         /**
          * Firebase 上报事件，事件数据为数字
          * @param sData { eventName : "gametime", eventValue: 1000}
@@ -1896,10 +1915,6 @@ declare namespace gameLib {
          * @param value
          */
         static sendNotification(value: any): void;
-        /**
-         * 启动服务
-         */
-        static startServer(): void;
         /**
          * 调用分享窗口
          * @param content 文本内容
@@ -1992,6 +2007,8 @@ declare namespace gameLib {
         static LP_init(): void;
         /** 空方法 */
         static nullFun(data: any): void;
+        static getIOS(): any;
+        static isIOS(method: string, data?: any): boolean;
     }
     /**
      * app 访问记录管理
@@ -2255,11 +2272,11 @@ declare namespace gameLib {
         isAloneGame(): boolean;
         /**
          * 检查是否是单机版
-         * @param gameModel 游戏id
+         * @param gameId 游戏id
          * @return
          *
          */
-        checkAloneGame(gameModel: number): boolean;
+        checkAloneGame(gameId: number): boolean;
         /** 获取游戏开奖结果超时退出游戏 */
         gameGameTimeOutExit(): void;
         /** 游戏报错 退出游戏 */
@@ -2575,8 +2592,8 @@ declare namespace gameLib {
          * 游戏类型  id
          * @default -1
          */
-        gameModel: number;
-        /** 游戏类型  id */
+        gameId: number;
+        /** 游戏名字 */
         gameName: string;
         /**
          *  是否是web端口
@@ -2618,6 +2635,20 @@ declare namespace gameLib {
         gamePool: number;
         /** 获得奖励的次数 */
         jackpotCount: number;
+        /**
+         * 游戏类型  id
+         * @default -1
+         * @deprecated
+         * @see gameId
+         */
+        set gameModel(value: number);
+        /**
+         * 游戏类型  id
+         * @default -1
+         * @deprecated
+         * @see gameId
+         */
+        get gameModel(): number;
         /**
          * 获取游客模式的优惠券
          */
@@ -3544,4 +3575,28 @@ declare type PromptData = {
     continue?: ParamHandler
     /** 是否动画弹出 默认true */
     isAction?: boolean
+}
+
+declare type HttpData = {
+    /**
+     * 游戏状态 非0 表示正常
+     */
+    game_status: number
+    /** 当前游戏奖池 */
+    game_pool: number
+    /** 用户当前的bet值 */
+    user_really_bet: number
+    /** 距离下次获得奖励总共需要多少BET */
+    get_ticket_inc_bet: number
+    /** 已经获得的奖励 */
+    scratcher_tickets: any[]
+    [key: string]: any
+}
+
+declare type FreeSpinData = {
+    /** 免费游戏剩余次数 */
+    left_times: number
+    /** 游戏bet数据 */
+    free_spin_data: any
+    [key: string]: any
 }

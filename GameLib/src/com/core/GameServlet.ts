@@ -1,4 +1,11 @@
 import GRoot = fgui.GRoot;
+import EProxy = tsCore.EProxy;
+import Log = tsCore.Log;
+import HTTPUtils = tsCore.HTTPUtils;
+import MessageTip = tsCore.MessageTip;
+import MathKit = tsCore.MathKit;
+import StringUtil = tsCore.StringUtil;
+import Method = tsCore.Method;
 import {IGameServlet} from "../interfaces/IGameServlet"
 import {IGameModel} from "../interfaces/IGameModel"
 import {ActionLib} from "../actions/ActionLib"
@@ -11,12 +18,6 @@ import {LibStr} from "../LibStr"
 import {WaitResult} from "../view/WaitResult"
 import {CommonCmd, HttpCode, Urls} from "../net/Common";
 import {BaseGameData} from "./BaseGameData";
-import EProxy = tsCore.EProxy;
-import Log = tsCore.Log;
-import HTTPUtils = tsCore.HTTPUtils;
-import MessageTip = tsCore.MessageTip;
-import MathKit = tsCore.MathKit;
-import StringUtil = tsCore.StringUtil;
 import {StateCode} from "../utils/StateCode";
 
 /**
@@ -27,8 +28,6 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
 
     protected _gameModel: IGameModel
     protected initHandler: ParamHandler
-    /** 开奖获取次数 */
-    getLotteryCount: number
     /** 当前访问接口获得游戏状态 */
     protected gameStatus: number
     /** 网络通信名字 */
@@ -56,7 +55,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
     /**
      * 封装的get请求
      *
-     * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
      *
      * @param url 使用 Player.inst.data.getGameUrl 格式化的url
      * @param data
@@ -73,7 +72,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
     /**
      * 封装的get请求
      *
-     * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
      *
      * @param url 使用 Player.inst.data.getGameUrl 格式化的url
      * @param data
@@ -87,14 +86,14 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
             .setUrl(Player.inst.data.getGameUrl(url))
             .setData(data)
             .setOvertime(overtime)
-            .onComplete((data: any) => {
-                if (Player.inst.gameModel == this.gameModel?.gameCode) runFun(callback, data)
+            .onComplete((data: HttpResponse) => {
+                if (Player.inst.gameId == this.gameModel?.gameCode) runFun(callback, data)
             })
             .onError((data: any) => {
-                if (Player.inst.gameModel == this.gameModel?.gameCode) runFun(error, data)
+                if (Player.inst.gameId == this.gameModel?.gameCode) runFun(error, data)
             })
             .onTimeout(() => {
-                if (Player.inst.gameModel == this.gameModel?.gameCode) {
+                if (Player.inst.gameId == this.gameModel?.gameCode) {
                     if (timeout) runFun(timeout)
                     else if (error) runFun(error)
                 }
@@ -104,7 +103,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
     /**
      * post 请求
      *
-     * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
      * @param url 请求连接 使用Player.inst.data.getGameUrl()格式化的url
      * @param data 请求数据
      * @param callback 请求完成返回调用函数
@@ -122,7 +121,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
     /**
      * post 请求
      *
-     * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
      * @param url 请求连接 使用Player.inst.data.getGameUrl()格式化的url
      * @param data 请求数据
      * @param callback 请求完成返回调用函数
@@ -133,13 +132,13 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
      */
     postData(url: string, data: any, callback?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler, headers?: string[], overtime = 0) {
         HTTPUtils.create()
-            .setMethod("post")
+            .setMethod(Method.POST)
             .setUrl(Player.inst.data.getGameUrl(url))
             .setData(data)
             .setOvertime(overtime)
             .setHeaders(headers)
-            .onComplete((data: any) => {
-                if (Player.inst.gameModel == this.gameModel?.gameCode) {
+            .onComplete((data: HttpResponse) => {
+                if (Player.inst.gameId == this.gameModel?.gameCode) {
                     if (Player.inst.isGuest && data?.code == HttpCode.OK) {
                         Player.inst.guestModel.playAdd(url, data.data)
                     }
@@ -148,10 +147,10 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
                 }
             })
             .onError((data: any) => {
-                if (Player.inst.gameModel == this.gameModel?.gameCode) runFun(error)
+                if (Player.inst.gameId == this.gameModel?.gameCode) runFun(error, data)
             })
             .onTimeout(() => {
-                if (Player.inst.gameModel == this.gameModel?.gameCode) {
+                if (Player.inst.gameId == this.gameModel?.gameCode) {
                     if (timeout)
                         runFun(timeout)
                     else if (error)
@@ -172,7 +171,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
         // // }
         // let obj: any = {}
         // obj.token = Player.inst.token
-        // obj.roomId = Player.inst.gameModel
+        // obj.roomId = Player.inst.gameId
         // this.post("/game/status", obj, (data: any) => {
         //     if (data.code != HttpCode.OK) {
         //         this.enterFail(true, StateCode.getShowMessage(data))
@@ -182,7 +181,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
         //     this.gameStatus = data.game_status
         //     this.modifyCheckState(data)
         //     let period: number = data.period;//当前期数
-        //     if (SceneManager.inst.isAloneGame() || Player.inst.gameModel == CommonCmd.GAME_SCRATCHER) {
+        //     if (SceneManager.inst.isAloneGame() || Player.inst.gameId == CommonCmd.GAME_SCRATCHER) {
         //         period = 1
         //     }
         //     if (this.gameStatus == 1 && period > 0) {
@@ -199,7 +198,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
      * @param message 弹窗内容
      */
     protected enterFail(isTip = true, message?: string) {
-        Player.inst.gameModel = CommonCmd.GAME_HOME
+        Player.inst.gameId = CommonCmd.GAME_HOME
         GRoot.inst.closeModalWait()
         LoadingWindow.inst.hide()
         JSUtils.openModal(message ? message : getString(LibStr.GAME_OFF))
@@ -218,7 +217,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
         }
         let obj: any = {}
         obj.token = Player.inst.token
-        obj.game_id = Player.inst.gameModel
+        obj.game_id = Player.inst.gameId
         obj.is_gift = Player.inst.urlParam.isGift
 
         this.postData("/game/" + this.networkName + "/init", obj, this.userDataHandler.bind(this), this.userDataErrorHandler.bind(this))
@@ -227,7 +226,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
     /** 连接该游戏的socket */
     protected connectSocket() {
         // 链接服务器socket
-        SocketManager.inst.connect(Player.inst.gameModel, Player.inst.token, Player.inst.userId)
+        SocketManager.inst.connect(Player.inst.gameId, Player.inst.token, Player.inst.userId)
     }
 
     protected userDataErrorHandler(data: any) {
@@ -273,7 +272,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
      * 读取奖金池数据
      * @param data
      */
-    readJackpotData(data: any) {
+    readJackpotData(data: HttpData) {
         if (data.user_really_bet || data.user_really_bet == 0) Player.inst.userReallyBet = data.user_really_bet
         if (data.get_ticket_inc_bet) Player.inst.getTicketIncBet = data.get_ticket_inc_bet
         if (data.game_pool || data.game_pool == 0) Player.inst.gamePool = MathKit.toFixed(data.game_pool)
@@ -288,7 +287,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
     }
 
     /** 收到投注劵数据 */
-    protected couponHandler(data: any) {
+    protected couponHandler(data: HttpResponse) {
         if (data.code != HttpCode.OK) {
             this.enterFail(true, StateCode.getShowMessage(data))
             return
@@ -306,7 +305,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
      * @param data
      *
      */
-    protected abstract parseInitData(data: any)
+    protected abstract parseInitData(data: HttpResponse)
 
     /**
      * 拉取账户金额
@@ -337,7 +336,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
         runFun(handler, true)
         // let obj: any = {}
         // obj.token = Player.inst.token
-        // obj.roomId = Player.inst.gameModel
+        // obj.roomId = Player.inst.gameId
         // this.post("/game/status", obj, (data: any) => {
         //     if (data.code != HttpCode.OK) {
         //         this.enterFail(true, StateCode.getShowMessage(data))
@@ -401,7 +400,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
     jackPotClaim(id: string, handler: ParamHandler) {
         let obj: any = {}
         obj.token = Player.inst.token
-        obj.game_id = Player.inst.gameModel
+        obj.game_id = Player.inst.gameId
         obj.id = id
         this.postData(Urls.URL_GAME_SCRATCHER_LOTTERY, obj,
             Laya.Handler.create(this, this.jackPotClaimHandler, [handler]), () => {

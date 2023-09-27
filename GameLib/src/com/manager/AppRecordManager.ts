@@ -49,7 +49,7 @@ export class AppRecordManager extends tsCore.HistoryManager {
             AppRecordManager.back(isBack)
         } else {
             AppRecordManager.back(isBack)
-            if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
+            if (Player.inst.gameId != CommonCmd.GAME_HOME) {
                 AppRecordManager.backGame(isBack)
             }
         }
@@ -95,7 +95,7 @@ export class AppRecordManager extends tsCore.HistoryManager {
     static appRunJs(action: number, ...value) {
         switch (action) {
             case 1:// 返回
-                if (Player.inst.gameModel == CommonCmd.GAME_SPORTS && value[0] != "close") {
+                if (Player.inst.gameId == CommonCmd.GAME_SPORTS && value[0] != "close") {
                     AppManager.IsBackHome()
                     return
                 }
@@ -106,7 +106,7 @@ export class AppRecordManager extends tsCore.HistoryManager {
                 break
             case 3:// socket
                 if (value.length > 0) {
-                    if (Player.inst.gameModel == CommonCmd.GAME_HOME || Player.inst.gameModel == CommonCmd.GAME_SCRATCHER) {
+                    if (Player.inst.gameId == CommonCmd.GAME_HOME || Player.inst.gameId == CommonCmd.GAME_SCRATCHER) {
                         SocketManager.inst.onMessageReceived(value[0])
                     } else {
                         SocketManager.inst.onMessageReceived(value[0])
@@ -125,7 +125,7 @@ export class AppRecordManager extends tsCore.HistoryManager {
                     Player.inst.token = token
                     Player.inst.login.loginToken((data: any) => {
                         if (data?.code == HttpCode.OK) {
-                            if (Player.inst.gameModel != -1) {
+                            if (Player.inst.gameId != -1) {
                                 AppRecordManager.JavaSendOpen(json)
                             } else {
                                 AppRecordManager.executeJson = json
@@ -133,7 +133,7 @@ export class AppRecordManager extends tsCore.HistoryManager {
                         }
                     })
                 } else {
-                    if (Player.inst.gameModel != -1) {
+                    if (Player.inst.gameId != -1) {
                         AppRecordManager.JavaSendOpen(json)
                     } else {
                         AppRecordManager.executeJson = json

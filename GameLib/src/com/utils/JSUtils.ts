@@ -1,5 +1,5 @@
-import Browser = Laya.Browser
-import Render = Laya.Render
+import Browser = Laya.Browser;
+import Render = Laya.Render;
 import {AppManager} from "../manager/AppManager"
 import {SceneManager} from "../manager/SceneManager"
 
@@ -46,6 +46,7 @@ export class JSUtils {
      * @param [data = null]
      * */
     static gameClose(type = 0, data = null) {
+        if (AppManager.isIOS("alert", {type: type, data: data})) return
         SceneManager.inst.initComplete = false
         SceneManager.inst.isLoaderResComplete = false
         if (Browser.window.parent.GameToHall) {
@@ -63,8 +64,11 @@ export class JSUtils {
 
     /** 弹窗 */
     static openModal(value: string) {
+        if (AppManager.isIOS("alert", {value: value})) return
+        Browser.window.parent?.GameToHall?.alert?.(value)
         Browser.window.parent?.GameToHall?.openModal?.(value)
-        AppManager.showWeb({javascript: `window.GameToHall.openModal('${value}')`})
+        AppManager.showWeb({javascript: `window.GameToHall.alert && window.GameToHall.alert('${value}')`})
+        AppManager.showWeb({javascript: `window.GameToHall.openModal && window.GameToHall.openModal('${value}')`})
     }
 
     /**
@@ -73,6 +77,7 @@ export class JSUtils {
      * @param [isCloseGame=true] 是否关闭游戏
      */
     static openPage(page: string, isCloseGame = true) {
+        if (AppManager.isIOS("openPage", {page: page, isCloseGame: isCloseGame})) return
         if (isCloseGame) {
             Browser.window.parent?.GameToHall?.comeWebPage?.(page)
             AppManager.showWeb({javascript: `window.GameToHall.comeWebPage && window.GameToHall.comeWebPage('${page}')`})
@@ -87,6 +92,7 @@ export class JSUtils {
 
     /** 进入游戏进度条 */
     static progress(value: number) {
+        if (AppManager.isIOS("progress", {value: value})) return
         Browser.window.parent?.GameToHall?.progress?.(value)
         Browser.window.parent?.GameToHall?.getProgress?.(value)
         AppManager.executionJavascript("window.GameToHall.progress && window.GameToHall.progress", value)
@@ -97,12 +103,14 @@ export class JSUtils {
 
     /** 通知进入游戏了 */
     static gameOnload() {
+        if (AppManager.isIOS("gameOnload")) return
         Browser.window.parent?.GameToHall?.gameOnload?.()
         AppManager.executionJavascript("window.GameToHall.gameOnload", null)
     }
 
     /** 上传头像 */
     static uploadAvatar() {
+        if (AppManager.isIOS("uploadAvatar")) return
         Browser.window.parent?.GameToHall?.uploadAvatar?.()
         Browser.window.parent?.GameToHall?.openReviseAvatarNickNameDrawer?.()
         AppManager.showWeb({javascript: "window.GameToHall.uploadAvatar && window.GameToHall.uploadAvatar()"})
@@ -110,5 +118,6 @@ export class JSUtils {
     }
 
     static updateHead = JSUtils.uploadAvatar
+
 
 }

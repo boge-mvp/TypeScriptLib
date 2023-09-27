@@ -318,3 +318,10 @@ declare type LoadRes = {
     group?: string
 
 }
+
+declare type HttpResponse = {
+    code: number
+    data: any,
+    message: string,
+    [key: string]: any
+}

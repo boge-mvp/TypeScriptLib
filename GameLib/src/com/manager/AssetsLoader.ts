@@ -306,7 +306,7 @@ export class AssetsLoader implements IFormatVer {
 
         let loadArray: LoadRes[] = []
         // 判断是否已经显示过引导页
-        let guideRes = LocalStorage.getItem("GameGuide_" + Player.inst.gameModel)
+        let guideRes = LocalStorage.getItem("GameGuide_" + Player.inst.gameId)
         if (!guideRes && obj.guide) {
             let temps: (string | LoadRes)[]
             if (Array.isArray(obj.guide)) {

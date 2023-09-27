@@ -40,7 +40,7 @@ export class AnalyticsManager {
             eventLabel ??= Player.inst.isGuest ? "demo" : "cash"
             AnalyticsManager.send(gameName + "_" + eventAction, eventLabel)
         } else {
-            Log.warn("sendGameAnalysis : gameId=" + Player.inst.gameModel + " not exist")
+            Log.warn("sendGameAnalysis : gameId=" + Player.inst.gameId + " not exist")
         }
     }
 

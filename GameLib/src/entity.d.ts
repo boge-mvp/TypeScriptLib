@@ -66,3 +66,27 @@ declare type PromptData = {
     /** 是否动画弹出 默认true */
     isAction?: boolean
 }
+
+declare type HttpData = {
+    /**
+     * 游戏状态 非0 表示正常
+     */
+    game_status: number
+    /** 当前游戏奖池 */
+    game_pool: number
+    /** 用户当前的bet值 */
+    user_really_bet: number
+    /** 距离下次获得奖励总共需要多少BET */
+    get_ticket_inc_bet: number
+    /** 已经获得的奖励 */
+    scratcher_tickets: any[]
+    [key: string]: any
+}
+
+declare type FreeSpinData = {
+    /** 免费游戏剩余次数 */
+    left_times: number
+    /** 游戏bet数据 */
+    free_spin_data: any
+    [key: string]: any
+}

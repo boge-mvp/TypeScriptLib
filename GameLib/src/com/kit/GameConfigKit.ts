@@ -22,7 +22,7 @@ export class GameConfigKit {
      * @param [code=0] 不传将使用当前已经打开游戏id
      */
     static gameName(code: number = null) {
-        code ??= Player.inst.gameModel
+        code ??= Player.inst.gameId
         if (code <= 0) return null
         const config = GameConfigKit.gameConfig()
         return config ? config[code] : null

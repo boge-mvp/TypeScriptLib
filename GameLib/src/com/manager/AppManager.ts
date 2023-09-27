@@ -12,7 +12,8 @@ export class AppManager {
     /** 关闭app自定义返回 */
     static closeAppBack() {
         // @ts-ignore
-        window.conch?.setOnBackPressedFunction(function () {})
+        window.conch?.setOnBackPressedFunction(function () {
+        })
     }
 
     /** 进入游戏 */
@@ -28,7 +29,8 @@ export class AppManager {
      * @param callback
      *
      */
-    static enterFeedback(sData: any, callback: Function) {
+    static enterFeedback(sData: { eventName: string, eventValue?: string }, callback: Function) {
+        if (AppManager.isIOS("reportFbEmpEvent", {eventName: sData.eventName, eventValue: sData.eventValue})) return
         if (Browser.onLayaRuntime)
             this.LP_enterFeedback(JSON.stringify(sData), callback)
     }
@@ -53,6 +55,7 @@ export class AppManager {
 
     /** 退出APP */
     static exit() {
+        if (AppManager.isIOS("exitApp")) return
         let obj = {action: 10008}
         if (Browser.onLayaRuntime)
             this.LP_SendMessageToPlatform(JSON.stringify(obj), this.nullFun)
@@ -85,6 +88,7 @@ export class AppManager {
      * @param callback
      */
     static getIMEI(callback: Function) {
+        // if (AppManager.isIOS("getDeviceID")) return
         let obj = {action: 10001}
         if (Browser.onLayaRuntime)
             this.LP_SendMessageToPlatform(JSON.stringify(obj), callback)
@@ -108,21 +112,16 @@ export class AppManager {
     }
 
     /**
-     * 启动服务
-     */
-    static startServer() {
-        let obj = {action: 10007}
-        if (Browser.onLayaRuntime)
-            this.LP_SendMessageToPlatform(JSON.stringify(obj), this.nullFun)
-    }
-
-    /**
      * 调用分享窗口
      * @param content 文本内容
      * @param url 网址
      * @param type 0.调用公用分享窗口 1.facebook 2.whatsapp 3.instagram 4.sms 5.twitter
      */
     static openShare(content: string, url = "", type = 0) {
+        if (AppManager.isIOS("showShareBySystem", {
+            type: type,
+            text: content + (url ? "" : "\n" + url)
+        })) return
         if (!Browser.onLayaRuntime) return
         let obj: any = {}
         if (type === 0) {
@@ -164,6 +163,7 @@ export class AppManager {
      * @param url
      */
     static openBrowser(url: string) {
+        if (AppManager.isIOS("openBrowser", {url: url})) return
         let obj = {action: 10012, data: url}
         if (Browser.onLayaRuntime)
             this.LP_SendMessageToPlatform(JSON.stringify(obj), this.nullFun)
@@ -372,6 +372,21 @@ export class AppManager {
 
     /** 空方法 */
     static nullFun(data: any) {
+    }
+
+    static getIOS() {
+        // @ts-ignore
+        return (typeof window.webkit !== 'undefined' && typeof window.webkit.messageHandlers !== 'undefined') ? window.webkit.messageHandlers : null
+    }
+
+    static isIOS(method: string, data?: any) {
+        const webkit = AppManager.getIOS()
+        if (webkit) {
+            data ??= {}
+            webkit?.[method]?.postMessage?.(JSON.stringify(data))
+            return true
+        }
+        return false
     }
 
 }

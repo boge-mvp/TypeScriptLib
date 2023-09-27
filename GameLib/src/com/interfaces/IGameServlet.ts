@@ -48,7 +48,7 @@ export interface IGameServlet {
     /**
      * 封装的get请求
      *
-     * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
      *
      * @param url 使用 Player.inst.data.getGameUrl 格式化的url
      * @param data
@@ -76,7 +76,7 @@ export interface IGameServlet {
     /**
      * post 请求
      *
-     * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
      * @param url 请求连接 使用Player.inst.data.getGameUrl()格式化的url
      * @param data 请求数据
      * @param callback 请求完成返回调用函数

@@ -83,7 +83,7 @@ export class StateCode {
                 msg = msg ? msg : LanguageUtils.inst.getStr(LibStr.FIRST_LOG)
                 if (UIPackage.getByName("gameCommon")) WaitResult.inst.hide()
                 HomePrompt.instance.showTip(0, msg, function () {
-                    if (Player.inst.gameModel == -1) {
+                    if (Player.inst.gameId == -1) {
                         LocalStorage.removeItem("token")
                         LocalStorage.removeItem("userData")
                         Player.inst.token = null

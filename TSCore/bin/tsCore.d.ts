@@ -1331,7 +1331,7 @@ declare namespace tsCore {
          * @param ajaxRequest
          * @return 返回的数据
          */
-        filterResultData(url: string, value: any, ajaxRequest: AjaxRequest): any;
+        filterResultData(url: string, value: HttpResponse, ajaxRequest: AjaxRequest): any;
         /**
          * 拦截器 返回true 表示拦截不再继续执行后续的处理   false 表示继续执行后续的处理
          * @param url 访问地址
@@ -1360,7 +1360,7 @@ declare namespace tsCore {
          * 解析服务器的时间 返回服务器时间毫秒
          * @param data
          */
-        parseData(data: any): number;
+        parseData(data: HttpResponse): number;
     }
     export class SocketClient extends Laya.EventDispatcher {
         static SOCKET_CLASS_PATH: string;
@@ -1668,7 +1668,7 @@ declare namespace tsCore {
         /**
          * 清除所有正在执行的请求已经监听方法
          */
-        static clear(http: HTTPUtils): void;
+        static clear(http?: HTTPUtils): void;
         setUrl(url: string): HTTPUtils;
         setData(data: any): HTTPUtils;
         setMethod(data: Method | string): HTTPUtils;
@@ -1692,7 +1692,7 @@ declare namespace tsCore {
         get http(): AjaxRequest;
         getHttp(): AjaxRequest;
         /** 解析时间 */
-        static parseDate(data: any): void;
+        static parseDate(data: HttpResponse): void;
         static castDifference(serverTime: number): void;
         /** 获取差值 */
         static getDifference(): number;
@@ -3171,4 +3171,11 @@ declare type LoadRes = {
 
     group?: string
 
+}
+
+declare type HttpResponse = {
+    code: number
+    data: any,
+    message: string,
+    [key: string]: any
 }

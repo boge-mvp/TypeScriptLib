@@ -1,18 +1,18 @@
 import Browser = Laya.Browser
 import Render = Laya.Render
 import LocalStorage = Laya.LocalStorage
-import {UrlParam} from "./net/UrlParam"
-import {IExecuteData, IGameData, ILogin, IGuestModel, IData} from "./Interfaces";
 import UtilKit = tsCore.UtilKit;
 import MathKit = tsCore.MathKit;
 import StringUtil = tsCore.StringUtil;
-import LanguageUtils = tsCore.LanguageUtils;
 import ConfigKit = tsCore.ConfigKit;
+import {UrlParam} from "./net/UrlParam"
+import {IExecuteData, IGameData, ILogin, IGuestModel, IData} from "./Interfaces";
 
 /** 用户数据 */
 export class Player {
 
     private static _instance: Player
+
     static get inst() {
         this._instance ??= new Player()
         return this._instance
@@ -60,13 +60,12 @@ export class Player {
     urlParam: UrlParam
     /** 游戏数据 */
     gameData: IGameData
-
     /**
      * 游戏类型  id
      * @default -1
      */
-    gameModel = -1
-    /** 游戏类型  id */
+    gameId = -1
+    /** 游戏名字 */
     gameName: string
     /**
      *  是否是web端口
@@ -109,6 +108,27 @@ export class Player {
     gamePool = MathKit.random(1000, 99999)
     /** 获得奖励的次数 */
     jackpotCount = 0
+
+
+    /**
+     * 游戏类型  id
+     * @default -1
+     * @deprecated
+     * @see gameId
+     */
+    set gameModel(value: number) {
+        this.gameId = value
+    }
+
+    /**
+     * 游戏类型  id
+     * @default -1
+     * @deprecated
+     * @see gameId
+     */
+    get gameModel() {
+        return this.gameId
+    }
 
     /**
      * 获取游客模式的优惠券
@@ -203,7 +223,7 @@ export class Player {
      */
     getCanUseCoupon() {
         let betValue = Player.inst.gameData.getTotalBetMoney()
-        let arr = Player.inst.getCouponGame(Player.inst.gameModel)
+        let arr = Player.inst.getCouponGame(Player.inst.gameId)
         for (let i = 0; i < arr.length; i++) {
             const useObj = arr[i]
             if (useObj.type == 1) {// 判断是否有可以使用的抵用券

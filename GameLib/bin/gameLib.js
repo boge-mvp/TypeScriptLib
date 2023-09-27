@@ -365,7 +365,7 @@ window.gameLib = {};
                 }
                 return;
             }
-            let arr = Player.inst.getCouponGame(Player.inst.gameModel);
+            let arr = Player.inst.getCouponGame(Player.inst.gameId);
             for (let i = 0; i < arr.length; i++) {
                 useObj = arr[i];
                 if (useObj.type == 1) { // 判断是否有可以使用的抵用券
@@ -401,7 +401,7 @@ window.gameLib = {};
         /** 更新中优惠券数量 */
         updateTotalCoupons() {
             if (this.activityBtn) {
-                let coupons = Player.inst.getCouponGame(Player.inst.gameModel);
+                let coupons = Player.inst.getCouponGame(Player.inst.gameId);
                 let totalMoney = 0;
                 for (let i = 0; i < coupons.length; i++) {
                     let activityBtnElement = coupons[i];
@@ -438,7 +438,7 @@ window.gameLib = {};
             //        if (jackpotBtn && Player.inst.isGuest) {
             //            jackpotBtn.visible = false
             //        }
-            this.updateRoomIdChange(Player.inst.gameModel);
+            this.updateRoomIdChange(Player.inst.gameId);
             // 因为有旋转屏幕  为了获取正确的宽高  延迟执行添加舞台
             Laya.timer.callLater(this, this.regEvent);
         }
@@ -700,30 +700,30 @@ window.gameLib = {};
          * demo场弹窗
          */
         eventGuestTip() {
-            // let value: string = Laya.LocalStorage.getItem(Player.inst.gameModel + "_demo")
+            // let value: string = Laya.LocalStorage.getItem(Player.inst.gameId + "_demo")
             // if (Player.inst.isGuest && !value) {
             if (Player.inst.isGuest) {
                 this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1013 /* LibStr.PROMPT_GUEST */, null, () => {
                     this.runEvent();
                 });
-                // Laya.LocalStorage.setItem(Player.inst.gameModel + "_demo", "1")
+                // Laya.LocalStorage.setItem(Player.inst.gameId + "_demo", "1")
             }
             else {
                 this.runEvent();
             }
         }
         eventCouponTip() {
-            let giftOpenTimerStr = Laya.LocalStorage.getItem("giftOpenTimer" + Player.inst.gameModel);
+            let giftOpenTimerStr = Laya.LocalStorage.getItem("giftOpenTimer" + Player.inst.gameId);
             let giftOpenTimer;
             if (tsCore.StringUtil.isEmpty(giftOpenTimerStr)) {
                 giftOpenTimerStr = "0";
             }
             giftOpenTimer = parseFloat(giftOpenTimerStr);
             if (!tsCore.DateUtils.isSameDay(giftOpenTimer, Laya.Browser.now())) {
-                let coupon = Player.inst.getCouponGame(Player.inst.gameModel);
+                let coupon = Player.inst.getCouponGame(Player.inst.gameId);
                 if (coupon.length > 0) {
                     this.activityHandler();
-                    Laya.LocalStorage.setItem("giftOpenTimer" + Player.inst.gameModel, Laya.Browser.now() + "");
+                    Laya.LocalStorage.setItem("giftOpenTimer" + Player.inst.gameId, Laya.Browser.now() + "");
                 }
                 else {
                     this.runEvent();
@@ -743,11 +743,11 @@ window.gameLib = {};
         }
         /** 引导事件执行 */
         eventGuideTip() {
-            let value = Laya.LocalStorage.getItem("GameGuide_" + Player.inst.gameModel);
+            let value = Laya.LocalStorage.getItem("GameGuide_" + Player.inst.gameId);
             if (!value) {
                 let result = this.showGuide();
                 if (result) {
-                    Laya.LocalStorage.setItem("GameGuide_" + Player.inst.gameModel, "true");
+                    Laya.LocalStorage.setItem("GameGuide_" + Player.inst.gameId, "true");
                 }
                 else {
                     this.runEvent();
@@ -848,9 +848,20 @@ window.gameLib = {};
             this.smallPrize = [1, 2, 3, 5, 6, 7, 8, 9, 10, 11];
             /** 默认线位置 */
             this.defaultLineIndex = 0;
+            //     默认游戏 free 变量存储属性
+            /** 是否有免费游戏 1 就是免费游戏 */
+            this.hasFreeSpin = 0;
+            /** 免费游戏剩余次数 */
+            this.freeCount = 0;
+            /** 当前开出免费游戏的个数 */
+            this.freeBoundsCount = 0;
+            /**
+             * 是否有 reSpin
+             */
+            this.hasReSpin = 0;
             this.lineValue = this.lottery.length;
             this.gameType = GameType.SLOT;
-            const key = Player.inst.gameModel + "_isTurboMode";
+            const key = Player.inst.gameId + "_isTurboMode";
             this._isTurboMode = Laya.LocalStorage.getItem(key) != null;
         }
         /** 总共要投注的钱 */
@@ -903,7 +914,7 @@ window.gameLib = {};
         }
         set isTurboMode(value) {
             this._isTurboMode = value;
-            const key = Player.inst.gameModel + "_isTurboMode";
+            const key = Player.inst.gameId + "_isTurboMode";
             if (value) {
                 Laya.LocalStorage.setItem(key, "1");
             }
@@ -1541,7 +1552,7 @@ window.gameLib = {};
         /**
          * 封装的get请求
          *
-         * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+         * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
          *
          * @param url 使用 Player.inst.data.getGameUrl 格式化的url
          * @param data
@@ -1557,7 +1568,7 @@ window.gameLib = {};
         /**
          * 封装的get请求
          *
-         * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+         * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
          *
          * @param url 使用 Player.inst.data.getGameUrl 格式化的url
          * @param data
@@ -1573,17 +1584,17 @@ window.gameLib = {};
                 .setOvertime(overtime)
                 .onComplete((data) => {
                 var _a;
-                if (Player.inst.gameModel == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode))
+                if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode))
                     runFun(callback, data);
             })
                 .onError((data) => {
                 var _a;
-                if (Player.inst.gameModel == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode))
+                if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode))
                     runFun(error, data);
             })
                 .onTimeout(() => {
                 var _a;
-                if (Player.inst.gameModel == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode)) {
+                if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode)) {
                     if (timeout)
                         runFun(timeout);
                     else if (error)
@@ -1594,7 +1605,7 @@ window.gameLib = {};
         /**
          * post 请求
          *
-         * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+         * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
          * @param url 请求连接 使用Player.inst.data.getGameUrl()格式化的url
          * @param data 请求数据
          * @param callback 请求完成返回调用函数
@@ -1611,7 +1622,7 @@ window.gameLib = {};
         /**
          * post 请求
          *
-         * 所有的返回结果，都会执行id判断 Player.inst.gameModel == this.gameModel?.gameCode
+         * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
          * @param url 请求连接 使用Player.inst.data.getGameUrl()格式化的url
          * @param data 请求数据
          * @param callback 请求完成返回调用函数
@@ -1622,14 +1633,14 @@ window.gameLib = {};
          */
         postData(url, data, callback, error, timeout, headers, overtime = 0) {
             tsCore.HTTPUtils.create()
-                .setMethod("post")
+                .setMethod(tsCore.Method.POST)
                 .setUrl(Player.inst.data.getGameUrl(url))
                 .setData(data)
                 .setOvertime(overtime)
                 .setHeaders(headers)
                 .onComplete((data) => {
                 var _a;
-                if (Player.inst.gameModel == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode)) {
+                if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode)) {
                     if (Player.inst.isGuest && (data === null || data === void 0 ? void 0 : data.code) == HttpCode.OK) {
                         Player.inst.guestModel.playAdd(url, data.data);
                     }
@@ -1641,12 +1652,12 @@ window.gameLib = {};
             })
                 .onError((data) => {
                 var _a;
-                if (Player.inst.gameModel == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode))
-                    runFun(error);
+                if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode))
+                    runFun(error, data);
             })
                 .onTimeout(() => {
                 var _a;
-                if (Player.inst.gameModel == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode)) {
+                if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode)) {
                     if (timeout)
                         runFun(timeout);
                     else if (error)
@@ -1665,7 +1676,7 @@ window.gameLib = {};
             // // }
             // let obj: any = {}
             // obj.token = Player.inst.token
-            // obj.roomId = Player.inst.gameModel
+            // obj.roomId = Player.inst.gameId
             // this.post("/game/status", obj, (data: any) => {
             //     if (data.code != HttpCode.OK) {
             //         this.enterFail(true, StateCode.getShowMessage(data))
@@ -1675,7 +1686,7 @@ window.gameLib = {};
             //     this.gameStatus = data.game_status
             //     this.modifyCheckState(data)
             //     let period: number = data.period;//当前期数
-            //     if (SceneManager.inst.isAloneGame() || Player.inst.gameModel == CommonCmd.GAME_SCRATCHER) {
+            //     if (SceneManager.inst.isAloneGame() || Player.inst.gameId == CommonCmd.GAME_SCRATCHER) {
             //         period = 1
             //     }
             //     if (this.gameStatus == 1 && period > 0) {
@@ -1691,7 +1702,7 @@ window.gameLib = {};
          * @param message 弹窗内容
          */
         enterFail(isTip = true, message) {
-            Player.inst.gameModel = CommonCmd.GAME_HOME;
+            Player.inst.gameId = CommonCmd.GAME_HOME;
             fgui.GRoot.inst.closeModalWait();
             LoadingWindow.inst.hide();
             JSUtils.openModal(message ? message : getString(1002 /* LibStr.GAME_OFF */));
@@ -1710,14 +1721,14 @@ window.gameLib = {};
             }
             let obj = {};
             obj.token = Player.inst.token;
-            obj.game_id = Player.inst.gameModel;
+            obj.game_id = Player.inst.gameId;
             obj.is_gift = Player.inst.urlParam.isGift;
             this.postData("/game/" + this.networkName + "/init", obj, this.userDataHandler.bind(this), this.userDataErrorHandler.bind(this));
         }
         /** 连接该游戏的socket */
         connectSocket() {
             // 链接服务器socket
-            SocketManager.inst.connect(Player.inst.gameModel, Player.inst.token, Player.inst.userId);
+            SocketManager.inst.connect(Player.inst.gameId, Player.inst.token, Player.inst.userId);
         }
         userDataErrorHandler(data) {
             this.enterFail(true, getString(1005 /* LibStr.NET_ERROR */));
@@ -1815,7 +1826,7 @@ window.gameLib = {};
             runFun(handler, true);
             // let obj: any = {}
             // obj.token = Player.inst.token
-            // obj.roomId = Player.inst.gameModel
+            // obj.roomId = Player.inst.gameId
             // this.post("/game/status", obj, (data: any) => {
             //     if (data.code != HttpCode.OK) {
             //         this.enterFail(true, StateCode.getShowMessage(data))
@@ -1878,7 +1889,7 @@ window.gameLib = {};
         jackPotClaim(id, handler) {
             let obj = {};
             obj.token = Player.inst.token;
-            obj.game_id = Player.inst.gameModel;
+            obj.game_id = Player.inst.gameId;
             obj.id = id;
             this.postData(Urls.URL_GAME_SCRATCHER_LOTTERY, obj, Laya.Handler.create(this, this.jackPotClaimHandler, [handler]), () => {
                 runFun(handler, false);
@@ -2996,7 +3007,7 @@ window.gameLib = {};
          * @param [code=0] 不传将使用当前已经打开游戏id
          */
         static gameName(code = null) {
-            code !== null && code !== void 0 ? code : (code = Player.inst.gameModel);
+            code !== null && code !== void 0 ? code : (code = Player.inst.gameId);
             if (code <= 0)
                 return null;
             const config = GameConfigKit.gameConfig();
@@ -3087,7 +3098,7 @@ window.gameLib = {};
                 AnalyticsManager.send(gameName + "_" + eventAction, eventLabel);
             }
             else {
-                tsCore.Log.warn("sendGameAnalysis : gameId=" + Player.inst.gameModel + " not exist");
+                tsCore.Log.warn("sendGameAnalysis : gameId=" + Player.inst.gameId + " not exist");
             }
         }
         /**
@@ -3153,7 +3164,7 @@ window.gameLib = {};
             HtmlWindow.inst.share(type, url, content);
         }
         /** 打开app */
-        openApp(packageName, uriPath, url, jsonData = null) {
+        openApp(packageName, uriPath, url, jsonData) {
             if (Laya.Render.isConchApp) {
                 AppManager.openApp(packageName, uriPath, url, jsonData);
             }
@@ -3163,8 +3174,7 @@ window.gameLib = {};
             }
         }
         showGame(str) {
-            let data = JSON.parse(str);
-            AppRecordManager.JavaSendOpen(data);
+            AppRecordManager.JavaSendOpen(JSON.parse(str));
         }
     }
     gameLib.APP = APP;
@@ -3174,7 +3184,8 @@ window.gameLib = {};
         static closeAppBack() {
             var _a;
             // @ts-ignore
-            (_a = window.conch) === null || _a === void 0 ? void 0 : _a.setOnBackPressedFunction(function () { });
+            (_a = window.conch) === null || _a === void 0 ? void 0 : _a.setOnBackPressedFunction(function () {
+            });
         }
         /** 进入游戏 */
         static sendAppData() {
@@ -3189,6 +3200,8 @@ window.gameLib = {};
          *
          */
         static enterFeedback(sData, callback) {
+            if (AppManager.isIOS("reportFbEmpEvent", { eventName: sData.eventName, eventValue: sData.eventValue }))
+                return;
             if (Laya.Browser.onLayaRuntime)
                 this.LP_enterFeedback(JSON.stringify(sData), callback);
         }
@@ -3210,6 +3223,8 @@ window.gameLib = {};
         }
         /** 退出APP */
         static exit() {
+            if (AppManager.isIOS("exitApp"))
+                return;
             let obj = { action: 10008 };
             if (Laya.Browser.onLayaRuntime)
                 this.LP_SendMessageToPlatform(JSON.stringify(obj), this.nullFun);
@@ -3238,6 +3253,7 @@ window.gameLib = {};
          * @param callback
          */
         static getIMEI(callback) {
+            // if (AppManager.isIOS("getDeviceID")) return
             let obj = { action: 10001 };
             if (Laya.Browser.onLayaRuntime)
                 this.LP_SendMessageToPlatform(JSON.stringify(obj), callback);
@@ -3257,20 +3273,17 @@ window.gameLib = {};
                 this.LP_SendMessageToPlatform(JSON.stringify(obj), this.nullFun);
         }
         /**
-         * 启动服务
-         */
-        static startServer() {
-            let obj = { action: 10007 };
-            if (Laya.Browser.onLayaRuntime)
-                this.LP_SendMessageToPlatform(JSON.stringify(obj), this.nullFun);
-        }
-        /**
          * 调用分享窗口
          * @param content 文本内容
          * @param url 网址
          * @param type 0.调用公用分享窗口 1.facebook 2.whatsapp 3.instagram 4.sms 5.twitter
          */
         static openShare(content, url = "", type = 0) {
+            if (AppManager.isIOS("showShareBySystem", {
+                type: type,
+                text: content + (url ? "" : "\n" + url)
+            }))
+                return;
             if (!Laya.Browser.onLayaRuntime)
                 return;
             let obj = {};
@@ -3313,6 +3326,8 @@ window.gameLib = {};
          * @param url
          */
         static openBrowser(url) {
+            if (AppManager.isIOS("openBrowser", { url: url }))
+                return;
             let obj = { action: 10012, data: url };
             if (Laya.Browser.onLayaRuntime)
                 this.LP_SendMessageToPlatform(JSON.stringify(obj), this.nullFun);
@@ -3502,6 +3517,20 @@ window.gameLib = {};
         /** 空方法 */
         static nullFun(data) {
         }
+        static getIOS() {
+            // @ts-ignore
+            return (typeof window.webkit !== 'undefined' && typeof window.webkit.messageHandlers !== 'undefined') ? window.webkit.messageHandlers : null;
+        }
+        static isIOS(method, data) {
+            var _a, _b;
+            const webkit = AppManager.getIOS();
+            if (webkit) {
+                data !== null && data !== void 0 ? data : (data = {});
+                (_b = (_a = webkit === null || webkit === void 0 ? void 0 : webkit[method]) === null || _a === void 0 ? void 0 : _a.postMessage) === null || _b === void 0 ? void 0 : _b.call(_a, JSON.stringify(data));
+                return true;
+            }
+            return false;
+        }
     }
     gameLib.AppManager = AppManager;
     /**
@@ -3534,7 +3563,7 @@ window.gameLib = {};
             }
             else {
                 AppRecordManager.back(isBack);
-                if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
+                if (Player.inst.gameId != CommonCmd.GAME_HOME) {
                     AppRecordManager.backGame(isBack);
                 }
             }
@@ -3580,7 +3609,7 @@ window.gameLib = {};
         static appRunJs(action, ...value) {
             switch (action) {
                 case 1: // 返回
-                    if (Player.inst.gameModel == CommonCmd.GAME_SPORTS && value[0] != "close") {
+                    if (Player.inst.gameId == CommonCmd.GAME_SPORTS && value[0] != "close") {
                         AppManager.IsBackHome();
                         return;
                     }
@@ -3591,7 +3620,7 @@ window.gameLib = {};
                     break;
                 case 3: // socket
                     if (value.length > 0) {
-                        if (Player.inst.gameModel == CommonCmd.GAME_HOME || Player.inst.gameModel == CommonCmd.GAME_SCRATCHER) {
+                        if (Player.inst.gameId == CommonCmd.GAME_HOME || Player.inst.gameId == CommonCmd.GAME_SCRATCHER) {
                             SocketManager.inst.onMessageReceived(value[0]);
                         }
                         else {
@@ -3611,7 +3640,7 @@ window.gameLib = {};
                         Player.inst.token = token;
                         Player.inst.login.loginToken((data) => {
                             if ((data === null || data === void 0 ? void 0 : data.code) == HttpCode.OK) {
-                                if (Player.inst.gameModel != -1) {
+                                if (Player.inst.gameId != -1) {
                                     AppRecordManager.JavaSendOpen(json);
                                 }
                                 else {
@@ -3621,7 +3650,7 @@ window.gameLib = {};
                         });
                     }
                     else {
-                        if (Player.inst.gameModel != -1) {
+                        if (Player.inst.gameId != -1) {
                             AppRecordManager.JavaSendOpen(json);
                         }
                         else {
@@ -3891,7 +3920,7 @@ window.gameLib = {};
             let res = obj.res;
             let loadArray = [];
             // 判断是否已经显示过引导页
-            let guideRes = Laya.LocalStorage.getItem("GameGuide_" + Player.inst.gameModel);
+            let guideRes = Laya.LocalStorage.getItem("GameGuide_" + Player.inst.gameId);
             if (!guideRes && obj.guide) {
                 let temps;
                 if (Array.isArray(obj.guide)) {
@@ -4244,7 +4273,7 @@ window.gameLib = {};
             return this._instance;
         }
         showHomeScene() {
-            Player.inst.gameModel = CommonCmd.GAME_HOME;
+            Player.inst.gameId = CommonCmd.GAME_HOME;
             if (!Laya.Render.isConchApp) {
                 Laya.stage.off(Laya.Event.VISIBILITY_CHANGE, this, this.visibilityChange);
                 Laya.stage.on(Laya.Event.VISIBILITY_CHANGE, this, this.visibilityChange);
@@ -4273,10 +4302,10 @@ window.gameLib = {};
             Laya.SoundManager.stopAll();
             Player.inst.money = 0;
             Player.inst.freeBet = 0;
-            if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
+            if (Player.inst.gameId != CommonCmd.GAME_HOME) {
                 // 不在大厅
                 this.closeGame();
-                Player.inst.gameModel = CommonCmd.GAME_HOME;
+                Player.inst.gameId = CommonCmd.GAME_HOME;
                 this.sendAction(ActionLib.GAME_UPDATE_DEFAULT_SCREEN);
             }
             tsCore.HistoryManager.clearHistory();
@@ -4310,7 +4339,7 @@ window.gameLib = {};
             if (Player.inst.isGuest)
                 return;
             fgui.GRoot.inst.showModalWait(getString(1000 /* LibStr.WAITING */));
-            if (Player.inst.gameModel != CommonCmd.GAME_HOME && Player.inst.gameModel != CommonCmd.GAME_SCRATCHER) {
+            if (Player.inst.gameId != CommonCmd.GAME_HOME && Player.inst.gameId != CommonCmd.GAME_SCRATCHER) {
                 // 告诉当前游戏进来了
                 (_b = (_a = SceneManager.inst.starter) === null || _a === void 0 ? void 0 : _a.gameModel) === null || _b === void 0 ? void 0 : _b.focusGame();
                 if (tsCore.HTTPUtils.getTimerSecond() - this.blurTimer >= 3) { // 超过3秒离开焦点
@@ -4344,8 +4373,8 @@ window.gameLib = {};
                 return;
             this.blurTimer = tsCore.HTTPUtils.getTimerSecond();
             if (!SceneManager.inst.isAloneGame()
-                && Player.inst.gameModel != CommonCmd.GAME_HOME
-                && Player.inst.gameModel != CommonCmd.GAME_SCRATCHER) {
+                && Player.inst.gameId != CommonCmd.GAME_HOME
+                && Player.inst.gameId != CommonCmd.GAME_SCRATCHER) {
                 // 告诉当前游戏离开了
                 (_b = (_a = SceneManager.inst.starter) === null || _a === void 0 ? void 0 : _a.gameModel) === null || _b === void 0 ? void 0 : _b.blurGame();
             }
@@ -4411,7 +4440,7 @@ window.gameLib = {};
             //		}
             if (!Player.inst.urlParam.isJumpPage())
                 fgui.GRoot.inst.showModalWait(getString(1000 /* LibStr.WAITING */));
-            Player.inst.gameModel = code;
+            Player.inst.gameId = code;
             // 游戏脚本加载
             let gameResJS = "configs/gameRes" + (AssetsLoader.inst.httpProtocol ? "" : ".min") + ".js";
             let content = tsCore.ELoader.loader.getRes(gameResJS);
@@ -4553,13 +4582,13 @@ window.gameLib = {};
                     JSUtils.openModal(getString(1005 /* LibStr.NET_ERROR */));
                 JSUtils.gameClose();
                 AppManager.gameRestart();
-                Player.inst.gameModel = CommonCmd.GAME_HOME;
+                Player.inst.gameId = CommonCmd.GAME_HOME;
                 return;
             }
             this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1005 /* LibStr.NET_ERROR */, null, Laya.Handler.create(this, function () {
                 LoadingWindow.inst.hide();
                 JSUtils.gameClose();
-                Player.inst.gameModel = CommonCmd.GAME_HOME;
+                Player.inst.gameId = CommonCmd.GAME_HOME;
             }));
         }
         /** 游戏内部返回按钮被点击 */
@@ -4592,13 +4621,13 @@ window.gameLib = {};
             this.sendAction(ActionLib.GAME_UPDATE_DEFAULT_SCREEN);
             if (fgui.UIPackage.getByName("gameCommon"))
                 WaitResult.inst.hide();
-            if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
+            if (Player.inst.gameId != CommonCmd.GAME_HOME) {
                 if (Player.inst.isGuest)
                     Player.inst.money = Player.inst.cacheMoney;
                 Player.inst.cacheMoney = 0;
                 Player.inst.gameData = null;
                 Player.inst.isGuest = false;
-                Player.inst.gameModel = CommonCmd.GAME_HOME;
+                Player.inst.gameId = CommonCmd.GAME_HOME;
             }
             // 退出游戏后  可能会导致访问资源变化  这里在调用一次资源路径设置
             if (tsCore.ELoader.checkBaseUrl)
@@ -4615,7 +4644,7 @@ window.gameLib = {};
          */
         changeScene(config, code) {
             var _a;
-            if (Player.inst.gameModel != code) {
+            if (Player.inst.gameId != code) {
                 this.closeGame();
                 this.openGame(config, code);
             }
@@ -4626,18 +4655,18 @@ window.gameLib = {};
         }
         /** 当前游戏是否是单机版 */
         isAloneGame() {
-            if (Player.inst.gameModel == CommonCmd.GAME_HOME) {
+            if (Player.inst.gameId == CommonCmd.GAME_HOME) {
                 return false;
             }
-            return this.checkAloneGame(Player.inst.gameModel);
+            return this.checkAloneGame(Player.inst.gameId);
         }
         /**
          * 检查是否是单机版
-         * @param gameModel 游戏id
+         * @param gameId 游戏id
          * @return
          *
          */
-        checkAloneGame(gameModel) {
+        checkAloneGame(gameId) {
             return true;
         }
         /** 获取游戏开奖结果超时退出游戏 */
@@ -4645,9 +4674,9 @@ window.gameLib = {};
             this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1011 /* LibStr.GET_GAME_RESULTS_TIME_OUT */, null, Laya.Handler.create(this, function () {
                 this.sendAction(ActionLib.GAME_RECONNECTION_NET, Laya.Handler.create(this, function () {
                     Laya.timer.callLater(this, function () {
-                        if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
+                        if (Player.inst.gameId != CommonCmd.GAME_HOME) {
                             AppRecordManager.backHistory();
-                            AnalyticsManager.send("exit_game_net_timeout_error_" + Player.inst.gameModel);
+                            AnalyticsManager.send("exit_game_net_timeout_error_" + Player.inst.gameId);
                         }
                     });
                 }));
@@ -4658,8 +4687,8 @@ window.gameLib = {};
             this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1009 /* LibStr.GAME_ERROR */, null, Laya.Handler.create(this, function () {
                 this.sendAction(ActionLib.GAME_RECONNECTION_NET, Laya.Handler.create(this, function () {
                     Laya.timer.callLater(this, function () {
-                        if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
-                            AnalyticsManager.send("exit_game_net_error_" + Player.inst.gameModel);
+                        if (Player.inst.gameId != CommonCmd.GAME_HOME) {
+                            AnalyticsManager.send("exit_game_net_error_" + Player.inst.gameId);
                             JSUtils.gameClose();
                         }
                     });
@@ -4675,7 +4704,7 @@ window.gameLib = {};
             msg = msg ? msg : getString(1009 /* LibStr.GAME_ERROR */);
             this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, msg, null, Laya.Handler.create(this, function () {
                 Laya.timer.callLater(this, function () {
-                    if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
+                    if (Player.inst.gameId != CommonCmd.GAME_HOME) {
                         AppRecordManager.backHistory();
                     }
                     runFun(callback);
@@ -5169,7 +5198,7 @@ window.gameLib = {};
              * 游戏类型  id
              * @default -1
              */
-            this.gameModel = -1;
+            this.gameId = -1;
             /**
              *  是否是web端口
              *  @default true
@@ -5202,6 +5231,24 @@ window.gameLib = {};
             var _a;
             (_a = this._instance) !== null && _a !== void 0 ? _a : (this._instance = new Player());
             return this._instance;
+        }
+        /**
+         * 游戏类型  id
+         * @default -1
+         * @deprecated
+         * @see gameId
+         */
+        set gameModel(value) {
+            this.gameId = value;
+        }
+        /**
+         * 游戏类型  id
+         * @default -1
+         * @deprecated
+         * @see gameId
+         */
+        get gameModel() {
+            return this.gameId;
         }
         /**
          * 获取游客模式的优惠券
@@ -5288,7 +5335,7 @@ window.gameLib = {};
          */
         getCanUseCoupon() {
             let betValue = Player.inst.gameData.getTotalBetMoney();
-            let arr = Player.inst.getCouponGame(Player.inst.gameModel);
+            let arr = Player.inst.getCouponGame(Player.inst.gameId);
             for (let i = 0; i < arr.length; i++) {
                 const useObj = arr[i];
                 if (useObj.type == 1) { // 判断是否有可以使用的抵用券
@@ -6131,6 +6178,8 @@ window.gameLib = {};
          * @param [data = null]
          * */
         static gameClose(type = 0, data = null) {
+            if (AppManager.isIOS("alert", { type: type, data: data }))
+                return;
             SceneManager.inst.initComplete = false;
             SceneManager.inst.isLoaderResComplete = false;
             if (Laya.Browser.window.parent.GameToHall) {
@@ -6148,9 +6197,13 @@ window.gameLib = {};
         }
         /** 弹窗 */
         static openModal(value) {
-            var _a, _b, _c;
-            (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.openModal) === null || _c === void 0 ? void 0 : _c.call(_b, value);
-            AppManager.showWeb({ javascript: `window.GameToHall.openModal('${value}')` });
+            var _a, _b, _c, _d, _e, _f;
+            if (AppManager.isIOS("alert", { value: value }))
+                return;
+            (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.alert) === null || _c === void 0 ? void 0 : _c.call(_b, value);
+            (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.openModal) === null || _f === void 0 ? void 0 : _f.call(_e, value);
+            AppManager.showWeb({ javascript: `window.GameToHall.alert && window.GameToHall.alert('${value}')` });
+            AppManager.showWeb({ javascript: `window.GameToHall.openModal && window.GameToHall.openModal('${value}')` });
         }
         /**
          * 打开一个原生页面
@@ -6159,6 +6212,8 @@ window.gameLib = {};
          */
         static openPage(page, isCloseGame = true) {
             var _a, _b, _c, _d, _e, _f, _g, _h, _j;
+            if (AppManager.isIOS("openPage", { page: page, isCloseGame: isCloseGame }))
+                return;
             if (isCloseGame) {
                 (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.comeWebPage) === null || _c === void 0 ? void 0 : _c.call(_b, page);
                 AppManager.showWeb({ javascript: `window.GameToHall.comeWebPage && window.GameToHall.comeWebPage('${page}')` });
@@ -6174,6 +6229,8 @@ window.gameLib = {};
         /** 进入游戏进度条 */
         static progress(value) {
             var _a, _b, _c, _d, _e, _f;
+            if (AppManager.isIOS("progress", { value: value }))
+                return;
             (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.progress) === null || _c === void 0 ? void 0 : _c.call(_b, value);
             (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.getProgress) === null || _f === void 0 ? void 0 : _f.call(_e, value);
             AppManager.executionJavascript("window.GameToHall.progress && window.GameToHall.progress", value);
@@ -6182,12 +6239,16 @@ window.gameLib = {};
         /** 通知进入游戏了 */
         static gameOnload() {
             var _a, _b, _c;
+            if (AppManager.isIOS("gameOnload"))
+                return;
             (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.gameOnload) === null || _c === void 0 ? void 0 : _c.call(_b);
             AppManager.executionJavascript("window.GameToHall.gameOnload", null);
         }
         /** 上传头像 */
         static uploadAvatar() {
             var _a, _b, _c, _d, _e, _f;
+            if (AppManager.isIOS("uploadAvatar"))
+                return;
             (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.uploadAvatar) === null || _c === void 0 ? void 0 : _c.call(_b);
             (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.openReviseAvatarNickNameDrawer) === null || _f === void 0 ? void 0 : _f.call(_e);
             AppManager.showWeb({ javascript: "window.GameToHall.uploadAvatar && window.GameToHall.uploadAvatar()" });
@@ -6628,7 +6689,7 @@ window.gameLib = {};
                     if (fgui.UIPackage.getByName("gameCommon"))
                         WaitResult.inst.hide();
                     HomePrompt.instance.showTip(0, msg, function () {
-                        if (Player.inst.gameModel == -1) {
+                        if (Player.inst.gameId == -1) {
                             Laya.LocalStorage.removeItem("token");
                             Laya.LocalStorage.removeItem("userData");
                             Player.inst.token = null;
@@ -6848,13 +6909,13 @@ window.gameLib = {};
             if (!this.clickInvalid) {
                 runFun(this.callback);
                 // 判断是否是今天第一次打开  如果是 弹出帮助文档
-                let giftOpenTimerStr = Laya.LocalStorage.getItem("action_help" + Player.inst.gameModel);
+                let giftOpenTimerStr = Laya.LocalStorage.getItem("action_help" + Player.inst.gameId);
                 let giftOpenTimer;
                 giftOpenTimerStr !== null && giftOpenTimerStr !== void 0 ? giftOpenTimerStr : (giftOpenTimerStr = "0");
                 giftOpenTimer = parseFloat(giftOpenTimerStr);
                 if (!tsCore.DateUtils.isSameDay(giftOpenTimer, Laya.Browser.now())) {
                     this.sendAction(ActionLib.GAME_ACTIVITY_HELP_WINDOW_SHOW);
-                    Laya.LocalStorage.setItem("action_help" + Player.inst.gameModel, Laya.Browser.now() + "");
+                    Laya.LocalStorage.setItem("action_help" + Player.inst.gameId, Laya.Browser.now() + "");
                 }
             }
             this.clickInvalid = false;
@@ -6868,7 +6929,7 @@ window.gameLib = {};
             this.off(fgui.Events.DRAG_END, this, this.onDragEnd);
             this.on(fgui.Events.DRAG_START, this, this.onDragStart);
             this.on(fgui.Events.DRAG_END, this, this.onDragEnd);
-            let arr = Laya.LocalStorage.getJSON("activity_" + Player.inst.gameModel);
+            let arr = Laya.LocalStorage.getJSON("activity_" + Player.inst.gameId);
             if (arr) {
                 this.setXY(arr[0], arr[1]);
             }
@@ -6927,7 +6988,7 @@ window.gameLib = {};
                 }
             }
             Laya.Tween.to(this, { x: tempX, y: tempY }, 300);
-            Laya.LocalStorage.setJSON("activity_" + Player.inst.gameModel, [tempX, tempY]);
+            Laya.LocalStorage.setJSON("activity_" + Player.inst.gameId, [tempX, tempY]);
         }
         onDragStart() {
             if (SceneManager.inst.starter.baseScene.promptTip)
@@ -7327,8 +7388,8 @@ window.gameLib = {};
             else {
                 AppManager.closeHtml();
             }
-            if (Player.inst.gameModel == CommonCmd.GAME_SPORTS)
-                Player.inst.gameModel = CommonCmd.GAME_HOME;
+            if (Player.inst.gameId == CommonCmd.GAME_SPORTS)
+                Player.inst.gameId = CommonCmd.GAME_HOME;
             super.hide();
             if (SceneManager.inst.starter)
                 SceneManager.inst.starter.updateScreenOrientation();

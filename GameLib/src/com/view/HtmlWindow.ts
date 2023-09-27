@@ -267,7 +267,7 @@ export class HtmlWindow extends fgui.Window implements IRecord {
         } else {
             AppManager.closeHtml()
         }
-        if (Player.inst.gameModel == CommonCmd.GAME_SPORTS) Player.inst.gameModel = CommonCmd.GAME_HOME
+        if (Player.inst.gameId == CommonCmd.GAME_SPORTS) Player.inst.gameId = CommonCmd.GAME_HOME
         super.hide()
         if (SceneManager.inst.starter) SceneManager.inst.starter.updateScreenOrientation()
         runFun(this.closeHandler)

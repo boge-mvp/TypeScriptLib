@@ -84,13 +84,13 @@ export class ActivityButton extends EButton {
         if (!this.clickInvalid) {
             runFun(this.callback)
             // 判断是否是今天第一次打开  如果是 弹出帮助文档
-            let giftOpenTimerStr = LocalStorage.getItem("action_help" + Player.inst.gameModel)
+            let giftOpenTimerStr = LocalStorage.getItem("action_help" + Player.inst.gameId)
             let giftOpenTimer: number
             giftOpenTimerStr ??= "0"
             giftOpenTimer = parseFloat(giftOpenTimerStr)
             if (!DateUtils.isSameDay(giftOpenTimer, Browser.now())) {
                 this.sendAction(ActionLib.GAME_ACTIVITY_HELP_WINDOW_SHOW)
-                LocalStorage.setItem("action_help" + Player.inst.gameModel, Browser.now() + "")
+                LocalStorage.setItem("action_help" + Player.inst.gameId, Browser.now() + "")
             }
         }
         this.clickInvalid = false
@@ -106,7 +106,7 @@ export class ActivityButton extends EButton {
         this.off(Events.DRAG_END, this, this.onDragEnd)
         this.on(Events.DRAG_START, this, this.onDragStart)
         this.on(Events.DRAG_END, this, this.onDragEnd)
-        let arr: number[] = LocalStorage.getJSON("activity_" + Player.inst.gameModel)
+        let arr: number[] = LocalStorage.getJSON("activity_" + Player.inst.gameId)
         if (arr) {
             this.setXY(arr[0], arr[1])
         }
@@ -159,7 +159,7 @@ export class ActivityButton extends EButton {
             }
         }
         Tween.to(this, {x: tempX, y: tempY}, 300)
-        LocalStorage.setJSON("activity_" + Player.inst.gameModel, [tempX, tempY])
+        LocalStorage.setJSON("activity_" + Player.inst.gameId, [tempX, tempY])
     }
 
     private onDragStart() {

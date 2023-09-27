@@ -52,7 +52,7 @@ export class AjaxRequest extends Laya.HttpRequest {
     }
 
     /** 请求返回结果数据 */
-    private onResult(json: any) {
+    private onResult(json: HttpResponse) {
         runFun(this.completeHandler, json)
         this.clearEvent()
     }

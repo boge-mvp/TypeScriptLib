@@ -123,7 +123,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
             }
             return
         }
-        let arr = Player.inst.getCouponGame(Player.inst.gameModel)
+        let arr = Player.inst.getCouponGame(Player.inst.gameId)
         for (let i = 0; i < arr.length; i++) {
             useObj = arr[i]
             if (useObj.type == 1) {// 判断是否有可以使用的抵用券
@@ -158,7 +158,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
     /** 更新中优惠券数量 */
     protected updateTotalCoupons() {
         if (this.activityBtn) {
-            let coupons = Player.inst.getCouponGame(Player.inst.gameModel)
+            let coupons = Player.inst.getCouponGame(Player.inst.gameId)
             let totalMoney = 0
             for (let i = 0; i < coupons.length; i++) {
                 let activityBtnElement = coupons[i]
@@ -197,7 +197,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
 //        if (jackpotBtn && Player.inst.isGuest) {
 //            jackpotBtn.visible = false
 //        }
-        this.updateRoomIdChange(Player.inst.gameModel)
+        this.updateRoomIdChange(Player.inst.gameId)
         // 因为有旋转屏幕  为了获取正确的宽高  延迟执行添加舞台
         Laya.timer.callLater(this, this.regEvent)
     }
@@ -479,30 +479,30 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
      * demo场弹窗
      */
     protected eventGuestTip() {
-        // let value: string = LocalStorage.getItem(Player.inst.gameModel + "_demo")
+        // let value: string = LocalStorage.getItem(Player.inst.gameId + "_demo")
         // if (Player.inst.isGuest && !value) {
         if (Player.inst.isGuest) {
             this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.PROMPT_GUEST, null, () => {
                 this.runEvent()
             })
-            // LocalStorage.setItem(Player.inst.gameModel + "_demo", "1")
+            // LocalStorage.setItem(Player.inst.gameId + "_demo", "1")
         } else {
             this.runEvent()
         }
     }
 
     protected eventCouponTip() {
-        let giftOpenTimerStr = LocalStorage.getItem("giftOpenTimer" + Player.inst.gameModel)
+        let giftOpenTimerStr = LocalStorage.getItem("giftOpenTimer" + Player.inst.gameId)
         let giftOpenTimer: number
         if (StringUtil.isEmpty(giftOpenTimerStr)) {
             giftOpenTimerStr = "0"
         }
         giftOpenTimer = parseFloat(giftOpenTimerStr)
         if (!DateUtils.isSameDay(giftOpenTimer, Browser.now())) {
-            let coupon = Player.inst.getCouponGame(Player.inst.gameModel)
+            let coupon = Player.inst.getCouponGame(Player.inst.gameId)
             if (coupon.length > 0) {
                 this.activityHandler()
-                LocalStorage.setItem("giftOpenTimer" + Player.inst.gameModel, Browser.now() + "")
+                LocalStorage.setItem("giftOpenTimer" + Player.inst.gameId, Browser.now() + "")
             } else {
                 this.runEvent()
             }
@@ -522,11 +522,11 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
 
     /** 引导事件执行 */
     protected eventGuideTip() {
-        let value = LocalStorage.getItem("GameGuide_" + Player.inst.gameModel)
+        let value = LocalStorage.getItem("GameGuide_" + Player.inst.gameId)
         if (!value) {
             let result = this.showGuide()
             if (result) {
-                LocalStorage.setItem("GameGuide_" + Player.inst.gameModel, "true")
+                LocalStorage.setItem("GameGuide_" + Player.inst.gameId, "true")
             } else {
                 this.runEvent()
             }

@@ -17,7 +17,7 @@ export interface IHttpFilter {
      * @param ajaxRequest
      * @return 返回的数据
      */
-    filterResultData(url: string, value: any, ajaxRequest: AjaxRequest): any
+    filterResultData(url: string, value: HttpResponse, ajaxRequest: AjaxRequest): any
 
     /**
      * 拦截器 返回true 表示拦截不再继续执行后续的处理   false 表示继续执行后续的处理
@@ -51,6 +51,6 @@ export interface IHttpFilter {
      * 解析服务器的时间 返回服务器时间毫秒
      * @param data
      */
-    parseData(data: any): number
+    parseData(data: HttpResponse): number
 
 }

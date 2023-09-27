@@ -73,7 +73,7 @@ export class SceneManager extends EProxy {
     private isCloseGame: boolean
 
     showHomeScene() {
-        Player.inst.gameModel = CommonCmd.GAME_HOME
+        Player.inst.gameId = CommonCmd.GAME_HOME
         if (!Render.isConchApp) {
             Laya.stage.off(Laya.Event.VISIBILITY_CHANGE, this, this.visibilityChange)
             Laya.stage.on(Laya.Event.VISIBILITY_CHANGE, this, this.visibilityChange)
@@ -108,10 +108,10 @@ export class SceneManager extends EProxy {
         Player.inst.money = 0
         Player.inst.freeBet = 0
 
-        if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
+        if (Player.inst.gameId != CommonCmd.GAME_HOME) {
             // 不在大厅
             this.closeGame()
-            Player.inst.gameModel = CommonCmd.GAME_HOME
+            Player.inst.gameId = CommonCmd.GAME_HOME
             this.sendAction(ActionLib.GAME_UPDATE_DEFAULT_SCREEN)
         }
         HistoryManager.clearHistory()
@@ -149,7 +149,7 @@ export class SceneManager extends EProxy {
     private focusHandler() {
         if (Player.inst.isGuest) return
         GRoot.inst.showModalWait(getString(LibStr.WAITING))
-        if (Player.inst.gameModel != CommonCmd.GAME_HOME && Player.inst.gameModel != CommonCmd.GAME_SCRATCHER) {
+        if (Player.inst.gameId != CommonCmd.GAME_HOME && Player.inst.gameId != CommonCmd.GAME_SCRATCHER) {
             // 告诉当前游戏进来了
             SceneManager.inst.starter?.gameModel?.focusGame()
             if (HTTPUtils.getTimerSecond() - this.blurTimer >= 3) { // 超过3秒离开焦点
@@ -179,8 +179,8 @@ export class SceneManager extends EProxy {
         if (Player.inst.isGuest) return
         this.blurTimer = HTTPUtils.getTimerSecond()
         if (!SceneManager.inst.isAloneGame()
-            && Player.inst.gameModel != CommonCmd.GAME_HOME
-            && Player.inst.gameModel != CommonCmd.GAME_SCRATCHER
+            && Player.inst.gameId != CommonCmd.GAME_HOME
+            && Player.inst.gameId != CommonCmd.GAME_SCRATCHER
         ) {
             // 告诉当前游戏离开了
             SceneManager.inst.starter?.gameModel?.blurGame()
@@ -254,7 +254,7 @@ export class SceneManager extends EProxy {
         if (!Player.inst.urlParam.isJumpPage())
             GRoot.inst.showModalWait(getString(LibStr.WAITING))
 
-        Player.inst.gameModel = code
+        Player.inst.gameId = code
 
         // 游戏脚本加载
         let gameResJS = "configs/gameRes" + (AssetsLoader.inst.httpProtocol ? "" : ".min") + ".js"
@@ -411,13 +411,13 @@ export class SceneManager extends EProxy {
                 JSUtils.openModal(getString(LibStr.NET_ERROR))
             JSUtils.gameClose()
             AppManager.gameRestart()
-            Player.inst.gameModel = CommonCmd.GAME_HOME
+            Player.inst.gameId = CommonCmd.GAME_HOME
             return
         }
         this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.NET_ERROR, null, Handler.create(this, function () {
             LoadingWindow.inst.hide()
             JSUtils.gameClose()
-            Player.inst.gameModel = CommonCmd.GAME_HOME
+            Player.inst.gameId = CommonCmd.GAME_HOME
         }))
     }
 
@@ -456,14 +456,14 @@ export class SceneManager extends EProxy {
         if (UIPackage.getByName("gameCommon"))
             WaitResult.inst.hide()
 
-        if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
+        if (Player.inst.gameId != CommonCmd.GAME_HOME) {
             if (Player.inst.isGuest)
                 Player.inst.money = Player.inst.cacheMoney
 
             Player.inst.cacheMoney = 0
             Player.inst.gameData = null
             Player.inst.isGuest = false
-            Player.inst.gameModel = CommonCmd.GAME_HOME
+            Player.inst.gameId = CommonCmd.GAME_HOME
         }
         // 退出游戏后  可能会导致访问资源变化  这里在调用一次资源路径设置
         if (ELoader.checkBaseUrl) URL.basePath = ELoader.checkBaseUrl()[0]
@@ -480,7 +480,7 @@ export class SceneManager extends EProxy {
      *
      */
     changeScene(config: string, code: number) {
-        if (Player.inst.gameModel != code) {
+        if (Player.inst.gameId != code) {
             this.closeGame()
             this.openGame(config, code)
         } else {
@@ -491,19 +491,19 @@ export class SceneManager extends EProxy {
 
     /** 当前游戏是否是单机版 */
     isAloneGame() {
-        if (Player.inst.gameModel == CommonCmd.GAME_HOME) {
+        if (Player.inst.gameId == CommonCmd.GAME_HOME) {
             return false
         }
-        return this.checkAloneGame(Player.inst.gameModel)
+        return this.checkAloneGame(Player.inst.gameId)
     }
 
     /**
      * 检查是否是单机版
-     * @param gameModel 游戏id
+     * @param gameId 游戏id
      * @return
      *
      */
-    checkAloneGame(gameModel: number) {
+    checkAloneGame(gameId: number) {
         return true
     }
 
@@ -512,9 +512,9 @@ export class SceneManager extends EProxy {
         this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.GET_GAME_RESULTS_TIME_OUT, null, Handler.create(this, function () {
             this.sendAction(ActionLib.GAME_RECONNECTION_NET, Handler.create(this, function () {
                 Laya.timer.callLater(this, function () {
-                    if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
+                    if (Player.inst.gameId != CommonCmd.GAME_HOME) {
                         AppRecordManager.backHistory()
-                        AnalyticsManager.send("exit_game_net_timeout_error_" + Player.inst.gameModel)
+                        AnalyticsManager.send("exit_game_net_timeout_error_" + Player.inst.gameId)
                     }
                 })
             }))
@@ -526,8 +526,8 @@ export class SceneManager extends EProxy {
         this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.GAME_ERROR, null, Handler.create(this, function () {
             this.sendAction(ActionLib.GAME_RECONNECTION_NET, Handler.create(this, function () {
                 Laya.timer.callLater(this, function () {
-                    if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
-                        AnalyticsManager.send("exit_game_net_error_" + Player.inst.gameModel)
+                    if (Player.inst.gameId != CommonCmd.GAME_HOME) {
+                        AnalyticsManager.send("exit_game_net_error_" + Player.inst.gameId)
                         JSUtils.gameClose()
                     }
                 })
@@ -544,7 +544,7 @@ export class SceneManager extends EProxy {
         msg = msg ? msg : getString(LibStr.GAME_ERROR)
         this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, msg, null, Handler.create(this, function () {
             Laya.timer.callLater(this, function () {
-                if (Player.inst.gameModel != CommonCmd.GAME_HOME) {
+                if (Player.inst.gameId != CommonCmd.GAME_HOME) {
                     AppRecordManager.backHistory()
                 }
                 runFun(callback)

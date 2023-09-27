@@ -54,11 +54,35 @@ export class BaseSlotGameData extends BaseGameData {
     /** 默认线位置 */
     defaultLineIndex = 0
 
+    //     默认游戏 free 变量存储属性
+
+    /** 是否有免费游戏 1 就是免费游戏 */
+    hasFreeSpin = 0
+
+    /** 是否进入免费模式开奖流程 */
+    isFreeModel: boolean
+    /** 免费游戏押注参数 */
+    freeBetTotalObj: any
+    /** free spin 原始数据 */
+    freeSpinObj: any
+    /** 免费游戏剩余次数 */
+    freeCount = 0
+
+    /** 第一列是否存在 bounds */
+    firstExistBounds: boolean
+    /** 当前开出免费游戏的个数 */
+    freeBoundsCount = 0
+
+    /**
+     * 是否有 reSpin
+     */
+    hasReSpin = 0
+
     constructor() {
         super()
         this.lineValue = this.lottery.length
         this.gameType = GameType.SLOT
-        const key = Player.inst.gameModel + "_isTurboMode"
+        const key = Player.inst.gameId + "_isTurboMode"
         this._isTurboMode = LocalStorage.getItem(key) != null
     }
 
@@ -118,7 +142,7 @@ export class BaseSlotGameData extends BaseGameData {
 
     set isTurboMode(value: boolean) {
         this._isTurboMode = value
-        const key = Player.inst.gameModel + "_isTurboMode"
+        const key = Player.inst.gameId + "_isTurboMode"
         if (value) {
             LocalStorage.setItem(key, "1")
         } else {

@@ -59,9 +59,9 @@ export class HTTPUtils {
     /**
      * 清除所有正在执行的请求已经监听方法
      */
-    static clear(http: HTTPUtils) {
+    static clear(http?: HTTPUtils) {
         if (http) {
-            const index = HTTPUtils.https.findIndex((value)=> value === http)
+            const index = HTTPUtils.https.findIndex((value) => value === http)
             HTTPUtils.https.splice(index, 1)
             return
         }
@@ -159,7 +159,7 @@ export class HTTPUtils {
     }
 
 
-    private completeHandler(data: any) {
+    private completeHandler(data: HttpResponse) {
         if (!data) {
             this.errorHandler(data)
             return
@@ -191,8 +191,8 @@ export class HTTPUtils {
     }
 
     /** 解析时间 */
-    static parseDate(data: any) {
-        let serverTime = HTTPUtils.filter ? HTTPUtils.filter.parseData(data) : 0
+    static parseDate(data: HttpResponse) {
+        let serverTime = HTTPUtils.filter?.parseData(data) ?? 0
         this.castDifference(serverTime)
     }
 
