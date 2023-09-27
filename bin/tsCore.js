@@ -1723,9 +1723,10 @@ window.tsCore = {};
          */
         /*@override*/
         getChild(...name) {
+            var _a;
             let child = null;
             for (const key of name) {
-                child = super.getChild(key);
+                child = ((_a = this.contentPane) === null || _a === void 0 ? void 0 : _a.getChild(key)) || super.getChild(key);
                 if (child)
                     return child;
             }
