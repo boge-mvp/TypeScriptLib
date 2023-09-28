@@ -2996,8 +2996,14 @@ declare namespace gameLib {
          * @param [data = null]
          * */
         static gameClose(type?: number, data?: any): void;
-        /** 弹窗 */
-        static openModal(value: string): void;
+        /**
+         * 弹窗
+         * @param msg 内容文本
+         * @param title 标题
+         * @param okText ok文本
+         * @param cancelText 取消文本
+         */
+        static alert(msg: string, title?: string, okText?: string, cancelText?: string): void;
         /**
          * 打开一个原生页面
          * @param page 页面 如： "/giftPage?token=***"
@@ -3011,7 +3017,16 @@ declare namespace gameLib {
         static gameOnload(): void;
         /** 上传头像 */
         static uploadAvatar(): void;
+        /**
+         * @deprecated
+         * @see JSUtils.uploadAvatar
+         */
         static updateHead: typeof JSUtils.uploadAvatar;
+        /**
+         * @deprecated
+         * @see JSUtils.alert
+         */
+        static openModal: typeof JSUtils.alert;
     }
     export class ObjectUtil {
         private static colorTransform;

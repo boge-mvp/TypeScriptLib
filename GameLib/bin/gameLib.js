@@ -3257,9 +3257,10 @@ window.gameLib = {};
         /** 关闭app自定义返回 */
         static closeAppBack() {
             var _a;
+            if (AppManager.isIOS("runJs", { js: "appKeyBack()" }))
+                return;
             // @ts-ignore
-            (_a = window.conch) === null || _a === void 0 ? void 0 : _a.setOnBackPressedFunction(function () {
-            });
+            (_a = window.conch) === null || _a === void 0 ? void 0 : _a.setOnBackPressedFunction(function () { });
         }
         /** 进入游戏 */
         static sendAppData() {
@@ -6269,15 +6270,21 @@ window.gameLib = {};
             AppManager.showWeb({ javascript: `window.GameToHall.gameClose(${type}, ${data})` });
             SceneManager.inst.closeGame();
         }
-        /** 弹窗 */
-        static openModal(value) {
+        /**
+         * 弹窗
+         * @param msg 内容文本
+         * @param title 标题
+         * @param okText ok文本
+         * @param cancelText 取消文本
+         */
+        static alert(msg, title = "", okText = "", cancelText = "") {
             var _a, _b, _c, _d, _e, _f;
-            if (AppManager.isIOS("alert", { value: value }))
+            if (AppManager.isIOS("alert", { msg: msg, title: title, ensureTv: okText, cancelTv: cancelText }))
                 return;
-            (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.alert) === null || _c === void 0 ? void 0 : _c.call(_b, value);
-            (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.openModal) === null || _f === void 0 ? void 0 : _f.call(_e, value);
-            AppManager.showWeb({ javascript: `window.GameToHall.alert && window.GameToHall.alert('${value}')` });
-            AppManager.showWeb({ javascript: `window.GameToHall.openModal && window.GameToHall.openModal('${value}')` });
+            (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.alert) === null || _c === void 0 ? void 0 : _c.call(_b, msg);
+            (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.openModal) === null || _f === void 0 ? void 0 : _f.call(_e, msg);
+            AppManager.showWeb({ javascript: `window.GameToHall.alert && window.GameToHall.alert('${msg}')` });
+            AppManager.showWeb({ javascript: `window.GameToHall.openModal && window.GameToHall.openModal('${msg}')` });
         }
         /**
          * 打开一个原生页面
@@ -6286,7 +6293,11 @@ window.gameLib = {};
          */
         static openPage(page, isCloseGame = true) {
             var _a, _b, _c, _d, _e, _f, _g, _h, _j;
-            if (AppManager.isIOS("openPage", { page: page, isCloseGame: isCloseGame }))
+            tsCore.Log.debug(`openPage-> page:${page}, isCloseGame=${isCloseGame}`);
+            if (AppManager.isIOS("openPage", {
+                page: page.startsWith("/") ? page.substring(1) : page,
+                isCloseGame: isCloseGame
+            }))
                 return;
             if (isCloseGame) {
                 (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.comeWebPage) === null || _c === void 0 ? void 0 : _c.call(_b, page);
@@ -6313,6 +6324,7 @@ window.gameLib = {};
         /** 通知进入游戏了 */
         static gameOnload() {
             var _a, _b, _c;
+            tsCore.Log.debug("gameOnload->");
             if (AppManager.isIOS("gameOnload"))
                 return;
             (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.gameOnload) === null || _c === void 0 ? void 0 : _c.call(_b);
@@ -6330,7 +6342,16 @@ window.gameLib = {};
         }
     }
     JSUtils.getProgress = JSUtils.progress;
+    /**
+     * @deprecated
+     * @see JSUtils.uploadAvatar
+     */
     JSUtils.updateHead = JSUtils.uploadAvatar;
+    /**
+     * @deprecated
+     * @see JSUtils.alert
+     */
+    JSUtils.openModal = JSUtils.alert;
     gameLib.JSUtils = JSUtils;
     class ObjectUtil {
         static setColorTransform(source, value) {

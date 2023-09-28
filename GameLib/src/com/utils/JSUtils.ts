@@ -2,6 +2,7 @@ import Browser = Laya.Browser;
 import Render = Laya.Render;
 import {AppManager} from "../manager/AppManager"
 import {SceneManager} from "../manager/SceneManager"
+import Log = tsCore.Log;
 
 export class JSUtils {
 
@@ -62,13 +63,19 @@ export class JSUtils {
         SceneManager.inst.closeGame()
     }
 
-    /** 弹窗 */
-    static openModal(value: string) {
-        if (AppManager.isIOS("alert", {value: value})) return
-        Browser.window.parent?.GameToHall?.alert?.(value)
-        Browser.window.parent?.GameToHall?.openModal?.(value)
-        AppManager.showWeb({javascript: `window.GameToHall.alert && window.GameToHall.alert('${value}')`})
-        AppManager.showWeb({javascript: `window.GameToHall.openModal && window.GameToHall.openModal('${value}')`})
+    /**
+     * 弹窗
+     * @param msg 内容文本
+     * @param title 标题
+     * @param okText ok文本
+     * @param cancelText 取消文本
+     */
+    static alert(msg: string, title = "", okText = "", cancelText = "") {
+        if (AppManager.isIOS("alert", {msg: msg, title: title, ensureTv: okText, cancelTv: cancelText})) return
+        Browser.window.parent?.GameToHall?.alert?.(msg)
+        Browser.window.parent?.GameToHall?.openModal?.(msg)
+        AppManager.showWeb({javascript: `window.GameToHall.alert && window.GameToHall.alert('${msg}')`})
+        AppManager.showWeb({javascript: `window.GameToHall.openModal && window.GameToHall.openModal('${msg}')`})
     }
 
     /**
@@ -77,7 +84,11 @@ export class JSUtils {
      * @param [isCloseGame=true] 是否关闭游戏
      */
     static openPage(page: string, isCloseGame = true) {
-        if (AppManager.isIOS("openPage", {page: page, isCloseGame: isCloseGame})) return
+        Log.debug(`openPage-> page:${page}, isCloseGame=${isCloseGame}`)
+        if (AppManager.isIOS("openPage", {
+            page: page.startsWith("/") ? page.substring(1) : page,
+            isCloseGame: isCloseGame
+        })) return
         if (isCloseGame) {
             Browser.window.parent?.GameToHall?.comeWebPage?.(page)
             AppManager.showWeb({javascript: `window.GameToHall.comeWebPage && window.GameToHall.comeWebPage('${page}')`})
@@ -103,6 +114,7 @@ export class JSUtils {
 
     /** 通知进入游戏了 */
     static gameOnload() {
+        Log.debug("gameOnload->")
         if (AppManager.isIOS("gameOnload")) return
         Browser.window.parent?.GameToHall?.gameOnload?.()
         AppManager.executionJavascript("window.GameToHall.gameOnload", null)
@@ -117,7 +129,15 @@ export class JSUtils {
         AppManager.showWeb({javascript: "window.GameToHall.openReviseAvatarNickNameDrawer && window.GameToHall.openReviseAvatarNickNameDrawer()"})
     }
 
+    /**
+     * @deprecated
+     * @see JSUtils.uploadAvatar
+     */
     static updateHead = JSUtils.uploadAvatar
-
+    /**
+     * @deprecated
+     * @see JSUtils.alert
+     */
+    static openModal = JSUtils.alert
 
 }

@@ -11,9 +11,9 @@ export class AppManager {
 
     /** 关闭app自定义返回 */
     static closeAppBack() {
+        if(AppManager.isIOS("runJs", {js: "appKeyBack()"})) return
         // @ts-ignore
-        window.conch?.setOnBackPressedFunction(function () {
-        })
+        window.conch?.setOnBackPressedFunction(function () {})
     }
 
     /** 进入游戏 */
