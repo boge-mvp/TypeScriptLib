@@ -3257,7 +3257,7 @@ window.gameLib = {};
         /** 关闭app自定义返回 */
         static closeAppBack() {
             var _a;
-            if (AppManager.isIOS("runJs", { js: "appKeyBack()" }))
+            if (AppManager.callIOS("runJs", { js: "appKeyBack()" }))
                 return;
             // @ts-ignore
             (_a = window.conch) === null || _a === void 0 ? void 0 : _a.setOnBackPressedFunction(function () { });
@@ -3275,7 +3275,7 @@ window.gameLib = {};
          *
          */
         static enterFeedback(sData, callback) {
-            if (AppManager.isIOS("reportFbEmpEvent", { eventName: sData.eventName, eventValue: sData.eventValue }))
+            if (AppManager.callIOS("reportFbEmpEvent", { eventName: sData.eventName, eventValue: sData.eventValue }))
                 return;
             if (Laya.Browser.onLayaRuntime)
                 this.LP_enterFeedback(JSON.stringify(sData), callback);
@@ -3298,7 +3298,7 @@ window.gameLib = {};
         }
         /** 退出APP */
         static exit() {
-            if (AppManager.isIOS("exitApp"))
+            if (AppManager.callIOS("exitApp"))
                 return;
             let obj = { action: 10008 };
             if (Laya.Browser.onLayaRuntime)
@@ -3354,7 +3354,7 @@ window.gameLib = {};
          * @param type 0.调用公用分享窗口 1.facebook 2.whatsapp 3.instagram 4.sms 5.twitter
          */
         static openShare(content, url = "", type = 0) {
-            if (AppManager.isIOS("showShareBySystem", {
+            if (AppManager.callIOS("showShareBySystem", {
                 type: type,
                 text: content + (url ? "" : "\n" + url)
             }))
@@ -3401,7 +3401,7 @@ window.gameLib = {};
          * @param url
          */
         static openBrowser(url) {
-            if (AppManager.isIOS("openBrowser", { url: url }))
+            if (AppManager.callIOS("openBrowser", { url: url }))
                 return;
             let obj = { action: 10012, data: url };
             if (Laya.Browser.onLayaRuntime)
@@ -3592,13 +3592,13 @@ window.gameLib = {};
         /** 空方法 */
         static nullFun(data) {
         }
-        static getIOS() {
+        static get isIOS() {
             // @ts-ignore
             return (typeof window.webkit !== 'undefined' && typeof window.webkit.messageHandlers !== 'undefined') ? window.webkit.messageHandlers : null;
         }
-        static isIOS(method, data) {
+        static callIOS(method, data) {
             var _a, _b;
-            const webkit = AppManager.getIOS();
+            const webkit = AppManager.isIOS;
             if (webkit) {
                 data !== null && data !== void 0 ? data : (data = {});
                 (_b = (_a = webkit === null || webkit === void 0 ? void 0 : webkit[method]) === null || _a === void 0 ? void 0 : _a.postMessage) === null || _b === void 0 ? void 0 : _b.call(_a, JSON.stringify(data));
@@ -4501,7 +4501,7 @@ window.gameLib = {};
             if (!config || code <= 0) {
                 tsCore.Log.error("config = " + config, "code = " + code);
                 LoadingWindow.inst.hide();
-                JSUtils.openModal(getString(1017 /* LibStr.GAME_NOT_FOUND */));
+                JSUtils.alert(getString(1017 /* LibStr.GAME_NOT_FOUND */));
                 JSUtils.gameClose();
                 return;
             }
@@ -6253,7 +6253,7 @@ window.gameLib = {};
          * @param [data = null]
          * */
         static gameClose(type = 0, data = null) {
-            if (AppManager.isIOS("gameClose", { type: type, data: data }))
+            if (AppManager.callIOS("gameClose", { type: type, data: data }))
                 return;
             SceneManager.inst.initComplete = false;
             SceneManager.inst.isLoaderResComplete = false;
@@ -6279,7 +6279,7 @@ window.gameLib = {};
          */
         static alert(msg, title = "", okText = "", cancelText = "") {
             var _a, _b, _c, _d, _e, _f;
-            if (AppManager.isIOS("alert", { msg: msg, title: title, ensureTv: okText, cancelTv: cancelText }))
+            if (AppManager.callIOS("alert", { msg: msg, title: title, ensureTv: okText, cancelTv: cancelText }))
                 return;
             (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.alert) === null || _c === void 0 ? void 0 : _c.call(_b, msg);
             (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.openModal) === null || _f === void 0 ? void 0 : _f.call(_e, msg);
@@ -6289,12 +6289,14 @@ window.gameLib = {};
         /**
          * 打开一个原生页面
          * @param page 页面 如： "/giftPage?token=***"
+         * login,register,userSetting,webDetail,gameDetail,editNickName,forgetMain,changePwd,home,deposit,promotion,withdraw,profile
          * @param [isCloseGame=true] 是否关闭游戏
+         * @param fromUrl 登录注册等成功后，需打开的界面地址
          */
-        static openPage(page, isCloseGame = true) {
+        static openPage(page, isCloseGame = true, fromUrl) {
             var _a, _b, _c, _d, _e, _f, _g, _h, _j;
             tsCore.Log.debug(`openPage-> page:${page}, isCloseGame=${isCloseGame}`);
-            if (AppManager.isIOS("openPage", {
+            if (AppManager.callIOS("openPage", {
                 page: page.startsWith("/") ? page.substring(1) : page,
                 isCloseGame: isCloseGame
             }))
@@ -6314,7 +6316,7 @@ window.gameLib = {};
         /** 进入游戏进度条 */
         static progress(value) {
             var _a, _b, _c, _d, _e, _f;
-            if (AppManager.isIOS("progress", { value: value }))
+            if (AppManager.callIOS("progress", { value: value }))
                 return;
             (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.progress) === null || _c === void 0 ? void 0 : _c.call(_b, value);
             (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.getProgress) === null || _f === void 0 ? void 0 : _f.call(_e, value);
@@ -6325,7 +6327,7 @@ window.gameLib = {};
         static gameOnload() {
             var _a, _b, _c;
             tsCore.Log.debug("gameOnload->");
-            if (AppManager.isIOS("gameOnload"))
+            if (AppManager.callIOS("gameOnload"))
                 return;
             (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.gameOnload) === null || _c === void 0 ? void 0 : _c.call(_b);
             AppManager.executionJavascript("window.GameToHall.gameOnload", null);
@@ -6333,7 +6335,7 @@ window.gameLib = {};
         /** 上传头像 */
         static uploadAvatar() {
             var _a, _b, _c, _d, _e, _f;
-            if (AppManager.isIOS("uploadAvatar"))
+            if (AppManager.callIOS("uploadAvatar"))
                 return;
             (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.uploadAvatar) === null || _c === void 0 ? void 0 : _c.call(_b);
             (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.openReviseAvatarNickNameDrawer) === null || _f === void 0 ? void 0 : _f.call(_e);
@@ -7532,7 +7534,7 @@ window.gameLib = {};
             // this.visible = false
         }
         /**
-         * 显示
+         * 显示加载页
          * @param index 显示的形式
          * @param headText 使用头文本
          *
@@ -7542,6 +7544,11 @@ window.gameLib = {};
             this.changeView(index, headText);
             fgui.GRoot.inst.addChild(this);
         }
+        /**
+         * 切换显示状态
+         * @param index 显示的形式
+         * @param headText 使用头文本
+         */
         changeView(index = 0, headText) {
             headText !== null && headText !== void 0 ? headText : (headText = getString(1001 /* LibStr.LOADING */).split(".").join(""));
             this.headText = headText;

@@ -2704,8 +2704,10 @@ window.tsCore = {};
         }
         /**
          * 运行环境检测
+         * @param url 检测地址
+         * @param [isPathName=true] 是否检测路径
          */
-        static env(url) {
+        static env(url, isPathName = true) {
             let value = Laya.Utils.getQueryString("env");
             if (StringUtil.isNotEmpty(value)) {
                 const valueEnv = Environment.findEnv(value);
@@ -2714,18 +2716,31 @@ window.tsCore = {};
                     return valueEnv;
                 }
             }
-            url !== null && url !== void 0 ? url : (url = window.location.host);
+            let checkUrl = url !== null && url !== void 0 ? url : window.location.host;
             Environment.active = Environment.DEFAULT_ENV;
+            if (!ConfigKit._check(checkUrl) && !url && isPathName) {
+                ConfigKit._check(window.location.pathname);
+            }
+            return Environment.active;
+        }
+        /**
+         * 检测
+         * @param url
+         */
+        static _check(url) {
             if (Environment.verify(url, Environment.TEST)) {
                 Environment.active = EnvType.TEST;
+                return true;
             }
             else if (Environment.verify(url, Environment.DEV)) {
                 Environment.active = EnvType.DEV;
+                return true;
             }
             else if (Environment.verify(url, Environment.PROP)) {
                 Environment.active = EnvType.PROD;
+                return true;
             }
-            return Environment.active;
+            return false;
         }
     }
     tsCore.ConfigKit = ConfigKit;
@@ -2739,7 +2754,7 @@ window.tsCore = {};
             if (StringUtil.isEmpty(url) || (value === null || value === void 0 ? void 0 : value.length) < 1)
                 return false;
             // 后行断言在旧版本的 JavaScript 以及某些浏览器和环境中是不支持的，因此使用非捕获组更具有兼容性。
-            return new RegExp("(?:\\/|-|(\\.)|^)(" + value.join("|") + ")(?=(\\.|:|-|$))").test(url);
+            return new RegExp(`\\b(${value.join("|")})\\b`).test(url);
             // return new RegExp("(?<=\\/|-|(\\.))" + value.join("|") + "(?=(\\.)|-)").test(url)
         }
         /**

@@ -238,7 +238,7 @@ export class SceneManager extends EProxy {
         if (!config || code <= 0) {
             Log.error("config = " + config, "code = " + code)
             LoadingWindow.inst.hide()
-            JSUtils.openModal(getString(LibStr.GAME_NOT_FOUND))
+            JSUtils.alert(getString(LibStr.GAME_NOT_FOUND))
             JSUtils.gameClose()
             return
         }

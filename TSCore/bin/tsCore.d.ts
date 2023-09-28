@@ -956,8 +956,15 @@ declare namespace tsCore {
         static useWebp(): boolean;
         /**
          * 运行环境检测
+         * @param url 检测地址
+         * @param [isPathName=true] 是否检测路径
          */
-        static env(url?: string): EnvType;
+        static env(url?: string, isPathName?: boolean): EnvType;
+        /**
+         * 检测
+         * @param url
+         */
+        private static _check;
     }
     export class Environment {
         static TEST: string[];

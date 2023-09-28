@@ -11,7 +11,7 @@ export class AppManager {
 
     /** 关闭app自定义返回 */
     static closeAppBack() {
-        if(AppManager.isIOS("runJs", {js: "appKeyBack()"})) return
+        if(AppManager.callIOS("runJs", {js: "appKeyBack()"})) return
         // @ts-ignore
         window.conch?.setOnBackPressedFunction(function () {})
     }
@@ -30,7 +30,7 @@ export class AppManager {
      *
      */
     static enterFeedback(sData: { eventName: string, eventValue?: string }, callback: Function) {
-        if (AppManager.isIOS("reportFbEmpEvent", {eventName: sData.eventName, eventValue: sData.eventValue})) return
+        if (AppManager.callIOS("reportFbEmpEvent", {eventName: sData.eventName, eventValue: sData.eventValue})) return
         if (Browser.onLayaRuntime)
             this.LP_enterFeedback(JSON.stringify(sData), callback)
     }
@@ -55,7 +55,7 @@ export class AppManager {
 
     /** 退出APP */
     static exit() {
-        if (AppManager.isIOS("exitApp")) return
+        if (AppManager.callIOS("exitApp")) return
         let obj = {action: 10008}
         if (Browser.onLayaRuntime)
             this.LP_SendMessageToPlatform(JSON.stringify(obj), this.nullFun)
@@ -118,7 +118,7 @@ export class AppManager {
      * @param type 0.调用公用分享窗口 1.facebook 2.whatsapp 3.instagram 4.sms 5.twitter
      */
     static openShare(content: string, url = "", type = 0) {
-        if (AppManager.isIOS("showShareBySystem", {
+        if (AppManager.callIOS("showShareBySystem", {
             type: type,
             text: content + (url ? "" : "\n" + url)
         })) return
@@ -163,7 +163,7 @@ export class AppManager {
      * @param url
      */
     static openBrowser(url: string) {
-        if (AppManager.isIOS("openBrowser", {url: url})) return
+        if (AppManager.callIOS("openBrowser", {url: url})) return
         let obj = {action: 10012, data: url}
         if (Browser.onLayaRuntime)
             this.LP_SendMessageToPlatform(JSON.stringify(obj), this.nullFun)
@@ -374,13 +374,13 @@ export class AppManager {
     static nullFun(data: any) {
     }
 
-    static getIOS() {
+    static get isIOS() {
         // @ts-ignore
         return (typeof window.webkit !== 'undefined' && typeof window.webkit.messageHandlers !== 'undefined') ? window.webkit.messageHandlers : null
     }
 
-    static isIOS(method: string, data?: any) {
-        const webkit = AppManager.getIOS()
+    static callIOS(method: string, data?: any) {
+        const webkit = AppManager.isIOS
         if (webkit) {
             data ??= {}
             webkit?.[method]?.postMessage?.(JSON.stringify(data))

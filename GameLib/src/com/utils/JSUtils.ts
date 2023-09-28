@@ -47,7 +47,7 @@ export class JSUtils {
      * @param [data = null]
      * */
     static gameClose(type = 0, data = null) {
-        if (AppManager.isIOS("gameClose", {type: type, data: data})) return
+        if (AppManager.callIOS("gameClose", {type: type, data: data})) return
         SceneManager.inst.initComplete = false
         SceneManager.inst.isLoaderResComplete = false
         if (Browser.window.parent.GameToHall) {
@@ -71,7 +71,7 @@ export class JSUtils {
      * @param cancelText 取消文本
      */
     static alert(msg: string, title = "", okText = "", cancelText = "") {
-        if (AppManager.isIOS("alert", {msg: msg, title: title, ensureTv: okText, cancelTv: cancelText})) return
+        if (AppManager.callIOS("alert", {msg: msg, title: title, ensureTv: okText, cancelTv: cancelText})) return
         Browser.window.parent?.GameToHall?.alert?.(msg)
         Browser.window.parent?.GameToHall?.openModal?.(msg)
         AppManager.showWeb({javascript: `window.GameToHall.alert && window.GameToHall.alert('${msg}')`})
@@ -81,11 +81,13 @@ export class JSUtils {
     /**
      * 打开一个原生页面
      * @param page 页面 如： "/giftPage?token=***"
+     * login,register,userSetting,webDetail,gameDetail,editNickName,forgetMain,changePwd,home,deposit,promotion,withdraw,profile
      * @param [isCloseGame=true] 是否关闭游戏
+     * @param fromUrl 登录注册等成功后，需打开的界面地址
      */
-    static openPage(page: string, isCloseGame = true) {
+    static openPage(page: string, isCloseGame = true, fromUrl?:string) {
         Log.debug(`openPage-> page:${page}, isCloseGame=${isCloseGame}`)
-        if (AppManager.isIOS("openPage", {
+        if (AppManager.callIOS("openPage", {
             page: page.startsWith("/") ? page.substring(1) : page,
             isCloseGame: isCloseGame
         })) return
@@ -103,7 +105,7 @@ export class JSUtils {
 
     /** 进入游戏进度条 */
     static progress(value: number) {
-        if (AppManager.isIOS("progress", {value: value})) return
+        if (AppManager.callIOS("progress", {value: value})) return
         Browser.window.parent?.GameToHall?.progress?.(value)
         Browser.window.parent?.GameToHall?.getProgress?.(value)
         AppManager.executionJavascript("window.GameToHall.progress && window.GameToHall.progress", value)
@@ -115,14 +117,14 @@ export class JSUtils {
     /** 通知进入游戏了 */
     static gameOnload() {
         Log.debug("gameOnload->")
-        if (AppManager.isIOS("gameOnload")) return
+        if (AppManager.callIOS("gameOnload")) return
         Browser.window.parent?.GameToHall?.gameOnload?.()
         AppManager.executionJavascript("window.GameToHall.gameOnload", null)
     }
 
     /** 上传头像 */
     static uploadAvatar() {
-        if (AppManager.isIOS("uploadAvatar")) return
+        if (AppManager.callIOS("uploadAvatar")) return
         Browser.window.parent?.GameToHall?.uploadAvatar?.()
         Browser.window.parent?.GameToHall?.openReviseAvatarNickNameDrawer?.()
         AppManager.showWeb({javascript: "window.GameToHall.uploadAvatar && window.GameToHall.uploadAvatar()"})

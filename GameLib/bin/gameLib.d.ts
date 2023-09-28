@@ -2019,8 +2019,8 @@ declare namespace gameLib {
         static LP_init(): void;
         /** 空方法 */
         static nullFun(data: any): void;
-        static getIOS(): any;
-        static isIOS(method: string, data?: any): boolean;
+        static get isIOS(): any;
+        static callIOS(method: string, data?: any): boolean;
     }
     /**
      * app 访问记录管理
@@ -3007,9 +3007,11 @@ declare namespace gameLib {
         /**
          * 打开一个原生页面
          * @param page 页面 如： "/giftPage?token=***"
+         * login,register,userSetting,webDetail,gameDetail,editNickName,forgetMain,changePwd,home,deposit,promotion,withdraw,profile
          * @param [isCloseGame=true] 是否关闭游戏
+         * @param fromUrl 登录注册等成功后，需打开的界面地址
          */
-        static openPage(page: string, isCloseGame?: boolean): void;
+        static openPage(page: string, isCloseGame?: boolean, fromUrl?: string): void;
         /** 进入游戏进度条 */
         static progress(value: number): void;
         static getProgress: typeof JSUtils.progress;
@@ -3351,12 +3353,17 @@ declare namespace gameLib {
         private controller;
         protected onInit(): void;
         /**
-         * 显示
+         * 显示加载页
          * @param index 显示的形式
          * @param headText 使用头文本
          *
          */
         show(index?: number, headText?: string): void;
+        /**
+         * 切换显示状态
+         * @param index 显示的形式
+         * @param headText 使用头文本
+         */
         changeView(index?: number, headText?: string): void;
         private changeHandler;
         /**

@@ -37,8 +37,10 @@ export class ConfigKit {
 
     /**
      * 运行环境检测
+     * @param url 检测地址
+     * @param [isPathName=true] 是否检测路径
      */
-    static env(url?: string) {
+    static env(url?: string, isPathName = true) {
         let value = Utils.getQueryString("env")
         if (StringUtil.isNotEmpty(value)) {
             const valueEnv = Environment.findEnv(value)
@@ -47,16 +49,30 @@ export class ConfigKit {
                 return valueEnv
             }
         }
-        url ??= window.location.host
+        let checkUrl = url ?? window.location.host
         Environment.active = Environment.DEFAULT_ENV
-        if (Environment.verify(url, Environment.TEST)) {
-            Environment.active = EnvType.TEST
-        } else if (Environment.verify(url, Environment.DEV)) {
-            Environment.active = EnvType.DEV
-        } else if (Environment.verify(url, Environment.PROP)) {
-            Environment.active = EnvType.PROD
+        if(!ConfigKit._check(checkUrl) && !url && isPathName) {
+            ConfigKit._check(window.location.pathname)
         }
         return Environment.active
+    }
+
+    /**
+     * 检测
+     * @param url
+     */
+    private static _check(url:string) {
+        if (Environment.verify(url, Environment.TEST)) {
+            Environment.active = EnvType.TEST
+            return true
+        } else if (Environment.verify(url, Environment.DEV)) {
+            Environment.active = EnvType.DEV
+            return true
+        } else if (Environment.verify(url, Environment.PROP)) {
+            Environment.active = EnvType.PROD
+            return true
+        }
+        return false
     }
 
 }
@@ -105,7 +121,7 @@ export class Environment {
     static verify(url: string, value: string[]) {
         if (StringUtil.isEmpty(url) || value?.length < 1) return false
         // 后行断言在旧版本的 JavaScript 以及某些浏览器和环境中是不支持的，因此使用非捕获组更具有兼容性。
-        return new RegExp("(?:\\/|-|(\\.)|^)(" + value.join("|") + ")(?=(\\.|:|-|$))").test(url)
+        return new RegExp(`\\b(${value.join("|")})\\b`).test(url)
         // return new RegExp("(?<=\\/|-|(\\.))" + value.join("|") + "(?=(\\.)|-)").test(url)
     }
 

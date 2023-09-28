@@ -39,7 +39,7 @@ export class LoadingWindow extends BaseView {
     }
 
     /**
-     * 显示
+     * 显示加载页
      * @param index 显示的形式
      * @param headText 使用头文本
      *
@@ -50,6 +50,11 @@ export class LoadingWindow extends BaseView {
         GRoot.inst.addChild(this)
     }
 
+    /**
+     * 切换显示状态
+     * @param index 显示的形式
+     * @param headText 使用头文本
+     */
     changeView(index = 0, headText?: string) {
         headText ??= getString(LibStr.LOADING).split(".").join("")
         this.headText = headText
