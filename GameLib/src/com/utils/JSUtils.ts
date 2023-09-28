@@ -46,7 +46,7 @@ export class JSUtils {
      * @param [data = null]
      * */
     static gameClose(type = 0, data = null) {
-        if (AppManager.isIOS("alert", {type: type, data: data})) return
+        if (AppManager.isIOS("gameClose", {type: type, data: data})) return
         SceneManager.inst.initComplete = false
         SceneManager.inst.isLoaderResComplete = false
         if (Browser.window.parent.GameToHall) {

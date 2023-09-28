@@ -1352,7 +1352,7 @@ declare namespace gameLib {
         /** 执行类型 */
         type: number;
         /** 执行数据 */
-        data?: number;
+        data?: number | string;
         /** 打开游戏名字 */
         gameName?: string;
         /** 打开游戏id */
@@ -1869,6 +1869,18 @@ declare namespace gameLib {
         /** 打开app */
         openApp(packageName: string, uriPath: string, url: string, jsonData?: any): void;
         showGame(str: string): void;
+        closeGame(): void;
+        guest(value?: boolean): void;
+        /**
+         * 返回键
+         */
+        appKeyBack(value?: boolean): void;
+        /**
+         * app回调数据
+         * @param json
+         */
+        callback(json: IExecuteData): void;
+        open(json: IExecuteData): void;
     }
     /** app管理器 */
     export class AppManager {

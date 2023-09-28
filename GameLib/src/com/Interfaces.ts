@@ -100,7 +100,7 @@ export interface IExecuteData {
     /** 执行类型 */
     type: number
     /** 执行数据 */
-    data?: number
+    data?: number | string
     /** 打开游戏名字 */
     gameName?: string
     /** 打开游戏id */
