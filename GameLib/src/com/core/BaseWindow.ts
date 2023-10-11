@@ -1,6 +1,6 @@
 import EWindow = tsCore.EWindow;
 import {AppRecordManager} from "../manager/AppRecordManager"
-import {ActionLib} from "../actions/ActionLib"
+import {ActionLib} from "../ActionLib"
 import {Player} from "../Player";
 import {BaseGameData} from "./BaseGameData";
 import Log = tsCore.Log;

@@ -8,7 +8,7 @@ import StringUtil = tsCore.StringUtil;
 import Method = tsCore.Method;
 import {IGameServlet} from "../interfaces/IGameServlet"
 import {IGameModel} from "../interfaces/IGameModel"
-import {ActionLib} from "../actions/ActionLib"
+import {ActionLib} from "../ActionLib"
 import {Player} from "../Player"
 import {SceneManager} from "../manager/SceneManager"
 import {LoadingWindow} from "../view/LoadingWindow"

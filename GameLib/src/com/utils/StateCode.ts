@@ -10,7 +10,7 @@ import {HomePrompt} from "../view/HomePrompt"
 import {SceneManager} from "../manager/SceneManager"
 import {LibStr} from "../LibStr"
 import {HttpCode} from "../net/Common";
-import {ActionLib} from "../actions/ActionLib";
+import {ActionLib} from "../ActionLib";
 import Log = tsCore.Log;
 import App = tsCore.App;
 

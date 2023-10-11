@@ -3,7 +3,7 @@ import GButton = fgui.GButton;
 import Controller = fgui.Controller;
 import UIPackage = fgui.UIPackage;
 import {BaseWindow} from "../core/BaseWindow"
-import {ActionLib} from "../actions/ActionLib"
+import {ActionLib} from "../ActionLib"
 import {AppRecordManager} from "../manager/AppRecordManager"
 import {LibStr} from "../LibStr"
 import {BaseGameData} from "../core/BaseGameData";

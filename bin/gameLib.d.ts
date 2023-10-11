@@ -151,6 +151,10 @@ declare namespace gameLib {
          */
         GAME_UPDATE_AUTO_BET_NUMBER = "game_update_auto_bet_number",
         /**
+         * 游戏更新自动SPIN次数
+         */
+        GAME_UPDATE_AUTO_SPIN_NUMBER = "game_update_auto_spin_number",
+        /**
          * 游戏更新免费次数
          * @deprecated
          * @see GAME_UPDATE_AUTO_BET_NUMBER

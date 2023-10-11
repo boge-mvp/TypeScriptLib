@@ -12,7 +12,7 @@ import {AnalyticsManager} from "./AnalyticsManager"
 import {JSUtils} from "../utils/JSUtils"
 import {AppManager} from "./AppManager"
 import {LoadingWindow} from "../view/LoadingWindow"
-import {ActionLib} from "../actions/ActionLib"
+import {ActionLib} from "../ActionLib"
 import {LibStr} from "../LibStr"
 import IFormatVer = tsCore.IFormatVer;
 import ELoader = tsCore.ELoader;

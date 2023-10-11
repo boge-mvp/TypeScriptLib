@@ -13,7 +13,7 @@ import {SocketManager} from "../net/SocketManager";
 import {SceneManager} from "./SceneManager";
 import {BaseScene} from "../core/BaseScene";
 import {HtmlWindow} from "../view/HtmlWindow";
-import {ActionLib} from "../actions/ActionLib";
+import {ActionLib} from "../ActionLib";
 
 /**
  * app 访问记录管理

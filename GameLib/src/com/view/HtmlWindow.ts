@@ -10,7 +10,7 @@ import {AppRecordManager} from "../manager/AppRecordManager"
 import {Player} from "../Player"
 import {AppManager} from "../manager/AppManager"
 import {SceneManager} from "../manager/SceneManager"
-import {ActionLib} from "../actions/ActionLib"
+import {ActionLib} from "../ActionLib"
 import {CommonCmd} from "../net/Common";
 import IRecord = tsCore.IRecord;
 import App = tsCore.App;

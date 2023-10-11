@@ -3,7 +3,7 @@ import GRoot = fgui.GRoot;
 import {BaseScene} from "./BaseScene"
 import {GameServlet} from "./GameServlet"
 import {GameModel} from "./GameModel"
-import {ActionLib} from "../actions/ActionLib"
+import {ActionLib} from "../ActionLib"
 import EProxy = tsCore.EProxy;
 
 export class BaseStarter extends EProxy {

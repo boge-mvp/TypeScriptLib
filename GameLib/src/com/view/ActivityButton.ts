@@ -3,12 +3,11 @@ import LocalStorage = Laya.LocalStorage;
 import Browser = Laya.Browser;
 import Events = fgui.Events;
 import Tween = Laya.Tween;
-import {ActionLib} from "../actions/ActionLib"
+import {ActionLib} from "../ActionLib"
 import {Player} from "../Player"
 import {LibStr} from "../LibStr"
 import {SceneManager} from "../manager/SceneManager"
 import EButton = tsCore.EButton;
-import StringUtil = tsCore.StringUtil;
 import DateUtils = tsCore.DateUtils;
 
 export class ActivityButton extends EButton {

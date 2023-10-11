@@ -2,7 +2,7 @@ import Point = Laya.Point
 import GComponent = fgui.GComponent
 import GRoot = fgui.GRoot
 import {GoldSpray} from "./GoldSpray"
-import {ActionLib} from "../actions/ActionLib"
+import {ActionLib} from "../ActionLib"
 import View = tsCore.View;
 import SoundUtils = tsCore.SoundUtils;
 
