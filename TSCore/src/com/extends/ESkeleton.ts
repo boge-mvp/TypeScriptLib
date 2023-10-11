@@ -68,7 +68,7 @@ export abstract class ESkeleton extends mixinExt(BezierCurves, ActionEvent, GCom
     playAni(skeletonPlay: ISkeletonPlay, playGroupIndex = -1) {
         if (!this.asSkeleton.templet) return
         if (!skeletonPlay && !this.skeletonPlay) {
-            Log.warn("not found play data " + skeletonPlay)
+            Log.debug("not found play data " + skeletonPlay)
             return;
         }
         this.playGroupIndex = playGroupIndex

@@ -122,7 +122,7 @@ export class EventController implements IController {
         args.unshift(group)
         let result: boolean = this.sendActionEvent.apply(this, args)
         if (!result) {
-            Log.warn("group[" + group + "], action [" + action + "] not exist! Call failure")
+            Log.debug("group[" + group + "], action [" + action + "] not exist! Call failure")
         }
     }
 
@@ -137,7 +137,7 @@ export class EventController implements IController {
             if (tempResult) result = true
         }
         if (!result)
-            Log.warn("action [" + action + "] not exist! Call failure")
+            Log.debug("action [" + action + "] not exist! Call failure")
     }
 
     sendActionEvent(group: string, action: string, ...args) {

@@ -1088,7 +1088,7 @@ window.tsCore = {};
             args.unshift(group);
             let result = this.sendActionEvent.apply(this, args);
             if (!result) {
-                Log.warn("group[" + group + "], action [" + action + "] not exist! Call failure");
+                Log.debug("group[" + group + "], action [" + action + "] not exist! Call failure");
             }
         }
         sendAction(action, ...args) {
@@ -1103,7 +1103,7 @@ window.tsCore = {};
                     result = true;
             }
             if (!result)
-                Log.warn("action [" + action + "] not exist! Call failure");
+                Log.debug("action [" + action + "] not exist! Call failure");
         }
         sendActionEvent(group, action, ...args) {
             let groupObj = this.getGroup(group);
@@ -2363,7 +2363,7 @@ window.tsCore = {};
             if (!this.asSkeleton.templet)
                 return;
             if (!skeletonPlay && !this.skeletonPlay) {
-                Log.warn("not found play data " + skeletonPlay);
+                Log.debug("not found play data " + skeletonPlay);
                 return;
             }
             this.playGroupIndex = playGroupIndex;
@@ -5976,7 +5976,7 @@ window.tsCore = {};
                 this.clearCache();
             }
             else {
-                Log.warn("not found Laya.BoneSlot name = " + slotName);
+                Log.debug("not found Laya.BoneSlot name = " + slotName);
             }
         }
         /**

@@ -10,7 +10,7 @@ import HTMLImage = Laya.HTMLImage;
 import UIPackage = fgui.UIPackage;
 import BoneSlot = Laya.BoneSlot;
 import TextureFormat = Laya.TextureFormat;
-import {ESkeleton} from "../core/ESkeleton";
+import {ESkeleton} from "../extends/ESkeleton";
 import {Log} from "../Log";
 
 export class GSkeleton extends ESkeleton {
@@ -283,7 +283,7 @@ export class GSkeleton extends ESkeleton {
             slot.currTexture = texture
             this.clearCache()
         } else {
-            Log.warn("not found BoneSlot name = " + slotName)
+            Log.debug("not found BoneSlot name = " + slotName)
         }
     }
 
