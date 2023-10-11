@@ -1,6 +1,6 @@
 {
   "name": "game-lib",
-  "version": "1.3.7",
+  "version": "1.3.71",
   "main": "index.js",
   "scripts": {
     "build": "gulp build"
