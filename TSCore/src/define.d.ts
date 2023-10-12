@@ -10,6 +10,32 @@ declare type ParamHandler = ((...args) => any) | Laya.Handler
  */
 declare function runFun(func: ParamHandler, ...args): any | null
 
+/**
+ * 配置定义
+ *
+ * @param args 自定义的配置
+ * @param defs 默认配置
+ * @param [croak=false] 验证配置在默认中存在否 如果原型中不存在将抛出错误
+ * @param [append=false] 如果存在键，如果值是数组是否追加在尾部，排除存在的
+ *
+ *
+ * @example
+ *
+ * const defs = {a: [0], c: {c:"c", a: 0}, s: "s"}
+ * const config = {a: [18], c: {a: 66}, s: "d", e:"e"}
+ *
+ * defaults(config, defs)
+ * result:  {a:[18], c: {c: "c", a: 66}, s: "d", e:"e"}
+ *
+ * defaults(config, defs, true)
+ * result: throw error -> `e` is not a supported option, {a: 0, c: {c:"c", a: 0}, s: "s"}
+ *
+ * defaults(config, defs, false, true)
+ * result: {a:[18, 0], c: {c: "c", a: 66}, s: "d", e:"e"}
+ */
+declare function defaults(args: any, defs: any, croak ?: boolean, append?: boolean)
+
+
 declare type Constructor<T = {}> = new (...args: any[]) => T
 
 /** 使用交叉类型连接多个类型 */

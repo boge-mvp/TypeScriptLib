@@ -13,6 +13,83 @@ function getString(id: string | number, ...args) {
 }
 
 /**
+ * 配置定义
+ *
+ * @param args 自定义的配置
+ * @param defs 默认配置
+ * @param [croak=false] 验证配置在默认中存在否 如果原型中不存在将抛出错误
+ * @param [append=false] 如果存在键，如果值是数组是否追加在尾部，排除存在的
+ *
+ *
+ * @example
+ *
+ * const defs = {a: [0], c: {c:"c", a: 0}, s: "s"}
+ * const config = {a: [18], c: {a: 66}, s: "d", e:"e"}
+ *
+ * defaults(config, defs)
+ * result:  {a:[18], c: {c: "c", a: 66}, s: "d", e:"e"}
+ *
+ * defaults(config, defs, true)
+ * result: throw error -> `e` is not a supported option, {a: 0, c: {c:"c", a: 0}, s: "s"}
+ *
+ * defaults(config, defs, false, true)
+ * result: {a:[18, 0], c: {c: "c", a: 66}, s: "d", e:"e"}
+ */
+function defaults(args: any, defs: any, croak = false, append = false) {
+    if (args === true) {
+        args = {}
+    } else if (args && typeof args === "object") {
+        args = {...args}
+    }
+
+    const ret = args || {}
+    if (croak)
+        for (const i in ret) {
+            if (has(ret, i) && !has(defs, i)) {
+                throw new Error("`" + i + "` is not a supported option", defs)
+            }
+        }
+
+    for (const key in defs) {
+        if (has(defs, key)) { // 原型中存在此值
+            if (!args || !has(args, key)) {
+                // 当新配置不存在 或 新配置中不存在key
+                ret[key] = defs[key] // 从原型中取值 赋值
+            } else {// 新配置存在 或有 配置key
+
+                ret[key] = (args && has(args, key)) ? (() => {
+                    // 新配置中存在key
+                    // 获取新的值
+                    let value = args[key]
+                    // 如果值是数组 并且允许追击到尾部
+                    if (Array.isArray(value) && append) {
+                        for (const defValue of defs[key]) {
+                            // 如果不存在此值 添加到数组末尾
+                            if (!value.includes(defValue)) value.push(defValue)
+                        }
+                    } else if (typeof value === "object") {
+                        // 如果是个对象
+                        value = defaults(value, defs[key], croak, append)
+                    }
+                    return value
+                })() : defs[key] // 新配置中不存在key  直接赋默认值
+            }
+        }
+    }
+    return ret
+}
+
+/**
+ *
+ * @param obj
+ * @param prop
+ */
+function has(obj: any, prop: any) {
+    return Object.prototype.hasOwnProperty.call(obj, prop)
+}
+
+
+/**
  * 修改 mixin 函数
  * @deprecated
  * @param classes

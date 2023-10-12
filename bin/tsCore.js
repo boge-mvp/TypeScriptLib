@@ -8,22 +8,24 @@ window.tsCore = {};
         /**
          *
          * @param init
-         * @param [w=720]
-         * @param [h=1280]
          * @param options
          */
-        static run(init, w = 720, h = 1280, options) {
-            var _a, _b, _c;
-            var _d;
+        static run(init, options) {
+            var _a, _b;
             App.initEngine = init;
             App._init();
-            App.inst.options = options !== null && options !== void 0 ? options : (options = { laya: { init: true, renders: [Laya.WebGL] }, resize: true });
+            // 默认配置
+            const def = {
+                laya: { init: true, renders: [Laya.WebGL], width: 720, height: 1280 },
+                resize: true,
+                isNotchEnable: false
+            };
+            App.inst.options = options = options ? defaults(options, def) : def;
             (_a = init === null || init === void 0 ? void 0 : init.run) === null || _a === void 0 ? void 0 : _a.call(init);
             if (options.laya && !options.laya.init)
                 return;
-            (_b = (_d = options.laya).renders) !== null && _b !== void 0 ? _b : (_d.renders = [Laya.WebGL]);
-            Laya.init(w, h, ...options.laya.renders);
-            (_c = init === null || init === void 0 ? void 0 : init.onEngine) === null || _c === void 0 ? void 0 : _c.call(init);
+            Laya.init(options.laya.width, options.laya.height, ...options.laya.renders);
+            (_b = init === null || init === void 0 ? void 0 : init.onEngine) === null || _b === void 0 ? void 0 : _b.call(init);
             Laya.timer.callLater(App.inst, App.inst.lastInit);
         }
         /** 设置默认竖屏布局 */
@@ -2873,6 +2875,79 @@ window.tsCore = {};
      */
     Environment.active = Environment.DEFAULT_ENV;
     tsCore.Environment = Environment;
+    /**
+     * 贴边工具
+     */
+    class EdgeFloatKit {
+        /**
+         * 获取指定目标在可视范围内的最终位置
+         * @param target 目标组件
+         * @param range 可视大小
+         */
+        static moveXY(target, range) {
+            const { width, height } = range;
+            const enableNotch = App.inst.options.isNotchEnable && Laya.stage.screenMode === Laya.Stage.SCREEN_HORIZONTAL;
+            const notchH = SystemKit.cacheNotch;
+            let [tempX, tempY] = [target.x, target.y];
+            if (target.x > (width >> 1)) { // 大于可视范围宽度一半
+                tempX = width - target.x - target.width;
+                if (target.y > (height >> 1)) { // 大于可视范围高度一半  Y位置偏下
+                    tempX = width - target.x - target.width; // 右边距
+                    tempY = height - target.y - target.height; // 底边距
+                    if (tempX < tempY) { // 右边距小于向下的边距
+                        // 向右靠边 y不变
+                        tempX = width - target.width;
+                        tempY = Math.max(target.y, enableNotch ? notchH : 0);
+                    }
+                    else {
+                        // 向下靠边 x不变
+                        tempY = height - target.height;
+                        tempX = Math.max(target.x, enableNotch ? notchH : 0);
+                    }
+                }
+                else { // Y位置偏上
+                    if (target.y < width - target.x - target.width) { // 组件 右边距 大于顶边距
+                        // 向上靠边 x不变
+                        tempY = enableNotch ? notchH : 0;
+                        tempX = Math.max(target.x, enableNotch ? notchH : 0);
+                    }
+                    else {
+                        // 向右靠边 y不变
+                        tempX = width - target.width;
+                        tempY = Math.max(target.y, enableNotch ? notchH : 0);
+                    }
+                }
+            }
+            else { // 小于可视范围宽度一半
+                if (target.y > (height >> 1)) { // 大于可视范围高度一半   Y位置偏下
+                    if (target.x < height - target.y - target.height) { // X位置偏左
+                        // 向左靠边 Y不变
+                        tempX = enableNotch ? notchH : 0;
+                        tempY = Math.max(target.y, enableNotch ? notchH : 0);
+                    }
+                    else {
+                        // 向下靠边 X不变
+                        tempY = height - target.height;
+                        tempX = Math.max(target.x, enableNotch ? notchH : 0);
+                    }
+                }
+                else {
+                    if (target.x < target.y) { // X位置偏右
+                        // 向左靠边 Y不变
+                        tempX = enableNotch ? notchH : 0;
+                        tempY = Math.max(target.y, enableNotch ? notchH : 0);
+                    }
+                    else {
+                        // 向上靠边 X不变
+                        tempY = enableNotch ? notchH : 0;
+                        tempX = Math.max(target.x, enableNotch ? notchH : 0);
+                    }
+                }
+            }
+            return { x: tempX, y: tempY };
+        }
+    }
+    tsCore.EdgeFloatKit = EdgeFloatKit;
     /**
      * 长按、点击组件绑定
      * @author boge
@@ -6677,6 +6752,81 @@ function getString(id, ...args) {
         return content;
     // @ts-ignore
     return tsCore.StringUtil.format(content, ...args);
+}
+/**
+ * 配置定义
+ *
+ * @param args 自定义的配置
+ * @param defs 默认配置
+ * @param [croak=false] 验证配置在默认中存在否 如果原型中不存在将抛出错误
+ * @param [append=false] 如果存在键，如果值是数组是否追加在尾部，排除存在的
+ *
+ *
+ * @example
+ *
+ * const defs = {a: [0], c: {c:"c", a: 0}, s: "s"}
+ * const config = {a: [18], c: {a: 66}, s: "d", e:"e"}
+ *
+ * defaults(config, defs)
+ * result:  {a:[18], c: {c: "c", a: 66}, s: "d", e:"e"}
+ *
+ * defaults(config, defs, true)
+ * result: throw error -> `e` is not a supported option, {a: 0, c: {c:"c", a: 0}, s: "s"}
+ *
+ * defaults(config, defs, false, true)
+ * result: {a:[18, 0], c: {c: "c", a: 66}, s: "d", e:"e"}
+ */
+function defaults(args, defs, croak = false, append = false) {
+    if (args === true) {
+        args = {};
+    }
+    else if (args && typeof args === "object") {
+        args = Object.assign({}, args);
+    }
+    const ret = args || {};
+    if (croak)
+        for (const i in ret) {
+            if (has(ret, i) && !has(defs, i)) {
+                throw new Error("`" + i + "` is not a supported option", defs);
+            }
+        }
+    for (const key in defs) {
+        if (has(defs, key)) { // 原型中存在此值
+            if (!args || !has(args, key)) {
+                // 当新配置不存在 或 新配置中不存在key
+                ret[key] = defs[key]; // 从原型中取值 赋值
+            }
+            else { // 新配置存在 或有 配置key
+                ret[key] = (args && has(args, key)) ? (() => {
+                    // 新配置中存在key
+                    // 获取新的值
+                    let value = args[key];
+                    // 如果值是数组 并且允许追击到尾部
+                    if (Array.isArray(value) && append) {
+                        for (const defValue of defs[key]) {
+                            // 如果不存在此值 添加到数组末尾
+                            if (!value.includes(defValue))
+                                value.push(defValue);
+                        }
+                    }
+                    else if (typeof value === "object") {
+                        // 如果是个对象
+                        value = defaults(value, defs[key], croak, append);
+                    }
+                    return value;
+                })() : defs[key]; // 新配置中不存在key  直接赋默认值
+            }
+        }
+    }
+    return ret;
+}
+/**
+ *
+ * @param obj
+ * @param prop
+ */
+function has(obj, prop) {
+    return Object.prototype.hasOwnProperty.call(obj, prop);
 }
 /**
  * 修改 mixin 函数

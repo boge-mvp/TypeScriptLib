@@ -20,11 +20,9 @@ declare namespace tsCore {
         /**
          *
          * @param init
-         * @param [w=720]
-         * @param [h=1280]
          * @param options
          */
-        static run(init?: IInitEngine, w?: number, h?: number, options?: InitApp): void;
+        static run(init?: IInitEngine, options?: InitApp): void;
         /** 设置默认竖屏布局 */
         static updateDefaultScreen(): void;
         /**
@@ -1047,6 +1045,23 @@ declare namespace tsCore {
          * @param value test, debug, localhost, dev, staging, prod, production, release
          */
         static findEnv(value: string): EnvType;
+    }
+    /**
+     * 贴边工具
+     */
+    export class EdgeFloatKit {
+        /**
+         * 获取指定目标在可视范围内的最终位置
+         * @param target 目标组件
+         * @param range 可视大小
+         */
+        static moveXY(target: RectangleType, range: {
+            width: number;
+            height: number;
+        }): {
+            x: number;
+            y: number;
+        };
     }
     /**
      * 长按、点击组件绑定
@@ -2690,6 +2705,12 @@ declare namespace tsCore {
     export {};
 }
 /**
+ *
+ * @param obj
+ * @param prop
+ */
+declare function has(obj: any, prop: any): any;
+/**
  * 修改 mixin 函数
  * @deprecated
  * @param classes
@@ -2754,6 +2775,32 @@ declare type ParamHandler = ((...args) => any) | Laya.Handler
  * @param args 参数 传入数组会将数组当场一个参数传递
  */
 declare function runFun(func: ParamHandler, ...args): any | null
+
+/**
+ * 配置定义
+ *
+ * @param args 自定义的配置
+ * @param defs 默认配置
+ * @param [croak=false] 验证配置在默认中存在否 如果原型中不存在将抛出错误
+ * @param [append=false] 如果存在键，如果值是数组是否追加在尾部，排除存在的
+ *
+ *
+ * @example
+ *
+ * const defs = {a: [0], c: {c:"c", a: 0}, s: "s"}
+ * const config = {a: [18], c: {a: 66}, s: "d", e:"e"}
+ *
+ * defaults(config, defs)
+ * result:  {a:[18], c: {c: "c", a: 66}, s: "d", e:"e"}
+ *
+ * defaults(config, defs, true)
+ * result: throw error -> `e` is not a supported option, {a: 0, c: {c:"c", a: 0}, s: "s"}
+ *
+ * defaults(config, defs, false, true)
+ * result: {a:[18, 0], c: {c: "c", a: 66}, s: "d", e:"e"}
+ */
+declare function defaults(args: any, defs: any, croak ?: boolean, append?: boolean)
+
 
 declare type Constructor<T = {}> = new (...args: any[]) => T
 
@@ -2934,17 +2981,27 @@ declare interface String {
 }
 declare type InitApp = {
     /** 初始化Laya */
-    laya: {
+    laya?: {
         /**
          * 是否初始化Laya
          * @default true
          */
-        init: boolean,
+        init?: boolean,
         /**
          * 渲染模式
          * @default Laya.WebGL
          */
-        renders: any[]
+        renders?: any[],
+        /**
+         * 初始化引擎的宽
+         * @default 720
+         */
+        width?:number,
+        /**
+         * 初始化引擎的高
+         * @default 1280
+         */
+        height?:number
     },
     /**
      * 是否让GRoot 自适应大小

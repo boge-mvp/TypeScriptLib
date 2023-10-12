@@ -1,16 +1,26 @@
 declare type InitApp = {
     /** 初始化Laya */
-    laya: {
+    laya?: {
         /**
          * 是否初始化Laya
          * @default true
          */
-        init: boolean,
+        init?: boolean,
         /**
          * 渲染模式
          * @default Laya.WebGL
          */
-        renders: any[]
+        renders?: any[],
+        /**
+         * 初始化引擎的宽
+         * @default 720
+         */
+        width?:number,
+        /**
+         * 初始化引擎的高
+         * @default 1280
+         */
+        height?:number
     },
     /**
      * 是否让GRoot 自适应大小

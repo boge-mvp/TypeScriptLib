@@ -494,7 +494,7 @@ function defaults(args, defs, croak, append) {
             if (ecma > 5 && ecma < 2015) ecma += 2009;
             ret[i] = ecma
         } else {
-            ret[i] = (args && has(args, i)) ? () => {
+            ret[i] = (args && has(args, i)) ? (() => {
                 const value = args[i]
                 if (Array.isArray(value) && append) {
                     for (const defValue of defs[i]) {
@@ -504,7 +504,7 @@ function defaults(args, defs, croak, append) {
                     }
                 }
                 return value
-            } : defs[i]
+            })() : defs[i]
         }
     }
     return ret

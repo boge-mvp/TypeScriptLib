@@ -37,18 +37,21 @@ export class App implements IAction {
     /**
      *
      * @param init
-     * @param [w=720]
-     * @param [h=1280]
      * @param options
      */
-    static run(init?: IInitEngine, w = 720, h = 1280, options?: InitApp) {
+    static run(init?: IInitEngine, options?: InitApp) {
         App.initEngine = init
         App._init()
-        App.inst.options = options ??= {laya: {init: true, renders: [Laya.WebGL]}, resize: true}
+        // 默认配置
+        const def: InitApp = {
+            laya: {init: true, renders: [Laya.WebGL], width: 720, height: 1280},
+            resize: true,
+            isNotchEnable: false
+        }
+        App.inst.options = options = options ? defaults(options, def) : def
         init?.run?.()
         if (options.laya && !options.laya.init) return
-        options.laya.renders ??= [Laya.WebGL]
-        Laya.init(w, h, ...options.laya.renders)
+        Laya.init(options.laya.width, options.laya.height, ...options.laya.renders)
         init?.onEngine?.()
         Laya.timer.callLater(App.inst, App.inst.lastInit)
     }
@@ -108,12 +111,14 @@ export class App implements IAction {
                 SystemKit.cacheNotch = notch
                 Log.debug(`notchHeight1=${notch}`)
             }
+
             function getNotchEnd() {
                 const notch = SystemKit.notchHeight
                 SystemKit.cacheNotch = notch
                 Log.debug(`notchHeight2=${notch}`)
                 App.initEngine?.onEnd?.()
             }
+
             Laya.timer.callLater(this, notchFun)
             Laya.timer.once(300, this, getNotchEnd)
         }
