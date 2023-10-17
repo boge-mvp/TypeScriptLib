@@ -9,7 +9,7 @@ import GButton = fgui.GButton;
 import GRoot = fgui.GRoot;
 import {GGraphicsAni} from "./view/GGraphicsAni"
 import {GSkeleton} from "./view/GSkeleton"
-import {EDrawTextureCmd} from "./core/EDrawTextureCmd"
+import {EDrawTextureCmd} from "./extends/EDrawTextureCmd"
 import {StringUtil} from "./utils/StringUtil";
 import {SoundUtils} from "./utils/SoundUtils";
 import {Log} from "./Log";

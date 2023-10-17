@@ -235,7 +235,7 @@ declare type ISkeletonPlay = {
     /** 加载完成调用
      * @deprecated 只能在ISkeletonData中配置
      * */
-    loaderComplete?: ParamHandler
+    readonly loaderComplete?: ParamHandler
     /**
      * 全波播放结束回调
      */

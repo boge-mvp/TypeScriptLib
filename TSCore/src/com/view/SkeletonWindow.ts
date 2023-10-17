@@ -1,4 +1,4 @@
-import {EWindow} from "../core/EWindow";
+import {EWindow} from "../extends/EWindow";
 import {SpineUtils} from "../utils/SpineUtils";
 import {GSkeleton} from "./GSkeleton";
 import {GSpineSkeleton} from "./GSpineSkeleton";

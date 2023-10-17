@@ -30,7 +30,7 @@ export class ELoader {
         for (let i = 0; i < ELoader.format.length; i++) {
             version = ELoader.format[i].call(url, version)
         }
-        if (ELoader.isWebp && StringUtil.endsWithAny(url, "png", "jpg")) url += ".webp"
+        if (ELoader.isWebp && url.endsWithAny("png", "jpg")) url += ".webp"
         if (!Browser.onLayaRuntime && version) url += "?v=" + version
         return url
     }
@@ -118,10 +118,10 @@ export class ELoader {
     private _load(url: string, resInfo: ResInfo = null, progress: Handler = null, type: string = null, priority = 1, cache = true, group: string = null, ignoreCache = false, useWorkerLoader = false) {
         ELoader.loader.formatURL(url, resInfo)
         url = StringUtil.replace(url, "{host}", window.location.host)
-        Laya.loader.load(url, Handler.create(this, this.singleCompleteHandler, [resInfo]), progress, type, priority, cache, group, ignoreCache, useWorkerLoader)
+        Laya.loader.load(url, Handler.create(this, this.onSingleComplete, [resInfo]), progress, type, priority, cache, group, ignoreCache, useWorkerLoader)
     }
 
-    private singleCompleteHandler(resInfo: ResInfo, content?: any) {
+    private onSingleComplete(resInfo: ResInfo, content?: any) {
         if (!content) {
             if (this.baseUrls) {
                 resInfo.useIndex++
