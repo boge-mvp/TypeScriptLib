@@ -1,14 +1,21 @@
 import {App} from "../App";
 import {Log} from "../Log";
 import Browser = Laya.Browser;
+import {StringUtil} from "../utils/StringUtil";
 
 export class SystemKit {
 
     /**
-     * 获取设备刘海屏高度
+     * 获取移动设备的刘海屏高度
      */
     static get notchHeight() {
-        return (window.innerHeight - document.documentElement.clientHeight) /* / Laya.Browser.pixelRatio */
+        let style = window.getComputedStyle(document.body)
+        let paddingTop = style.getPropertyValue('padding-top')
+        let paddingBottom = style.getPropertyValue('padding-bottom')
+
+        let top = StringUtil.getNumbers(paddingTop) + StringUtil.getNumbers(paddingBottom)
+        if (top <= 0) top = window.innerHeight - document.documentElement.clientHeight
+        return top
     }
 
     /**
@@ -16,7 +23,7 @@ export class SystemKit {
      * @param value
      */
     static set onNotch(value: (height: number) => any) {
-        if (App.inst.options.isNotchEnable) {
+        if (Browser.onMobile && App.inst.options.isNotchEnable) {
             let cacheNotch = 0
             let startTime = Browser.now() // 首次执行时间
             function notchFun() {

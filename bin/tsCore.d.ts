@@ -1247,7 +1247,7 @@ declare namespace tsCore {
     export const Cast: typeof MathKit;
     export class SystemKit {
         /**
-         * 获取设备刘海屏高度
+         * 获取移动设备的刘海屏高度
          */
         static get notchHeight(): number;
         /**
@@ -2030,10 +2030,10 @@ declare namespace tsCore {
         static isChinese(char: string): boolean;
         /**
          * 万军从中取数字
-         * @param char
-         * @return
+         * @param input
+         * @param [defaultValue=0]
          */
-        static getNumbers(char: string): number;
+        static getNumbers(input: string, defaultValue?: number): number;
         /**
          * 万军从中取非数字
          * @param char

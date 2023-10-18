@@ -61,6 +61,8 @@ function defaults(args: any, defs: any, croak = false, append = false) {
                     // 新配置中存在key
                     // 获取新的值
                     let value = args[key]
+                    // 如果 不存在值 直接返回
+                    if (!value) return value
                     // 如果值是数组 并且允许追击到尾部
                     if (Array.isArray(value) && append) {
                         for (const defValue of defs[key]) {

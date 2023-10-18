@@ -3278,17 +3278,23 @@ window.tsCore = {};
     tsCore.Cast = MathKit;
     class SystemKit {
         /**
-         * 获取设备刘海屏高度
+         * 获取移动设备的刘海屏高度
          */
         static get notchHeight() {
-            return (window.innerHeight - document.documentElement.clientHeight); /* / Laya.Browser.pixelRatio */
+            let style = window.getComputedStyle(document.body);
+            let paddingTop = style.getPropertyValue('padding-top');
+            let paddingBottom = style.getPropertyValue('padding-bottom');
+            let top = StringUtil.getNumbers(paddingTop) + StringUtil.getNumbers(paddingBottom);
+            if (top <= 0)
+                top = window.innerHeight - document.documentElement.clientHeight;
+            return top;
         }
         /**
          * 在启用刘海屏模式下会调用指定方法并得到刘海屏信息
          * @param value
          */
         static set onNotch(value) {
-            if (App.inst.options.isNotchEnable) {
+            if (Laya.Browser.onMobile && App.inst.options.isNotchEnable) {
                 let cacheNotch = 0;
                 let startTime = Laya.Browser.now(); // 首次执行时间
                 function notchFun() {
@@ -4721,15 +4727,13 @@ window.tsCore = {};
         }
         /**
          * 万军从中取数字
-         * @param char
-         * @return
+         * @param input
+         * @param [defaultValue=0]
          */
-        static getNumbers(char) {
+        static getNumbers(input, defaultValue = 0) {
             let pattern = /\d+/g;
-            let value = "";
-            if (pattern.test(char)) {
-                value = char.match(pattern).join("");
-            }
+            const matches = input.match(pattern);
+            const value = matches ? matches.join("") : "0";
             return parseFloat(value);
         }
         /**
@@ -6809,6 +6813,9 @@ function defaults(args, defs, croak = false, append = false) {
                     // 新配置中存在key
                     // 获取新的值
                     let value = args[key];
+                    // 如果 不存在值 直接返回
+                    if (!value)
+                        return value;
                     // 如果值是数组 并且允许追击到尾部
                     if (Array.isArray(value) && append) {
                         for (const defValue of defs[key]) {

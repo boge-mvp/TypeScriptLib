@@ -116,15 +116,13 @@ export class StringUtil {
 
     /**
      * 万军从中取数字
-     * @param char
-     * @return
+     * @param input
+     * @param [defaultValue=0]
      */
-    static getNumbers(char: string) {
+    static getNumbers(input: string, defaultValue = 0) {
         let pattern = /\d+/g
-        let value = ""
-        if (pattern.test(char)) {
-            value = char.match(pattern).join("")
-        }
+        const matches = input.match(pattern)
+        const value = matches ? matches.join("") : "0"
         return parseFloat(value)
     }
 
