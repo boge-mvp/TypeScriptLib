@@ -617,7 +617,7 @@ declare namespace tsCore {
         load(url: string | (string | LoadRes)[], complete?: Laya.Handler, progress?: Laya.Handler, type?: string, priority?: number, cache?: boolean, group?: string, ignoreCache?: boolean, useWorkerLoader?: boolean): void;
         private loadAssets;
         private _load;
-        private singleCompleteHandler;
+        private onSingleComplete;
         /**
          * 获取指定资源地址的资源。
          * @param    url 资源地址。
@@ -3212,7 +3212,7 @@ declare type ISkeletonPlay = {
     /** 加载完成调用
      * @deprecated 只能在ISkeletonData中配置
      * */
-    loaderComplete?: ParamHandler
+    readonly loaderComplete?: ParamHandler
     /**
      * 全波播放结束回调
      */
