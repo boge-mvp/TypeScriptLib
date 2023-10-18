@@ -4061,23 +4061,35 @@ window.gameLib = {};
             for (let i = 0; i < loadArray.length; i++) {
                 let obj = loadArray[i];
                 if (obj.type == Laya.Loader.SOUND) {
-                    let chromeBrowser = Laya.Browser.userAgent.indexOf("Chrome") != -1;
-                    // 清理苹果移动设备中 ogg 音频文件
-                    if (!chromeBrowser && (Laya.Browser.onMac || Laya.Browser.onIOS || Laya.Browser.onIPhone || Laya.Browser.onIPad)) {
-                        // 不是ogg格式的文件 或 ios app应用
-                        if (!obj.url.contains(".ogg")) {
-                            soundLoads.push(obj);
-                        }
-                        else
-                            tsCore.Log.debug(`clean ogg audio files from apple mobile devices. ${obj.url}`);
+                    // 如果存在需要排除的音频格式 并且排除音频数组中
+                    if (AssetsLoader.soundExclude.length > 0 && AssetsLoader.soundExclude.includes(Laya.Utils.getFileExtension(obj.url))) {
+                        tsCore.Log.debug(`clean ogg audio files from apple mobile devices. ${obj.url}`);
                     }
                     else {
-                        soundLoads.push(obj);
+                        // 此音频是要强制加载到初始化
+                        if (obj.forceLoad) {
+                            continue;
+                        }
+                        else
+                            soundLoads.push(obj);
                     }
-                    // 此文件是要强制加载的音频文件 并且在预加载中
-                    if (obj.forceLoad && soundLoads.includes(obj)) {
-                        continue;
-                    }
+                    // let chromeBrowser = Laya.Browser.userAgent.indexOf("Chrome") != -1
+                    // // 处理苹果移动设备中 ogg 音频文件
+                    // if (!chromeBrowser && (Laya.Browser.onMac || Laya.Browser.onIOS || Laya.Browser.onIPhone || Laya.Browser.onIPad)) {
+                    //     // 不是ogg格式的文件 或 ios app应用
+                    //     if (!obj.url.contains(".ogg")) {
+                    //         soundLoads.push(obj)
+                    //     } else {
+                    //         soundLoads.push(obj.url.replace(/\.ogg$/, ".m4a"))
+                    //         tsCore.Log.debug(`clean ogg audio files from apple mobile devices. ${obj.url}`)
+                    //     }
+                    // } else {
+                    //     soundLoads.push(obj)
+                    // }
+                    // // 此文件是要强制加载的音频文件 并且在预加载中
+                    // if (obj.forceLoad && soundLoads.includes(obj)) {
+                    //     continue
+                    // }
                     // 默认 剔除音频
                     loadArray.splice(i, 1);
                     i--;
@@ -4355,6 +4367,10 @@ window.gameLib = {};
      * https://res.game.co/assetsversion.json
      */
     AssetsLoader.VERSION_RES_URL = null;
+    /**
+     * 音频排除格式
+     */
+    AssetsLoader.soundExclude = [];
     gameLib.AssetsLoader = AssetsLoader;
     /**
      * 舞台

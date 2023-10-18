@@ -2104,6 +2104,10 @@ declare namespace gameLib {
         readonly httpProtocol: boolean;
         private runLoads;
         /**
+         * 音频排除格式
+         */
+        static soundExclude: string[];
+        /**
          * 自定义额外加载操作
          * 在加载 versionXml 的时候  额外加载的
          * @example

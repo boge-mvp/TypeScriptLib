@@ -55,6 +55,12 @@ export class AssetsLoader implements IFormatVer {
     /** 是否是http  */
     readonly httpProtocol = Browser.window.location.protocol == "http:"
     private runLoads: LoadRes[] = []
+
+    /**
+     * 音频排除格式
+     */
+    static soundExclude: string[] = []
+
     /**
      * 自定义额外加载操作
      * 在加载 versionXml 的时候  额外加载的
@@ -327,7 +333,7 @@ export class AssetsLoader implements IFormatVer {
         }
 
         if (!UIPackage.getByName("gameCommon/gameCommon")) {
-            let gameCommonRes: LoadRes[] = Browser.window.gameCommon
+            let gameCommonRes: LoadRes[] =  Browser.window.gameCommon
             loadArray = loadArray.concat(gameCommonRes)
         }
         // 渠道资源检查
@@ -340,20 +346,32 @@ export class AssetsLoader implements IFormatVer {
         for (let i = 0; i < loadArray.length; i++) {
             let obj = loadArray[i]
             if (obj.type == Loader.SOUND) {
-                let chromeBrowser = Browser.userAgent.indexOf("Chrome") != -1
-                // 清理苹果移动设备中 ogg 音频文件
-                if (!chromeBrowser && (Browser.onMac || Browser.onIOS || Browser.onIPhone || Browser.onIPad)) {
-                    // 不是ogg格式的文件 或 ios app应用
-                    if (!obj.url.contains(".ogg")) {
-                        soundLoads.push(obj)
-                    } else Log.debug(`clean ogg audio files from apple mobile devices. ${obj.url}`)
+                // 如果存在需要排除的音频格式 并且排除音频数组中
+                if (AssetsLoader.soundExclude.length > 0 && AssetsLoader.soundExclude.includes(Utils.getFileExtension(obj.url))) {
+                    Log.debug(`clean ogg audio files from apple mobile devices. ${obj.url}`)
                 } else {
-                    soundLoads.push(obj)
+                    // 此音频是要强制加载到初始化
+                    if (obj.forceLoad) {
+                        continue
+                    } else soundLoads.push(obj)
                 }
-                // 此文件是要强制加载的音频文件 并且在预加载中
-                if (obj.forceLoad && soundLoads.includes(obj)) {
-                    continue
-                }
+                // let chromeBrowser = Browser.userAgent.indexOf("Chrome") != -1
+                // // 处理苹果移动设备中 ogg 音频文件
+                // if (!chromeBrowser && (Browser.onMac || Browser.onIOS || Browser.onIPhone || Browser.onIPad)) {
+                //     // 不是ogg格式的文件 或 ios app应用
+                //     if (!obj.url.contains(".ogg")) {
+                //         soundLoads.push(obj)
+                //     } else {
+                //         soundLoads.push(obj.url.replace(/\.ogg$/, ".m4a"))
+                //         Log.debug(`clean ogg audio files from apple mobile devices. ${obj.url}`)
+                //     }
+                // } else {
+                //     soundLoads.push(obj)
+                // }
+                // // 此文件是要强制加载的音频文件 并且在预加载中
+                // if (obj.forceLoad && soundLoads.includes(obj)) {
+                //     continue
+                // }
                 // 默认 剔除音频
                 loadArray.splice(i, 1)
                 i--
