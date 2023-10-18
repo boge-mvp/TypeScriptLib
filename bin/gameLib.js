@@ -4061,8 +4061,8 @@ window.gameLib = {};
             for (let i = 0; i < loadArray.length; i++) {
                 let obj = loadArray[i];
                 if (obj.type == Laya.Loader.SOUND) {
-                    // 如果存在需要排除的音频格式 并且排除音频数组中
-                    if (AssetsLoader.soundExclude.length > 0 && AssetsLoader.soundExclude.includes(Laya.Utils.getFileExtension(obj.url))) {
+                    // 如果在自定义过滤中 返回false 不再需要那么排除音频
+                    if (AssetsLoader.soundFilter && !AssetsLoader.soundFilter.filter(obj.url, obj)) {
                         tsCore.Log.debug(`clean ogg audio files from apple mobile devices. ${obj.url}`);
                     }
                     else {
@@ -4367,10 +4367,6 @@ window.gameLib = {};
      * https://res.game.co/assetsversion.json
      */
     AssetsLoader.VERSION_RES_URL = null;
-    /**
-     * 音频排除格式
-     */
-    AssetsLoader.soundExclude = [];
     gameLib.AssetsLoader = AssetsLoader;
     /**
      * 舞台

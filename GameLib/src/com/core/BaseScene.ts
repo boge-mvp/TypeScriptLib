@@ -14,13 +14,12 @@ import {PromptTip} from "../view/PromptTip"
 import {ActionLib} from "../ActionLib"
 import {Player} from "../Player"
 import {AppRecordManager} from "../manager/AppRecordManager"
-import {IGuide} from "../interfaces/IGuide"
+import {IGuide, IGuideScene} from "../interfaces/IGame"
 import {PromptWindow} from "../view/PromptWindow"
 import {LibStr} from "../LibStr"
 import {WaitResult} from "../view/WaitResult"
 import {JSUtils} from "../utils/JSUtils"
 import {SceneManager} from "../manager/SceneManager"
-import {IGuideScene} from "../interfaces/IGuideScene"
 import {CommonCmd, HttpCode, Urls} from "../net/Common";
 import {BaseGameData} from "./BaseGameData";
 import DateUtils = tsCore.DateUtils;

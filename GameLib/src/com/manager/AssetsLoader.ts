@@ -7,13 +7,6 @@ import Loader = Laya.Loader;
 import LocalStorage = Laya.LocalStorage;
 import Utils = Laya.Utils;
 import URL = Laya.URL;
-import {Player} from "../Player"
-import {AnalyticsManager} from "./AnalyticsManager"
-import {JSUtils} from "../utils/JSUtils"
-import {AppManager} from "./AppManager"
-import {LoadingWindow} from "../view/LoadingWindow"
-import {ActionLib} from "../ActionLib"
-import {LibStr} from "../LibStr"
 import IFormatVer = tsCore.IFormatVer;
 import ELoader = tsCore.ELoader;
 import StringUtil = tsCore.StringUtil;
@@ -21,7 +14,15 @@ import Log = tsCore.Log;
 import UtilKit = tsCore.UtilKit;
 import SoundUtils = tsCore.SoundUtils;
 import App = tsCore.App;
+import {Player} from "../Player"
+import {AnalyticsManager} from "./AnalyticsManager"
+import {JSUtils} from "../utils/JSUtils"
+import {AppManager} from "./AppManager"
+import {LoadingWindow} from "../view/LoadingWindow"
+import {ActionLib} from "../ActionLib"
+import {LibStr} from "../LibStr"
 import {GameConfigKit} from "../kit/GameConfigKit";
+import {ILoadSoundFilter} from "../interfaces/IGame";
 
 /**
  * 资源管理类
@@ -59,7 +60,7 @@ export class AssetsLoader implements IFormatVer {
     /**
      * 音频排除格式
      */
-    static soundExclude: string[] = []
+    static soundFilter: ILoadSoundFilter
 
     /**
      * 自定义额外加载操作
@@ -346,8 +347,9 @@ export class AssetsLoader implements IFormatVer {
         for (let i = 0; i < loadArray.length; i++) {
             let obj = loadArray[i]
             if (obj.type == Loader.SOUND) {
-                // 如果存在需要排除的音频格式 并且排除音频数组中
-                if (AssetsLoader.soundExclude.length > 0 && AssetsLoader.soundExclude.includes(Utils.getFileExtension(obj.url))) {
+
+                // 如果在自定义过滤中 返回false 不再需要那么排除音频
+                if (AssetsLoader.soundFilter && !AssetsLoader.soundFilter.filter(obj.url, obj)) {
                     Log.debug(`clean ogg audio files from apple mobile devices. ${obj.url}`)
                 } else {
                     // 此音频是要强制加载到初始化
