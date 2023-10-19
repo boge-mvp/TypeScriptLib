@@ -261,7 +261,6 @@ declare namespace tsCore {
         /**
          * @deprecated
          * @see setValues
-         * @borrows ChangeValue#setValues
          */
         setAntes(value?: number[], defaultValue?: number, isEvent?: boolean): void;
         /**
@@ -596,10 +595,6 @@ declare namespace tsCore {
         static checkBaseUrl: (url?: string) => string[];
         /** 获取所有的baseUrl 主要在多路径环境下，用来获取资源或者清理资源  例如： getAllBaseUrl = function():string[] {} */
         static getAllBaseUrl: () => string[];
-        /** 加载路径格式化 */
-        static format: IFormatVer[];
-        constructor();
-        static formatUrl(url: string): string;
         /**
          * <p>加载资源。资源加载错误时，本对象会派发 Event.ERROR 事件，事件回调参数值为加载出错的资源地址。</p>
          * <p>因为返回值为 LoaderManager 对象本身，所以可以使用如下语法：loaderManager.load(...).load(...);</p>
@@ -856,14 +851,28 @@ declare namespace tsCore {
          */
         onEnd?(): void;
     }
-    export interface IFormatVer {
+    export interface IFormatPath {
+        /**
+         * 格式化路径
+         * @param url 格式化后的路径
+         */
+        path?(url: string): string;
         /**
          * 调用自定义的方法
          * @param url 原始请求地址
          * @param version 从版本控制中获取的版本号 可能为空
          * @return 返回处理后的版本号
          */
-        call(url: string, version: any): string;
+        version?(url: string, version: string | number): string | number;
+        /**
+         * 调用自定义的方法
+         * @param url 原始请求地址
+         * @param version 从版本控制中获取的版本号 可能为空
+         * @return 返回处理后的版本号
+         * @deprecated
+         * @see IFormatPath.version
+         */
+        call?(url: string, version: string | number): string | number;
     }
     export interface IKey {
         /**
@@ -1248,6 +1257,14 @@ declare namespace tsCore {
     export class SystemKit {
         /**
          * 获取移动设备的刘海屏高度
+         * @example
+         * 需要再html中注入css 用来获取环境值
+         *
+         * <style>
+         *      .safe-area {
+         *         padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px)
+         *       }
+         * </style>
          */
         static get notchHeight(): number;
         /**

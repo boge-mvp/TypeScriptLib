@@ -7,13 +7,26 @@ export class SystemKit {
 
     /**
      * 获取移动设备的刘海屏高度
+     * @example
+     * 需要再html中注入css 用来获取环境值
+     *
+     * <style>
+     *      .safe-area {
+     *         padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px)
+     *       }
+     * </style>
      */
     static get notchHeight() {
-        let style = window.getComputedStyle(document.body)
-        let paddingTop = style.getPropertyValue('padding-top')
-        let paddingBottom = style.getPropertyValue('padding-bottom')
-
-        let top = StringUtil.getNumbers(paddingTop) + StringUtil.getNumbers(paddingBottom)
+        // 获取元素
+        const element = document.querySelector('.safe-area')
+        let top = 0
+        if (element) {
+            // 获取计算样式
+            let style = window.getComputedStyle(element)
+            let paddingTop = style.getPropertyValue('padding-top')
+            let paddingBottom = style.getPropertyValue('padding-bottom')
+            top = StringUtil.getNumbers(paddingTop) + StringUtil.getNumbers(paddingBottom)
+        }
         if (top <= 0) top = window.innerHeight - document.documentElement.clientHeight
         return top
     }

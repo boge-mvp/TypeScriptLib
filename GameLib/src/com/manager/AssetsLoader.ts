@@ -7,7 +7,7 @@ import Loader = Laya.Loader;
 import LocalStorage = Laya.LocalStorage;
 import Utils = Laya.Utils;
 import URL = Laya.URL;
-import IFormatVer = tsCore.IFormatVer;
+import IFormatPath = tsCore.IFormatPath
 import ELoader = tsCore.ELoader;
 import StringUtil = tsCore.StringUtil;
 import Log = tsCore.Log;
@@ -23,11 +23,12 @@ import {ActionLib} from "../ActionLib"
 import {LibStr} from "../LibStr"
 import {GameConfigKit} from "../kit/GameConfigKit";
 import {ILoadSoundFilter} from "../interfaces/IGame";
+import ConfigKit = tsCore.ConfigKit;
 
 /**
  * 资源管理类
  */
-export class AssetsLoader implements IFormatVer {
+export class AssetsLoader implements IFormatPath {
 
     private static _instance: AssetsLoader
 
@@ -92,9 +93,26 @@ export class AssetsLoader implements IFormatVer {
      */
     customLoaderRes: ParamHandler
 
+    /** 加载路径格式化 */
+    static loadPathFormat: IFormatPath[] = []
+
+
     constructor() {
+        URL.customFormat = AssetsLoader.formatUrl
         // 添加加载路径格式化
-        ELoader.format.push(this)
+        AssetsLoader.loadPathFormat.push(this)
+    }
+
+    static formatUrl(url: string) {
+        let version = URL.version[url]
+        for (const format of AssetsLoader.loadPathFormat) {
+            url = format.path?.(url) ?? url
+            version = format.version?.(url, version) ?? version
+            version = format.call?.(url, version) ?? version
+        }
+        if (ELoader.isWebp && url.endsWithAny("png", "jpg")) url += ".webp"
+        if (!Browser.onLayaRuntime && version) url = `${url}?v=${version}`
+        return url
     }
 
     call(url: string, version: string): string {
@@ -334,7 +352,7 @@ export class AssetsLoader implements IFormatVer {
         }
 
         if (!UIPackage.getByName("gameCommon/gameCommon")) {
-            let gameCommonRes: LoadRes[] =  Browser.window.gameCommon
+            let gameCommonRes: LoadRes[] = ConfigKit.get("gameCommon")
             loadArray = loadArray.concat(gameCommonRes)
         }
         // 渠道资源检查

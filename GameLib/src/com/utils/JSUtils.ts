@@ -3,6 +3,7 @@ import Render = Laya.Render;
 import Log = tsCore.Log;
 import {AppManager} from "../manager/AppManager"
 import {SceneManager} from "../manager/SceneManager"
+import SoundManager = Laya.SoundManager;
 
 export class JSUtils {
 
@@ -47,9 +48,12 @@ export class JSUtils {
      * @param [data = null]
      * */
     static gameClose(type = 0, data = null) {
-        if (AppManager.callIOS("gameClose", {type: type, data: data})) return
         SceneManager.inst.initComplete = false
         SceneManager.inst.isLoaderResComplete = false
+        if (AppManager.callIOS("gameClose", {type: type, data: data})) {
+            SceneManager.inst.closeGame()
+            return
+        }
         if (Browser.window.parent.GameToHall) {
             Browser.window.parent.GameToHall.gameClose(type, data)
         } else {

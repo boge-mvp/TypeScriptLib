@@ -180,7 +180,7 @@ export class AppRecordManager extends tsCore.HistoryManager {
     }
 
     private static open(json: any) {
-        Log.debug(`open() json=${json}`)
+        Log.debug(`open() json=${JSON.stringify(json)}`)
         switch (json.type) {
             case 1:// 打开网页
                 HtmlWindow.inst.showTip(json.data)

@@ -1,9 +1,7 @@
-import Handler = Laya.Handler
-import Loader = Laya.Loader
-import URL = Laya.URL
+import Handler = Laya.Handler;
+import Loader = Laya.Loader;
+import URL = Laya.URL;
 import {StringUtil} from "../utils/StringUtil"
-import {IFormatVer} from "../interfaces/ICommon";
-import Browser = Laya.Browser;
 import {Log} from "../Log";
 
 export class ELoader {
@@ -18,22 +16,6 @@ export class ELoader {
     static checkBaseUrl: (url?: string) => string[]
     /** 获取所有的baseUrl 主要在多路径环境下，用来获取资源或者清理资源  例如： getAllBaseUrl = function():string[] {} */
     static getAllBaseUrl: () => string[]
-    /** 加载路径格式化 */
-    static format: IFormatVer[] = []
-
-    constructor() {
-        URL.customFormat = ELoader.formatUrl
-    }
-
-    static formatUrl(url: string) {
-        let version: string = URL.version[url]
-        for (let i = 0; i < ELoader.format.length; i++) {
-            version = ELoader.format[i].call(url, version)
-        }
-        if (ELoader.isWebp && url.endsWithAny("png", "jpg")) url += ".webp"
-        if (!Browser.onLayaRuntime && version) url += "?v=" + version
-        return url
-    }
 
     /**
      * <p>加载资源。资源加载错误时，本对象会派发 Event.ERROR 事件，事件回调参数值为加载出错的资源地址。</p>

@@ -2089,7 +2089,7 @@ declare namespace gameLib {
     /**
      * 资源管理类
      */
-    export class AssetsLoader implements tsCore.IFormatVer {
+    export class AssetsLoader implements tsCore.IFormatPath {
         private static _instance;
         static get inst(): AssetsLoader;
         static readonly ma: number;
@@ -2145,7 +2145,10 @@ declare namespace gameLib {
          * })
          */
         customLoaderRes: ParamHandler;
+        /** 加载路径格式化 */
+        static loadPathFormat: tsCore.IFormatPath[];
         constructor();
+        static formatUrl(url: string): string;
         call(url: string, version: string): string;
         /**
          * 加载版本控制文件

@@ -1,5 +1,3 @@
-// import {Player} from "../Player"
-
 export class LanguageUtils {
 
     private static _instance: LanguageUtils

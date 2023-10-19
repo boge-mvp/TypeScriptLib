@@ -390,8 +390,9 @@ export class AppManager {
         const webkit = AppManager.isIOS
         if (webkit) {
             data ??= {}
-            Log.debug(`execute ios ${method} ${JSON.stringify(data)}`)
-            const promise = webkit?.[method]?.postMessage?.(JSON.stringify(data))
+            typeof data !== "string" && (data = JSON.stringify(data))
+            Log.debug(`execute ios ${method} ${data}`)
+            const promise = webkit?.[method]?.postMessage?.(data)
             if (printDebug) promise?.then((r: any, c: any) => {
                 Log.debug(`call ios success -> ${method} ${data}  ${promise.status} ${r} ${c}`)
             }).catch((e: any) => {

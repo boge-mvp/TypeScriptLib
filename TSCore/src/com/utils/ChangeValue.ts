@@ -133,7 +133,6 @@ export class ChangeValue {
     /**
      * @deprecated
      * @see setValues
-     * @borrows ChangeValue#setValues
      */
     setAntes(value?: number[], defaultValue = 1, isEvent = true) {
         this.setValues(value, defaultValue, isEvent)

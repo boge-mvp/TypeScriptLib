@@ -5,7 +5,7 @@ import GBasicTextField = fgui.GBasicTextField
 import Events = fgui.Events
 import Stage = Laya.Stage
 import AutoSizeType = fgui.AutoSizeType
-import {EButton} from "../core/EButton"
+import {EButton} from "../extends/EButton"
 
 export class NumButton extends EButton {
 

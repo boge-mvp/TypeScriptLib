@@ -21,7 +21,7 @@ export class HistoryManager {
      * @param newPage 添加的新面板
      */
     static addHistory(currentPage: IRecord, newPage: IRecord) {
-        Log.debug(`history add currentPage=${currentPage} newPage=${newPage}`)
+        Log.debug("history add currentPage and newPage", currentPage, newPage)
         HistoryManager.history.push({current: currentPage, newPage: newPage})
     }
 
@@ -31,7 +31,7 @@ export class HistoryManager {
      *
      */
     static invalidHistory(value: IRecord) {
-        Log.debug(`history invalidHistory value=${value}`)
+        Log.debug("history invalidHistory value", value)
         if (HistoryManager.history.length > 0) {
             for (let i = 0; i < HistoryManager.history.length; i++) {
                 if (HistoryManager.history[i]?.newPage == value) {

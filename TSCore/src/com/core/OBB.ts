@@ -1,4 +1,4 @@
-import {MathKit} from "../utils/MathKit"
+import {MathKit} from "../kit/MathKit"
 import {View} from "./View"
 
 /**

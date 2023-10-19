@@ -6,7 +6,6 @@ import {ConfigKit, EnvType} from "./kit/ConfigKit";
 import {Log} from "./Log";
 import {IController, IInitEngine, IKey, IProxy, IView} from "./interfaces/ICommon";
 import {HistoryManager} from "./manager/HistoryManager";
-import {SystemKit} from "./kit/SystemKit";
 import Handler = Laya.Handler;
 
 export class App implements IAction {
@@ -59,11 +58,9 @@ export class App implements IAction {
     /** 设置默认竖屏布局 */
     static updateDefaultScreen() {
         // 设置竖屏
-        const conchConfig: any = ConfigKit.get("conchConfig")
-        if (conchConfig) {
-            // landscape: 0, portrait: 1, user: 2, behind: 3, sensor: 4, nosensor: 5, sensor_landscape: 6, sensor_portrait: 7, reverse_landscape: 8, reverse_portrait: 9, full_sensor: 10,
-            conchConfig.setScreenOrientation(1)
-        }
+        const conchConfig: { setScreenOrientation: Function } = ConfigKit.get("conchConfig")
+        // landscape: 0, portrait: 1, user: 2, behind: 3, sensor: 4, nosensor: 5, sensor_landscape: 6, sensor_portrait: 7, reverse_landscape: 8, reverse_portrait: 9, full_sensor: 10,
+        conchConfig?.setScreenOrientation?.(1)
         //设置横竖屏
         if (Laya.Browser.onPC && !Laya.Browser.onLayaRuntime) {
             Laya.stage.alignV = Laya.Stage.ALIGN_TOP

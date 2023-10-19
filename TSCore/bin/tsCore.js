@@ -30,12 +30,11 @@ window.tsCore = {};
         }
         /** 设置默认竖屏布局 */
         static updateDefaultScreen() {
+            var _a;
             // 设置竖屏
             const conchConfig = ConfigKit.get("conchConfig");
-            if (conchConfig) {
-                // landscape: 0, portrait: 1, user: 2, behind: 3, sensor: 4, nosensor: 5, sensor_landscape: 6, sensor_portrait: 7, reverse_landscape: 8, reverse_portrait: 9, full_sensor: 10,
-                conchConfig.setScreenOrientation(1);
-            }
+            // landscape: 0, portrait: 1, user: 2, behind: 3, sensor: 4, nosensor: 5, sensor_landscape: 6, sensor_portrait: 7, reverse_landscape: 8, reverse_portrait: 9, full_sensor: 10,
+            (_a = conchConfig === null || conchConfig === void 0 ? void 0 : conchConfig.setScreenOrientation) === null || _a === void 0 ? void 0 : _a.call(conchConfig, 1);
             //设置横竖屏
             if (Laya.Browser.onPC && !Laya.Browser.onLayaRuntime) {
                 Laya.stage.alignV = Laya.Stage.ALIGN_TOP;
@@ -579,7 +578,6 @@ window.tsCore = {};
         /**
          * @deprecated
          * @see setValues
-         * @borrows ChangeValue#setValues
          */
         setAntes(value, defaultValue = 1, isEvent = true) {
             this.setValues(value, defaultValue, isEvent);
@@ -2110,18 +2108,6 @@ window.tsCore = {};
             /** 加载域名备用 */
             this.baseUrls = [];
             this._infoPool = [];
-            Laya.URL.customFormat = ELoader.formatUrl;
-        }
-        static formatUrl(url) {
-            let version = Laya.URL.version[url];
-            for (let i = 0; i < ELoader.format.length; i++) {
-                version = ELoader.format[i].call(url, version);
-            }
-            if (ELoader.isWebp && url.endsWithAny("png", "jpg"))
-                url += ".webp";
-            if (!Laya.Browser.onLayaRuntime && version)
-                url += "?v=" + version;
-            return url;
         }
         /**
          * <p>加载资源。资源加载错误时，本对象会派发 Event.ERROR 事件，事件回调参数值为加载出错的资源地址。</p>
@@ -2289,8 +2275,6 @@ window.tsCore = {};
     }
     ELoader.isWebp = false;
     ELoader.loader = new ELoader();
-    /** 加载路径格式化 */
-    ELoader.format = [];
     tsCore.ELoader = ELoader;
     class ResInfo {
     }
@@ -3279,12 +3263,26 @@ window.tsCore = {};
     class SystemKit {
         /**
          * 获取移动设备的刘海屏高度
+         * @example
+         * 需要再html中注入css 用来获取环境值
+         *
+         * <style>
+         *      .safe-area {
+         *         padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px)
+         *       }
+         * </style>
          */
         static get notchHeight() {
-            let style = window.getComputedStyle(document.body);
-            let paddingTop = style.getPropertyValue('padding-top');
-            let paddingBottom = style.getPropertyValue('padding-bottom');
-            let top = StringUtil.getNumbers(paddingTop) + StringUtil.getNumbers(paddingBottom);
+            // 获取元素
+            const element = document.querySelector('.safe-area');
+            let top = 0;
+            if (element) {
+                // 获取计算样式
+                let style = window.getComputedStyle(element);
+                let paddingTop = style.getPropertyValue('padding-top');
+                let paddingBottom = style.getPropertyValue('padding-bottom');
+                top = StringUtil.getNumbers(paddingTop) + StringUtil.getNumbers(paddingBottom);
+            }
             if (top <= 0)
                 top = window.innerHeight - document.documentElement.clientHeight;
             return top;
@@ -3438,7 +3436,7 @@ window.tsCore = {};
          * @param newPage 添加的新面板
          */
         static addHistory(currentPage, newPage) {
-            Log.debug(`history add currentPage=${currentPage} newPage=${newPage}`);
+            Log.debug("history add currentPage and newPage", currentPage, newPage);
             HistoryManager.history.push({ current: currentPage, newPage: newPage });
         }
         /**
@@ -3448,7 +3446,7 @@ window.tsCore = {};
          */
         static invalidHistory(value) {
             var _a;
-            Log.debug(`history invalidHistory value=${value}`);
+            Log.debug("history invalidHistory value", value);
             if (HistoryManager.history.length > 0) {
                 for (let i = 0; i < HistoryManager.history.length; i++) {
                     if (((_a = HistoryManager.history[i]) === null || _a === void 0 ? void 0 : _a.newPage) == value) {
@@ -4141,7 +4139,6 @@ window.tsCore = {};
     HTTPUtils.difference = 0;
     HTTPUtils.https = [];
     tsCore.HTTPUtils = HTTPUtils;
-    // import {Player} from "../Player"
     class LanguageUtils {
         constructor() {
             /**
@@ -4364,6 +4361,7 @@ window.tsCore = {};
          * @see SoundUtils.loadAsset
          */
         static load(url) {
+            Log.debug(`lazy load`);
             Laya.loader.load(url !== null && url !== void 0 ? url : SoundUtils.loadAsset, Laya.Handler.create(null, SoundUtils.onLoader));
         }
         static onLoader() {

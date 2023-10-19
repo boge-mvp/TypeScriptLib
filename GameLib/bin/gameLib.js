@@ -3621,8 +3621,9 @@ window.gameLib = {};
             const webkit = AppManager.isIOS;
             if (webkit) {
                 data !== null && data !== void 0 ? data : (data = {});
-                tsCore.Log.debug(`execute ios ${method} ${JSON.stringify(data)}`);
-                const promise = (_b = (_a = webkit === null || webkit === void 0 ? void 0 : webkit[method]) === null || _a === void 0 ? void 0 : _a.postMessage) === null || _b === void 0 ? void 0 : _b.call(_a, JSON.stringify(data));
+                typeof data !== "string" && (data = JSON.stringify(data));
+                tsCore.Log.debug(`execute ios ${method} ${data}`);
+                const promise = (_b = (_a = webkit === null || webkit === void 0 ? void 0 : webkit[method]) === null || _a === void 0 ? void 0 : _a.postMessage) === null || _b === void 0 ? void 0 : _b.call(_a, data);
                 if (printDebug)
                     promise === null || promise === void 0 ? void 0 : promise.then((r, c) => {
                         tsCore.Log.debug(`call ios success -> ${method} ${data}  ${promise.status} ${r} ${c}`);
@@ -3794,7 +3795,7 @@ window.gameLib = {};
             }
         }
         static open(json) {
-            tsCore.Log.debug(`open() json=${json}`);
+            tsCore.Log.debug(`open() json=${JSON.stringify(json)}`);
             switch (json.type) {
                 case 1: // 打开网页
                     HtmlWindow.inst.showTip(json.data);
@@ -3828,8 +3829,23 @@ window.gameLib = {};
             /** 是否是http  */
             this.httpProtocol = Laya.Browser.window.location.protocol == "http:";
             this.runLoads = [];
+            Laya.URL.customFormat = AssetsLoader.formatUrl;
             // 添加加载路径格式化
-            tsCore.ELoader.format.push(this);
+            AssetsLoader.loadPathFormat.push(this);
+        }
+        static formatUrl(url) {
+            var _a, _b, _c, _d, _e, _f;
+            let version = Laya.URL.version[url];
+            for (const format of AssetsLoader.loadPathFormat) {
+                url = (_b = (_a = format.path) === null || _a === void 0 ? void 0 : _a.call(format, url)) !== null && _b !== void 0 ? _b : url;
+                version = (_d = (_c = format.version) === null || _c === void 0 ? void 0 : _c.call(format, url, version)) !== null && _d !== void 0 ? _d : version;
+                version = (_f = (_e = format.call) === null || _e === void 0 ? void 0 : _e.call(format, url, version)) !== null && _f !== void 0 ? _f : version;
+            }
+            if (tsCore.ELoader.isWebp && url.endsWithAny("png", "jpg"))
+                url += ".webp";
+            if (!Laya.Browser.onLayaRuntime && version)
+                url = `${url}?v=${version}`;
+            return url;
         }
         call(url, version) {
             if (Laya.Render.isConchApp)
@@ -4049,7 +4065,7 @@ window.gameLib = {};
                 runFun(this.customLoaderRes, loadArray);
             }
             if (!fgui.UIPackage.getByName("gameCommon/gameCommon")) {
-                let gameCommonRes = Laya.Browser.window.gameCommon;
+                let gameCommonRes = tsCore.ConfigKit.get("gameCommon");
                 loadArray = loadArray.concat(gameCommonRes);
             }
             // 渠道资源检查
@@ -4367,6 +4383,8 @@ window.gameLib = {};
      * https://res.game.co/assetsversion.json
      */
     AssetsLoader.VERSION_RES_URL = null;
+    /** 加载路径格式化 */
+    AssetsLoader.loadPathFormat = [];
     gameLib.AssetsLoader = AssetsLoader;
     /**
      * 舞台
@@ -4651,8 +4669,8 @@ window.gameLib = {};
             tsCore.Log.debug("create scene");
             // 创建游戏到舞台上
             this.sendAction(ActionLib.GAME_CREATE_SCENE_SHOW, Laya.Handler.create(this, function () {
-                tsCore.Log.debug("init model and load sound");
                 fgui.GRoot.inst.closeModalWait();
+                tsCore.Log.debug("init model and load sound");
                 this.sendAction(ActionLib.GAME_INIT_MODEL);
                 AppRecordManager.executeJson = null;
                 // 开始加载运行加载的声音
