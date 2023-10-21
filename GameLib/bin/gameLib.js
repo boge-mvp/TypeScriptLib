@@ -3606,9 +3606,20 @@ window.gameLib = {};
         /** 空方法 */
         static nullFun(data) {
         }
+        /**
+         * 判断是否是原生ios壳子
+         */
         static get isIOS() {
+            var _a;
+            return !!((_a = AppManager.NativeIOS) === null || _a === void 0 ? void 0 : _a.hasNativeMethod);
+        }
+        /**
+         * 获取ios交互handler
+         */
+        static get NativeIOS() {
+            var _a, _b;
             // @ts-ignore
-            return (typeof window.webkit !== 'undefined' && typeof window.webkit.messageHandlers !== 'undefined') ? window.webkit.messageHandlers : null;
+            return (_b = (_a = window.webkit) === null || _a === void 0 ? void 0 : _a.messageHandlers) !== null && _b !== void 0 ? _b : null;
         }
         /**
          * 执行调用ios方法
@@ -3618,8 +3629,8 @@ window.gameLib = {};
          */
         static callIOS(method, data, printDebug = true) {
             var _a, _b;
-            const webkit = AppManager.isIOS;
-            if (webkit) {
+            if (AppManager.isIOS) {
+                const webkit = AppManager.NativeIOS;
                 data !== null && data !== void 0 ? data : (data = {});
                 typeof data !== "string" && (data = JSON.stringify(data));
                 tsCore.Log.debug(`execute ios ${method} ${data}`);
@@ -3802,7 +3813,10 @@ window.gameLib = {};
                     AppRecordManager.executeJson = null;
                     break;
                 case 2: // 进入游戏
-                    SceneManager.inst.changeScene(json.gameName, Laya.Utils.parseInt(json.data) || Laya.Utils.parseInt(json.openGame) || -1);
+                    SceneManager.inst.openGame(json.gameName, Laya.Utils.parseInt(json.data) || Laya.Utils.parseInt(json.openGame) || -1);
+                    // SceneManager.inst.changeScene(
+                    //     json.gameName,
+                    //     Laya.Utils.parseInt(json.data) || Laya.Utils.parseInt(json.openGame) || -1)
                     break;
                 default:
                     // 有可能是从游戏中弹出的网页  然后从网页中返回到游戏 app专有操作

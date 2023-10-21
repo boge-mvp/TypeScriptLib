@@ -187,7 +187,10 @@ export class AppRecordManager extends tsCore.HistoryManager {
                 AppRecordManager.executeJson = null
                 break
             case 2:// 进入游戏
-                SceneManager.inst.changeScene(json.gameName, Utils.parseInt(json.data) || Utils.parseInt(json.openGame) || -1)
+                SceneManager.inst.openGame(json.gameName, Utils.parseInt(json.data) || Utils.parseInt(json.openGame) || -1)
+                // SceneManager.inst.changeScene(
+                //     json.gameName,
+                //     Utils.parseInt(json.data) || Utils.parseInt(json.openGame) || -1)
                 break
             default:
                 // 有可能是从游戏中弹出的网页  然后从网页中返回到游戏 app专有操作

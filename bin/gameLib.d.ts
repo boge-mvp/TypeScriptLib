@@ -2044,7 +2044,14 @@ declare namespace gameLib {
         static LP_init(): void;
         /** 空方法 */
         static nullFun(data: any): void;
-        static get isIOS(): any;
+        /**
+         * 判断是否是原生ios壳子
+         */
+        static get isIOS(): boolean;
+        /**
+         * 获取ios交互handler
+         */
+        static get NativeIOS(): any;
         /**
          * 执行调用ios方法
          * @param method 调用方法名

@@ -375,9 +375,19 @@ export class AppManager {
     static nullFun(data: any) {
     }
 
+    /**
+     * 判断是否是原生ios壳子
+     */
     static get isIOS() {
+        return !!AppManager.NativeIOS?.hasNativeMethod
+    }
+
+    /**
+     * 获取ios交互handler
+     */
+    static get NativeIOS() {
         // @ts-ignore
-        return (typeof window.webkit !== 'undefined' && typeof window.webkit.messageHandlers !== 'undefined') ? window.webkit.messageHandlers : null
+        return window.webkit?.messageHandlers ?? null
     }
 
     /**
@@ -387,8 +397,8 @@ export class AppManager {
      * @param [printDebug=true] 打印调用命令是否执行
      */
     static callIOS(method: string, data?: any, printDebug = true) {
-        const webkit = AppManager.isIOS
-        if (webkit) {
+        if (AppManager.isIOS) {
+            const webkit = AppManager.NativeIOS
             data ??= {}
             typeof data !== "string" && (data = JSON.stringify(data))
             Log.debug(`execute ios ${method} ${data}`)
