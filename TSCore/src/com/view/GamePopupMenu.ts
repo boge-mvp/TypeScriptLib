@@ -1,14 +1,17 @@
-import PopupMenu = fgui.PopupMenu
-import GButton = fgui.GButton
-import Controller = fgui.Controller
-import ButtonMode = fgui.ButtonMode
-import GObject = fgui.GObject
-import PopupDirection = fgui.PopupDirection
-import Event = Laya.Event
+import PopupMenu = fgui.PopupMenu;
+import GButton = fgui.GButton;
+import ButtonMode = fgui.ButtonMode;
+import GObject = fgui.GObject;
+import PopupDirection = fgui.PopupDirection;
+import Event = Laya.Event;
+
+export type PopupMenuConfig = {/** 方向 */ dir?: PopupDirection | boolean,/** 相对目标居中 */ center?: boolean }
+
 export class GamePopupMenu extends PopupMenu {
 
     private target: GButton
     closeHandler: ParamHandler
+
     constructor(resourceURL?: string) {
         super(resourceURL)
         this._contentPane.on(Event.UNDISPLAY, this, this.onUnDisplay)
@@ -21,6 +24,19 @@ export class GamePopupMenu extends PopupMenu {
         })
     }
 
+    /**
+     * 显示菜单
+     * @param target 在指定的对象上显示
+     * @param options 详细配置
+     */
+    showInScene(target?: GObject, options?: PopupMenuConfig) {
+        this.show(target, options?.dir)
+        if (this.contentPane && target && options?.center) {
+            const w = (this.contentPane.width - target.width) / 2
+            this.contentPane.setXY(this.contentPane.x + w, this.contentPane.y)
+        }
+    }
+
     override show(target?: GObject, dir?: PopupDirection | boolean) {
         if (target instanceof GButton && target.mode == ButtonMode.Check) this.target = target
         super.show(target, dir)
@@ -31,7 +47,7 @@ export class GamePopupMenu extends PopupMenu {
         item.icon = caption
         item.data = handler
         item.grayed = false
-        let c: Controller = item.getController("checked")
+        let c = item.getController("checked")
         if (c) c.selectedIndex = 0
         return item
     }
@@ -45,7 +61,7 @@ export class GamePopupMenu extends PopupMenu {
         if (select) {
             item.mode = ButtonMode.Check;
         }
-        let c: Controller = item.getController("checked");
+        let c = item.getController("checked");
         if (c) c.selectedIndex = 0
         return item;
     }

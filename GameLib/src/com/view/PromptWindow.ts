@@ -122,7 +122,7 @@ export class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWin
     /**
      * 带确认 取消按钮的提示框
      * @param msg 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
-     * @param obj 附带设置 (okName:'', cancelName:'')
+     * @param options 附带设置 (okName:'', cancelName:'')
      * @param callback 取消回调方法
      * @param continueFun 确定回调方法
      * @param isAction 动画显示或关闭
@@ -130,14 +130,14 @@ export class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWin
      * @see LibStr
      * @see ActionLib.GAME_SHOW_PROMPT_CANCEL_WINDOW
      */
-    showCancelTip(msg: string | number | any[], obj?: IPromptData, callback?: ParamHandler, continueFun?: ParamHandler, isAction = true) {
-        this._show({msg: msg, obj: obj, callback: callback, continue: continueFun, isAction: isAction})
+    showCancelTip(msg: string | number | any[], options?: IPromptData, callback?: ParamHandler, continueFun?: ParamHandler, isAction = true) {
+        this._show({msg: msg, obj: options, callback: callback, continue: continueFun, isAction: isAction})
     }
 
-    private _showWindow(msg: string | number | any[] | PromptData, obj?: IPromptData, callback?: ParamHandler, continueFun?: ParamHandler, isAction = true) {
+    private _showWindow(msg: string | number | any[] | PromptData, options?: IPromptData, callback?: ParamHandler, continueFun?: ParamHandler, isAction = true) {
         if (!this.isPromptData(msg)) msg = {
             msg: msg,
-            obj: obj,
+            obj: options,
             callback: callback,
             continue: continueFun,
             isAction: isAction

@@ -1272,6 +1272,15 @@ declare namespace tsCore {
          * @param value
          */
         static set onNotch(value: (height: number) => any);
+        private static _wakeLock;
+        /**
+         * 锁定屏幕常量
+         */
+        static wakeLock(): void;
+        /**
+         * 释放常量
+         */
+        static wakeUnlock(): void;
     }
     export enum LogLevel {
         ALL = 0,
@@ -2336,11 +2345,21 @@ declare namespace tsCore {
          */
         static verifyData(key: string, callback?: () => boolean): boolean;
     }
+    export type PopupMenuConfig = {
+        dir?: fgui.PopupDirection | boolean; /** 相对目标居中 */
+        center?: boolean;
+    };
     export class GamePopupMenu extends fgui.PopupMenu {
         private target;
         closeHandler: ParamHandler;
         constructor(resourceURL?: string);
         private onUnDisplay;
+        /**
+         * 显示菜单
+         * @param target 在指定的对象上显示
+         * @param options 详细配置
+         */
+        showInScene(target?: fgui.GObject, options?: PopupMenuConfig): void;
         show(target?: fgui.GObject, dir?: fgui.PopupDirection | boolean): void;
         addIconItem(caption: string, handler?: Laya.Handler): fairygui.GButton;
         addSelectIconItem(caption: string, select: string, handler?: Laya.Handler): fairygui.GButton;

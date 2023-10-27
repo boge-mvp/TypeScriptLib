@@ -3610,8 +3610,7 @@ window.gameLib = {};
          * 判断是否是原生ios壳子
          */
         static get isIOS() {
-            var _a;
-            return !!((_a = AppManager.NativeIOS) === null || _a === void 0 ? void 0 : _a.hasNativeMethod);
+            return AppManager.hasNativeIosMethod("openPage");
         }
         /**
          * 获取ios交互handler
@@ -3620,6 +3619,13 @@ window.gameLib = {};
             var _a, _b;
             // @ts-ignore
             return (_b = (_a = window.webkit) === null || _a === void 0 ? void 0 : _a.messageHandlers) !== null && _b !== void 0 ? _b : null;
+        }
+        /**
+         * 判断是否存在ios原生方法
+         */
+        static hasNativeIosMethod(method) {
+            var _a, _b, _c;
+            return !!((_c = (_b = (_a = AppManager.NativeIOS) === null || _a === void 0 ? void 0 : _a.hasNativeMethod) === null || _b === void 0 ? void 0 : _b.postMessage) === null || _c === void 0 ? void 0 : _c.call(_b, method));
         }
         /**
          * 执行调用ios方法
@@ -7977,7 +7983,7 @@ window.gameLib = {};
         /**
          * 带确认 取消按钮的提示框
          * @param msg 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
-         * @param obj 附带设置 (okName:'', cancelName:'')
+         * @param options 附带设置 (okName:'', cancelName:'')
          * @param callback 取消回调方法
          * @param continueFun 确定回调方法
          * @param isAction 动画显示或关闭
@@ -7985,14 +7991,14 @@ window.gameLib = {};
          * @see LibStr
          * @see ActionLib.GAME_SHOW_PROMPT_CANCEL_WINDOW
          */
-        showCancelTip(msg, obj, callback, continueFun, isAction = true) {
-            this._show({ msg: msg, obj: obj, callback: callback, continue: continueFun, isAction: isAction });
+        showCancelTip(msg, options, callback, continueFun, isAction = true) {
+            this._show({ msg: msg, obj: options, callback: callback, continue: continueFun, isAction: isAction });
         }
-        _showWindow(msg, obj, callback, continueFun, isAction = true) {
+        _showWindow(msg, options, callback, continueFun, isAction = true) {
             if (!this.isPromptData(msg))
                 msg = {
                     msg: msg,
-                    obj: obj,
+                    obj: options,
                     callback: callback,
                     continue: continueFun,
                     isAction: isAction

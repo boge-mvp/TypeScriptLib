@@ -66,4 +66,72 @@ export class SystemKit {
         }
     }
 
+
+    private static _wakeLock: WakeLock
+
+    /**
+     * 锁定屏幕常量
+     */
+    static wakeLock() {
+        SystemKit._wakeLock ??= new WakeLock()
+        SystemKit._wakeLock.wakeLock()
+    }
+
+    /**
+     * 释放常量
+     */
+    static wakeUnlock() {
+        SystemKit._wakeLock?.wakeUnlock()
+    }
+
+}
+
+class WakeLock {
+
+    /**
+     * create a reference for the wake lock
+     * @type WakeLockSentinel
+     */
+    private _wakeLock: any = null
+
+    /**
+     * 锁定屏幕常量
+     */
+    wakeLock() {
+        this.requestWakeLock().then()
+    }
+
+    /**
+     * 释放常量
+     */
+    wakeUnlock() {
+        this._wakeLock?.release().then(() => {
+            this._wakeLock = null
+            document.removeEventListener('visibilitychange', this.handleVisibilityChange)
+        })
+    }
+
+    private async requestWakeLock() {
+        if ('wakeLock' in navigator) {
+            try {
+                this._wakeLock = await (navigator as any).wakeLock?.request('screen')
+                this._wakeLock.onrelease = function (ev) {
+                    console.log(ev)
+                }
+                this._wakeLock.addEventListener('release', (ev: Event) => {
+                    console.log(ev)
+                })
+                document.addEventListener('visibilitychange', this.handleVisibilityChange)
+            } catch (err) {
+                // 如果唤醒锁定请求失败 - 通常与系统相关，例如电池
+            }
+        }
+    }
+
+    private handleVisibilityChange() {
+        if (this._wakeLock !== null && document.visibilityState === 'visible') {
+            this.requestWakeLock().then()
+        }
+    }
+
 }

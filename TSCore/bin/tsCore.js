@@ -3321,8 +3321,73 @@ window.tsCore = {};
                 Laya.timer.callLater(this, notchFun);
             }
         }
+        /**
+         * 锁定屏幕常量
+         */
+        static wakeLock() {
+            var _a;
+            (_a = SystemKit._wakeLock) !== null && _a !== void 0 ? _a : (SystemKit._wakeLock = new WakeLock());
+            SystemKit._wakeLock.wakeLock();
+        }
+        /**
+         * 释放常量
+         */
+        static wakeUnlock() {
+            var _a;
+            (_a = SystemKit._wakeLock) === null || _a === void 0 ? void 0 : _a.wakeUnlock();
+        }
     }
     tsCore.SystemKit = SystemKit;
+    class WakeLock {
+        constructor() {
+            /**
+             * create a reference for the wake lock
+             * @type WakeLockSentinel
+             */
+            this._wakeLock = null;
+        }
+        /**
+         * 锁定屏幕常量
+         */
+        wakeLock() {
+            this.requestWakeLock().then();
+        }
+        /**
+         * 释放常量
+         */
+        wakeUnlock() {
+            var _a;
+            (_a = this._wakeLock) === null || _a === void 0 ? void 0 : _a.release().then(() => {
+                this._wakeLock = null;
+                document.removeEventListener('visibilitychange', this.handleVisibilityChange);
+            });
+        }
+        requestWakeLock() {
+            var _a;
+            return __awaiter(this, void 0, void 0, function* () {
+                if ('wakeLock' in navigator) {
+                    try {
+                        this._wakeLock = yield ((_a = navigator.wakeLock) === null || _a === void 0 ? void 0 : _a.request('screen'));
+                        this._wakeLock.onrelease = function (ev) {
+                            console.log(ev);
+                        };
+                        this._wakeLock.addEventListener('release', (ev) => {
+                            console.log(ev);
+                        });
+                        document.addEventListener('visibilitychange', this.handleVisibilityChange);
+                    }
+                    catch (err) {
+                        // 如果唤醒锁定请求失败 - 通常与系统相关，例如电池
+                    }
+                }
+            });
+        }
+        handleVisibilityChange() {
+            if (this._wakeLock !== null && document.visibilityState === 'visible') {
+                this.requestWakeLock().then();
+            }
+        }
+    }
     let LogLevel;
     (function (LogLevel) {
         LogLevel[LogLevel["ALL"] = 0] = "ALL";
@@ -5440,6 +5505,18 @@ window.tsCore = {};
                 if (this.target && this.target.selected)
                     this.target.selected = false;
             });
+        }
+        /**
+         * 显示菜单
+         * @param target 在指定的对象上显示
+         * @param options 详细配置
+         */
+        showInScene(target, options) {
+            this.show(target, options === null || options === void 0 ? void 0 : options.dir);
+            if (this.contentPane && target && (options === null || options === void 0 ? void 0 : options.center)) {
+                const w = (this.contentPane.width - target.width) / 2;
+                this.contentPane.setXY(this.contentPane.x + w, this.contentPane.y);
+            }
         }
         /*@override*/
         show(target, dir) {

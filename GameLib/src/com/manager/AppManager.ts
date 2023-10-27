@@ -379,7 +379,7 @@ export class AppManager {
      * 判断是否是原生ios壳子
      */
     static get isIOS() {
-        return !!AppManager.NativeIOS?.hasNativeMethod
+        return AppManager.hasNativeIosMethod("openPage")
     }
 
     /**
@@ -388,6 +388,13 @@ export class AppManager {
     static get NativeIOS() {
         // @ts-ignore
         return window.webkit?.messageHandlers ?? null
+    }
+
+    /**
+     * 判断是否存在ios原生方法
+     */
+    static hasNativeIosMethod(method: string) {
+        return !!AppManager.NativeIOS?.hasNativeMethod?.postMessage?.(method)
     }
 
     /**
