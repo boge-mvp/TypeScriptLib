@@ -223,6 +223,8 @@ window.gameLib = {};
      */
     class BaseGameData {
         constructor() {
+            /** 是否快速播放 */
+            this._isTurboMode = false;
             /** 服务器发来的当前余额 */
             this.currentBalance = 0;
             /** 后端计算   当前盈利 */
@@ -257,6 +259,41 @@ window.gameLib = {};
             this.isResetBetValue = false;
             /** 游戏类型 */
             this.gameType = GameType.NORMAL;
+            const key = Player.inst.gameId + "_isTurboMode";
+            this._isTurboMode = Laya.LocalStorage.getItem(key) != null;
+        }
+        get isTurboMode() {
+            return this._isTurboMode;
+        }
+        set isTurboMode(value) {
+            this._isTurboMode = value;
+            const key = Player.inst.gameId + "_isTurboMode";
+            if (value) {
+                Laya.LocalStorage.setItem(key, "1");
+            }
+            else {
+                Laya.LocalStorage.removeItem(key);
+            }
+        }
+        /**
+         * 获取 Skeleton 播放速率
+         */
+        getPlaybackRate() {
+            return this.isTurboMode ? 2 : 1;
+        }
+        /**
+         * 将传入参数计算加速后的值
+         * @param value 获取转换时间
+         * @param [rate=-1] 需要加速的速率 如果是-1将调用 getPlaybackRate 获取默认速率
+         *
+         * @see getPlaybackRate
+         */
+        convertPlaybackRate(value, rate = -1) {
+            if (!this.isTurboMode)
+                return value;
+            if (rate == -1)
+                rate = this.getPlaybackRate();
+            return Math.floor(value / rate);
         }
         /**
          * 总金额 default BaseGameData.betValue
@@ -269,7 +306,7 @@ window.gameLib = {};
          * @param level 播放时长等级 0开始
          */
         getWinMoneyAniDuration(level) {
-            return 1000 * (level + 1);
+            return this.convertPlaybackRate(1000) * (level + 1);
         }
         /**
          * 是否达到 BigWin 的值
@@ -849,8 +886,6 @@ window.gameLib = {};
                 [4, 2, 20, 16, 10, 1, 11, 17, 3, 5],
                 [14, 12, 9, 18, 6, 7, 19, 8, 13, 15]
             ];
-            /** 是否快速播放 */
-            this._isTurboMode = false;
             /** 当前购买的线 */
             this.lineValue = 0;
             /** 项目总数 */
@@ -874,8 +909,6 @@ window.gameLib = {};
             this.hasReSpin = 0;
             this.lineValue = this.lottery.length;
             this.gameType = GameType.SLOT;
-            const key = Player.inst.gameId + "_isTurboMode";
-            this._isTurboMode = Laya.LocalStorage.getItem(key) != null;
         }
         /** 总共要投注的钱 */
         /*@override*/
@@ -921,19 +954,6 @@ window.gameLib = {};
                 arr.push(tsCore.MathKit.random(min, max));
             }
             return arr;
-        }
-        get isTurboMode() {
-            return this._isTurboMode;
-        }
-        set isTurboMode(value) {
-            this._isTurboMode = value;
-            const key = Player.inst.gameId + "_isTurboMode";
-            if (value) {
-                Laya.LocalStorage.setItem(key, "1");
-            }
-            else {
-                Laya.LocalStorage.removeItem(key);
-            }
         }
     }
     gameLib.BaseSlotGameData = BaseSlotGameData;

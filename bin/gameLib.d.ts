@@ -206,6 +206,8 @@ declare namespace gameLib {
      * 游戏数据的基类
      */
     export class BaseGameData implements IGameData {
+        /** 是否快速播放 */
+        protected _isTurboMode: boolean;
         /** 缓存的下注值 */
         cacheAnte: any;
         /** 服务器发来的当前余额 */
@@ -244,6 +246,21 @@ declare namespace gameLib {
         isResetBetValue: boolean;
         /** 游戏类型 */
         gameType: GameType;
+        constructor();
+        get isTurboMode(): boolean;
+        set isTurboMode(value: boolean);
+        /**
+         * 获取 Skeleton 播放速率
+         */
+        getPlaybackRate(): 1 | 2;
+        /**
+         * 将传入参数计算加速后的值
+         * @param value 获取转换时间
+         * @param [rate=-1] 需要加速的速率 如果是-1将调用 getPlaybackRate 获取默认速率
+         *
+         * @see getPlaybackRate
+         */
+        convertPlaybackRate(value: number, rate?: number): number;
         /**
          * 总金额 default BaseGameData.betValue
          */
@@ -438,8 +455,6 @@ declare namespace gameLib {
         lottery: number[][];
         /** 线数字 */
         lineNum: number[][];
-        /** 是否快速播放 */
-        private _isTurboMode;
         /** 当前购买的线 */
         lineValue: number;
         /** 玩家赢的线 */
@@ -502,8 +517,6 @@ declare namespace gameLib {
          * @return 符合所有值的数组
          */
         getRandomNumber(arr: number[], min?: number, max?: number): number[];
-        get isTurboMode(): boolean;
-        set isTurboMode(value: boolean);
     }
     /**
      * Slot 渲染状态

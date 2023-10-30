@@ -37,8 +37,7 @@ export class BaseSlotGameData extends BaseGameData {
         [4, 2, 20, 16, 10, 1, 11, 17, 3, 5],
         [14, 12, 9, 18, 6, 7, 19, 8, 13, 15]
     ]
-    /** 是否快速播放 */
-    private _isTurboMode = false
+
     /** 当前购买的线 */
     lineValue = 0
     /** 玩家赢的线 */
@@ -82,8 +81,6 @@ export class BaseSlotGameData extends BaseGameData {
         super()
         this.lineValue = this.lottery.length
         this.gameType = GameType.SLOT
-        const key = Player.inst.gameId + "_isTurboMode"
-        this._isTurboMode = LocalStorage.getItem(key) != null
     }
 
     /** 总共要投注的钱 */
@@ -134,20 +131,6 @@ export class BaseSlotGameData extends BaseGameData {
             arr.push(MathKit.random(min, max))
         }
         return arr
-    }
-
-    get isTurboMode(): boolean {
-        return this._isTurboMode
-    }
-
-    set isTurboMode(value: boolean) {
-        this._isTurboMode = value
-        const key = Player.inst.gameId + "_isTurboMode"
-        if (value) {
-            LocalStorage.setItem(key, "1")
-        } else {
-            LocalStorage.removeItem(key)
-        }
     }
 
 }

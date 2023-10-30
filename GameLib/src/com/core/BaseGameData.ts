@@ -1,4 +1,5 @@
 import {IGameData} from "../Interfaces";
+import {Player} from "../Player";
 
 /**
  * 游戏类型
@@ -15,6 +16,8 @@ export enum GameType {
  */
 export class BaseGameData implements IGameData {
 
+    /** 是否快速播放 */
+    protected _isTurboMode = false
     /** 缓存的下注值 */
     cacheAnte: any
     /** 服务器发来的当前余额 */
@@ -54,6 +57,49 @@ export class BaseGameData implements IGameData {
     /** 游戏类型 */
     gameType = GameType.NORMAL
 
+    constructor() {
+        const key = Player.inst.gameId + "_isTurboMode"
+        this._isTurboMode = Laya.LocalStorage.getItem(key) != null
+    }
+
+    get isTurboMode() {
+        return this._isTurboMode
+    }
+
+    set isTurboMode(value: boolean) {
+        this._isTurboMode = value
+        const key = Player.inst.gameId + "_isTurboMode"
+        if (value) {
+            Laya.LocalStorage.setItem(key, "1")
+        } else {
+            Laya.LocalStorage.removeItem(key)
+        }
+    }
+
+
+
+    /**
+     * 获取 Skeleton 播放速率
+     */
+    getPlaybackRate() {
+        return this.isTurboMode ? 2 : 1
+    }
+
+    /**
+     * 将传入参数计算加速后的值
+     * @param value 获取转换时间
+     * @param [rate=-1] 需要加速的速率 如果是-1将调用 getPlaybackRate 获取默认速率
+     *
+     * @see getPlaybackRate
+     */
+    convertPlaybackRate(value: number, rate = -1) {
+        if (!this.isTurboMode) return value
+        if (rate == -1) rate = this.getPlaybackRate()
+        return Math.floor(value / rate)
+    }
+
+
+
     /**
      * 总金额 default BaseGameData.betValue
      */
@@ -66,7 +112,7 @@ export class BaseGameData implements IGameData {
      * @param level 播放时长等级 0开始
      */
     getWinMoneyAniDuration(level: number) {
-        return 1000 * (level + 1)
+        return this.convertPlaybackRate(1000) * (level + 1)
     }
 
     /**
@@ -97,6 +143,7 @@ export class BaseGameData implements IGameData {
     isSuperWin(isTotal = false, multiple = 60) {
         return (isTotal ? this.totalWinMoney : this.serverWinMoney) > this.getTotalBetMoney() * multiple
     }
+
 
     reportError() {
         return JSON.stringify(this)
