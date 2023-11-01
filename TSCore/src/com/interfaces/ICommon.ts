@@ -4,10 +4,19 @@ export enum Method {GET = "get", POST = "post"}
 
 /**
  * 初始化引擎接口
+ * @example
+ * App._init()
+ * init?.run?.()
+ *
+ * Laya.init()
+ * Laya.stage.addChild(fgui.GRoot.inst.displayObject)
+ * init?.onEngine?.()
+ * openResize()
+ * App.initEngine?.onEnd?.()
  */
 export interface IInitEngine {
     /**
-     * 启动引擎结束
+     * 引擎初始化结束
      */
     run?(): void
 

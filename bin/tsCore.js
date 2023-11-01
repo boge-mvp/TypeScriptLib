@@ -11,8 +11,9 @@ window.tsCore = {};
          * @param options
          */
         static run(init, options) {
-            var _a, _b, _c, _d, _e;
+            var _a, _b, _c, _d, _e, _f;
             App.initEngine = init;
+            (_a = this._instance) !== null && _a !== void 0 ? _a : (this._instance = new App());
             // 默认配置
             const def = {
                 laya: { renders: [Laya.WebGL], width: 720, height: 1280 },
@@ -25,11 +26,11 @@ window.tsCore = {};
                 isNotchEnable: false
             };
             App.inst.options = options = options ? defaults(options, def) : def;
-            ((_a = options.init) === null || _a === void 0 ? void 0 : _a.coreLib) && App._init();
-            (_b = init === null || init === void 0 ? void 0 : init.run) === null || _b === void 0 ? void 0 : _b.call(init);
-            ((_c = options.init) === null || _c === void 0 ? void 0 : _c.laya) && Laya.init(options.laya.width, options.laya.height, ...options.laya.renders);
-            ((_d = options.init) === null || _d === void 0 ? void 0 : _d.fgui) && Laya.stage.addChild(fgui.GRoot.inst.displayObject);
-            (_e = init === null || init === void 0 ? void 0 : init.onEngine) === null || _e === void 0 ? void 0 : _e.call(init);
+            ((_b = options.init) === null || _b === void 0 ? void 0 : _b.coreLib) && App._init();
+            (_c = init === null || init === void 0 ? void 0 : init.run) === null || _c === void 0 ? void 0 : _c.call(init);
+            ((_d = options.init) === null || _d === void 0 ? void 0 : _d.laya) && Laya.init(options.laya.width, options.laya.height, ...options.laya.renders);
+            ((_e = options.init) === null || _e === void 0 ? void 0 : _e.fgui) && Laya.stage.addChild(fgui.GRoot.inst.displayObject);
+            (_f = init === null || init === void 0 ? void 0 : init.onEngine) === null || _f === void 0 ? void 0 : _f.call(init);
             Laya.timer.callLater(App.inst, App.inst.lastInit);
         }
         /** 设置默认竖屏布局 */
@@ -62,7 +63,8 @@ window.tsCore = {};
             App._init();
         }
         static _init() {
-            this._instance = new App();
+            var _a;
+            (_a = this._instance) !== null && _a !== void 0 ? _a : (this._instance = new App());
             DefineConfig.init();
             let envType = ConfigKit.env();
             Log.debug("env", EnvType[envType]);

@@ -40,6 +40,7 @@ export class App implements IAction {
      */
     static run(init?: IInitEngine, options?: InitApp) {
         App.initEngine = init
+        this._instance ??= new App()
         // 默认配置
         const def: InitApp = {
             laya: {renders: [Laya.WebGL], width: 720, height: 1280},
@@ -51,8 +52,8 @@ export class App implements IAction {
             resize: true,
             isNotchEnable: false
         }
-        App.inst.options = options = options ? defaults(options, def) : def
 
+        App.inst.options = options = options ? defaults(options, def) : def
         options.init?.coreLib && App._init()
         init?.run?.()
 
@@ -95,7 +96,7 @@ export class App implements IAction {
     }
 
     private static _init() {
-        this._instance = new App()
+        this._instance ??= new App()
         DefineConfig.init()
         let envType = ConfigKit.env()
         Log.debug("env", EnvType[envType])
