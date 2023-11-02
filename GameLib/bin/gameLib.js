@@ -3978,8 +3978,14 @@ window.gameLib = {};
             if (AssetsLoader.CONFIG_RES_NAME) {
                 this.loadVersionXML(loadXmlComplete, loadErrorHandler);
             }
-            else
-                loadXmlComplete();
+            else {
+                if (this.customLoader) {
+                    runFun(this.customLoader, loadXmlComplete, loadErrorHandler);
+                }
+                else {
+                    loadXmlComplete();
+                }
+            }
         }
         /**
          * 加载公共资源
