@@ -2997,6 +2997,7 @@ declare interface String {
      * @param value
      */
     equalsAny(...value: string []): boolean
+
     /**
      * 确定是否与指定的值相等,忽略大小.满足一个返回 true
      * @param value
@@ -3052,6 +3053,29 @@ declare interface String {
      * @param close
      */
     substringsBetween(open: string, close: string): string[]
+
+}
+
+
+declare interface Array<T> {
+
+    /**
+     * 返回一个新数组，该数组仅包含给定数组中的元素，这些元素具有不同的键，由给定 selector 函数返回。
+     * 在具有相等键的给定数组的元素中，结果数组中仅存在第一个元素。结果数组中的元素的顺序与源数组中的顺序相同。
+     * @param selector {(T) => K}
+     */
+    distinctBy<T, K>(selector: (T) => K): Array<T>
+
+    /**
+     * 返回一个新数组，该数组仅包含给定数组中的不同元素。
+     * 结果数组中的元素的顺序与源数组中的顺序相同快速去除重复基础对象
+     */
+    distinct(): Array<T>
+
+    /**
+     * 随机洗牌此数组中的元素。
+     */
+    shuffle(): void
 
 }
 declare type InitApp = {

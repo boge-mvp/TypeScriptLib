@@ -7165,6 +7165,26 @@ String.prototype.substringsBetween = function (open, close) {
     }
     return list;
 };
+Array.prototype.distinct = function () {
+    return [...new Set(this)];
+};
+Array.prototype.distinctBy = function (selector) {
+    const set = new Set();
+    const list = [];
+    for (let e in this) {
+        const key = selector(e);
+        if (set.add(key))
+            list.push(e);
+    }
+    return list;
+};
+Array.prototype.shuffle = function () {
+    let len = this.length;
+    for (let i = len - 1; i > 0; i--) {
+        let rnd = Math.floor(Math.random() * (i + 1));
+        [this[i], this[rnd]] = [this[rnd], this[i]];
+    }
+};
 function gaSend(hitType, data) {
     ga("send", hitType, data);
 }

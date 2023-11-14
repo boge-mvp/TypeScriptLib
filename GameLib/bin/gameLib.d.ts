@@ -3097,6 +3097,12 @@ declare namespace gameLib {
          * @param page 页面 如： "/giftPage?token=***"
          * login,register,userSetting,webDetail,gameDetail,editNickName,forgetMain,changePwd,home,deposit,promotion,withdraw,profile
          * @param [isCloseGame=true] 是否关闭游戏
+         *
+         * @example
+         *
+         * openPage("//{host}/{lang}/page")   url= //www.google.com/en/page
+         *
+         *
          */
         static openPage(page: string | OpenPage, isCloseGame?: boolean): void;
         /** 进入游戏进度条 */

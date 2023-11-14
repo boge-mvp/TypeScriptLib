@@ -5,6 +5,7 @@ import ConfigKit = tsCore.ConfigKit;
 import {Player} from "../Player"
 import {AppManager} from "./AppManager"
 import {GameConfigKit} from "../kit/GameConfigKit";
+import Browser = Laya.Browser;
 
 /**
  * 统计管理器
@@ -61,8 +62,8 @@ export class AnalyticsManager {
      */
     static sendTiming(timingVar: string, timingValue: number) {
         this.isOpenAnalytics = ConfigKit.get("openAnalytics")
-        if (Player.inst.isWeb && this.isOpenAnalytics && window.ga) gaTiming({timingCategory: "game", timingVar: timingVar, timingValue: timingValue})
-        if (!Player.inst.isWeb && this.isOpenAnalytics)
+        if (!Browser.onLayaRuntime && this.isOpenAnalytics && window.ga) gaTiming({timingCategory: "game", timingVar: timingVar, timingValue: timingValue})
+        if (Browser.onLayaRuntime && this.isOpenAnalytics)
             AppManager.enterInvite({eventName: timingVar, eventValue: timingValue}, AppManager.nullFun)
     }
 
@@ -83,8 +84,8 @@ export class AnalyticsManager {
             Log.debug(`category=${categoryLen} action=${actionLen} label=${labelLen}`)
         }
         // @ts-ignore
-        if (this.isOpenAnalytics && Player.inst.isWeb && window.ga) ga('send', type, category, action, label)
-        if (this.isOpenAnalytics && !Player.inst.isWeb)
+        if (this.isOpenAnalytics && !Browser.onLayaRuntime && window.ga) ga('send', type, category, action, label)
+        if (this.isOpenAnalytics && Browser.onLayaRuntime)
             AppManager.enterFeedback({eventName: action, eventValue: label}, AppManager.nullFun)
     }
 

@@ -3,8 +3,7 @@ import Render = Laya.Render;
 import Log = tsCore.Log;
 import {AppManager} from "../manager/AppManager"
 import {SceneManager} from "../manager/SceneManager"
-import SoundManager = Laya.SoundManager;
-import NativeUtils = tsCore.NativeUtils;
+import {Player} from "../Player";
 
 export class JSUtils {
 
@@ -49,6 +48,7 @@ export class JSUtils {
      * @param [data = null]
      * */
     static gameClose(type = 0, data = null) {
+        Log.debug(`gameClose->${type} ${data}`)
         SceneManager.inst.initComplete = false
         SceneManager.inst.isLoaderResComplete = false
         if (AppManager.callIOS("gameClose", {type: type, data: data})) {
@@ -63,7 +63,7 @@ export class JSUtils {
                 // 如果不是加速器 并且不是在非https下  那么直接返回大厅
                 // Browser.window.location.href = Player.HOME_URL
                 Log.debug(`return home url ${window.location.host}`)
-                window.location.href = "//" + window.location.host
+                window.location.href = `//${window.location.host}`
             }
         }
         AppManager.showWeb({javascript: `window.GameToHall.gameClose(${type}, ${data})`})
@@ -78,6 +78,7 @@ export class JSUtils {
      * @param cancelText 取消文本
      */
     static alert(msg: string, title = "", okText = "", cancelText = "") {
+        Log.debug(`alert-> msg:${msg}, title=${title}, okText=${okText}, cancelText=${cancelText}`)
         if (AppManager.callIOS("alert", {msg: msg, title: title, ensureTv: okText, cancelTv: cancelText})) return
         Browser.window.APP?.alert?.(msg)
         Browser.window.parent?.GameToHall?.alert?.(msg)
@@ -91,15 +92,25 @@ export class JSUtils {
      * @param page 页面 如： "/giftPage?token=***"
      * login,register,userSetting,webDetail,gameDetail,editNickName,forgetMain,changePwd,home,deposit,promotion,withdraw,profile
      * @param [isCloseGame=true] 是否关闭游戏
+     *
+     * @example
+     *
+     * openPage("//{host}/{lang}/page")   url= //www.google.com/en/page
+     *
+     *
      */
     static openPage(page: string | OpenPage, isCloseGame = true) {
         Log.debug(`openPage-> page:${page}, isCloseGame=${isCloseGame}`)
         if (typeof page === "string") {
             page = {page: page, isCloseGame: isCloseGame}
         }
-        page.page = page.page.startsWith("/") ? page.page.substring(1) : page.page
+        page.type ??= 0
+        let pageUrl = page.page.startsWith("/") ? page.page.substring(1) : page.page
+        pageUrl = pageUrl.replace(/{host}/g, window.location.host).replace(/{lang}/g, Player.inst.urlParam.language)
+        page.page = pageUrl
+
         if (AppManager.callIOS("openPage", page)) return
-        Browser.window.APP.openPage?.(page)
+        Browser.window.APP?.openPage?.(page)
         if (isCloseGame) {
             Browser.window.parent?.GameToHall?.openPage?.(page.page)
             Browser.window.parent?.GameToHall?.comeWebPage?.(page.page)
@@ -114,6 +125,7 @@ export class JSUtils {
 
     /** 进入游戏进度条 */
     static progress(value: number) {
+        Log.debug(`progress->${value}`)
         if (AppManager.callIOS("progress", {value: value}, false)) return
         Browser.window.APP?.progress?.(value)
         Laya.Browser.window.loadingView?.executionJavascript?.("window.GameToHall.getProgress(" + value + ")")
@@ -140,6 +152,7 @@ export class JSUtils {
 
     /** 上传头像 */
     static uploadAvatar() {
+        Log.debug("uploadAvatar->")
         if (AppManager.callIOS("uploadAvatar")) return
         Browser.window.parent?.GameToHall?.uploadAvatar?.()
         Browser.window.parent?.GameToHall?.openReviseAvatarNickNameDrawer?.()
