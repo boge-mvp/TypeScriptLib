@@ -5,7 +5,6 @@ import Controller = fgui.Controller
 import GRoot = fgui.GRoot
 import {BaseView} from "../core/BaseView"
 import {LibStr} from "../LibStr"
-import {AppRecordManager} from "../manager/AppRecordManager"
 import {JSUtils} from "../utils/JSUtils"
 import HistoryManager = tsCore.HistoryManager;
 

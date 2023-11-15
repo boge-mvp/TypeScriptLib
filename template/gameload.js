@@ -173,7 +173,6 @@ function loadContent(url, complete, args = []) {
 }
 
 function loadError(e) {
-    isLoadError = true
     onError && onError()
 }
 

@@ -330,42 +330,34 @@ String.prototype.substringsBetween = function (open: string, close: string) {
     return list
 }
 
-Array.prototype.distinct = function() {
-    return [...new Set(this)]
-}
-
-Array.prototype.distinctBy = function(selector) {
-    const set = new Set()
-    const list = []
-    for (let e in this) {
-        const key = selector(e)
-        if (set.add(key))
-            list.push(e)
+Object.defineProperty(Array.prototype, "distinct", {
+    value: function () {
+        return [...new Set(this)]
     }
-    return list
-}
+})
 
-Array.prototype.shuffle = function () {
-    let len = this.length
-    for (let i = len - 1; i > 0; i--) {
-        let rnd = Math.floor(Math.random() * (i + 1));
-        [this[i], this[rnd]] = [this[rnd], this[i]]
+Object.defineProperty(Array.prototype, "distinctBy", {
+    value: function (selector: (...args: any[]) => any) {
+        const set = new Set()
+        const list = []
+        for (let e in this) {
+            const key = selector(e)
+            if (set.add(key))
+                list.push(e)
+        }
+        return list
     }
-}
+})
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+Object.defineProperty(Array.prototype, "shuffle", {
+    value: function () {
+        let len = this.length
+        for (let i = len - 1; i > 0; i--) {
+            let rnd = Math.floor(Math.random() * (i + 1));
+            [this[i], this[rnd]] = [this[rnd], this[i]]
+        }
+    }
+})
 
 function gaSend(hitType: HitType, data: EventType | ExceptionType | TimingType) {
     ga("send", hitType, data)
