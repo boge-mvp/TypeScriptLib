@@ -364,10 +364,11 @@ export class AssetsLoader implements IFormatPath {
             let gameCommonRes: LoadRes[] = ConfigKit.get("gameCommon")
             loadArray = loadArray.concat(gameCommonRes)
         }
-        // 渠道资源检查
-        AssetsLoader.checkBranch(loadArray)
+
         // 解析资源判断是否需要特殊处理的加载文件
         loadArray = loadArray.concat(this.parseRes(res))
+        // 渠道资源检查
+        AssetsLoader.checkBranch(loadArray)
 
         // 分隔音频
         let soundLoads = []
@@ -507,7 +508,7 @@ export class AssetsLoader implements IFormatPath {
             for (let i = 0; i < loadRes.length; i++) {
                 let resObj = loadRes[i]
                 // 资源存在分支  并且url路径上不存在分支名字
-                if (resObj.branch && !StringUtil.contains(resObj.url, "_" + UIPackage.branch)) {
+                if (resObj.branch && !resObj.url.contains("_" + UIPackage.branch)) {
                     let resBranch = resObj.branch
                     if (resBranch.indexOf(UIPackage.branch) != -1) { // 找到需要更换的资源
                         let url = resObj.url
