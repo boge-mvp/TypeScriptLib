@@ -7173,12 +7173,14 @@ Object.defineProperty(Array.prototype, "distinct", {
 });
 Object.defineProperty(Array.prototype, "distinctBy", {
     value: function (selector) {
-        const set = new Set();
+        const map = {};
         const list = [];
         for (let e of this) {
             const key = selector(e);
-            if (set.add(key))
+            if (!map[key]) {
+                map[key] = true;
                 list.push(e);
+            }
         }
         return list;
     }
