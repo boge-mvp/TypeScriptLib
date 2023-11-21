@@ -203,7 +203,6 @@ export class DefineConfig {
                     else
                         GRoot.inst.playOneShotSound(this._sound, this._soundVolumeScale);
                 }
-
                 if (this._mode == fgui.ButtonMode.Check) {
                     if (this._changeStateOnClick) {
                         this.selected = !this._selected;

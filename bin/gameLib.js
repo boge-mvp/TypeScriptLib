@@ -6400,7 +6400,12 @@ window.gameLib = {};
         static jackpot() {
             JSUtils.openPage("/jackpot");
         }
-        /** 打开指定的web页面 不关闭游戏的前提下 */
+        /**
+         * 打开指定的web页面 不关闭游戏的前提下
+         * @param value
+         * @deprecated
+         * @see openPage
+         */
         static openWebPageWithoutLeaveGame(value) {
             JSUtils.openPage(value, false);
         }
@@ -6444,9 +6449,9 @@ window.gameLib = {};
             tsCore.Log.debug(`alert-> msg:${msg}, title=${title}, okText=${okText}, cancelText=${cancelText}`);
             if (AppManager.callIOS("alert", { msg: msg, title: title, ensureTv: okText, cancelTv: cancelText }))
                 return;
-            (_b = (_a = Laya.Browser.window.APP) === null || _a === void 0 ? void 0 : _a.alert) === null || _b === void 0 ? void 0 : _b.call(_a, msg);
-            (_e = (_d = (_c = Laya.Browser.window.parent) === null || _c === void 0 ? void 0 : _c.GameToHall) === null || _d === void 0 ? void 0 : _d.alert) === null || _e === void 0 ? void 0 : _e.call(_d, msg);
-            (_h = (_g = (_f = Laya.Browser.window.parent) === null || _f === void 0 ? void 0 : _f.GameToHall) === null || _g === void 0 ? void 0 : _g.openModal) === null || _h === void 0 ? void 0 : _h.call(_g, msg);
+            (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.alert) === null || _c === void 0 ? void 0 : _c.call(_b, msg);
+            (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.openModal) === null || _f === void 0 ? void 0 : _f.call(_e, msg);
+            (_h = (_g = Laya.Browser.window.APP) === null || _g === void 0 ? void 0 : _g.alert) === null || _h === void 0 ? void 0 : _h.call(_g, msg);
             AppManager.showWeb({ javascript: `window.GameToHall.alert && window.GameToHall.alert('${msg}')` });
             AppManager.showWeb({ javascript: `window.GameToHall.openModal && window.GameToHall.openModal('${msg}')` });
         }
@@ -6474,9 +6479,9 @@ window.gameLib = {};
             page.page = pageUrl;
             if (AppManager.callIOS("openPage", page))
                 return;
-            (_c = (_b = Laya.Browser.window.APP) === null || _b === void 0 ? void 0 : _b.openPage) === null || _c === void 0 ? void 0 : _c.call(_b, page);
+            (_c = (_b = Laya.Browser.window.APP) === null || _b === void 0 ? void 0 : _b.openPage) === null || _c === void 0 ? void 0 : _c.call(_b, page, isCloseGame);
+            (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.openPage) === null || _f === void 0 ? void 0 : _f.call(_e, page.page, isCloseGame);
             if (isCloseGame) {
-                (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.openPage) === null || _f === void 0 ? void 0 : _f.call(_e, page.page);
                 (_j = (_h = (_g = Laya.Browser.window.parent) === null || _g === void 0 ? void 0 : _g.GameToHall) === null || _h === void 0 ? void 0 : _h.comeWebPage) === null || _j === void 0 ? void 0 : _j.call(_h, page.page);
                 AppManager.showWeb({ javascript: `window.GameToHall.openPage && window.GameToHall.openPage('${page.page}')` });
                 AppManager.showWeb({ javascript: `window.GameToHall.comeWebPage && window.GameToHall.comeWebPage('${page.page}')` });
@@ -6493,11 +6498,11 @@ window.gameLib = {};
             tsCore.Log.debug(`progress->${value}`);
             if (AppManager.callIOS("progress", { value: value }, false))
                 return;
-            (_b = (_a = Laya.Browser.window.APP) === null || _a === void 0 ? void 0 : _a.progress) === null || _b === void 0 ? void 0 : _b.call(_a, value);
-            (_d = (_c = Laya.Browser.window.loadingView) === null || _c === void 0 ? void 0 : _c.executionJavascript) === null || _d === void 0 ? void 0 : _d.call(_c, "window.GameToHall.getProgress(" + value + ")");
-            (_f = (_e = Laya.Browser.window.loadingView) === null || _e === void 0 ? void 0 : _e.loading) === null || _f === void 0 ? void 0 : _f.call(_e, value);
-            (_j = (_h = (_g = Laya.Browser.window.parent) === null || _g === void 0 ? void 0 : _g.GameToHall) === null || _h === void 0 ? void 0 : _h.progress) === null || _j === void 0 ? void 0 : _j.call(_h, value);
-            (_m = (_l = (_k = Laya.Browser.window.parent) === null || _k === void 0 ? void 0 : _k.GameToHall) === null || _l === void 0 ? void 0 : _l.getProgress) === null || _m === void 0 ? void 0 : _m.call(_l, value);
+            (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.progress) === null || _c === void 0 ? void 0 : _c.call(_b, value);
+            (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.getProgress) === null || _f === void 0 ? void 0 : _f.call(_e, value);
+            (_h = (_g = Laya.Browser.window.APP) === null || _g === void 0 ? void 0 : _g.progress) === null || _h === void 0 ? void 0 : _h.call(_g, value);
+            (_k = (_j = Laya.Browser.window.loadingView) === null || _j === void 0 ? void 0 : _j.executionJavascript) === null || _k === void 0 ? void 0 : _k.call(_j, "window.GameToHall.getProgress(" + value + ")");
+            (_m = (_l = Laya.Browser.window.loadingView) === null || _l === void 0 ? void 0 : _l.loading) === null || _m === void 0 ? void 0 : _m.call(_l, value);
             AppManager.executionJavascript("window.GameToHall.progress && window.GameToHall.progress", value);
             AppManager.executionJavascript("window.GameToHall.getProgress && window.GameToHall.getProgress", value);
         }
@@ -6507,9 +6512,9 @@ window.gameLib = {};
             tsCore.Log.debug("gameOnload->");
             if (AppManager.callIOS("gameOnload"))
                 return;
-            (_b = (_a = Laya.Browser.window.APP) === null || _a === void 0 ? void 0 : _a.gameOnload) === null || _b === void 0 ? void 0 : _b.call(_a);
-            (_d = (_c = Laya.Browser.window.conchMarket) === null || _c === void 0 ? void 0 : _c.gameOnload) === null || _d === void 0 ? void 0 : _d.call(_c);
-            (_g = (_f = (_e = Laya.Browser.window.parent) === null || _e === void 0 ? void 0 : _e.GameToHall) === null || _f === void 0 ? void 0 : _f.gameOnload) === null || _g === void 0 ? void 0 : _g.call(_f);
+            (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.gameOnload) === null || _c === void 0 ? void 0 : _c.call(_b);
+            (_e = (_d = Laya.Browser.window.APP) === null || _d === void 0 ? void 0 : _d.gameOnload) === null || _e === void 0 ? void 0 : _e.call(_d);
+            (_g = (_f = Laya.Browser.window.conchMarket) === null || _f === void 0 ? void 0 : _f.gameOnload) === null || _g === void 0 ? void 0 : _g.call(_f);
             AppManager.executionJavascript("window.GameToHall.gameOnload", null);
         }
         /** 上传头像 */
@@ -7864,7 +7869,7 @@ window.gameLib = {};
             else {
                 msg = this.gameData.noticeData[0];
             }
-            this.richText.text = tsCore.StringUtil.format(getString(1039 /* LibStr.WIN_NOTICE */), msg.mobile, msg.win, GameConfigKit.gameName());
+            this.richText.text = getString(1039 /* LibStr.WIN_NOTICE */, msg.mobile, msg.win, GameConfigKit.gameName());
         }
         stopRun() {
             this.resetMsgPosition();

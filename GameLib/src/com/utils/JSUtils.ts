@@ -38,7 +38,12 @@ export class JSUtils {
         JSUtils.openPage("/jackpot")
     }
 
-    /** 打开指定的web页面 不关闭游戏的前提下 */
+    /**
+     * 打开指定的web页面 不关闭游戏的前提下
+     * @param value
+     * @deprecated
+     * @see openPage
+     */
     static openWebPageWithoutLeaveGame(value: string) {
         JSUtils.openPage(value, false)
     }
@@ -80,9 +85,9 @@ export class JSUtils {
     static alert(msg: string, title = "", okText = "", cancelText = "") {
         Log.debug(`alert-> msg:${msg}, title=${title}, okText=${okText}, cancelText=${cancelText}`)
         if (AppManager.callIOS("alert", {msg: msg, title: title, ensureTv: okText, cancelTv: cancelText})) return
-        Browser.window.APP?.alert?.(msg)
         Browser.window.parent?.GameToHall?.alert?.(msg)
         Browser.window.parent?.GameToHall?.openModal?.(msg)
+        Browser.window.APP?.alert?.(msg)
         AppManager.showWeb({javascript: `window.GameToHall.alert && window.GameToHall.alert('${msg}')`})
         AppManager.showWeb({javascript: `window.GameToHall.openModal && window.GameToHall.openModal('${msg}')`})
     }
@@ -110,9 +115,9 @@ export class JSUtils {
         page.page = pageUrl
 
         if (AppManager.callIOS("openPage", page)) return
-        Browser.window.APP?.openPage?.(page)
+        Browser.window.APP?.openPage?.(page, isCloseGame)
+        Browser.window.parent?.GameToHall?.openPage?.(page.page, isCloseGame)
         if (isCloseGame) {
-            Browser.window.parent?.GameToHall?.openPage?.(page.page)
             Browser.window.parent?.GameToHall?.comeWebPage?.(page.page)
             AppManager.showWeb({javascript: `window.GameToHall.openPage && window.GameToHall.openPage('${page.page}')`})
             AppManager.showWeb({javascript: `window.GameToHall.comeWebPage && window.GameToHall.comeWebPage('${page.page}')`})
@@ -127,12 +132,11 @@ export class JSUtils {
     static progress(value: number) {
         Log.debug(`progress->${value}`)
         if (AppManager.callIOS("progress", {value: value}, false)) return
+        Browser.window.parent?.GameToHall?.progress?.(value)
+        Browser.window.parent?.GameToHall?.getProgress?.(value)
         Browser.window.APP?.progress?.(value)
         Laya.Browser.window.loadingView?.executionJavascript?.("window.GameToHall.getProgress(" + value + ")")
         Laya.Browser.window.loadingView?.loading?.(value)
-
-        Browser.window.parent?.GameToHall?.progress?.(value)
-        Browser.window.parent?.GameToHall?.getProgress?.(value)
         AppManager.executionJavascript("window.GameToHall.progress && window.GameToHall.progress", value)
         AppManager.executionJavascript("window.GameToHall.getProgress && window.GameToHall.getProgress", value)
     }
@@ -143,9 +147,9 @@ export class JSUtils {
     static gameOnload() {
         Log.debug("gameOnload->")
         if (AppManager.callIOS("gameOnload")) return
+        Browser.window.parent?.GameToHall?.gameOnload?.()
         Browser.window.APP?.gameOnload?.()
         Browser.window.conchMarket?.gameOnload?.()
-        Browser.window.parent?.GameToHall?.gameOnload?.()
         AppManager.executionJavascript("window.GameToHall.gameOnload", null)
 
     }

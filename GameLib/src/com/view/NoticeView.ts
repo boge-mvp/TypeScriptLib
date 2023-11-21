@@ -70,7 +70,7 @@ export class NoticeView extends BaseView {
         } else {
             msg = this.gameData.noticeData[0]
         }
-        this.richText.text = StringUtil.format(getString(LibStr.WIN_NOTICE), msg.mobile, msg.win, GameConfigKit.gameName())
+        this.richText.text = getString(LibStr.WIN_NOTICE, msg.mobile, msg.win, GameConfigKit.gameName())
     }
 
     private stopRun() {
