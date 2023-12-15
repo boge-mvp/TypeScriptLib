@@ -2293,7 +2293,11 @@ declare namespace gameLib {
          */
         private isCloseGame;
         showHomeScene(): void;
-        /** 显示登录界面 */
+        /**
+         * 跳转登录界面
+         * 如果需要登录提示
+         * @see showLoginTip
+         */
         showLogin(): void;
         /** 退出登录 */
         logout(): void;
@@ -2311,10 +2315,14 @@ declare namespace gameLib {
         private focusHandler;
         /** 失去焦点停止渲染 */
         private blurHandler;
+        /**
+         * 显示登录提示窗口
+         */
         showLoginTip(): void;
         /**
          * 登录提示框
          * @deprecated
+         * @see showLoginTip
          */
         showloginTip: () => void;
         /**

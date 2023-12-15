@@ -135,7 +135,7 @@ export class HTTPUtils {
         return this
     }
 
-    onEvent(complete: (data: any) => void, error: (err?: any) => void, finallyFun: () => void) {
+    onEvent(complete: (data: any) => void, error?: (err?: any) => void, finallyFun?: () => void) {
         this.complete = complete
         this.error = error
         this.finally = finallyFun

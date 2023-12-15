@@ -4472,6 +4472,7 @@ window.gameLib = {};
             /**
              * 登录提示框
              * @deprecated
+             * @see showLoginTip
              */
             this.showloginTip = this.showLoginTip;
         }
@@ -4495,7 +4496,11 @@ window.gameLib = {};
                 LoadingWindow.inst.hide();
             }
         }
-        /** 显示登录界面 */
+        /**
+         * 跳转登录界面
+         * 如果需要登录提示
+         * @see showLoginTip
+         */
         showLogin() {
             if (Player.inst.urlParam.isJumpPage())
                 JSUtils.login();
@@ -4586,8 +4591,11 @@ window.gameLib = {};
                 (_b = (_a = SceneManager.inst.starter) === null || _a === void 0 ? void 0 : _a.gameModel) === null || _b === void 0 ? void 0 : _b.blurGame();
             }
         }
+        /**
+         * 显示登录提示窗口
+         */
         showLoginTip() {
-            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1023 /* LibStr.LOGIN */, null, () => this.showLogin());
+            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1023 /* LibStr.LOGIN */, null, null, () => this.showLogin());
         }
         /**
          * 开启游戏 两个参数二选一  如果使用id第一个必须设置null
