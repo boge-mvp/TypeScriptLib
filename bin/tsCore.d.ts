@@ -1771,6 +1771,8 @@ declare namespace tsCore {
         private timeout;
         private static https;
         private async;
+        /** 不管结果如何  执行完成后最后都会执行的方法 */
+        private finally;
         constructor();
         /**
          * 创建新的http请求
@@ -1792,9 +1794,11 @@ declare namespace tsCore {
          * @default 0
          */
         setOvertime(value: number): HTTPUtils;
+        onFinally(handler: ParamHandler): this;
         onComplete(handler: ParamHandler): HTTPUtils;
         onError(handler: ParamHandler): HTTPUtils;
         onTimeout(handler: ParamHandler): HTTPUtils;
+        onEvent(complete: (data: any) => void, error: (err?: any) => void, finallyFun: () => void): void;
         /**
          *
          */

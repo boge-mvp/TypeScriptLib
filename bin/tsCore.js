@@ -4146,6 +4146,10 @@ window.tsCore = {};
             this.ghr.setOvertime(value);
             return this;
         }
+        onFinally(handler) {
+            this.finally = handler;
+            return this;
+        }
         onComplete(handler) {
             this.complete = handler;
             return this;
@@ -4157,6 +4161,11 @@ window.tsCore = {};
         onTimeout(handler) {
             this.timeout = handler;
             return this;
+        }
+        onEvent(complete, error, finallyFun) {
+            this.complete = complete;
+            this.error = error;
+            this.finally = finallyFun;
         }
         /**
          *
@@ -4194,6 +4203,7 @@ window.tsCore = {};
                 runFun(this.timeout);
             else if (this.error)
                 runFun(this.error, "time out");
+            runFun(this.finally);
             HTTPUtils.clear(this);
         }
         errorHandler(e) {
@@ -4201,6 +4211,7 @@ window.tsCore = {};
             Log.debug("HTTPUtils.errorHandler()", e);
             (_a = HTTPUtils.filter) === null || _a === void 0 ? void 0 : _a.errorResult(e, this.http);
             runFun(this.error, e);
+            runFun(this.finally);
             HTTPUtils.clear(this);
         }
         completeHandler(data) {
@@ -4215,6 +4226,7 @@ window.tsCore = {};
                 return;
             }
             runFun(this.complete, data);
+            runFun(this.finally);
             HTTPUtils.clear(this);
         }
         /**
