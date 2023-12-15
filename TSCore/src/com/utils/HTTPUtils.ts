@@ -44,6 +44,8 @@ export class HTTPUtils {
     private static https: HTTPUtils[] = []
 
     private async = true
+    /** 不管结果如何  执行完成后最后都会执行的方法 */
+    private finally: ParamHandler;
 
     constructor() {
         this.ghr = new AjaxRequest()
@@ -113,6 +115,11 @@ export class HTTPUtils {
         return this
     }
 
+    onFinally(handler: ParamHandler) {
+        this.finally = handler
+        return this
+    }
+
     onComplete(handler: ParamHandler): HTTPUtils {
         this.complete = handler
         return this
@@ -126,6 +133,12 @@ export class HTTPUtils {
     onTimeout(handler: ParamHandler): HTTPUtils {
         this.timeout = handler
         return this
+    }
+
+    onEvent(complete: (data: any) => void, error: (err?: any) => void, finallyFun: () => void) {
+        this.complete = complete
+        this.error = error
+        this.finally = finallyFun
     }
 
     /**
@@ -161,6 +174,7 @@ export class HTTPUtils {
         HTTPUtils.filter?.timeout(this.http)
         if (this.timeout) runFun(this.timeout)
         else if (this.error) runFun(this.error, "time out")
+        runFun(this.finally)
         HTTPUtils.clear(this)
     }
 
@@ -168,6 +182,7 @@ export class HTTPUtils {
         Log.debug("HTTPUtils.errorHandler()", e)
         HTTPUtils.filter?.errorResult(e, this.http)
         runFun(this.error, e)
+        runFun(this.finally)
         HTTPUtils.clear(this)
     }
 
@@ -184,6 +199,7 @@ export class HTTPUtils {
             return
         }
         runFun(this.complete, data)
+        runFun(this.finally)
         HTTPUtils.clear(this)
     }
 
