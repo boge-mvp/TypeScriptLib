@@ -1802,12 +1802,21 @@ window.gameLib = {};
                 Player.inst.data.jackpot = data.jackpot;
             }
             Player.inst.data.period = period;
-            if (this.gameStatus == 1 && period > 0) {
-                this.getCoupon();
+            if (this.gameStatus == 1) {
+                let result = true;
+                if (this.customInit)
+                    result = this.customInit();
+                result && this.onUserData() ? this.getCoupon() : this.enterFail();
             }
             else {
                 this.enterFail();
             }
+        }
+        /**
+         * 用户信息初始化完成 返回false表示 出现错误
+         */
+        onUserData() {
+            return true;
         }
         /**
          * 读取奖金池数据
@@ -6414,26 +6423,17 @@ window.gameLib = {};
          * @param [data = null]
          * */
         static gameClose(type = 0, data = null) {
-            var _a, _b;
+            var _a, _b, _c, _d, _e;
             tsCore.Log.debug(`gameClose->${type} ${data}`);
             SceneManager.inst.initComplete = false;
             SceneManager.inst.isLoaderResComplete = false;
-            if (AppManager.callIOS("gameClose", { type: type, data: data })) {
-                SceneManager.inst.closeGame();
-                return;
-            }
-            (_b = (_a = Laya.Browser.window.APP) === null || _a === void 0 ? void 0 : _a.gameClose) === null || _b === void 0 ? void 0 : _b.call(_a, type, data);
-            if (Laya.Browser.window.parent.GameToHall) {
-                Laya.Browser.window.parent.GameToHall.gameClose(type, data);
-            }
-            else {
-                if (!Laya.Render.isConchApp && window.location.protocol == "https:") {
-                    // 如果不是加速器 并且不是在非https下  那么直接返回大厅
-                    // Laya.Browser.window.location.href = Player.HOME_URL
-                    tsCore.Log.debug(`return home url ${window.location.host}`);
-                    window.location.href = `//${window.location.host}`;
-                }
-            }
+            AppManager.callIOS("gameClose", {
+                type: type,
+                data: data
+            }) ? SceneManager.inst.closeGame() : ((_b = (_a = Laya.Browser.window.APP) === null || _a === void 0 ? void 0 : _a.gameClose) === null || _b === void 0 ? void 0 : _b.call(_a, type, data))
+                || ((_e = (_d = (_c = Laya.Browser.window.parent) === null || _c === void 0 ? void 0 : _c.GameToHall) === null || _d === void 0 ? void 0 : _d.gameClose) === null || _e === void 0 ? void 0 : _e.call(_d, type, data))
+                // 如果不是加速器 并且不是在非https下  那么直接返回大厅
+                || (!Laya.Browser.onLayaRuntime && window.location.protocol == "https:") && (window.location.href = `//${window.location.host}`);
             AppManager.showWeb({ javascript: `window.GameToHall.gameClose(${type}, ${data})` });
             SceneManager.inst.closeGame();
         }
@@ -6449,9 +6449,9 @@ window.gameLib = {};
             tsCore.Log.debug(`alert-> msg:${msg}, title=${title}, okText=${okText}, cancelText=${cancelText}`);
             if (AppManager.callIOS("alert", { msg: msg, title: title, ensureTv: okText, cancelTv: cancelText }))
                 return;
-            (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.alert) === null || _c === void 0 ? void 0 : _c.call(_b, msg);
-            (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.openModal) === null || _f === void 0 ? void 0 : _f.call(_e, msg);
-            (_h = (_g = Laya.Browser.window.APP) === null || _g === void 0 ? void 0 : _g.alert) === null || _h === void 0 ? void 0 : _h.call(_g, msg);
+            ((_b = (_a = Laya.Browser.window.APP) === null || _a === void 0 ? void 0 : _a.alert) === null || _b === void 0 ? void 0 : _b.call(_a, msg)) ||
+                ((_e = (_d = (_c = Laya.Browser.window.parent) === null || _c === void 0 ? void 0 : _c.GameToHall) === null || _d === void 0 ? void 0 : _d.alert) === null || _e === void 0 ? void 0 : _e.call(_d, msg)) ||
+                ((_h = (_g = (_f = Laya.Browser.window.parent) === null || _f === void 0 ? void 0 : _f.GameToHall) === null || _g === void 0 ? void 0 : _g.openModal) === null || _h === void 0 ? void 0 : _h.call(_g, msg));
             AppManager.showWeb({ javascript: `window.GameToHall.alert && window.GameToHall.alert('${msg}')` });
             AppManager.showWeb({ javascript: `window.GameToHall.openModal && window.GameToHall.openModal('${msg}')` });
         }

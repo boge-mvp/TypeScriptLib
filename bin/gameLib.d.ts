@@ -754,6 +754,10 @@ declare namespace gameLib {
         protected gameStatus: number;
         /** 网络通信名字 */
         networkName: string;
+        /**
+         * 外部定义的初始化 在执行onUserData()前执行 返回false表示 出现错误
+         */
+        customInit: () => boolean;
         protected constructor();
         protected get gameData(): T;
         /**
@@ -832,6 +836,10 @@ declare namespace gameLib {
         protected userDataErrorHandler(data: any): void;
         /** 用户数据 */
         protected userDataHandler(data: any): void;
+        /**
+         * 用户信息初始化完成 返回false表示 出现错误
+         */
+        onUserData(): boolean;
         /**
          * 读取奖金池数据
          * @param data
