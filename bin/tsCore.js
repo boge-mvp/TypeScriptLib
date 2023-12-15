@@ -4086,6 +4086,7 @@ window.tsCore = {};
              * (default = "text")Web 服务器的响应类型，可设置为 "text"、"json"、"xml"、"arraybuffer"。
              */
             this.responseType = HTTPUtils.defaultResponseType;
+            this.async = true;
             this.ghr = new AjaxRequest();
         }
         /**
@@ -4122,6 +4123,10 @@ window.tsCore = {};
         }
         setMethod(data) {
             this.method = data;
+            return this;
+        }
+        setAsync(async) {
+            this.async = async;
             return this;
         }
         setResponseType(data) {
@@ -4167,6 +4172,7 @@ window.tsCore = {};
             // 判断是否有解析数据格式
             let value = this.data;
             HTTPUtils.filter && (value = HTTPUtils.filter.filterSendData(this.url, this.data));
+            this.ghr.async = this.async;
             this.ghr.onComplete(onComplete);
             this.ghr.onError(onError);
             this.ghr.onTimerOut(onTimeOut);

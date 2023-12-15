@@ -1770,6 +1770,7 @@ declare namespace tsCore {
         /** 超时 */
         private timeout;
         private static https;
+        private async;
         constructor();
         /**
          * 创建新的http请求
@@ -1782,6 +1783,7 @@ declare namespace tsCore {
         setUrl(url: string): HTTPUtils;
         setData(data: any): HTTPUtils;
         setMethod(data: Method | string): HTTPUtils;
+        setAsync(async: boolean): HTTPUtils;
         setResponseType(data: string): HTTPUtils;
         setHeaders(array: string[]): HTTPUtils;
         /**

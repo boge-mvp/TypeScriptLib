@@ -43,6 +43,8 @@ export class HTTPUtils {
     private timeout: ParamHandler
     private static https: HTTPUtils[] = []
 
+    private async = true
+
     constructor() {
         this.ghr = new AjaxRequest()
     }
@@ -83,6 +85,11 @@ export class HTTPUtils {
 
     setMethod(data: Method | string): HTTPUtils {
         this.method = data
+        return this
+    }
+
+    setAsync(async: boolean): HTTPUtils {
+        this.async = async
         return this
     }
 
@@ -135,6 +142,7 @@ export class HTTPUtils {
         let value = this.data
         HTTPUtils.filter && (value = HTTPUtils.filter.filterSendData(this.url, this.data))
 
+        this.ghr.async = this.async
         this.ghr.onComplete(onComplete)
         this.ghr.onError(onError)
         this.ghr.onTimerOut(onTimeOut)
