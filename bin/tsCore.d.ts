@@ -1798,7 +1798,7 @@ declare namespace tsCore {
         onComplete(handler: ParamHandler): HTTPUtils;
         onError(handler: ParamHandler): HTTPUtils;
         onTimeout(handler: ParamHandler): HTTPUtils;
-        onEvent(complete: (data: any) => void, error?: (err?: any) => void, finallyFun?: () => void): void;
+        onEvent(complete: (data: any) => void, error?: (err?: any) => void, finallyFun?: () => void): HTTPUtils;
         /**
          *
          */

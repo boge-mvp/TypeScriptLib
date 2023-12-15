@@ -4166,6 +4166,7 @@ window.tsCore = {};
             this.complete = complete;
             this.error = error;
             this.finally = finallyFun;
+            return this;
         }
         /**
          *
