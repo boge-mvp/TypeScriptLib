@@ -4348,10 +4348,19 @@ window.tsCore = {};
             let content = element.textContent;
             if (this.customConvert)
                 content = runFun(this.customConvert, content);
+            return this.replaceLang(content);
+        }
+        /**
+         * 使用预置的 LanguageUtils.replaces 替换文本内容
+         * @param text
+         *
+         * @see LanguageUtils.replaces
+         */
+        replaceLang(text) {
             for (const key in this.replaces) {
-                content = content.replace(new RegExp(`\\{${key}}`, "g"), this.replaces[key]);
+                text = text.replace(new RegExp(`\\{${key}}`, "g"), this.replaces[key]);
             }
-            return content;
+            return text;
         }
         /**
          * 获取忽略大小写的文案

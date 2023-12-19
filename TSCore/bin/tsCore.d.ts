@@ -1859,6 +1859,13 @@ declare namespace tsCore {
         getStr(str: number | string): string;
         private __getStr;
         /**
+         * 使用预置的 LanguageUtils.replaces 替换文本内容
+         * @param text
+         *
+         * @see LanguageUtils.replaces
+         */
+        replaceLang(text: string): string;
+        /**
          * 获取忽略大小写的文案
          * @param node
          * @param name
