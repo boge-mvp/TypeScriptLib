@@ -233,7 +233,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
         data = data.data
         this.gameStatus = data.game_status
         // 处理自定义解析
-        GameServlet.customParseUser?.(data)
+        GameServlet.customParseUser?.call(this, data)
 
         this.parseInitData(data)
         Player.inst.status = data.status ? data.status : 1;//1=>投注中，2=>计算中，3=>开奖
@@ -254,7 +254,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
         }
         Player.inst.data.period = period
         if (this.gameStatus == 1) {
-            let result = GameServlet.customInit?.() ?? true
+            let result = GameServlet.customInit?.call(this) ?? true
             result && this.onUserData() ? this.getCoupon() : this.enterFail()
         } else {
             this.enterFail()

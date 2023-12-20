@@ -1763,7 +1763,7 @@ window.gameLib = {};
             data = data.data;
             this.gameStatus = data.game_status;
             // 处理自定义解析
-            (_a = GameServlet.customParseUser) === null || _a === void 0 ? void 0 : _a.call(GameServlet, data);
+            (_a = GameServlet.customParseUser) === null || _a === void 0 ? void 0 : _a.call(this, data);
             this.parseInitData(data);
             Player.inst.status = data.status ? data.status : 1; //1=>投注中，2=>计算中，3=>开奖
             Player.inst.data.lotteryTime = data.lottery_time; //开奖时间戳(s)
@@ -1782,7 +1782,7 @@ window.gameLib = {};
             }
             Player.inst.data.period = period;
             if (this.gameStatus == 1) {
-                let result = (_c = (_b = GameServlet.customInit) === null || _b === void 0 ? void 0 : _b.call(GameServlet)) !== null && _c !== void 0 ? _c : true;
+                let result = (_c = (_b = GameServlet.customInit) === null || _b === void 0 ? void 0 : _b.call(this)) !== null && _c !== void 0 ? _c : true;
                 result && this.onUserData() ? this.getCoupon() : this.enterFail();
             }
             else {
