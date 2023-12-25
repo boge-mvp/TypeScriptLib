@@ -207,9 +207,9 @@ export class SlotScrollModel<T extends BaseSlotGameData = BaseSlotGameData> exte
     }
 
     protected getDuration(index: number, isTurboMode: boolean) {
-        let duration = 500 + (index * 800);// 动画持续时间
+        let duration = 500 + (index * 800) // 动画持续时间
         if (isTurboMode) {
-            duration = 1300;// 动画持续时间
+            duration = 1300 // 动画持续时间
         }
         return duration
     }

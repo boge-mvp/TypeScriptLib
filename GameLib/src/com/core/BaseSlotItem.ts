@@ -5,7 +5,13 @@ import ELabel = tsCore.ELabel;
  */
 export enum SlotItemType {
     NORMAL,
+    /**
+     * 变暗
+     */
     DARK,
+    /**
+     * 获胜
+     */
     WIN
 }
 

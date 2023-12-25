@@ -258,16 +258,20 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
     }
 
     /**
+     * 根据事件名字 更新执行函数
+     * @param name 事件名字
+     * @param handler
+     */
+    updateStartupEvent(name: string, handler: ParamHandler) {
+        this.startupEvent.find(value => value.name == name).handler = handler
+    }
+
+    /**
      * 根据事件名字 获取事件的执行位置
      * @param name 事件名字
      */
     getStartupEventIndex(name: string) {
-        for (let i = 0; i < this.startupEvent.length; i++) {
-            if (this.startupEvent[i].name == name) {
-                return i
-            }
-        }
-        return -1
+        return this.startupEvent.findIndex(value => value.name == name)
     }
 
     /**
@@ -283,12 +287,10 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
      * @param name 事件名字
      */
     removeStartupEventName(name: string) {
-        for (let i = 0; i < this.startupEvent.length; i++) {
-            if (this.startupEvent[i].name == name) {
-                this.startupEvent.splice(i, 1)
-                i--
-                Log.debug("Unload Startup event -> name = " + name)
-            }
+        const index = this.startupEvent.findIndex(value => value.name == name)
+        if (index > -1) {
+            this.startupEvent.splice(index, 1)
+            Log.debug("Unload Startup event -> name = " + name)
         }
     }
 

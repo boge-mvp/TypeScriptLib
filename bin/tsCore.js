@@ -3869,6 +3869,25 @@ window.tsCore = {};
     }
     SocketClient.SOCKET_CLASS_PATH = null;
     tsCore.SocketClient = SocketClient;
+    class Path {
+        constructor(base, ...subpaths) {
+            this.path = base;
+            subpaths.forEach((value) => {
+                if (value.startsWith("/")) {
+                    this.path += value;
+                }
+                else
+                    this.path += `/${value}`;
+            });
+        }
+        static of(base, ...subpaths) {
+            return new Path(base, ...subpaths);
+        }
+        string() {
+            return this.path;
+        }
+    }
+    tsCore.Path = Path;
     class NativeUtils {
     }
     /**@private Market对象 只有加速器模式下才有值*/
@@ -7266,7 +7285,7 @@ Object.defineProperty(Array.prototype, "distinctBy", {
         const map = {};
         const list = [];
         for (let e of this) {
-            const key = selector(e);
+            const key = selector.call(this, e);
             if (!map[key]) {
                 map[key] = true;
                 list.push(e);
@@ -7282,6 +7301,44 @@ Object.defineProperty(Array.prototype, "shuffle", {
             let rnd = Math.floor(Math.random() * (i + 1));
             [this[i], this[rnd]] = [this[rnd], this[i]];
         }
+    }
+});
+Object.defineProperty(Array.prototype, "minBy", {
+    value: function (selector) {
+        if (this.length == 0)
+            return null;
+        let minElem = this[0];
+        if (this.length == 1)
+            return minElem;
+        let minValue = selector(minElem);
+        for (let i = 1; i < this.length; i++) {
+            const e = this[i];
+            const v = selector(e);
+            if (minValue > v) {
+                minElem = e;
+                minValue = v;
+            }
+        }
+        return minElem;
+    }
+});
+Object.defineProperty(Array.prototype, "maxBy", {
+    value: function (selector) {
+        if (this.length == 0)
+            return null;
+        let minElem = this[0];
+        if (this.length == 1)
+            return minElem;
+        let minValue = selector(minElem);
+        for (let i = 1; i < this.length; i++) {
+            const e = this[i];
+            const v = selector(e);
+            if (minValue < v) {
+                minElem = e;
+                minValue = v;
+            }
+        }
+        return minElem;
     }
 });
 function gaSend(hitType, data) {

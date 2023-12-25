@@ -206,13 +206,8 @@ export class Player {
      * 获取正在使用的优惠劵
      */
     removeCoupon(obj: Coupons) {
-        for (let i = 0; i < this.coupons.length; i++) {
-            let arr = this.coupons[i]
-            if (arr.id == obj.id) {
-                this.coupons.splice(i, 1)
-                break
-            }
-        }
+        const index = this.coupons.findIndex(value => value.id == obj.id)
+        if (index > -1) this.coupons.splice(index, 1)
     }
 
     /**

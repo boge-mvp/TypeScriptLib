@@ -342,7 +342,7 @@ Object.defineProperty(Array.prototype, "distinctBy", {
         const map = {}
         const list = []
         for (let e of this) {
-            const key = selector(e)
+            const key = selector.call(this, e)
             if (!map[key]) {
                 map[key] = true
                 list.push(e)
@@ -359,6 +359,42 @@ Object.defineProperty(Array.prototype, "shuffle", {
             let rnd = Math.floor(Math.random() * (i + 1));
             [this[i], this[rnd]] = [this[rnd], this[i]]
         }
+    }
+})
+
+Object.defineProperty(Array.prototype, "minBy", {
+    value: function <T, R> (selector: (item: T) => R) {
+        if (this.length == 0) return null
+        let minElem = this[0]
+        if (this.length == 1) return minElem
+        let minValue = selector(minElem)
+        for (let i = 1; i < this.length; i++) {
+            const e = this[i]
+            const v = selector(e)
+            if (minValue > v) {
+                minElem = e
+                minValue = v
+            }
+        }
+        return minElem
+    }
+})
+
+Object.defineProperty(Array.prototype, "maxBy", {
+    value: function <T, R> (selector: (item: T) => R) {
+        if (this.length == 0) return null
+        let minElem = this[0]
+        if (this.length == 1) return minElem
+        let minValue = selector(minElem)
+        for (let i = 1; i < this.length; i++) {
+            const e = this[i]
+            const v = selector(e)
+            if (minValue < v) {
+                minElem = e
+                minValue = v
+            }
+        }
+        return minElem
     }
 })
 

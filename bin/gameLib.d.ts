@@ -378,6 +378,12 @@ declare namespace gameLib {
          */
         regStartupEventIndex(index: number, handler: ParamHandler, weight?: number, name?: any): void;
         /**
+         * 根据事件名字 更新执行函数
+         * @param name 事件名字
+         * @param handler
+         */
+        updateStartupEvent(name: string, handler: ParamHandler): void;
+        /**
          * 根据事件名字 获取事件的执行位置
          * @param name 事件名字
          */
@@ -523,7 +529,13 @@ declare namespace gameLib {
      */
     export enum SlotItemType {
         NORMAL = 0,
+        /**
+         * 变暗
+         */
         DARK = 1,
+        /**
+         * 获胜
+         */
         WIN = 2
     }
     /**

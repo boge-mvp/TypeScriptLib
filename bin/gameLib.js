@@ -546,16 +546,19 @@ window.gameLib = {};
             this.startupEvent.splice(index, 0, { handler: handler, weight: weight, name: name });
         }
         /**
+         * 根据事件名字 更新执行函数
+         * @param name 事件名字
+         * @param handler
+         */
+        updateStartupEvent(name, handler) {
+            this.startupEvent.find(value => value.name == name).handler = handler;
+        }
+        /**
          * 根据事件名字 获取事件的执行位置
          * @param name 事件名字
          */
         getStartupEventIndex(name) {
-            for (let i = 0; i < this.startupEvent.length; i++) {
-                if (this.startupEvent[i].name == name) {
-                    return i;
-                }
-            }
-            return -1;
+            return this.startupEvent.findIndex(value => value.name == name);
         }
         /**
          * 删除指定位置的启动事件
@@ -569,12 +572,10 @@ window.gameLib = {};
          * @param name 事件名字
          */
         removeStartupEventName(name) {
-            for (let i = 0; i < this.startupEvent.length; i++) {
-                if (this.startupEvent[i].name == name) {
-                    this.startupEvent.splice(i, 1);
-                    i--;
-                    tsCore.Log.debug("Unload Startup event -> name = " + name);
-                }
+            const index = this.startupEvent.findIndex(value => value.name == name);
+            if (index > -1) {
+                this.startupEvent.splice(index, 1);
+                tsCore.Log.debug("Unload Startup event -> name = " + name);
             }
         }
         /**
@@ -963,7 +964,13 @@ window.gameLib = {};
     let SlotItemType;
     (function (SlotItemType) {
         SlotItemType[SlotItemType["NORMAL"] = 0] = "NORMAL";
+        /**
+         * 变暗
+         */
         SlotItemType[SlotItemType["DARK"] = 1] = "DARK";
+        /**
+         * 获胜
+         */
         SlotItemType[SlotItemType["WIN"] = 2] = "WIN";
     })(SlotItemType = gameLib.SlotItemType || (gameLib.SlotItemType = {}));
     /**
@@ -5530,13 +5537,9 @@ window.gameLib = {};
          * 获取正在使用的优惠劵
          */
         removeCoupon(obj) {
-            for (let i = 0; i < this.coupons.length; i++) {
-                let arr = this.coupons[i];
-                if (arr.id == obj.id) {
-                    this.coupons.splice(i, 1);
-                    break;
-                }
-            }
+            const index = this.coupons.findIndex(value => value.id == obj.id);
+            if (index > -1)
+                this.coupons.splice(index, 1);
         }
         /**
          * 判断当前游戏可以使用的优惠券

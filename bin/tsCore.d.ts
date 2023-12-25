@@ -1505,6 +1505,12 @@ declare namespace tsCore {
         send(data: any): void;
         close(): void;
     }
+    export class Path {
+        private path;
+        constructor(base: string, ...subpaths: string[]);
+        static of(base: string, ...subpaths: string[]): Path;
+        string(): string;
+    }
     export interface IConchRenderObject {
         drawSubmesh(submesh: any, drawType: number, renderMode: number, offset: number, count: number): void;
         matrix(matrix: Float32Array): void;
@@ -3095,6 +3101,10 @@ declare interface Array<T> {
      * 随机洗牌此数组中的元素。
      */
     shuffle(): void
+
+    minBy<R>(selector: (item: T) => R): T | undefined
+
+    maxBy<R>(selector: (item: T) => R): T | undefined
 
 }
 declare type InitApp = {
