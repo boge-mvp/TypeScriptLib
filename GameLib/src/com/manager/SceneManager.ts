@@ -354,6 +354,8 @@ export class SceneManager extends EProxy {
      *
      */
     private showGameScene() {
+        // 初始化 历史管理
+        AppRecordManager.init()
         AnalyticsManager.openGame()
         Player.inst.status = 1
         this.sendAction(ActionLib.GAME_CONNECT_SOCKET)
@@ -381,8 +383,6 @@ export class SceneManager extends EProxy {
                 LoadingWindow.inst.hide()
                 JSUtils.gameOnload()
                 Player.inst.guestModel.guestPlayCount = 0
-                // 初始化 历史管理
-                AppRecordManager.init()
             })
         }))
     }
