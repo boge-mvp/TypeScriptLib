@@ -8,6 +8,10 @@ import {ActionEvent, StringBlock, ViewProxy} from "../block/Block"
 import {IRecord} from "../interfaces/ICommon";
 import {App} from "../App";
 
+/**
+ * 实现了 fgui.Window 的窗口
+ * 默认会添加新的路由到历史中，可通过 joinRecord 处理
+ */
 export class EWindow extends mixinExt(StringBlock, ViewProxy, ActionEvent, fgui.Window) implements IRecord {
 
     /** 动画显示或关闭 */
