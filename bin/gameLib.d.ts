@@ -3171,6 +3171,11 @@ declare namespace gameLib {
         static openPage(page: string | OpenPage, isCloseGame?: boolean): void;
         /** 进入游戏进度条 */
         static progress(value: number): void;
+        /**
+         * 原生应用获取顶部的刘海屏高度
+         *
+         */
+        static getSafeAreaTop(): number;
         static getProgress: typeof JSUtils.progress;
         /** 通知进入游戏了 */
         static gameOnload(): void;

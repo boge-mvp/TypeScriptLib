@@ -137,6 +137,16 @@ export class JSUtils {
         AppManager.executionJavascript("window.GameToHall.getProgress && window.GameToHall.getProgress", value)
     }
 
+    /**
+     * 原生应用获取顶部的刘海屏高度
+     *
+     */
+    static getSafeAreaTop(): number {
+        if (AppManager.callIOS("getSafeAreaTop"))
+            return 0
+        return Browser.window.APP?.getSafeAreaTop?.() ?? 0
+    }
+
     static getProgress = JSUtils.progress
 
     /** 通知进入游戏了 */

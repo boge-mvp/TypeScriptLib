@@ -6507,6 +6507,16 @@ window.gameLib = {};
             AppManager.executionJavascript("window.GameToHall.progress && window.GameToHall.progress", value);
             AppManager.executionJavascript("window.GameToHall.getProgress && window.GameToHall.getProgress", value);
         }
+        /**
+         * 原生应用获取顶部的刘海屏高度
+         *
+         */
+        static getSafeAreaTop() {
+            var _a, _b, _c;
+            if (AppManager.callIOS("getSafeAreaTop"))
+                return 0;
+            return (_c = (_b = (_a = Laya.Browser.window.APP) === null || _a === void 0 ? void 0 : _a.getSafeAreaTop) === null || _b === void 0 ? void 0 : _b.call(_a)) !== null && _c !== void 0 ? _c : 0;
+        }
         /** 通知进入游戏了 */
         static gameOnload() {
             var _a, _b, _c, _d, _e, _f, _g;
