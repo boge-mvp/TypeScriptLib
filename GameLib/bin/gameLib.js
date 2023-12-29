@@ -369,7 +369,8 @@ window.gameLib = {};
             tsCore.Log.debug(value);
         }
         /*@override*/
-        onConstruct() {
+        onInit() {
+            super.onInit();
             this.jackpotBtn = this.getChild("jackpot");
             this.regGameAction(ActionLib.GAME_RECONNECTION_NET, this, this.reconnectionNet);
             this.regGameAction(ActionLib.GAME_UPDATE_MONEY, this, this.updateMoney);
@@ -381,7 +382,6 @@ window.gameLib = {};
             this.regGameAction(ActionLib.GAME_BET_CHANGE, this, this.betChangeHandler);
             this.regGameAction(ActionLib.GAME_UPDATE_ROOM_ID_CHANGE, this, this.updateRoomIdChange);
             this.regGameAction(ActionLib.GAME_RUN_SCENE_EVENT, this, this.runEvent);
-            super.onConstruct();
         }
         /**
          * 房间号变更
@@ -1775,7 +1775,7 @@ window.gameLib = {};
         }
         /** 用户数据 */
         userDataHandler(data) {
-            var _a, _b, _c;
+            var _a, _b;
             //			trace("MainPanel.userDataHandlerr(data) 服务器拿到游戏房间数据")
             if (data.code != HttpCode.OK) {
                 this.enterFail(true, StateCode.getShowMessage(data));
@@ -1803,8 +1803,8 @@ window.gameLib = {};
             }
             Player.inst.data.period = period;
             if (this.gameStatus == 1) {
-                let result = (_c = (_b = GameServlet.customInit) === null || _b === void 0 ? void 0 : _b.call(this)) !== null && _c !== void 0 ? _c : true;
-                result && this.onUserData() ? this.getCoupon() : this.enterFail();
+                let result = (_b = GameServlet.customInit) === null || _b === void 0 ? void 0 : _b.call(this);
+                result == null && this.onUserData() ? this.getCoupon() : this.enterFail(true, result);
             }
             else {
                 this.enterFail();
@@ -2057,11 +2057,20 @@ window.gameLib = {};
             this.listRolls = [];
             /** 开奖数据  {arr isTurboMode itemCount} */
             this.lotteryData = [];
-            /** 是否是向上滚动的 一般开始的位置都是顶部 */
+            /**
+             * 是否是向上滚动的 一般开始的位置都是顶部
+             * @default false
+             */
             this.isScrollUp = false;
-            /** 特殊玩法  */
+            /**
+             * 特殊玩法
+             * @default 13
+             */
             this.SPECIAL_PLAY = 13;
-            /** 可以替换任何东西的 */
+            /**
+             * 可以替换任何东西的
+             * @default 12
+             */
             this.WILD = 12;
             /** 满足2个就可以连上的线否则至少3个才可以连线,存放图片id */
             this.smallPrize = [];
@@ -2071,7 +2080,7 @@ window.gameLib = {};
             this.colNum = 5;
             /**
              * 全部滚动结束延迟时间
-             * @protected
+             * @default 500
              */
             this.allEndDelay = 500;
             this.tweenList = [];

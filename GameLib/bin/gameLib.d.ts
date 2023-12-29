@@ -327,7 +327,7 @@ declare namespace gameLib {
          * @deprecated
          */
         protected set gameData(value: T);
-        protected onConstruct(): void;
+        protected onInit(): void;
         /**
          * 房间号变更
          * @param value 房间号
@@ -777,9 +777,9 @@ declare namespace gameLib {
          *
          * 在执行onUserData()前 gameStatus检查状态后执行
          *
-         * 返回false表示 出现错误
+         * 有返回表示 出现错误
          */
-        static customInit: () => boolean;
+        static customInit: () => string;
         /**
          * 全局自定义解析用户返回信息的data属性
          *
@@ -951,11 +951,20 @@ declare namespace gameLib {
         protected tweenList: Laya.Tween[];
         /** 完成动画数量 */
         protected completeCount: number;
-        /** 是否是向上滚动的 一般开始的位置都是顶部 */
+        /**
+         * 是否是向上滚动的 一般开始的位置都是顶部
+         * @default false
+         */
         protected isScrollUp: boolean;
-        /** 特殊玩法  */
+        /**
+         * 特殊玩法
+         * @default 13
+         */
         SPECIAL_PLAY: number;
-        /** 可以替换任何东西的 */
+        /**
+         * 可以替换任何东西的
+         * @default 12
+         */
         WILD: number;
         /** 满足2个就可以连上的线否则至少3个才可以连线,存放图片id */
         protected smallPrize: any[];
@@ -965,7 +974,7 @@ declare namespace gameLib {
         colNum: number;
         /**
          * 全部滚动结束延迟时间
-         * @protected
+         * @default 500
          */
         protected allEndDelay: number;
         constructor();

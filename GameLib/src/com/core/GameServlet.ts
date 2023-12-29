@@ -37,9 +37,9 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
      *
      * 在执行onUserData()前 gameStatus检查状态后执行
      *
-     * 返回false表示 出现错误
+     * 有返回表示 出现错误
      */
-    static customInit: () => boolean
+    static customInit: () => string
     /**
      * 全局自定义解析用户返回信息的data属性
      *
@@ -254,8 +254,8 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
         }
         Player.inst.data.period = period
         if (this.gameStatus == 1) {
-            let result = GameServlet.customInit?.call(this) ?? true
-            result && this.onUserData() ? this.getCoupon() : this.enterFail()
+            let result = GameServlet.customInit?.call(this)
+            result == null && this.onUserData() ? this.getCoupon() : this.enterFail(true, result)
         } else {
             this.enterFail()
         }
