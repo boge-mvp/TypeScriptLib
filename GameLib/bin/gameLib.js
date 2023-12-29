@@ -1804,7 +1804,7 @@ window.gameLib = {};
             Player.inst.data.period = period;
             if (this.gameStatus == 1) {
                 let result = (_b = GameServlet.customInit) === null || _b === void 0 ? void 0 : _b.call(this);
-                result == null && this.onUserData() ? this.getCoupon() : this.enterFail(true, result);
+                result.succeed && this.onUserData() ? this.getCoupon() : this.enterFail(true, result.msg);
             }
             else {
                 this.enterFail();

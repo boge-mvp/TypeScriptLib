@@ -779,7 +779,7 @@ declare namespace gameLib {
          *
          * 有返回表示 出现错误
          */
-        static customInit: () => string;
+        static customInit: () => CustomResult;
         /**
          * 全局自定义解析用户返回信息的data属性
          *

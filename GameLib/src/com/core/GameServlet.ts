@@ -39,13 +39,13 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
      *
      * 有返回表示 出现错误
      */
-    static customInit: () => string
+    static customInit: () => CustomResult
     /**
      * 全局自定义解析用户返回信息的data属性
      *
      * 在 parseInitData 方法前执行
      */
-    static customParseUser: (data:any) => void
+    static customParseUser: (data: any) => void
 
     protected constructor() {
         super()
@@ -254,8 +254,8 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
         }
         Player.inst.data.period = period
         if (this.gameStatus == 1) {
-            let result = GameServlet.customInit?.call(this)
-            result == null && this.onUserData() ? this.getCoupon() : this.enterFail(true, result)
+            let result: CustomResult = GameServlet.customInit?.call(this)
+            result.succeed && this.onUserData() ? this.getCoupon() : this.enterFail(true, result.msg)
         } else {
             this.enterFail()
         }
