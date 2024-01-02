@@ -1775,7 +1775,7 @@ window.gameLib = {};
         }
         /** 用户数据 */
         userDataHandler(data) {
-            var _a, _b;
+            var _a;
             //			trace("MainPanel.userDataHandlerr(data) 服务器拿到游戏房间数据")
             if (data.code != HttpCode.OK) {
                 this.enterFail(true, StateCode.getShowMessage(data));
@@ -1803,13 +1803,17 @@ window.gameLib = {};
             }
             Player.inst.data.period = period;
             if (this.gameStatus == 1) {
-                ((_b = GameServlet.customInit) === null || _b === void 0 ? void 0 : _b.call(this, (result) => {
-                    if (result.succeed) {
-                        this.nextInit();
-                    }
-                    else
-                        this.enterFail(true, result.msg);
-                })) || this.nextInit();
+                if (GameServlet.customInit) {
+                    GameServlet.customInit.call(this, (result) => {
+                        if (result.succeed) {
+                            this.nextInit();
+                        }
+                        else
+                            this.enterFail(true, result.msg);
+                    });
+                }
+                else
+                    this.nextInit();
             }
             else {
                 this.enterFail();

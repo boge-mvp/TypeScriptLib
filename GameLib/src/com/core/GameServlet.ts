@@ -254,11 +254,13 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
         }
         Player.inst.data.period = period
         if (this.gameStatus == 1) {
-            GameServlet.customInit?.call(this, (result: CustomResult) => {
-                if (result.succeed) {
-                    this.nextInit()
-                } else this.enterFail(true, result.msg)
-            }) || this.nextInit()
+            if (GameServlet.customInit) {
+                GameServlet.customInit.call(this, (result: CustomResult) => {
+                    if (result.succeed) {
+                        this.nextInit()
+                    } else this.enterFail(true, result.msg)
+                })
+            } else this.nextInit()
         } else {
             this.enterFail()
         }
