@@ -1650,29 +1650,23 @@ window.tsCore = {};
                     this.temp_loadExternal();
                 }
             });
-            Object.defineProperty(fgui.GLoader.prototype, "temp_onExternalLoadSuccess", {
-                value: fgui.GLoader.prototype["onExternalLoadSuccess"]
-            });
+            const GLoader_onExternalLoadSuccess = fgui.GLoader.prototype["onExternalLoadSuccess"];
             Object.defineProperty(fgui.GLoader.prototype, "onExternalLoadSuccess", {
                 value: function (texture) {
                     var _a;
-                    this.temp_onExternalLoadSuccess(texture);
+                    GLoader_onExternalLoadSuccess.call(this, texture);
                     (_a = this.displayObject) === null || _a === void 0 ? void 0 : _a.event(Laya.Event.COMPLETE);
                 }
             });
-            Object.defineProperty(fgui.GLoader.prototype, "temp_loadFromPackage", {
-                value: fgui.GLoader.prototype["loadFromPackage"]
-            });
+            const GLoader_loadFromPackage = fgui.GLoader.prototype["loadFromPackage"];
             Object.defineProperty(fgui.GLoader.prototype, "loadFromPackage", {
                 value: function (itemURL) {
                     var _a;
-                    this.temp_loadFromPackage(itemURL);
+                    GLoader_loadFromPackage.call(this, itemURL);
                     (_a = this.displayObject) === null || _a === void 0 ? void 0 : _a.event(Laya.Event.COMPLETE);
                 }
             });
-            Object.defineProperty(fgui.GLoader.prototype, "temp_onExternalLoadFailed", {
-                value: fgui.GLoader.prototype["onExternalLoadFailed"]
-            });
+            const GLoader_onExternalLoadFailed = fgui.GLoader.prototype["onExternalLoadFailed"];
             Object.defineProperty(fgui.GLoader.prototype, "onExternalLoadFailed", {
                 value: function () {
                     var _a;
@@ -1681,8 +1675,17 @@ window.tsCore = {};
                         this.temp_loadExternal();
                         return;
                     }
-                    this.temp_onExternalLoadFailed();
+                    GLoader_onExternalLoadFailed.call(this);
                     (_a = this.displayObject) === null || _a === void 0 ? void 0 : _a.event(Laya.Event.COMPLETE);
+                }
+            });
+            // 修复 HTML 富文本空格被清除的问题
+            const regExp = /(?<=\s|\S)\s*(?=\[\w{0,10}=.{0,10}])|(?<=\s|\S)\s*(?=\[\/\w{0,6}])|(?<=\[\w{0,10}=.{0,10}])\s*(?=\s|\S)|(?<=\[\/\w{0,10}])\s*(?=\s|\S)/g;
+            const UBBParser_parse = fgui.UBBParser.prototype.parse;
+            Object.defineProperty(fgui.UBBParser.prototype, "parse", {
+                value: function (text, remove) {
+                    text = text.replace(regExp, "&nbsp;");
+                    return UBBParser_parse.call(this, text, remove);
                 }
             });
         }

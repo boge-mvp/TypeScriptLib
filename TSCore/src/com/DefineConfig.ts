@@ -360,9 +360,7 @@ export class DefineConfig {
             value: function () {
                 fgui.AssetProxy.inst.load(this._url, Laya.Handler.create(this, (url: string, tex: Laya.Texture) => {
                     if (this._url === url) this.__getResCompleted(tex)
-                }, [this._url]), null, Laya.Loader.IMAGE);
-
-
+                }, [this._url]), null, Laya.Loader.IMAGE)
             }
         })
         Object.defineProperty(fgui.GLoader.prototype, "loadExternal", {
@@ -372,29 +370,23 @@ export class DefineConfig {
             }
         })
 
-        Object.defineProperty(fgui.GLoader.prototype, "temp_onExternalLoadSuccess", {
-            value: fgui.GLoader.prototype["onExternalLoadSuccess"]
-        })
+        const GLoader_onExternalLoadSuccess = fgui.GLoader.prototype["onExternalLoadSuccess"]
         Object.defineProperty(fgui.GLoader.prototype, "onExternalLoadSuccess", {
             value: function (texture: Laya.Texture) {
-                this.temp_onExternalLoadSuccess(texture)
+                GLoader_onExternalLoadSuccess.call(this, texture)
                 this.displayObject?.event(Laya.Event.COMPLETE)
             }
         })
 
-        Object.defineProperty(fgui.GLoader.prototype, "temp_loadFromPackage", {
-            value: fgui.GLoader.prototype["loadFromPackage"]
-        })
+        const GLoader_loadFromPackage = fgui.GLoader.prototype["loadFromPackage"]
         Object.defineProperty(fgui.GLoader.prototype, "loadFromPackage", {
             value: function (itemURL: string) {
-                this.temp_loadFromPackage(itemURL)
+                GLoader_loadFromPackage.call(this, itemURL)
                 this.displayObject?.event(Laya.Event.COMPLETE)
             }
         })
 
-        Object.defineProperty(fgui.GLoader.prototype, "temp_onExternalLoadFailed", {
-            value: fgui.GLoader.prototype["onExternalLoadFailed"]
-        })
+        const GLoader_onExternalLoadFailed = fgui.GLoader.prototype["onExternalLoadFailed"]
         Object.defineProperty(fgui.GLoader.prototype, "onExternalLoadFailed", {
             value: function () {
                 if (this.loadRetryCount > 0 && this.loadCount < this.loadRetryCount) {
@@ -402,11 +394,20 @@ export class DefineConfig {
                     this.temp_loadExternal()
                     return
                 }
-                this.temp_onExternalLoadFailed()
+                GLoader_onExternalLoadFailed.call(this)
                 this.displayObject?.event(Laya.Event.COMPLETE)
             }
         })
 
+        // 修复 HTML 富文本空格被清除的问题
+        const regExp = /(?<=\s|\S)\s*(?=\[\w{0,10}=.{0,10}])|(?<=\s|\S)\s*(?=\[\/\w{0,6}])|(?<=\[\w{0,10}=.{0,10}])\s*(?=\s|\S)|(?<=\[\/\w{0,10}])\s*(?=\s|\S)/g
+        const UBBParser_parse = fgui.UBBParser.prototype.parse
+        Object.defineProperty(fgui.UBBParser.prototype, "parse", {
+            value: function (text: string, remove?: boolean): string {
+                text = text.replace(regExp, "&nbsp;")
+                return UBBParser_parse.call(this, text, remove)
+            }
+        })
 
     }
 
