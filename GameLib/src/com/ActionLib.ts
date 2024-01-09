@@ -175,16 +175,6 @@ export enum ActionLib {
     GAME_UPDATE_FREE_COUNT = GAME_UPDATE_AUTO_SPIN_NUMBER,
     /** 播放收金币动画 */
     GAME_PLAY_COLLECT_GOLD_COINS_ANI = "game_play_collect_gold_coins_ani",
-    /** 显示free窗口 */
-    GAME_SHOW_FREE_WINDOW = "game_show_free_window",
-    /** 隐藏free窗口 */
-    GAME_HIDE_FREE_WINDOW = "game_hide_free_window",
-    /** 显示freeUI */
-    GAME_SHOW_FREE_UI = "game_show_free_ui",
-    /** 隐藏freeUI */
-    GAME_HIDE_FREE_UI = "game_hide_free_ui",
-    /** 显示free 结束界面 */
-    GAME_SHOW_FREE_FINISH_VIEW = "game_show_free_finish_view",
     /** 显示结算UI */
     GAME_SHOW_SETTLE_WIN_UI = "game_show_settle_win_ui",
     /** 显示默认提示语 */
@@ -195,6 +185,46 @@ export enum ActionLib {
     GAME_UPDATE_TOTAL_BET = "game_update_total_bet",
     /** 更新bounds信息 */
     GAME_UPDATE_BOUNDS_INFO = "game_update_bounds_info",
+
+
+    // FREE SPIN 都是在scene startGame中启动 以及显示中奖弹窗
+    /**
+     * 在 scene.startGame 中修改isFreeModel后的 请求第一次free spin
+     */
+    GAME_FREE_SPIN_START = "game_free_spin_start",
+    /**
+     * free 结束通知显示结束  开启结算弹窗
+     */
+    GAME_FREE_SPIN_END = "game_free_spin_end",
+    /**
+     * free spin继续未完成流程
+     */
+    SHOW_FREE_SPIN_GO_ON = "show_free_spin_go_on",
+    /** 显示获得free奖励窗口 */
+    GAME_SHOW_FREE_WINDOW = "game_show_free_window",
+    /** 隐藏获得free奖励窗口 */
+    GAME_HIDE_FREE_WINDOW = "game_hide_free_window",
+    /** 显示结算free窗口 */
+    GAME_SHOW_FREE_OUT_WINDOW = "game_show_free_out_window",
+    /** 隐藏结算free窗口 */
+    GAME_HIDE_FREE_OUT_WINDOW = "game_hide_free_out_window",
+    /** 显示freeUI
+     * @deprecated
+     * @see GAME_FREE_SPIN_START
+     * */
+    GAME_SHOW_FREE_UI = "game_show_free_ui",
+    /** 隐藏freeUI
+     * @deprecated
+     * @see GAME_FREE_SPIN_END
+     * */
+    GAME_HIDE_FREE_UI = "game_hide_free_ui",
+    /**
+     * 显示free 结束界面
+     * @deprecated
+     * @see GAME_SHOW_FREE_OUT_WINDOW
+     */
+    GAME_SHOW_FREE_FINISH_VIEW = "game_show_free_finish_view",
+
 
 
 }
