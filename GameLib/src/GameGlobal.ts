@@ -1,5 +1,3 @@
-import {GameConfigKit} from "./kit/GameConfigKit";
-
 /**
  * 给资源绑定一个实现对象
  * @example

@@ -12,7 +12,7 @@ let reserved = []
 // 需要添加到最前面的类
 let beforeTs = ["src/com/core/BaseView.ts"]
 
-generate.global = []
+generate.global = ["src/GameGlobal.ts"]
 generate.tsProject = 'tsconfig.json'
 generate.beforeTs = beforeTs
 generate.libs = ["../libs/**/*", "./src/**/*.d.ts", "../TSCore/bin/*.d.ts"]
