@@ -98,14 +98,43 @@ declare type HttpData = {
     [key: string]: any
 }
 
-declare type FreeSpinData = {
+declare type FreeSpinData<T = any> = {
     /** 免费游戏剩余次数 */
     left_times: number
     /** 游戏bet数据 */
-    free_spin_data: any
+    free_spin_data: T
     [key: string]: any
 }
 
 declare type GoldAniData = {
     x?: number, y?: number, scaleX?: number, scaleY?: number, duration?: number, delay?: number, ease?: Function
+}
+
+/**
+ * 要播放的开奖数据
+ */
+declare type SlotLotteryData<T = any> = {
+    /** 开奖数组 */
+    arr: number[]
+    /** 是否是快速模式 */
+    isTurboMode: boolean
+    /** 块有多少个 */
+    itemCount: number
+    /** 附带数据 */
+    data?: T
+}
+
+/**
+ * 执行命令数据
+ */
+declare type ExecuteData = {
+    token?: string
+    /** 执行类型 */
+    type: number
+    /** 执行数据 */
+    data?: number | string
+    /** 打开游戏名字 */
+    gameName?: string
+    /** 打开游戏id */
+    openGame?: number
 }

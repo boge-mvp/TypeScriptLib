@@ -1,17 +1,16 @@
 import GList = fgui.GList;
 import Tween = Laya.Tween;
 import Handler = Laya.Handler;
+import MathKit = tsCore.MathKit;
 import {SlotModel} from "./SlotModel"
 import {BaseSlotGameData} from "./BaseSlotGameData";
-import {ISlotLotteryData} from "../Interfaces";
-import MathKit = tsCore.MathKit;
 
 /**
  * slot游戏滚动效果类 只使用了 Tween
  */
 export class SlotScrollTweenModel<T extends BaseSlotGameData = BaseSlotGameData> extends SlotModel<T> {
 
-    protected override playLottery(value: ISlotLotteryData[]) {
+    protected override playLottery(value: SlotLotteryData[]) {
         super.playLottery(value)
         let list: GList
         let itemHeight: number

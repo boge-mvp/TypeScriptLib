@@ -1,4 +1,5 @@
 import {UrlParam} from "./net/UrlParam";
+import {GameType} from "./core/BaseGameData";
 
 /**
  * 游戏数据
@@ -11,13 +12,24 @@ export interface IGameData {
     /** 上报错误数据 */
     reportError(): any
 
+    /** 服务器发来的当前余额 */
+    currentBalance: number
     /** 本次总共盈利 */
     totalWinMoney?: number
     /** 玩的次数 计数 */
     playCount: number
-    /** 是否是推荐游戏 */
+    /** 是否已经弹出过一次推荐正式场的游戏 */
     isRecommend?: boolean
-
+    /**
+     * 当前是否在特殊模式
+     * @default false
+     */
+    specialMode:boolean
+    /**
+     * 游戏类型
+     * @default GameType.NORMAL
+     */
+    gameType: GameType
 }
 
 export interface IData {
@@ -83,39 +95,6 @@ export interface ILogin {
 }
 
 /**
- * 开奖数据
- */
-export interface ISlotLotteryData {
-
-    /** 开奖数组 */
-    arr: number[]
-    /** 是否是快速模式 */
-    isTurboMode: boolean
-    /** 块有多少个 */
-    itemCount: number
-    /** 附带数据 */
-    data?: any
-
-}
-
-/**
- * 执行命令数据
- */
-export interface IExecuteData {
-
-    token?: string
-    /** 执行类型 */
-    type: number
-    /** 执行数据 */
-    data?: number | string
-    /** 打开游戏名字 */
-    gameName?: string
-    /** 打开游戏id */
-    openGame?: number
-
-}
-
-/**
  * 游戏模式
  */
 export interface IGuestModel {
@@ -124,8 +103,10 @@ export interface IGuestModel {
     guestUID: number
     /** 游客模式玩次数 */
     guestPlayCount: number
+
     /** 清除数据  */
     clearData(): void
+
     /**
      * post请求 返回数据  可以在这里对返回数据进行修改
      * @param url 访问网址

@@ -4,7 +4,6 @@ import Render = Laya.Render;
 import Utils = Laya.Utils;
 import Log = tsCore.Log;
 import App = tsCore.App;
-import {IExecuteData} from "../Interfaces";
 import {Player} from "../Player";
 import {CommonCmd, HttpCode} from "../net/Common";
 import {AppManager} from "./AppManager";
@@ -23,7 +22,7 @@ export class AppRecordManager extends tsCore.HistoryManager {
 
 
     /** 进入大厅后执行命令 */
-    static executeJson: IExecuteData
+    static executeJson: ExecuteData
     /** 退出点击上一次时间 */
     private static exitTimer = 0
 
@@ -121,7 +120,7 @@ export class AppRecordManager extends tsCore.HistoryManager {
             case 1000:// 与java交互
                 let str: string = value[0]
                 Log.info(str)
-                let json: IExecuteData = JSON.parse(str)
+                let json: ExecuteData = JSON.parse(str)
                 let token: string = json.token
                 if (token) {
                     Player.inst.token = token
@@ -157,7 +156,7 @@ export class AppRecordManager extends tsCore.HistoryManager {
      * java 传入要求打开的内容
      * @param json
      */
-    static JavaSendOpen(json: IExecuteData) {
+    static JavaSendOpen(json: ExecuteData) {
         if (!json) return
         if (typeof json === "string") {
             json = JSON.parse(json)

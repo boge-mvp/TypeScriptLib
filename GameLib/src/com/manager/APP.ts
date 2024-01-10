@@ -7,7 +7,6 @@ import {HtmlWindow} from "../view/HtmlWindow"
 import {AppManager} from "./AppManager"
 import {Player} from "../Player"
 import {AppRecordManager} from "./AppRecordManager"
-import {IExecuteData} from "../Interfaces";
 
 export class APP {
 
@@ -81,7 +80,7 @@ export class APP {
      * app回调数据
      * @param json
      */
-    callback(json: IExecuteData) {
+    callback(json: ExecuteData) {
         if (!json) return
         Log.debug(`callback() json=${json}`)
         if (typeof json === "string") json = JSON.parse(json)
@@ -101,7 +100,7 @@ export class APP {
         }
     }
 
-    open(json: IExecuteData) {
+    open(json: ExecuteData) {
         switch (json.type) {
             case 1:// 打开网页
                 if (typeof json.data !== "string") return

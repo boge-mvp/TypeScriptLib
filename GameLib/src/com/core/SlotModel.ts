@@ -2,14 +2,15 @@ import GList = fgui.GList;
 import Tween = Laya.Tween;
 import {GameModel} from "./GameModel"
 import {BaseSlotGameData} from "./BaseSlotGameData";
-import {ISlotLotteryData} from "../Interfaces";
 
 export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> extends GameModel<T> {
 
     /** 运动 list 数组列表 */
     protected listRolls: GList[] = []
-    /** 开奖数据  {arr isTurboMode itemCount} */
-    protected lotteryData: ISlotLotteryData[] = []
+    /** 开奖数据  {arr isTurboMode itemCount}
+     * @see SlotLotteryData
+     */
+    protected lotteryData: SlotLotteryData[] = []
     /** 缓动的缓存 */
     protected tweenList: Tween[]
     /** 完成动画数量 */
@@ -67,7 +68,7 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
     /**
      * 播放开奖
      */
-    protected playLottery(value: ISlotLotteryData[]) {
+    protected playLottery(value: SlotLotteryData[]) {
         this.tweenList.splice(0, this.tweenList.length)
         this.lotteryData = value
         this.completeCount = 0
@@ -91,7 +92,7 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
      * @param index 滚动的列
      * @param lotteryData 当前滚动列数据
      */
-    onScrollTween(index: number, lotteryData: ISlotLotteryData) {}
+    onScrollTween(index: number, lotteryData: SlotLotteryData) {}
 
     /** 开始播放结果动画 */
     protected startPlayResultTween() {}

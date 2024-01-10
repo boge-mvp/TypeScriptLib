@@ -134,22 +134,32 @@ declare namespace gameLib {
         GAME_SHOW_PROMPT_NORMAL_WINDOW = "game_show_prompt_normal_window",
         /** 游戏新的回合开始 */
         GAME_NEW_ROUND_START = "GAME_NEW_ROUND_START",
-        /** 游戏 */
+        /** 关闭所有动画 */
         GAME_CLOSE_ALL_ANI = "game_close_all_ani",
         /** 显示帮助文档 */
         GAME_SHOW_HELP = "game_show_help",
-        /** 播放动画 */
+        /** 播放开奖动画 */
         GAME_PLAY_LOTTERY_ANI = "game_play_lottery_ani",
-        /** 更改 spin 模式文字 0 spin 1 stop */
+        /** 更改 spin 模式文字 0.spin 1.stop */
         GAME_CHANGE_SPIN_TEXT = "game_change_spin_text",
-        /** 改变所有按钮的状态 */
+        /** 改变所有按钮的启用状态 true.启用 false.禁用 */
         GAME_ALL_BTN_CHANGE_STATE = "game_all_btn_change_state",
-        /** 更新赢钱的值 */
+        /** 更新盈利的值 */
         GAME_UPDATE_WIN_VALUE = "game_update_win_value",
-        /**
-         * 游戏更新自动SPIN次数
-         */
+        /** 游戏更新自动SPIN次数 */
         GAME_UPDATE_AUTO_SPIN_NUMBER = "game_update_auto_spin_number",
+        /** 播放收金币动画 */
+        GAME_PLAY_COLLECT_GOLD_COINS_ANI = "game_play_collect_gold_coins_ani",
+        /** 更新总投注 */
+        GAME_UPDATE_TOTAL_BET = "game_update_total_bet",
+        /** 显示普通结算UI */
+        GAME_SHOW_SETTLE_WIN_UI = "game_show_settle_win_ui",
+        /** 显示默认提示语 */
+        GAME_SHOW_DEFAULT_TIP = "game_show_default_tip",
+        /** 执行播放背景音乐 */
+        GAME_PLAY_BG_MUSIC = "game_play_bg_music",
+        /** 更新bounds信息 */
+        GAME_UPDATE_BOUNDS_INFO = "game_update_bounds_info",
         /**
          * 游戏更新自动bet次数
          * @deprecated
@@ -162,18 +172,6 @@ declare namespace gameLib {
          * @see GAME_UPDATE_AUTO_SPIN_NUMBER
          */
         GAME_UPDATE_FREE_COUNT = "game_update_auto_spin_number",
-        /** 播放收金币动画 */
-        GAME_PLAY_COLLECT_GOLD_COINS_ANI = "game_play_collect_gold_coins_ani",
-        /** 显示结算UI */
-        GAME_SHOW_SETTLE_WIN_UI = "game_show_settle_win_ui",
-        /** 显示默认提示语 */
-        GAME_SHOW_DEFAULT_TIP = "game_show_default_tip",
-        /** 执行播放背景音乐 */
-        GAME_PLAY_BG_MUSIC = "game_play_bg_music",
-        /** 更新总投注 */
-        GAME_UPDATE_TOTAL_BET = "game_update_total_bet",
-        /** 更新bounds信息 */
-        GAME_UPDATE_BOUNDS_INFO = "game_update_bounds_info",
         /**
          * 在 scene.startGame 中修改isFreeModel后的 请求第一次free spin
          */
@@ -187,13 +185,23 @@ declare namespace gameLib {
          */
         SHOW_FREE_SPIN_GO_ON = "show_free_spin_go_on",
         /** 显示获得free奖励窗口 */
-        GAME_SHOW_FREE_WINDOW = "game_show_free_window",
+        GAME_SHOW_FREE_IN_WINDOW = "game_show_free_in_window",
         /** 隐藏获得free奖励窗口 */
-        GAME_HIDE_FREE_WINDOW = "game_hide_free_window",
+        GAME_HIDE_FREE_IN_WINDOW = "game_hide_free_in_window",
         /** 显示结算free窗口 */
         GAME_SHOW_FREE_OUT_WINDOW = "game_show_free_out_window",
         /** 隐藏结算free窗口 */
         GAME_HIDE_FREE_OUT_WINDOW = "game_hide_free_out_window",
+        /** 显示获得free奖励窗口
+         * @deprecated
+         * @see GAME_SHOW_FREE_IN_WINDOW
+         */
+        GAME_SHOW_FREE_WINDOW = "game_show_free_in_window",
+        /** 隐藏获得free奖励窗口
+         * @deprecated
+         * @see GAME_HIDE_FREE_IN_WINDOW
+         */
+        GAME_HIDE_FREE_WINDOW = "game_hide_free_in_window",
         /** 显示freeUI
          * @deprecated
          * @see GAME_FREE_SPIN_START
@@ -232,16 +240,20 @@ declare namespace gameLib {
      * 游戏数据的基类
      */
     export class BaseGameData implements IGameData {
+        currentBalance: number;
+        totalWinMoney: number;
+        playCount: number;
+        isRecommend: boolean;
+        specialMode: boolean;
+        gameType: GameType;
         /** 是否快速播放 */
         protected _isTurboMode: boolean;
         /** 缓存的下注值 */
         cacheAnte: any;
-        /** 服务器发来的当前余额 */
-        currentBalance: number;
+        /** 默认bet位置 */
+        defaultBetIndex: number;
         /** 后端计算   当前盈利 */
         serverWinMoney: number;
-        totalWinMoney: number;
-        playCount: number;
         /** 缓存 后端计算 当前盈利 */
         tempServerWinMoney: number;
         /** 当前玩家选择的自动bet次数 */
@@ -254,24 +266,13 @@ declare namespace gameLib {
         betValue: number;
         /** 开奖结果 */
         lotteryId: any[];
-        /** 是否已经弹出过一次推荐现金游戏 */
-        isRecommend: boolean;
         /** 通知数据 */
         noticeData: any[];
-        /** 默认bet位置 */
-        defaultBetIndex: number;
-        /**
-         * 当前是否在特殊模式
-         * @default false
-         */
-        specialMode: boolean;
         /**
          * 重置默认bet值
          * @default false
          */
         isResetBetValue: boolean;
-        /** 游戏类型 */
-        gameType: GameType;
         constructor();
         get isTurboMode(): boolean;
         set isTurboMode(value: boolean);
@@ -715,16 +716,23 @@ declare namespace gameLib {
     /**
      *
      * @author boge
-     *
      */
-    export class GameModel<T = BaseGameData> extends tsCore.EProxy implements IGameModel {
+    export class GameModel<T extends IGameData = BaseGameData> extends tsCore.EProxy implements IGameModel {
+        /**
+         * @deprecated
+         */
         protected _gameScene: IGameScene;
+        /**
+         * @deprecated
+         */
         protected _gameServlet: IGameServlet;
         /** 游戏番号 */
         protected _gameCode: number;
         /** 原始音乐备份 */
         protected musicBack: any;
-        /** 大厅model */
+        /** 大厅model
+         * @deprecated
+         */
         private _homeModel;
         /** 当前屏幕方向 */
         gameScreenType: string;
@@ -736,11 +744,11 @@ declare namespace gameLib {
         protected constructor();
         initModel(): void;
         initSocketEvent(): void;
-        private showNotice;
+        private onNotice;
         /** 通知资金变化 */
-        private moneyChange;
+        private onMoneyChange;
         /** 通知信息 */
-        private notificationHandler;
+        private onNotification;
         /**
          * 计划任务
          * @param args 参数
@@ -777,8 +785,17 @@ declare namespace gameLib {
         set gameCode(value: number);
         get gameCode(): number;
         socketHandler(obj: any): void;
+        /**
+         * @deprecated
+         */
         get homeModel(): IHomeModel;
+        /**
+         * @deprecated
+         */
         set gameScene(value: IGameScene);
+        /**
+         * @deprecated
+         */
         set gameServlet(value: IGameServlet);
         protected get gameData(): T;
         /**
@@ -971,8 +988,10 @@ declare namespace gameLib {
     export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> extends GameModel<T> {
         /** 运动 list 数组列表 */
         protected listRolls: fgui.GList[];
-        /** 开奖数据  {arr isTurboMode itemCount} */
-        protected lotteryData: ISlotLotteryData[];
+        /** 开奖数据  {arr isTurboMode itemCount}
+         * @see SlotLotteryData
+         */
+        protected lotteryData: SlotLotteryData[];
         /** 缓动的缓存 */
         protected tweenList: Laya.Tween[];
         /** 完成动画数量 */
@@ -1016,7 +1035,7 @@ declare namespace gameLib {
         /**
          * 播放开奖
          */
-        protected playLottery(value: ISlotLotteryData[]): void;
+        protected playLottery(value: SlotLotteryData[]): void;
         /** 立即停止开奖动画 */
         stopTween(): void;
         /**
@@ -1024,7 +1043,7 @@ declare namespace gameLib {
          * @param index 滚动的列
          * @param lotteryData 当前滚动列数据
          */
-        onScrollTween(index: number, lotteryData: ISlotLotteryData): void;
+        onScrollTween(index: number, lotteryData: SlotLotteryData): void;
         /** 开始播放结果动画 */
         protected startPlayResultTween(): void;
         /**
@@ -1199,7 +1218,7 @@ declare namespace gameLib {
      * slot游戏滚动效果类 只使用了 Laya.Tween
      */
     export class SlotScrollTweenModel<T extends BaseSlotGameData = BaseSlotGameData> extends SlotModel<T> {
-        protected playLottery(value: ISlotLotteryData[]): void;
+        protected playLottery(value: SlotLotteryData[]): void;
         protected setRenderListData(index: number): void;
         protected getDuration(index: number, isTurboMode: boolean): number;
         protected getDelay(index: number, isTurboMode: boolean): number;
@@ -1397,12 +1416,24 @@ declare namespace gameLib {
         getTotalBetMoney(): number;
         /** 上报错误数据 */
         reportError(): any;
+        /** 服务器发来的当前余额 */
+        currentBalance: number;
         /** 本次总共盈利 */
         totalWinMoney?: number;
         /** 玩的次数 计数 */
         playCount: number;
-        /** 是否是推荐游戏 */
+        /** 是否已经弹出过一次推荐正式场的游戏 */
         isRecommend?: boolean;
+        /**
+         * 当前是否在特殊模式
+         * @default false
+         */
+        specialMode: boolean;
+        /**
+         * 游戏类型
+         * @default GameType.NORMAL
+         */
+        gameType: GameType;
     }
     export interface IData {
         /** 国家 'ke'肯尼亚；'ug'乌干达, 'ng'尼日尼亚 */
@@ -1453,33 +1484,6 @@ declare namespace gameLib {
     export interface ILogin {
         /** 使用Token登录 并获取用户数据 */
         loginToken(callback: ParamHandler): any;
-    }
-    /**
-     * 开奖数据
-     */
-    export interface ISlotLotteryData {
-        /** 开奖数组 */
-        arr: number[];
-        /** 是否是快速模式 */
-        isTurboMode: boolean;
-        /** 块有多少个 */
-        itemCount: number;
-        /** 附带数据 */
-        data?: any;
-    }
-    /**
-     * 执行命令数据
-     */
-    export interface IExecuteData {
-        token?: string;
-        /** 执行类型 */
-        type: number;
-        /** 执行数据 */
-        data?: number | string;
-        /** 打开游戏名字 */
-        gameName?: string;
-        /** 打开游戏id */
-        openGame?: number;
     }
     /**
      * 游戏模式
@@ -2012,8 +2016,8 @@ declare namespace gameLib {
          * app回调数据
          * @param json
          */
-        callback(json: IExecuteData): void;
-        open(json: IExecuteData): void;
+        callback(json: ExecuteData): void;
+        open(json: ExecuteData): void;
     }
     /** app管理器 */
     export class AppManager {
@@ -2178,7 +2182,7 @@ declare namespace gameLib {
      */
     export class AppRecordManager extends tsCore.HistoryManager {
         /** 进入大厅后执行命令 */
-        static executeJson: IExecuteData;
+        static executeJson: ExecuteData;
         /** 退出点击上一次时间 */
         private static exitTimer;
         /**
@@ -2202,7 +2206,7 @@ declare namespace gameLib {
          * java 传入要求打开的内容
          * @param json
          */
-        static JavaSendOpen(json: IExecuteData): void;
+        static JavaSendOpen(json: ExecuteData): void;
         private static open;
     }
     /**
@@ -2703,7 +2707,7 @@ declare namespace gameLib {
             channel?: string;
             debug?: boolean;
         });
-        parseData(json: IExecuteData): void;
+        parseData(json: ExecuteData): void;
         getQueryBoolean(json: any, fun: (value: boolean) => {}, ...keys: string[]): void;
         /**
          * 执行参数设置 如果存在将调用fun 如果不存在或是空 将不会调用fun
@@ -2827,7 +2831,7 @@ declare namespace gameLib {
         /** 缓存上一次网络请求返回数据 */
         resultData: any;
         /** 解析的传入游戏的参数 */
-        parseParam: IExecuteData;
+        parseParam: ExecuteData;
         /** 用户拥有的奖金池  */
         jackpotData: any[];
         /** 用户的真实投注 */
@@ -3858,14 +3862,43 @@ declare type HttpData = {
     [key: string]: any
 }
 
-declare type FreeSpinData = {
+declare type FreeSpinData<T = any> = {
     /** 免费游戏剩余次数 */
     left_times: number
     /** 游戏bet数据 */
-    free_spin_data: any
+    free_spin_data: T
     [key: string]: any
 }
 
 declare type GoldAniData = {
     x?: number, y?: number, scaleX?: number, scaleY?: number, duration?: number, delay?: number, ease?: Function
+}
+
+/**
+ * 要播放的开奖数据
+ */
+declare type SlotLotteryData<T = any> = {
+    /** 开奖数组 */
+    arr: number[]
+    /** 是否是快速模式 */
+    isTurboMode: boolean
+    /** 块有多少个 */
+    itemCount: number
+    /** 附带数据 */
+    data?: T
+}
+
+/**
+ * 执行命令数据
+ */
+declare type ExecuteData = {
+    token?: string
+    /** 执行类型 */
+    type: number
+    /** 执行数据 */
+    data?: number | string
+    /** 打开游戏名字 */
+    gameName?: string
+    /** 打开游戏id */
+    openGame?: number
 }

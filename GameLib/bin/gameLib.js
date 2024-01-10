@@ -143,23 +143,33 @@ window.gameLib = {};
         ActionLib["GAME_SHOW_PROMPT_NORMAL_WINDOW"] = "game_show_prompt_normal_window";
         /** 游戏新的回合开始 */
         ActionLib["GAME_NEW_ROUND_START"] = "GAME_NEW_ROUND_START";
-        // 游戏公用事件
-        /** 游戏 */
+        //-------------------------------- 游戏公用事件 --------------------------------------------
+        /** 关闭所有动画 */
         ActionLib["GAME_CLOSE_ALL_ANI"] = "game_close_all_ani";
         /** 显示帮助文档 */
         ActionLib["GAME_SHOW_HELP"] = "game_show_help";
-        /** 播放动画 */
+        /** 播放开奖动画 */
         ActionLib["GAME_PLAY_LOTTERY_ANI"] = "game_play_lottery_ani";
-        /** 更改 spin 模式文字 0 spin 1 stop */
+        /** 更改 spin 模式文字 0.spin 1.stop */
         ActionLib["GAME_CHANGE_SPIN_TEXT"] = "game_change_spin_text";
-        /** 改变所有按钮的状态 */
+        /** 改变所有按钮的启用状态 true.启用 false.禁用 */
         ActionLib["GAME_ALL_BTN_CHANGE_STATE"] = "game_all_btn_change_state";
-        /** 更新赢钱的值 */
+        /** 更新盈利的值 */
         ActionLib["GAME_UPDATE_WIN_VALUE"] = "game_update_win_value";
-        /**
-         * 游戏更新自动SPIN次数
-         */
+        /** 游戏更新自动SPIN次数 */
         ActionLib["GAME_UPDATE_AUTO_SPIN_NUMBER"] = "game_update_auto_spin_number";
+        /** 播放收金币动画 */
+        ActionLib["GAME_PLAY_COLLECT_GOLD_COINS_ANI"] = "game_play_collect_gold_coins_ani";
+        /** 更新总投注 */
+        ActionLib["GAME_UPDATE_TOTAL_BET"] = "game_update_total_bet";
+        /** 显示普通结算UI */
+        ActionLib["GAME_SHOW_SETTLE_WIN_UI"] = "game_show_settle_win_ui";
+        /** 显示默认提示语 */
+        ActionLib["GAME_SHOW_DEFAULT_TIP"] = "game_show_default_tip";
+        /** 执行播放背景音乐 */
+        ActionLib["GAME_PLAY_BG_MUSIC"] = "game_play_bg_music";
+        /** 更新bounds信息 */
+        ActionLib["GAME_UPDATE_BOUNDS_INFO"] = "game_update_bounds_info";
         /**
          * 游戏更新自动bet次数
          * @deprecated
@@ -172,19 +182,7 @@ window.gameLib = {};
          * @see GAME_UPDATE_AUTO_SPIN_NUMBER
          */
         ActionLib["GAME_UPDATE_FREE_COUNT"] = "game_update_auto_spin_number";
-        /** 播放收金币动画 */
-        ActionLib["GAME_PLAY_COLLECT_GOLD_COINS_ANI"] = "game_play_collect_gold_coins_ani";
-        /** 显示结算UI */
-        ActionLib["GAME_SHOW_SETTLE_WIN_UI"] = "game_show_settle_win_ui";
-        /** 显示默认提示语 */
-        ActionLib["GAME_SHOW_DEFAULT_TIP"] = "game_show_default_tip";
-        /** 执行播放背景音乐 */
-        ActionLib["GAME_PLAY_BG_MUSIC"] = "game_play_bg_music";
-        /** 更新总投注 */
-        ActionLib["GAME_UPDATE_TOTAL_BET"] = "game_update_total_bet";
-        /** 更新bounds信息 */
-        ActionLib["GAME_UPDATE_BOUNDS_INFO"] = "game_update_bounds_info";
-        // FREE SPIN 都是在scene startGame中启动 以及显示中奖弹窗
+        //------------------------------- FREE SPIN 都是在scene startGame中启动 以及显示中奖弹窗 --------------------------------
         /**
          * 在 scene.startGame 中修改isFreeModel后的 请求第一次free spin
          */
@@ -198,13 +196,23 @@ window.gameLib = {};
          */
         ActionLib["SHOW_FREE_SPIN_GO_ON"] = "show_free_spin_go_on";
         /** 显示获得free奖励窗口 */
-        ActionLib["GAME_SHOW_FREE_WINDOW"] = "game_show_free_window";
+        ActionLib["GAME_SHOW_FREE_IN_WINDOW"] = "game_show_free_in_window";
         /** 隐藏获得free奖励窗口 */
-        ActionLib["GAME_HIDE_FREE_WINDOW"] = "game_hide_free_window";
+        ActionLib["GAME_HIDE_FREE_IN_WINDOW"] = "game_hide_free_in_window";
         /** 显示结算free窗口 */
         ActionLib["GAME_SHOW_FREE_OUT_WINDOW"] = "game_show_free_out_window";
         /** 隐藏结算free窗口 */
         ActionLib["GAME_HIDE_FREE_OUT_WINDOW"] = "game_hide_free_out_window";
+        /** 显示获得free奖励窗口
+         * @deprecated
+         * @see GAME_SHOW_FREE_IN_WINDOW
+         */
+        ActionLib["GAME_SHOW_FREE_WINDOW"] = "game_show_free_in_window";
+        /** 隐藏获得free奖励窗口
+         * @deprecated
+         * @see GAME_HIDE_FREE_IN_WINDOW
+         */
+        ActionLib["GAME_HIDE_FREE_WINDOW"] = "game_hide_free_in_window";
         /** 显示freeUI
          * @deprecated
          * @see GAME_FREE_SPIN_START
@@ -250,14 +258,18 @@ window.gameLib = {};
      */
     class BaseGameData {
         constructor() {
-            /** 是否快速播放 */
-            this._isTurboMode = false;
-            /** 服务器发来的当前余额 */
             this.currentBalance = 0;
-            /** 后端计算   当前盈利 */
-            this.serverWinMoney = 0;
             this.totalWinMoney = 0;
             this.playCount = 0;
+            this.isRecommend = false;
+            this.specialMode = false;
+            this.gameType = GameType.NORMAL;
+            /** 是否快速播放 */
+            this._isTurboMode = false;
+            /** 默认bet位置 */
+            this.defaultBetIndex = 0;
+            /** 后端计算   当前盈利 */
+            this.serverWinMoney = 0;
             /** 缓存 后端计算 当前盈利 */
             this.tempServerWinMoney = 0;
             /** 当前玩家选择的自动bet次数 */
@@ -268,24 +280,13 @@ window.gameLib = {};
             this.betMoney = [];
             /** 当前bet值 */
             this.betValue = 0;
-            /** 是否已经弹出过一次推荐现金游戏 */
-            this.isRecommend = false;
             /** 通知数据 */
             this.noticeData = [];
-            /** 默认bet位置 */
-            this.defaultBetIndex = 0;
-            /**
-             * 当前是否在特殊模式
-             * @default false
-             */
-            this.specialMode = false;
             /**
              * 重置默认bet值
              * @default false
              */
             this.isResetBetValue = false;
-            /** 游戏类型 */
-            this.gameType = GameType.NORMAL;
             const key = Player.inst.gameId + "_isTurboMode";
             this._isTurboMode = Laya.LocalStorage.getItem(key) != null;
         }
@@ -1411,7 +1412,6 @@ window.gameLib = {};
     /**
      *
      * @author boge
-     *
      */
     class GameModel extends tsCore.EProxy {
         constructor() {
@@ -1431,19 +1431,19 @@ window.gameLib = {};
             this.setupMusic();
         }
         initSocketEvent() {
-            this.addSocketEvent(Cmd.SOCKET_MONEY_CHANGE, this.moneyChange.bind(this));
-            this.addSocketEvent(Cmd.SOCKET_GOLD_CHANGE, this.moneyChange.bind(this));
-            this.addSocketEvent(Cmd.SOCKET_TOP_UP_CHANGE, this.moneyChange.bind(this));
-            // this.addSocketEvent(Cmd.SOCKET_NOTIFICATION, this.notificationHandler.bind(this))
-            this.addSocketEvent(Cmd.SOCKET_SHOW_NOTICE, this.showNotice.bind(this));
+            this.addSocketEvent(Cmd.SOCKET_MONEY_CHANGE, this.onMoneyChange.bind(this));
+            this.addSocketEvent(Cmd.SOCKET_GOLD_CHANGE, this.onMoneyChange.bind(this));
+            this.addSocketEvent(Cmd.SOCKET_TOP_UP_CHANGE, this.onMoneyChange.bind(this));
+            // this.addSocketEvent(Cmd.SOCKET_NOTIFICATION, this.onNotification.bind(this))
+            this.addSocketEvent(Cmd.SOCKET_SHOW_NOTICE, this.onNotice.bind(this));
         }
-        showNotice(obj) {
+        onNotice(obj) {
             let notice = this.getView(NoticeView);
             if (notice)
                 notice.showText(obj.data);
         }
         /** 通知资金变化 */
-        moneyChange(obj) {
+        onMoneyChange(obj) {
             //        if (homeModel) homeModel.moneyChange(obj)
             if (Player.inst.isGuest)
                 return; // 如果是游客  那就不调用资金更新
@@ -1468,12 +1468,14 @@ window.gameLib = {};
             }
         }
         /** 通知信息 */
-        notificationHandler(obj) {
-            obj = obj.message;
-            // obj.title, obj.text, obj.ticker, obj.subText, obj.open
+        onNotification(obj) {
+            const mes = obj.message;
             if (Player.inst.isWeb) {
                 function show() {
-                    let notification = new Notification(obj.title, { body: obj.text, icon: "favicon.ico" });
+                    let notification = new Notification(mes.title, { body: mes.text, icon: "favicon.ico" });
+                    notification.onclick = function () {
+                        notification.close();
+                    };
                 }
                 function regP() {
                     Notification.requestPermission(function (status) {
@@ -1494,7 +1496,6 @@ window.gameLib = {};
                         regP();
                     }
                 }
-                //			__JS__("notification.onclick = function(){notification.close()}")
             }
             else {
                 AppManager.sendNotification(obj);
@@ -1512,12 +1513,8 @@ window.gameLib = {};
          * 执行一次预计划任务
          */
         runTask() {
-            if (this.tasks.length > 0) {
-                for (let i = 0; i < this.tasks.length; i++) {
-                    let task = this.tasks.shift();
-                    runFun(task.handler, task.args);
-                }
-            }
+            this.tasks.forEach(value => runFun(value.handler, value.args));
+            this.tasks.length = 0;
         }
         /**
          * 注册socket 事件
@@ -1568,6 +1565,35 @@ window.gameLib = {};
         }
         /** 通知开奖结束  进入结束流程 */
         lotteryComplete() {
+            this.sendAction(ActionLib.GAME_UPDATE_WIN_VALUE);
+            Player.inst.money = this.gameData.currentBalance;
+            if (this.gameData instanceof BaseSlotGameData) {
+                if (this.gameData.hasReSpin) {
+                    this.sendAction(ActionLib.GAME_START);
+                    return;
+                }
+                if (this.gameData.isFreeModel && this.gameData.freeCount > 0) { //如果在特殊场景里面
+                    Laya.timer.callLater(this, function () {
+                        this.sendAction(ActionLib.GAME_START);
+                    });
+                    return;
+                }
+                // 开出三个免费游戏启动项目  并且服务端告诉有免费游戏
+                if (this.gameData.freeBoundsCount >= 3 && this.gameData.hasFreeSpin != 0) {
+                    this.gameData.tempServerWinMoney = this.gameData.serverWinMoney;
+                    // 交给scene处理
+                    this.sendAction(ActionLib.GAME_START);
+                    return;
+                }
+                // 如果是开大奖结束  显示总共赢的钱
+                if (this.gameData.hasFreeSpin != 0) {
+                    this.gameData.hasFreeSpin = 0;
+                    this.sendAction(ActionLib.GAME_SHOW_FREE_OUT_WINDOW);
+                    return;
+                }
+            }
+            this.sendAction(ActionLib.GAME_ALL_BTN_CHANGE_STATE, false);
+            this.sendAction(ActionLib.GAME_START);
         }
         /** 游戏进入后台执行 */
         blurGame() {
@@ -1600,12 +1626,21 @@ window.gameLib = {};
         }
         socketHandler(obj) {
         }
+        /**
+         * @deprecated
+         */
         get homeModel() {
             return this._homeModel;
         }
+        /**
+         * @deprecated
+         */
         set gameScene(value) {
             this._gameScene = value;
         }
+        /**
+         * @deprecated
+         */
         set gameServlet(value) {
             this._gameServlet = value;
         }
@@ -2097,7 +2132,9 @@ window.gameLib = {};
             super();
             /** 运动 list 数组列表 */
             this.listRolls = [];
-            /** 开奖数据  {arr isTurboMode itemCount} */
+            /** 开奖数据  {arr isTurboMode itemCount}
+             * @see SlotLotteryData
+             */
             this.lotteryData = [];
             /**
              * 是否是向上滚动的 一般开始的位置都是顶部

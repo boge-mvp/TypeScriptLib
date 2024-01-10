@@ -7,7 +7,6 @@ import Log = tsCore.Log;
 import {Player} from "../Player"
 import {AppRecordManager} from "../manager/AppRecordManager"
 import {SceneManager} from "../manager/SceneManager";
-import {IExecuteData} from "../Interfaces";
 
 /**
  * url 参数
@@ -72,7 +71,7 @@ export class UrlParam {
 
     }
 
-    parseData(json: IExecuteData) {
+    parseData(json: ExecuteData) {
         Player.inst.parseParam = json
         // 获取链接附带参数
         let isweb = this.getValue(json, "isweb")

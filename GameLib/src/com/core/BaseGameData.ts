@@ -16,16 +16,22 @@ export enum GameType {
  */
 export class BaseGameData implements IGameData {
 
+    currentBalance = 0
+    totalWinMoney = 0
+    playCount = 0
+    isRecommend = false
+    specialMode = false
+    gameType = GameType.NORMAL
+
     /** 是否快速播放 */
     protected _isTurboMode = false
     /** 缓存的下注值 */
     cacheAnte: any
-    /** 服务器发来的当前余额 */
-    currentBalance = 0
+    /** 默认bet位置 */
+    defaultBetIndex = 0
     /** 后端计算   当前盈利 */
     serverWinMoney = 0
-    totalWinMoney = 0
-    playCount = 0
+
     /** 缓存 后端计算 当前盈利 */
     tempServerWinMoney = 0
     /** 当前玩家选择的自动bet次数 */
@@ -38,24 +44,13 @@ export class BaseGameData implements IGameData {
     betValue = 0
     /** 开奖结果 */
     lotteryId: any[]
-    /** 是否已经弹出过一次推荐现金游戏 */
-    isRecommend = false
     /** 通知数据 */
     noticeData = []
-    /** 默认bet位置 */
-    defaultBetIndex = 0
-    /**
-     * 当前是否在特殊模式
-     * @default false
-     */
-    specialMode = false
     /**
      * 重置默认bet值
      * @default false
      */
     isResetBetValue = false
-    /** 游戏类型 */
-    gameType = GameType.NORMAL
 
     constructor() {
         const key = Player.inst.gameId + "_isTurboMode"
@@ -75,8 +70,6 @@ export class BaseGameData implements IGameData {
             Laya.LocalStorage.removeItem(key)
         }
     }
-
-
 
     /**
      * 获取 Skeleton 播放速率

@@ -20,21 +20,29 @@ import {GameConfigKit} from "../kit/GameConfigKit";
 import StringUtil = tsCore.StringUtil;
 import {LoaderConfig} from "../configs/LoaderConfig";
 import {AssetsLoader} from "../manager/AssetsLoader";
+import {IGameData} from "../Interfaces";
+import {BaseSlotGameData} from "./BaseSlotGameData";
 
 /**
  *
  * @author boge
- *
  */
-export class GameModel<T = BaseGameData> extends EProxy implements IGameModel {
-
+export class GameModel<T extends IGameData = BaseGameData> extends EProxy implements IGameModel {
+    /**
+     * @deprecated
+     */
     protected _gameScene: IGameScene
+    /**
+     * @deprecated
+     */
     protected _gameServlet: IGameServlet
     /** 游戏番号 */
     protected _gameCode: number
     /** 原始音乐备份 */
     protected musicBack: any
-    /** 大厅model */
+    /** 大厅model
+     * @deprecated
+     */
     private _homeModel: IHomeModel
     /** 当前屏幕方向 */
     gameScreenType = Stage.SCREEN_VERTICAL
@@ -57,20 +65,20 @@ export class GameModel<T = BaseGameData> extends EProxy implements IGameModel {
     }
 
     initSocketEvent() {
-        this.addSocketEvent(Cmd.SOCKET_MONEY_CHANGE, this.moneyChange.bind(this))
-        this.addSocketEvent(Cmd.SOCKET_GOLD_CHANGE, this.moneyChange.bind(this))
-        this.addSocketEvent(Cmd.SOCKET_TOP_UP_CHANGE, this.moneyChange.bind(this))
-        // this.addSocketEvent(Cmd.SOCKET_NOTIFICATION, this.notificationHandler.bind(this))
-        this.addSocketEvent(Cmd.SOCKET_SHOW_NOTICE, this.showNotice.bind(this))
+        this.addSocketEvent(Cmd.SOCKET_MONEY_CHANGE, this.onMoneyChange.bind(this))
+        this.addSocketEvent(Cmd.SOCKET_GOLD_CHANGE, this.onMoneyChange.bind(this))
+        this.addSocketEvent(Cmd.SOCKET_TOP_UP_CHANGE, this.onMoneyChange.bind(this))
+        // this.addSocketEvent(Cmd.SOCKET_NOTIFICATION, this.onNotification.bind(this))
+        this.addSocketEvent(Cmd.SOCKET_SHOW_NOTICE, this.onNotice.bind(this))
     }
 
-    private showNotice(obj) {
+    private onNotice(obj) {
         let notice = this.getView(NoticeView)
         if (notice) (<NoticeView>notice).showText(obj.data)
     }
 
     /** 通知资金变化 */
-    private moneyChange(obj: any) {
+    private onMoneyChange(obj: any) {
 //        if (homeModel) homeModel.moneyChange(obj)
         if (Player.inst.isGuest) return; // 如果是游客  那就不调用资金更新
         if (obj && obj.balance) {
@@ -95,12 +103,14 @@ export class GameModel<T = BaseGameData> extends EProxy implements IGameModel {
     }
 
     /** 通知信息 */
-    private notificationHandler(obj: any) {
-        obj = obj.message
-        // obj.title, obj.text, obj.ticker, obj.subText, obj.open
+    private onNotification(obj: { message: { title: string, text: string, subText: string, open: string} }) {
+        const mes = obj.message
         if (Player.inst.isWeb) {
             function show() {
-                let notification = new Notification(obj.title, {body: obj.text, icon: "favicon.ico"})
+                let notification = new Notification(mes.title, {body: mes.text, icon: "favicon.ico"})
+                notification.onclick = function () {
+                    notification.close()
+                }
             }
 
             function regP() {
@@ -123,7 +133,6 @@ export class GameModel<T = BaseGameData> extends EProxy implements IGameModel {
                     regP()
                 }
             }
-//			__JS__("notification.onclick = function(){notification.close()}")
         } else {
             AppManager.sendNotification(obj)
         }
@@ -143,12 +152,10 @@ export class GameModel<T = BaseGameData> extends EProxy implements IGameModel {
      * 执行一次预计划任务
      */
     runTask() {
-        if (this.tasks.length > 0) {
-            for (let i = 0; i < this.tasks.length; i++) {
-                let task = this.tasks.shift()
-                runFun(task.handler, task.args)
-            }
-        }
+        this.tasks.forEach(value =>
+            runFun(value.handler, value.args)
+        )
+        this.tasks.length = 0
     }
 
     /**
@@ -205,6 +212,37 @@ export class GameModel<T = BaseGameData> extends EProxy implements IGameModel {
 
     /** 通知开奖结束  进入结束流程 */
     protected lotteryComplete() {
+        this.sendAction(ActionLib.GAME_UPDATE_WIN_VALUE)
+        Player.inst.money = this.gameData.currentBalance
+        if (this.gameData instanceof BaseSlotGameData) {
+            if (this.gameData.hasReSpin) {
+                this.sendAction(ActionLib.GAME_START)
+                return
+            }
+            if (this.gameData.isFreeModel && this.gameData.freeCount > 0) { //如果在特殊场景里面
+                Laya.timer.callLater(this, function () {
+                    this.sendAction(ActionLib.GAME_START)
+                })
+                return
+            }
+            // 开出三个免费游戏启动项目  并且服务端告诉有免费游戏
+            if (this.gameData.freeBoundsCount >= 3 && this.gameData.hasFreeSpin != 0) {
+                this.gameData.tempServerWinMoney = this.gameData.serverWinMoney
+                // 交给scene处理
+                this.sendAction(ActionLib.GAME_START)
+                return
+            }
+
+            // 如果是开大奖结束  显示总共赢的钱
+            if (this.gameData.hasFreeSpin != 0) {
+                this.gameData.hasFreeSpin = 0
+                this.sendAction(ActionLib.GAME_SHOW_FREE_OUT_WINDOW)
+                return
+            }
+
+        }
+        this.sendAction(ActionLib.GAME_ALL_BTN_CHANGE_STATE, false)
+        this.sendAction(ActionLib.GAME_START)
     }
 
     /** 游戏进入后台执行 */
@@ -243,14 +281,22 @@ export class GameModel<T = BaseGameData> extends EProxy implements IGameModel {
     socketHandler(obj: any) {
     }
 
+    /**
+     * @deprecated
+     */
     get homeModel() {
         return this._homeModel
     }
 
+    /**
+     * @deprecated
+     */
     set gameScene(value: IGameScene) {
         this._gameScene = value
     }
-
+    /**
+     * @deprecated
+     */
     set gameServlet(value: IGameServlet) {
         this._gameServlet = value
     }
@@ -258,6 +304,7 @@ export class GameModel<T = BaseGameData> extends EProxy implements IGameModel {
     protected get gameData(): T {
         return Player.inst.gameData as T
     }
+
     /**
      * @deprecated
      */

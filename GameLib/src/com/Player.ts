@@ -6,7 +6,7 @@ import MathKit = tsCore.MathKit;
 import StringUtil = tsCore.StringUtil;
 import ConfigKit = tsCore.ConfigKit;
 import {UrlParam} from "./net/UrlParam"
-import {IData, IExecuteData, IGameData, IGuestModel, ILogin} from "./Interfaces";
+import {IData, IGameData, IGuestModel, ILogin} from "./Interfaces";
 import Log = tsCore.Log;
 
 /** 用户数据 */
@@ -97,7 +97,7 @@ export class Player {
     /** 缓存上一次网络请求返回数据 */
     resultData: any
     /** 解析的传入游戏的参数 */
-    parseParam: IExecuteData
+    parseParam: ExecuteData
     // 大奖参数
     /** 用户拥有的奖金池  */
     jackpotData = []
