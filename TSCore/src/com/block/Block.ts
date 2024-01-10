@@ -137,8 +137,8 @@ export class StringBlock {
 
 export class ActionEvent implements IAction {
 
-    regAction(action: string, caller: any, method: Function, group?: string) {
-        App.inst.regAction(action, caller, method, group)
+    regAction(action: string, caller: any, method: Function, group?: string, order?: number) {
+        App.inst.regAction(action, caller, method, group, order)
     }
 
     regActionHandler(action: string, handler: Laya.Handler, group?: string) {
@@ -146,8 +146,8 @@ export class ActionEvent implements IAction {
     }
 
     /** 注册游戏数据 */
-    regGameAction(action: string, caller: any, method: Function) {
-        this.regAction(action, caller, method, App.GAME_GROUP)
+    regGameAction(action: string, caller: any, method: Function, order?: number) {
+        this.regAction(action, caller, method, App.GAME_GROUP, order)
     }
 
     removeAllAction(...args: string[]) {

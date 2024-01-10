@@ -42,7 +42,7 @@ declare namespace tsCore {
         private onResize;
         protected initController(): void;
         regActionHandler(action: string, handler: Laya.Handler, group?: string): void;
-        regAction(action: string, caller: any, method: Function, group?: string): void;
+        regAction(action: string, caller: any, method: Function, group?: string, order?: number): void;
         removeAllAction(...args: string[]): void;
         removeGroup(group: string): void;
         removeGroupActions(group: string, ...args: any[]): void;
@@ -143,10 +143,10 @@ declare namespace tsCore {
         getString(id: string | number, ...args: any[]): string;
     }
     export class ActionEvent implements IAction {
-        regAction(action: string, caller: any, method: Function, group?: string): void;
+        regAction(action: string, caller: any, method: Function, group?: string, order?: number): void;
         regActionHandler(action: string, handler: Laya.Handler, group?: string): void;
         /** 注册游戏数据 */
-        regGameAction(action: string, caller: any, method: Function): void;
+        regGameAction(action: string, caller: any, method: Function, order?: number): void;
         removeAllAction(...args: string[]): void;
         removeGroup(group: string): void;
         removeGroupActions(group: string, ...args: string[]): void;
@@ -462,7 +462,7 @@ declare namespace tsCore {
         getGroup(groupKey: string): {
             [key: string]: Laya.Handler[];
         };
-        regAction(action: string, caller: any, method: Function, group?: string): void;
+        regAction(action: string, caller: any, method: Function, group?: string, order?: number): void;
         clearView(): void;
         clearGroup(): void;
         removeAllAction(...args: string[]): void;
@@ -787,8 +787,9 @@ declare namespace tsCore {
          * @param caller 执行域(this)
          * @param method 处理事件函数
          * @param group 分组集合
+         * @param order 值越大 越后执行 默认 100
          */
-        regAction(action: string, caller: any, method: Function, group?: string): any;
+        regAction(action: string, caller: any, method: Function, group?: string, order?: number): any;
         /**
          * 删除所有分组中的此动作
          * @param args 动作名字
@@ -2976,6 +2977,14 @@ declare module Laya {
         _anis: AnimationContent[]
     }
 
+    interface Handler {
+
+        /** 值越大 越后执行
+         * @default 100
+         */
+        order: number
+
+    }
 
 }
 

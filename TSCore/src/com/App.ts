@@ -155,8 +155,8 @@ export class App implements IAction {
         this._controller.regActionHandler(action, handler, group)
     }
 
-    regAction(action: string, caller: any, method: Function, group: string = null) {
-        this._controller.regAction(action, caller, method, group)
+    regAction(action: string, caller: any, method: Function, group: string = null, order?: number) {
+        this._controller.regAction(action, caller, method, group, order)
     }
 
     removeAllAction(...args: string[]) {

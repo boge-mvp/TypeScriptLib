@@ -36,8 +36,10 @@ export class EventController implements IController {
         return groupObj
     }
 
-    regAction(action: string, caller: any, method: Function, group?: string) {
-        this.regActionHandler(action, new Laya.Handler(caller, method), group)
+    regAction(action: string, caller: any, method: Function, group?: string, order?: number) {
+        const handler = new Laya.Handler(caller, method)
+        handler.order = order
+        this.regActionHandler(action, handler, group)
     }
 
     clearView() {
@@ -100,7 +102,7 @@ export class EventController implements IController {
         }
     }
 
-    removeTarget(groupObj: {[p: string]: Laya.Handler[]}, caller: any) {
+    removeTarget(groupObj: { [p: string]: Laya.Handler[] }, caller: any) {
 
         for (let action in groupObj) {
             let arr = groupObj[action]
@@ -144,9 +146,10 @@ export class EventController implements IController {
         let groupObj = this.getGroup(group)
         let arr = groupObj[action]
         if (arr) {
-            for (let i = 0; i < arr.length; i++) {
-                arr[i].runWith(args)
-            }
+            arr.sort((a, b) => a.order || 100 - b.order || 100)
+                .forEach(value =>
+                    value.runWith(args)
+                )
             return true
         }
         return false

@@ -14,8 +14,9 @@ export interface IAction {
      * @param caller 执行域(this)
      * @param method 处理事件函数
      * @param group 分组集合
+     * @param order 值越大 越后执行 默认 100
      */
-    regAction(action: string, caller: any, method: Function, group?: string)
+    regAction(action: string, caller: any, method: Function, group?: string, order?: number)
 
     /**
      * 删除所有分组中的此动作

@@ -118,8 +118,8 @@ window.tsCore = {};
         regActionHandler(action, handler, group = null) {
             this._controller.regActionHandler(action, handler, group);
         }
-        regAction(action, caller, method, group = null) {
-            this._controller.regAction(action, caller, method, group);
+        regAction(action, caller, method, group = null, order) {
+            this._controller.regAction(action, caller, method, group, order);
         }
         removeAllAction(...args) {
             this._controller.removeAllAction.apply(this._controller, args);
@@ -321,15 +321,15 @@ window.tsCore = {};
     }
     tsCore.StringBlock = StringBlock;
     class ActionEvent {
-        regAction(action, caller, method, group) {
-            App.inst.regAction(action, caller, method, group);
+        regAction(action, caller, method, group, order) {
+            App.inst.regAction(action, caller, method, group, order);
         }
         regActionHandler(action, handler, group) {
             App.inst.regActionHandler(action, handler, group);
         }
         /** 注册游戏数据 */
-        regGameAction(action, caller, method) {
-            this.regAction(action, caller, method, App.GAME_GROUP);
+        regGameAction(action, caller, method, order) {
+            this.regAction(action, caller, method, App.GAME_GROUP, order);
         }
         removeAllAction(...args) {
             App.inst.removeAllAction.apply(App.inst, args);
@@ -1038,8 +1038,10 @@ window.tsCore = {};
             this.obj[groupKey] = groupObj;
             return groupObj;
         }
-        regAction(action, caller, method, group) {
-            this.regActionHandler(action, new Laya.Handler(caller, method), group);
+        regAction(action, caller, method, group, order) {
+            const handler = new Laya.Handler(caller, method);
+            handler.order = order;
+            this.regActionHandler(action, handler, group);
         }
         clearView() {
             this.cacheTarget = {};
@@ -1136,9 +1138,8 @@ window.tsCore = {};
             let groupObj = this.getGroup(group);
             let arr = groupObj[action];
             if (arr) {
-                for (let i = 0; i < arr.length; i++) {
-                    arr[i].runWith(args);
-                }
+                arr.sort((a, b) => a.order || 100 - b.order || 100)
+                    .forEach(value => value.runWith(args));
                 return true;
             }
             return false;

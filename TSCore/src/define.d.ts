@@ -127,6 +127,14 @@ declare module Laya {
         _anis: AnimationContent[]
     }
 
+    interface Handler {
+
+        /** 值越大 越后执行
+         * @default 100
+         */
+        order: number
+
+    }
 
 }
 
