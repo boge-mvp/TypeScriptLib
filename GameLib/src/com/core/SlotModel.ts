@@ -162,7 +162,9 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
      * 全部滚动结束调用方法，当 allEndDelay 参数大于0时 会延迟执行
      * @protected
      */
-    protected rollComplete() {}
+    protected rollComplete() {
+        this.lotteryComplete()
+    }
 
     /**
      * 判断当前开的奖里面是否有中奖线
