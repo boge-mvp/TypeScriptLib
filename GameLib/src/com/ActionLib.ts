@@ -25,8 +25,13 @@ export enum ActionLib {
     GAME_INIT_SOCKET_EVENT = "game_init_socket_event",
     /** 创建游戏到舞台上 */
     GAME_CREATE_SCENE_SHOW = "game_create_scene_show",
-    /** 初始化model */
-    GAME_INIT_MODEL = "game_init_model",
+    /** 即将打开游戏前，最后一次初始化数据 */
+    GAME_INIT_DATA = "game_init_data",
+    /** 初始化model
+     * @deprecated
+     * @see GAME_INIT_DATA
+     */
+    GAME_INIT_MODEL = GAME_INIT_DATA,
     /** 开始游戏 */
     GAME_START = "game_start",
     /** 清理游戏 */

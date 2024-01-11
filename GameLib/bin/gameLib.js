@@ -30,8 +30,13 @@ window.gameLib = {};
         ActionLib["GAME_INIT_SOCKET_EVENT"] = "game_init_socket_event";
         /** 创建游戏到舞台上 */
         ActionLib["GAME_CREATE_SCENE_SHOW"] = "game_create_scene_show";
-        /** 初始化model */
-        ActionLib["GAME_INIT_MODEL"] = "game_init_model";
+        /** 即将打开游戏前，最后一次初始化数据 */
+        ActionLib["GAME_INIT_DATA"] = "game_init_data";
+        /** 初始化model
+         * @deprecated
+         * @see GAME_INIT_DATA
+         */
+        ActionLib["GAME_INIT_MODEL"] = "game_init_data";
         /** 开始游戏 */
         ActionLib["GAME_START"] = "game_start";
         /** 清理游戏 */
@@ -4903,8 +4908,8 @@ window.gameLib = {};
             // 创建游戏到舞台上
             this.sendAction(ActionLib.GAME_CREATE_SCENE_SHOW, Laya.Handler.create(this, function () {
                 fgui.GRoot.inst.closeModalWait();
-                tsCore.Log.debug("init model and load sound");
-                this.sendAction(ActionLib.GAME_INIT_MODEL);
+                tsCore.Log.debug("init data and load sound");
+                this.sendAction(ActionLib.GAME_INIT_DATA);
                 AppRecordManager.executeJson = null;
                 // 开始加载运行加载的声音
                 tsCore.SoundUtils.load();

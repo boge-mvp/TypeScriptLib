@@ -370,8 +370,8 @@ export class SceneManager extends EProxy {
         // 创建游戏到舞台上
         this.sendAction(ActionLib.GAME_CREATE_SCENE_SHOW, Handler.create(this, function () {
             GRoot.inst.closeModalWait()
-            Log.debug("init model and load sound")
-            this.sendAction(ActionLib.GAME_INIT_MODEL)
+            Log.debug("init data and load sound")
+            this.sendAction(ActionLib.GAME_INIT_DATA)
             AppRecordManager.executeJson = null
             // 开始加载运行加载的声音
             SoundUtils.load()
