@@ -1625,18 +1625,10 @@ window.gameLib = {};
                     });
                     return;
                 }
-                // 有reSpin 并且没有激活
+                // 有reSpin
                 if (this.gameData.hasReSpin) {
-                    if (this.gameData.isReSpinModel) {
-                        // 已经在reSpin模式中 表示继续reSpin
-                        Laya.timer.once(this.delayNextRound, this, function () {
-                            this.sendAction(ActionLib.GAME_START);
-                        });
-                    }
-                    else {
-                        this.gameData.isReSpinModel = true;
-                        this.sendAction(ActionLib.GAME_RE_SPIN_IN_WINDOW);
-                    }
+                    this.gameData.isReSpinModel = true;
+                    this.sendAction(ActionLib.GAME_RE_SPIN_IN_WINDOW);
                     return;
                 }
                 // reSpin 结束
