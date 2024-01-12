@@ -635,6 +635,11 @@ declare namespace gameLib {
         /** 自动播放中奖线延迟 默认：1500 */
         protected autoPlayWinLineTime: number;
         protected onInit(): void;
+        /**
+         * 播放获胜线状态改成false
+         * 清理绘制
+         * 清除执行下一步显示线 nextLine
+         */
         protected onCloseAllAni(): void;
         /**
          * 绘制指定获胜线
@@ -649,10 +654,10 @@ declare namespace gameLib {
          */
         protected showWinning(isChangeFirst?: boolean): void;
         /**
-         * 显示赢的那条线上所有项
-         * @param winIndex 赢的线 0开始
+         * 显示指定条线上的线
+         * @param lineId 线id 0开始
          */
-        protected showWinSlotItem(winIndex: number): void;
+        protected showWinSlotItem(lineId: number): void;
         /**
          * 显示某列中奖
          * @param colIndex
@@ -1166,6 +1171,7 @@ declare namespace gameLib {
          * @protected
          */
         protected rollComplete(): void;
+        protected lotteryComplete(): void;
         /**
          * 判断当前开的奖里面是否有中奖线
          * @param lotteryId 服务器返回的开奖项

@@ -1103,6 +1103,11 @@ window.gameLib = {};
                 this.list.touchable = false;
             this.regGameAction(ActionLib.GAME_CLOSE_ALL_ANI, this, this.onCloseAllAni);
         }
+        /**
+         * 播放获胜线状态改成false
+         * 清理绘制
+         * 清除执行下一步显示线 nextLine
+         */
         onCloseAllAni() {
             var _a;
             this.isPlayWinLine = false;
@@ -1202,12 +1207,12 @@ window.gameLib = {};
             Laya.timer.once(this.autoPlayWinLineTime, this, this.nextLine);
         }
         /**
-         * 显示赢的那条线上所有项
-         * @param winIndex 赢的线 0开始
+         * 显示指定条线上的线
+         * @param lineId 线id 0开始
          */
-        showWinSlotItem(winIndex) {
+        showWinSlotItem(lineId) {
             // 指定的线  显示出来
-            let lottery = this.gameData.getLottery(winIndex);
+            let lottery = this.gameData.getLottery(lineId);
             let tempItemValue = -1; // 临时值
             let slotItem;
             for (let k = 0; k < lottery.length; k++) {
@@ -1634,41 +1639,6 @@ window.gameLib = {};
             Player.inst.money = this.gameData.currentBalance;
             // 保证所有按钮都在禁用状态
             this.sendAction(ActionLib.GAME_ALL_BTN_CHANGE_STATE, false);
-            if (this.gameData instanceof BaseSlotGameData) {
-                if (this.gameData.isFreeModel && this.gameData.freeCount > 0) { //如果在特殊场景里面
-                    Laya.timer.once(this.delayNextRound, this, function () {
-                        this.sendAction(ActionLib.GAME_START);
-                    });
-                    return;
-                }
-                // 有reSpin
-                if (this.gameData.hasReSpin) {
-                    this.gameData.isReSpinModel = true;
-                    this.sendAction(ActionLib.GAME_RE_SPIN_IN_WINDOW);
-                    return;
-                }
-                // reSpin 结束
-                if (this.gameData.isReSpinModel && this.gameData.hasFreeSpin != 1) {
-                    this.sendAction(ActionLib.GAME_RE_SPIN_OUT_WINDOW);
-                    this.gameData.isReSpinModel = false;
-                    return;
-                }
-                // 开出三个免费游戏启动项目  并且服务端告诉有免费游戏
-                if (this.gameData.freeBoundsCount >= 3 && this.gameData.hasFreeSpin != 0) {
-                    this.gameData.tempServerWinMoney = this.gameData.serverWinMoney;
-                    // 交给scene处理
-                    Laya.timer.once(this.delayGetBonus, this, () => {
-                        this.sendAction(ActionLib.GAME_START);
-                    });
-                    return;
-                }
-                // 如果是开大奖结束  显示总共赢的钱
-                if (this.gameData.hasFreeSpin != 0) {
-                    this.gameData.hasFreeSpin = 0;
-                    this.sendAction(ActionLib.GAME_SHOW_FREE_OUT_WINDOW);
-                    return;
-                }
-            }
             this.sendAction(ActionLib.GAME_START);
         }
         /** 游戏进入后台执行 */
@@ -2333,7 +2303,53 @@ window.gameLib = {};
          * @protected
          */
         rollComplete() {
+            // 统计freeBounds开出来的数量
+            if (this.gameData.freeBoundsCount == 0) {
+                this.gameData.freeBoundsCount = this.gameData.lotteryId.count(value => value == this.SPECIAL_PLAY);
+            }
             this.lotteryComplete();
+        }
+        /*@override*/
+        lotteryComplete() {
+            // super.lotteryComplete();
+            this.sendAction(ActionLib.GAME_UPDATE_WIN_VALUE);
+            Player.inst.money = this.gameData.currentBalance;
+            // 保证所有按钮都在禁用状态
+            this.sendAction(ActionLib.GAME_ALL_BTN_CHANGE_STATE, false);
+            if (this.gameData.isFreeModel && this.gameData.freeCount > 0) { //如果在特殊场景里面
+                Laya.timer.once(this.delayNextRound, this, function () {
+                    this.sendAction(ActionLib.GAME_START);
+                });
+                return;
+            }
+            // 有reSpin
+            if (this.gameData.hasReSpin) {
+                this.gameData.isReSpinModel = true;
+                this.sendAction(ActionLib.GAME_RE_SPIN_IN_WINDOW);
+                return;
+            }
+            // reSpin 结束
+            if (this.gameData.isReSpinModel && this.gameData.hasFreeSpin != 1) {
+                this.sendAction(ActionLib.GAME_RE_SPIN_OUT_WINDOW);
+                this.gameData.isReSpinModel = false;
+                return;
+            }
+            // 开出三个免费游戏启动项目  并且服务端告诉有免费游戏
+            if (this.gameData.freeBoundsCount >= 3 && this.gameData.hasFreeSpin != 0) {
+                this.gameData.tempServerWinMoney = this.gameData.serverWinMoney;
+                // 交给scene处理
+                Laya.timer.once(this.delayGetBonus, this, () => {
+                    this.sendAction(ActionLib.GAME_START);
+                });
+                return;
+            }
+            // 如果是开大奖结束  显示总共赢的钱
+            if (this.gameData.hasFreeSpin != 0) {
+                this.gameData.hasFreeSpin = 0;
+                this.sendAction(ActionLib.GAME_SHOW_FREE_OUT_WINDOW);
+                return;
+            }
+            this.sendAction(ActionLib.GAME_START);
         }
         /**
          * 判断当前开的奖里面是否有中奖线
