@@ -50,6 +50,11 @@ export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends
         this.regGameAction(ActionLib.GAME_CLOSE_ALL_ANI, this, this.onCloseAllAni)
     }
 
+    /**
+     * 播放获胜线状态改成false
+     * 清理绘制
+     * 清除执行下一步显示线 nextLine
+     */
     protected onCloseAllAni() {
         this.isPlayWinLine = false
         this.lineGraphics?.clear()
@@ -147,12 +152,12 @@ export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends
     }
 
     /**
-     * 显示赢的那条线上所有项
-     * @param winIndex 赢的线 0开始
+     * 显示指定条线上的线
+     * @param lineId 线id 0开始
      */
-    protected showWinSlotItem(winIndex: number) {
+    protected showWinSlotItem(lineId: number) {
         // 指定的线  显示出来
-        let lottery = this.gameData.getLottery(winIndex)
+        let lottery = this.gameData.getLottery(lineId)
         let tempItemValue = -1; // 临时值
         let slotItem: BaseSlotItem
         for (let k = 0; k < lottery.length; k++) {
