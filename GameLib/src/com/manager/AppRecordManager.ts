@@ -81,6 +81,7 @@ export class AppRecordManager extends tsCore.HistoryManager {
                 AppRecordManager.exitTimer = timer
                 AppManager.toast(getString(LibStr.EXIT_APP))
             } else {
+                SceneManager.inst.backHandler()
 //					__JS__("window.history.back()")
             }
         }

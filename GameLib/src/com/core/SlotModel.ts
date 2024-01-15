@@ -176,13 +176,6 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
         Player.inst.money = this.gameData.currentBalance
         // 保证所有按钮都在禁用状态
         this.sendAction(ActionLib.GAME_ALL_BTN_CHANGE_STATE, false)
-
-        if (this.gameData.isFreeModel && this.gameData.freeCount > 0) { //如果在特殊场景里面
-            Laya.timer.once(this.delayNextRound, this, function () {
-                this.sendAction(ActionLib.GAME_START)
-            })
-            return
-        }
         // 有reSpin
         if (this.gameData.hasReSpin) {
             this.gameData.isReSpinModel = true
@@ -190,12 +183,17 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
             return
         }
         // reSpin 结束
-        if (this.gameData.isReSpinModel && this.gameData.hasFreeSpin != 1) {
-            this.sendAction(ActionLib.GAME_RE_SPIN_OUT_WINDOW)
+        if (this.gameData.isReSpinModel) {
             this.gameData.isReSpinModel = false
+            this.sendAction(ActionLib.GAME_RE_SPIN_OUT_WINDOW)
             return
         }
-
+        if (this.gameData.isFreeModel && this.gameData.freeCount > 0) { //如果在特殊场景里面
+            Laya.timer.once(this.delayNextRound, this, function () {
+                this.sendAction(ActionLib.GAME_START)
+            })
+            return
+        }
         // 开出三个免费游戏启动项目  并且服务端告诉有免费游戏
         if (this.gameData.freeBoundsCount >= 3 && this.gameData.hasFreeSpin != 0) {
             this.gameData.tempServerWinMoney = this.gameData.serverWinMoney
