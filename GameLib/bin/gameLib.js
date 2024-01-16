@@ -91,14 +91,16 @@ window.gameLib = {};
         ActionLib["GAME_RUN_SCENE_EVENT"] = "game_run_scene_event";
         /** 更新默认舞台方向 */
         ActionLib["GAME_UPDATE_DEFAULT_SCREEN"] = "game_update_default_screen";
-        /** 播放 slot 滚动动画 */
-        ActionLib["GAME_PLAY_SLOT_LIST_RUN_ANI"] = "game_play_slot_list_run_ani";
-        /** 通知开奖动画完成 执行model的结束方法 */
-        ActionLib["GAME_LOTTERY_ANI_COMPLETE"] = "game_lottery_ani_complete";
         /** 获得手机图片数据 */
         ActionLib["GET_MOBILE_PHONE_IMAGE_DATA"] = "get_mobile_phone_image_data";
         /** 更新活动奖池数据 */
         ActionLib["UPDATE_DAILY_CASH_POOL"] = "update_daily_cash_pool";
+        /** 播放 slot 滚动动画 */
+        ActionLib["GAME_PLAY_SLOT_LIST_RUN_ANI"] = "game_play_slot_list_run_ani";
+        /** 停止 slot 滚动动画 */
+        ActionLib["GAME_STOP_SLOT_LIST_RUN_ANI"] = "game_stop_slot_list_run_ani";
+        /** 通知开奖动画完成 执行model的结束方法 */
+        ActionLib["GAME_LOTTERY_ANI_COMPLETE"] = "game_lottery_ani_complete";
         /** 播放 wheel 滚动动画 */
         ActionLib["GAME_PLAY_WHEEL_RUN_ANI"] = "game_play_wheel_run_ani";
         /** 显示普通的赢钱金额(公共的弹窗) */
@@ -109,43 +111,6 @@ window.gameLib = {};
         ActionLib["GAME_SHOW_GUIDE"] = "game_show_guide";
         /** 显示引导页 */
         ActionLib["GAME_SHOW_GUIDE_WINDOW"] = "game_show_guide_window";
-        /**
-         * 显示提示文案窗口 :
-         * ```
-         *  msg:string 直接显示文本
-         *  callback:ParamHandler 确定回调方法
-         *  isAction = true 动画显示或关闭
-         * ```
-         * @see PromptWindow.showTip
-         */
-        ActionLib["GAME_SHOW_PROMPT_WINDOW"] = "game_show_prompt_window";
-        /**
-         * 显示提示文案窗口 带多参数设置:
-         *  ```
-         *  msg:string|number|any[] 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
-         *  obj:IPromptData 附带设置 (okName:getString(LibStr.CONTINUE), cancelName: getString(LibStr.CANCEL))
-         *  callback:ParamHandler 取消回调方法
-         *  continueFun:ParamHandler 确定回调方法
-         *  isAction = true 动画显示或关闭
-         *  ```
-         *  @see PromptWindow.showCancelTip
-         */
-        ActionLib["GAME_SHOW_PROMPT_CANCEL_WINDOW"] = "game_show_prompt_cancel_window";
-        /**
-         * 显示常规的提示文案窗口
-         * ```
-         *  msg:string|number|any[] 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
-         *  obj:IPromptData 附带设置 (okName:'', cancelName:'')
-         *  callback:ParamHandler 取消回调方法
-         *  continueFun:ParamHandler 确定回调方法
-         *  isAction = true 动画显示或关闭
-         *
-         *  或者只传递一个参数 PromptData
-         * ```
-         *  @see PromptWindow._showWindow
-         *  @see PromptData
-         */
-        ActionLib["GAME_SHOW_PROMPT_NORMAL_WINDOW"] = "game_show_prompt_normal_window";
         /** 游戏新的回合开始 */
         ActionLib["GAME_NEW_ROUND_START"] = "GAME_NEW_ROUND_START";
         //-------------------------------- 游戏公用事件 --------------------------------------------
@@ -187,6 +152,44 @@ window.gameLib = {};
          * @see GAME_UPDATE_AUTO_SPIN_NUMBER
          */
         ActionLib["GAME_UPDATE_FREE_COUNT"] = "game_update_auto_spin_number";
+        //------------------------------- PromptWindow --------------------------------
+        /**
+         * 显示提示文案窗口 :
+         * ```
+         *  msg:string 直接显示文本
+         *  callback:ParamHandler 确定回调方法
+         *  isAction = true 动画显示或关闭
+         * ```
+         * @see PromptWindow.showTip
+         */
+        ActionLib["GAME_SHOW_PROMPT_WINDOW"] = "game_show_prompt_window";
+        /**
+         * 显示提示文案窗口 带多参数设置:
+         *  ```
+         *  msg:string|number|any[] 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
+         *  obj:IPromptData 附带设置 (okName:getString(LibStr.CONTINUE), cancelName: getString(LibStr.CANCEL))
+         *  callback:ParamHandler 取消回调方法
+         *  continueFun:ParamHandler 确定回调方法
+         *  isAction = true 动画显示或关闭
+         *  ```
+         *  @see PromptWindow.showCancelTip
+         */
+        ActionLib["GAME_SHOW_PROMPT_CANCEL_WINDOW"] = "game_show_prompt_cancel_window";
+        /**
+         * 显示常规的提示文案窗口
+         * ```
+         *  msg:string|number|any[] 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
+         *  obj:IPromptData 附带设置 (okName:'', cancelName:'')
+         *  callback:ParamHandler 取消回调方法
+         *  continueFun:ParamHandler 确定回调方法
+         *  isAction = true 动画显示或关闭
+         *
+         *  或者只传递一个参数 PromptData
+         * ```
+         *  @see PromptWindow._showWindow
+         *  @see PromptData
+         */
+        ActionLib["GAME_SHOW_PROMPT_NORMAL_WINDOW"] = "game_show_prompt_normal_window";
         //------------------------------- RE SPIN --------------------------------
         /** reSpin开始提示 */
         ActionLib["GAME_RE_SPIN_IN_WINDOW"] = "game_re_spin_in_window";
@@ -2504,7 +2507,7 @@ window.gameLib = {};
      */
     class SlotScrollModel extends SlotModel {
         constructor() {
-            super(...arguments);
+            super();
             /** 当前滚动圈数 */
             this.rollCount = 0;
             /** 滚动到最大圈数  就可以播放开奖结果了 */
@@ -2515,6 +2518,8 @@ window.gameLib = {};
             this.scrollData = [];
             /** 当前滚动的单列位置 */
             this.singleColumnIndex = -1;
+            this.regGameAction(ActionLib.GAME_PLAY_SLOT_LIST_RUN_ANI, this, this.onStartRollSlot);
+            this.regGameAction(ActionLib.GAME_STOP_SLOT_LIST_RUN_ANI, this, this.stopRollSlot);
         }
         /**
          * 开始滚动指定列
@@ -2578,20 +2583,23 @@ window.gameLib = {};
          * 开始转动所有滚动序列
          */
         onStartRollSlot() {
+            Laya.timer.clear(this, this.frameLoopHandler);
             this.rollCount = 0;
             this.rollMaxCount = 100;
             Laya.timer.frameLoop(1, this, this.frameLoopHandler);
         }
-        /** 停止自动滚动 */
+        /**
+         * 停止自动滚动
+         * 并保持在指定行数 this.rowNum 位置
+         */
         stopRollSlot() {
             Laya.timer.clearAll(this);
+            this.listRolls.forEach(value => value.scrollPane.posY = value.numChildren > 0 ? value.getChildAt(0).height * this.rowNum : 0);
         }
         frameLoopHandler() {
             if (this.isPlayEndTween)
                 return; // 播放结束动画  停止后面的操作
             let list;
-            // 滚动数据
-            let listData = this.scrollData[this.completeCount];
             for (let i = 0; i < this.listRolls.length; i++) {
                 list = this.listRolls[i];
                 if (!this.isRunList(list, i))
@@ -2601,19 +2609,11 @@ window.gameLib = {};
                     this.runStateChange(SlotRunState.START, list);
                 }
                 if (this.isScrollUp) {
-                    // if (this.isPlayEndTween)
                     list.scrollPane.posY += 50;
                 }
                 else {
                     list.scrollPane.posY -= 50;
                 }
-                // if (this.isPlayEndTween && listData.id == i) {
-                //     // 进入开奖流程 并且当前在播放的是要停止的滚动列表
-                //     if (listData.data + 50 >= list.scrollPane.posY && list.scrollPane.posY >= listData.data - 50) {
-                //         list.scrollPane.posY = listData.data
-                //         this.completeHandler(list)
-                //     }
-                // }
             }
             this.rollCount++;
             let tempTurbo = this.lotteryData.length > 0 && this.lotteryData[0].isTurboMode;

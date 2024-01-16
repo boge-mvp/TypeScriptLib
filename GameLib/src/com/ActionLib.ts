@@ -86,19 +86,25 @@ export enum ActionLib {
     GAME_RUN_SCENE_EVENT = "game_run_scene_event",
     /** 更新默认舞台方向 */
     GAME_UPDATE_DEFAULT_SCREEN = "game_update_default_screen",
-    /** 播放 slot 滚动动画 */
-    GAME_PLAY_SLOT_LIST_RUN_ANI = "game_play_slot_list_run_ani",
-    /** 通知开奖动画完成 执行model的结束方法 */
-    GAME_LOTTERY_ANI_COMPLETE = "game_lottery_ani_complete",
+
+
+
     /** 获得手机图片数据 */
     GET_MOBILE_PHONE_IMAGE_DATA = "get_mobile_phone_image_data",
-
     /** 更新活动奖池数据 */
     UPDATE_DAILY_CASH_POOL = "update_daily_cash_pool",
 
 
+    /** 播放 slot 滚动动画 */
+    GAME_PLAY_SLOT_LIST_RUN_ANI = "game_play_slot_list_run_ani",
+    /** 停止 slot 滚动动画 */
+    GAME_STOP_SLOT_LIST_RUN_ANI = "game_stop_slot_list_run_ani",
+    /** 通知开奖动画完成 执行model的结束方法 */
+    GAME_LOTTERY_ANI_COMPLETE = "game_lottery_ani_complete",
     /** 播放 wheel 滚动动画 */
     GAME_PLAY_WHEEL_RUN_ANI = "game_play_wheel_run_ani",
+
+
     /** 显示普通的赢钱金额(公共的弹窗) */
     GAME_SHOW_WIN_WINDOW = "game_show_win_window",
     /** 打开一次礼包结束 */
@@ -107,6 +113,56 @@ export enum ActionLib {
     GAME_SHOW_GUIDE = "game_show_guide",
     /** 显示引导页 */
     GAME_SHOW_GUIDE_WINDOW = "game_show_guide_window",
+
+    /** 游戏新的回合开始 */
+    GAME_NEW_ROUND_START = "GAME_NEW_ROUND_START",
+
+
+    //-------------------------------- 游戏公用事件 --------------------------------------------
+    /** 关闭所有动画 */
+    GAME_CLOSE_ALL_ANI = "game_close_all_ani",
+    /** 显示帮助文档 */
+    GAME_SHOW_HELP = "game_show_help",
+
+
+    /** 播放开奖动画 */
+    GAME_PLAY_LOTTERY_ANI = "game_play_lottery_ani",
+    /** 更改 spin 模式文字 0.spin 1.stop */
+    GAME_CHANGE_SPIN_TEXT = "game_change_spin_text",
+    /** 改变所有按钮的启用状态 true.启用 false.禁用 */
+    GAME_ALL_BTN_CHANGE_STATE = "game_all_btn_change_state",
+    /** 更新盈利的值 */
+    GAME_UPDATE_WIN_VALUE = "game_update_win_value",
+    /** 游戏更新自动SPIN次数 */
+    GAME_UPDATE_AUTO_SPIN_NUMBER = "game_update_auto_spin_number",
+    /** 播放收金币动画 */
+    GAME_PLAY_COLLECT_GOLD_COINS_ANI = "game_play_collect_gold_coins_ani",
+    /** 更新总投注 */
+    GAME_UPDATE_TOTAL_BET = "game_update_total_bet",
+    /** 显示普通结算UI */
+    GAME_SHOW_SETTLE_WIN_UI = "game_show_settle_win_ui",
+    /** 显示默认提示语 */
+    GAME_SHOW_DEFAULT_TIP = "game_show_default_tip",
+    /** 执行播放背景音乐 */
+    GAME_PLAY_BG_MUSIC = "game_play_bg_music",
+
+    /** 更新bounds信息 */
+    GAME_UPDATE_BOUNDS_INFO = "game_update_bounds_info",
+    /**
+     * 游戏更新自动bet次数
+     * @deprecated
+     * @see GAME_UPDATE_AUTO_SPIN_NUMBER
+     */
+    GAME_UPDATE_AUTO_BET_NUMBER = GAME_UPDATE_AUTO_SPIN_NUMBER,
+    /**
+     * 游戏更新免费次数
+     * @deprecated
+     * @see GAME_UPDATE_AUTO_SPIN_NUMBER
+     */
+    GAME_UPDATE_FREE_COUNT = GAME_UPDATE_AUTO_SPIN_NUMBER,
+
+
+    //------------------------------- PromptWindow --------------------------------
     /**
      * 显示提示文案窗口 :
      * ```
@@ -144,51 +200,6 @@ export enum ActionLib {
      *  @see PromptData
      */
     GAME_SHOW_PROMPT_NORMAL_WINDOW = "game_show_prompt_normal_window",
-    /** 游戏新的回合开始 */
-    GAME_NEW_ROUND_START = "GAME_NEW_ROUND_START",
-
-
-    //-------------------------------- 游戏公用事件 --------------------------------------------
-    /** 关闭所有动画 */
-    GAME_CLOSE_ALL_ANI = "game_close_all_ani",
-    /** 显示帮助文档 */
-    GAME_SHOW_HELP = "game_show_help",
-    /** 播放开奖动画 */
-    GAME_PLAY_LOTTERY_ANI = "game_play_lottery_ani",
-    /** 更改 spin 模式文字 0.spin 1.stop */
-    GAME_CHANGE_SPIN_TEXT = "game_change_spin_text",
-    /** 改变所有按钮的启用状态 true.启用 false.禁用 */
-    GAME_ALL_BTN_CHANGE_STATE = "game_all_btn_change_state",
-    /** 更新盈利的值 */
-    GAME_UPDATE_WIN_VALUE = "game_update_win_value",
-    /** 游戏更新自动SPIN次数 */
-    GAME_UPDATE_AUTO_SPIN_NUMBER = "game_update_auto_spin_number",
-    /** 播放收金币动画 */
-    GAME_PLAY_COLLECT_GOLD_COINS_ANI = "game_play_collect_gold_coins_ani",
-    /** 更新总投注 */
-    GAME_UPDATE_TOTAL_BET = "game_update_total_bet",
-    /** 显示普通结算UI */
-    GAME_SHOW_SETTLE_WIN_UI = "game_show_settle_win_ui",
-    /** 显示默认提示语 */
-    GAME_SHOW_DEFAULT_TIP = "game_show_default_tip",
-    /** 执行播放背景音乐 */
-    GAME_PLAY_BG_MUSIC = "game_play_bg_music",
-
-    /** 更新bounds信息 */
-    GAME_UPDATE_BOUNDS_INFO = "game_update_bounds_info",
-    /**
-     * 游戏更新自动bet次数
-     * @deprecated
-     * @see GAME_UPDATE_AUTO_SPIN_NUMBER
-     */
-    GAME_UPDATE_AUTO_BET_NUMBER = GAME_UPDATE_AUTO_SPIN_NUMBER,
-    /**
-     * 游戏更新免费次数
-     * @deprecated
-     * @see GAME_UPDATE_AUTO_SPIN_NUMBER
-     */
-    GAME_UPDATE_FREE_COUNT = GAME_UPDATE_AUTO_SPIN_NUMBER,
-
 
 
     //------------------------------- RE SPIN --------------------------------
@@ -242,7 +253,6 @@ export enum ActionLib {
      * @see GAME_SHOW_FREE_OUT_WINDOW
      */
     GAME_SHOW_FREE_FINISH_VIEW = "game_show_free_finish_view",
-
 
 
 }

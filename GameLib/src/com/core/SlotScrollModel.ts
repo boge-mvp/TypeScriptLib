@@ -4,6 +4,7 @@ import Ease = Laya.Ease;
 import Handler = Laya.Handler;
 import {SlotModel} from "./SlotModel"
 import {BaseSlotGameData} from "./BaseSlotGameData";
+import {ActionLib} from "../ActionLib";
 
 export enum SlotRunState {
     START = 1,
@@ -25,6 +26,12 @@ export class SlotScrollModel<T extends BaseSlotGameData = BaseSlotGameData> exte
     protected scrollData = []
     /** 当前滚动的单列位置 */
     protected singleColumnIndex = -1
+
+    constructor() {
+        super();
+        this.regGameAction(ActionLib.GAME_PLAY_SLOT_LIST_RUN_ANI, this, this.onStartRollSlot)
+        this.regGameAction(ActionLib.GAME_STOP_SLOT_LIST_RUN_ANI, this, this.stopRollSlot)
+    }
 
     /**
      * 开始滚动指定列
@@ -94,21 +101,24 @@ export class SlotScrollModel<T extends BaseSlotGameData = BaseSlotGameData> exte
      * 开始转动所有滚动序列
      */
     protected onStartRollSlot() {
+        Laya.timer.clear(this, this.frameLoopHandler)
         this.rollCount = 0
         this.rollMaxCount = 100
         Laya.timer.frameLoop(1, this, this.frameLoopHandler)
     }
 
-    /** 停止自动滚动 */
+    /**
+     * 停止自动滚动
+     * 并保持在指定行数 this.rowNum 位置
+     */
     stopRollSlot() {
         Laya.timer.clearAll(this)
+        this.listRolls.forEach(value => value.scrollPane.posY = value.numChildren > 0 ? value.getChildAt(0).height * this.rowNum : 0)
     }
 
     protected frameLoopHandler() {
         if (this.isPlayEndTween) return; // 播放结束动画  停止后面的操作
         let list: GList
-        // 滚动数据
-        let listData = this.scrollData[this.completeCount]
         for (let i = 0; i < this.listRolls.length; i++) {
             list = this.listRolls[i]
             if (!this.isRunList(list, i))
@@ -118,18 +128,10 @@ export class SlotScrollModel<T extends BaseSlotGameData = BaseSlotGameData> exte
                 this.runStateChange(SlotRunState.START, list)
             }
             if (this.isScrollUp) {
-                // if (this.isPlayEndTween)
                 list.scrollPane.posY += 50
             } else {
                 list.scrollPane.posY -= 50
             }
-            // if (this.isPlayEndTween && listData.id == i) {
-            //     // 进入开奖流程 并且当前在播放的是要停止的滚动列表
-            //     if (listData.data + 50 >= list.scrollPane.posY && list.scrollPane.posY >= listData.data - 50) {
-            //         list.scrollPane.posY = listData.data
-            //         this.completeHandler(list)
-            //     }
-            // }
         }
         this.rollCount++
         let tempTurbo = this.lotteryData.length > 0 && this.lotteryData[0].isTurboMode

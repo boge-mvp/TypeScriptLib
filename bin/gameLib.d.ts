@@ -82,14 +82,16 @@ declare namespace gameLib {
         GAME_RUN_SCENE_EVENT = "game_run_scene_event",
         /** 更新默认舞台方向 */
         GAME_UPDATE_DEFAULT_SCREEN = "game_update_default_screen",
-        /** 播放 slot 滚动动画 */
-        GAME_PLAY_SLOT_LIST_RUN_ANI = "game_play_slot_list_run_ani",
-        /** 通知开奖动画完成 执行model的结束方法 */
-        GAME_LOTTERY_ANI_COMPLETE = "game_lottery_ani_complete",
         /** 获得手机图片数据 */
         GET_MOBILE_PHONE_IMAGE_DATA = "get_mobile_phone_image_data",
         /** 更新活动奖池数据 */
         UPDATE_DAILY_CASH_POOL = "update_daily_cash_pool",
+        /** 播放 slot 滚动动画 */
+        GAME_PLAY_SLOT_LIST_RUN_ANI = "game_play_slot_list_run_ani",
+        /** 停止 slot 滚动动画 */
+        GAME_STOP_SLOT_LIST_RUN_ANI = "game_stop_slot_list_run_ani",
+        /** 通知开奖动画完成 执行model的结束方法 */
+        GAME_LOTTERY_ANI_COMPLETE = "game_lottery_ani_complete",
         /** 播放 wheel 滚动动画 */
         GAME_PLAY_WHEEL_RUN_ANI = "game_play_wheel_run_ani",
         /** 显示普通的赢钱金额(公共的弹窗) */
@@ -100,43 +102,6 @@ declare namespace gameLib {
         GAME_SHOW_GUIDE = "game_show_guide",
         /** 显示引导页 */
         GAME_SHOW_GUIDE_WINDOW = "game_show_guide_window",
-        /**
-         * 显示提示文案窗口 :
-         * ```
-         *  msg:string 直接显示文本
-         *  callback:ParamHandler 确定回调方法
-         *  isAction = true 动画显示或关闭
-         * ```
-         * @see PromptWindow.showTip
-         */
-        GAME_SHOW_PROMPT_WINDOW = "game_show_prompt_window",
-        /**
-         * 显示提示文案窗口 带多参数设置:
-         *  ```
-         *  msg:string|number|any[] 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
-         *  obj:IPromptData 附带设置 (okName:getString(LibStr.CONTINUE), cancelName: getString(LibStr.CANCEL))
-         *  callback:ParamHandler 取消回调方法
-         *  continueFun:ParamHandler 确定回调方法
-         *  isAction = true 动画显示或关闭
-         *  ```
-         *  @see PromptWindow.showCancelTip
-         */
-        GAME_SHOW_PROMPT_CANCEL_WINDOW = "game_show_prompt_cancel_window",
-        /**
-         * 显示常规的提示文案窗口
-         * ```
-         *  msg:string|number|any[] 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
-         *  obj:IPromptData 附带设置 (okName:'', cancelName:'')
-         *  callback:ParamHandler 取消回调方法
-         *  continueFun:ParamHandler 确定回调方法
-         *  isAction = true 动画显示或关闭
-         *
-         *  或者只传递一个参数 PromptData
-         * ```
-         *  @see PromptWindow._showWindow
-         *  @see PromptData
-         */
-        GAME_SHOW_PROMPT_NORMAL_WINDOW = "game_show_prompt_normal_window",
         /** 游戏新的回合开始 */
         GAME_NEW_ROUND_START = "GAME_NEW_ROUND_START",
         /** 关闭所有动画 */
@@ -177,6 +142,43 @@ declare namespace gameLib {
          * @see GAME_UPDATE_AUTO_SPIN_NUMBER
          */
         GAME_UPDATE_FREE_COUNT = "game_update_auto_spin_number",
+        /**
+         * 显示提示文案窗口 :
+         * ```
+         *  msg:string 直接显示文本
+         *  callback:ParamHandler 确定回调方法
+         *  isAction = true 动画显示或关闭
+         * ```
+         * @see PromptWindow.showTip
+         */
+        GAME_SHOW_PROMPT_WINDOW = "game_show_prompt_window",
+        /**
+         * 显示提示文案窗口 带多参数设置:
+         *  ```
+         *  msg:string|number|any[] 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
+         *  obj:IPromptData 附带设置 (okName:getString(LibStr.CONTINUE), cancelName: getString(LibStr.CANCEL))
+         *  callback:ParamHandler 取消回调方法
+         *  continueFun:ParamHandler 确定回调方法
+         *  isAction = true 动画显示或关闭
+         *  ```
+         *  @see PromptWindow.showCancelTip
+         */
+        GAME_SHOW_PROMPT_CANCEL_WINDOW = "game_show_prompt_cancel_window",
+        /**
+         * 显示常规的提示文案窗口
+         * ```
+         *  msg:string|number|any[] 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
+         *  obj:IPromptData 附带设置 (okName:'', cancelName:'')
+         *  callback:ParamHandler 取消回调方法
+         *  continueFun:ParamHandler 确定回调方法
+         *  isAction = true 动画显示或关闭
+         *
+         *  或者只传递一个参数 PromptData
+         * ```
+         *  @see PromptWindow._showWindow
+         *  @see PromptData
+         */
+        GAME_SHOW_PROMPT_NORMAL_WINDOW = "game_show_prompt_normal_window",
         /** reSpin开始提示 */
         GAME_RE_SPIN_IN_WINDOW = "game_re_spin_in_window",
         /** reSpin 结束提示 */
@@ -1261,6 +1263,7 @@ declare namespace gameLib {
         protected scrollData: any[];
         /** 当前滚动的单列位置 */
         protected singleColumnIndex: number;
+        constructor();
         /**
          * 开始滚动指定列
          * @param index
@@ -1271,7 +1274,10 @@ declare namespace gameLib {
          * 开始转动所有滚动序列
          */
         protected onStartRollSlot(): void;
-        /** 停止自动滚动 */
+        /**
+         * 停止自动滚动
+         * 并保持在指定行数 this.rowNum 位置
+         */
         stopRollSlot(): void;
         protected frameLoopHandler(): void;
         /**
