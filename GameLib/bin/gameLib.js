@@ -774,9 +774,13 @@ window.gameLib = {};
         set gameModel(value) {
             this._gameModel = value;
         }
-        /** 押注还原(用于押注失败  退还所有的押注) */
-        resetBet() {
-        }
+        /**
+         * 押注还原(用于押注失败,退还所有的押注)
+         * ```
+         * ● 未做处理
+         * ```
+         */
+        resetBet() { }
         /*@override*/
         dispose() {
             tsCore.Log.debug("game dispose");

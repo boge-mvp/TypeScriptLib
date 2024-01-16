@@ -463,10 +463,13 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
         this._gameModel = value
     }
 
-    /** 押注还原(用于押注失败  退还所有的押注) */
-    resetBet() {
-
-    }
+    /**
+     * 押注还原(用于押注失败,退还所有的押注)
+     * ```
+     * ● 未做处理
+     * ```
+     */
+    resetBet() {}
 
     override dispose() {
         Log.debug("game dispose")

@@ -385,7 +385,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
      * @param callback
      */
     sendBet(url: string, data: any, callback: ParamHandler) {
-        this.postData(url, data, (data: any) => {
+        this.postData(url, data, (data: HttpResponse) => {
             if (data.code != HttpCode.OK) {
                 MessageTip.showTip(StateCode.getShowMessage(data))
                 this.sendAction(ActionLib.GAME_RESET_BET)

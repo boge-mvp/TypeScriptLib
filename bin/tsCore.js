@@ -7265,46 +7265,46 @@ String.prototype.containsIgnore = function (...search) {
 };
 String.prototype.substringAfter = function (separator) {
     if (!this || !separator)
-        return "";
+        return this.toString();
     const pos = this.indexOf(separator);
     if (pos == -1)
-        return "";
+        return this.toString();
     return this.substring(pos + separator.length);
 };
 String.prototype.substringAfterLast = function (separator) {
     if (!this || !separator)
-        return "";
+        return this.toString();
     const pos = this.lastIndexOf(separator);
     if (pos == -1 || pos == this.length - separator.length)
-        return "";
+        return this.toString();
     return this.substring(pos + separator.length);
 };
 String.prototype.substringBefore = function (separator) {
     if (!this || !separator)
-        return "";
+        return this.toString();
     const pos = this.indexOf(separator);
     if (pos == -1)
-        return "";
+        return this.toString();
     return this.substring(0, pos);
 };
 String.prototype.substringBeforeLast = function (separator) {
     if (!this || !separator)
-        return "";
+        return this.toString();
     const pos = this.lastIndexOf(separator);
     if (pos == -1)
-        return "";
+        return this.toString();
     return this.substring(0, pos);
 };
 String.prototype.substringBetween = function (open, close) {
     if (!this || !open || !close)
-        return "";
+        return this.toString();
     const start = this.indexOf(open);
     if (start != -1) {
         const end = this.indexOf(close, start + open.length);
         if (end != -1)
             return this.substring(start + open.length, end);
     }
-    return "";
+    return this.toString();
 };
 String.prototype.substringsBetween = function (open, close) {
     const list = [];

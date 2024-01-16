@@ -465,7 +465,12 @@ declare namespace gameLib {
         hideRecord(): void;
         get gameModel(): IGameModel;
         set gameModel(value: IGameModel);
-        /** 押注还原(用于押注失败  退还所有的押注) */
+        /**
+         * 押注还原(用于押注失败,退还所有的押注)
+         * ```
+         * ● 未做处理
+         * ```
+         */
         resetBet(): void;
         dispose(): void;
         protected backHandler(): void;

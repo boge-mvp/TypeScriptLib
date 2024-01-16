@@ -283,41 +283,41 @@ String.prototype.containsIgnore = function (...search: string []) {
 }
 
 String.prototype.substringAfter = function (separator: string) {
-    if (!this || !separator) return ""
+    if (!this || !separator) return this.toString()
     const pos = this.indexOf(separator)
-    if (pos == -1) return ""
+    if (pos == -1) return this.toString()
     return this.substring(pos + separator.length)
 }
 
 String.prototype.substringAfterLast = function (separator: string) {
-    if (!this || !separator) return ""
+    if (!this || !separator) return this.toString()
     const pos = this.lastIndexOf(separator)
-    if (pos == -1 || pos == this.length - separator.length) return ""
+    if (pos == -1 || pos == this.length - separator.length) return this.toString()
     return this.substring(pos + separator.length)
 }
 
 String.prototype.substringBefore = function (separator: string) {
-    if (!this || !separator) return ""
+    if (!this || !separator) return this.toString()
     const pos = this.indexOf(separator)
-    if (pos == -1) return ""
+    if (pos == -1) return this.toString()
     return this.substring(0, pos)
 }
 
 String.prototype.substringBeforeLast = function (separator: string) {
-    if (!this || !separator) return ""
+    if (!this || !separator) return this.toString()
     const pos = this.lastIndexOf(separator)
-    if (pos == -1) return ""
+    if (pos == -1) return this.toString()
     return this.substring(0, pos)
 }
 
 String.prototype.substringBetween = function (open: string, close: string) {
-    if (!this || !open || !close) return ""
+    if (!this || !open || !close) return this.toString()
     const start = this.indexOf(open)
     if (start != -1) {
         const end = this.indexOf(close, start + open.length)
         if (end != -1) return this.substring(start + open.length, end)
     }
-    return ""
+    return this.toString()
 }
 
 String.prototype.substringsBetween = function (open: string, close: string) {
