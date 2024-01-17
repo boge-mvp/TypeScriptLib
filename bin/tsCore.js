@@ -3666,7 +3666,7 @@ window.tsCore = {};
             if (!Laya.Browser.onLayaRuntime) {
                 HistoryManager.initCreateHistory && HistoryManager.addNewHistory();
                 Log.debug("history add event Listener");
-                windowMy.addEventListener("popstate", function (e) {
+                window.addEventListener("popstate", function (e) {
                     HistoryManager.backHistory(true);
                 }, false);
             }
@@ -3679,7 +3679,7 @@ window.tsCore = {};
         static pushHistory(title, url) {
             Log.debug(`history push state title=${title} url=${url}`);
             const state = { title: title, url: url };
-            windowMy.history.pushState(state, title, url);
+            window.history.pushState(state, title, url);
         }
     }
     /**

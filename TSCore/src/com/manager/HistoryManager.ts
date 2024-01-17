@@ -94,7 +94,7 @@ export class HistoryManager {
         if (!Laya.Browser.onLayaRuntime) {
             HistoryManager.initCreateHistory && HistoryManager.addNewHistory()
             Log.debug("history add event Listener")
-            windowMy.addEventListener("popstate", function (e) {
+            window.addEventListener("popstate", function (e) {
                 HistoryManager.backHistory(true)
             }, false)
         }
@@ -109,7 +109,7 @@ export class HistoryManager {
     static pushHistory(title: string, url: string) {
         Log.debug(`history push state title=${title} url=${url}`)
         const state = {title: title, url: url}
-        windowMy.history.pushState(state, title, url)
+        window.history.pushState(state, title, url)
     }
 
 }
