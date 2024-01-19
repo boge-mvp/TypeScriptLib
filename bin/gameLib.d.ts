@@ -1487,7 +1487,7 @@ declare namespace gameLib {
          * @param endObject 最后结束对象
          * @param endHandler 动画播放结束回调
          */
-        playObject(parent: tsCore.View, goldUrl: string, num: number, endObject: fgui.GObject, endHandler?: ParamHandler): void;
+        playObject(parent: fgui.GComponent, goldUrl: string, num: number, endObject: fgui.GObject, endHandler?: ParamHandler): void;
         /**
          * 播放金币动画
          * @param parent 要被添加到的舞台
@@ -1496,7 +1496,7 @@ declare namespace gameLib {
          * @param endPoint 最后结束坐标
          * @param endHandler 动画播放结束回调
          */
-        play(parent: tsCore.View, goldUrl: string, num: number, endPoint: Laya.Point, endHandler?: ParamHandler): void;
+        play(parent: fgui.GComponent, goldUrl: string, num: number, endPoint: Laya.Point, endHandler?: ParamHandler): void;
         private onFrameLoop;
         private playEndPointAni;
         playComplete(): void;

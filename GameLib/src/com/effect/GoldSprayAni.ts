@@ -2,7 +2,6 @@ import Point = Laya.Point
 import Tween = Laya.Tween
 import GObject = fgui.GObject
 import {GoldSpray} from "./GoldSpray"
-import View = tsCore.View;
 import MathKit = tsCore.MathKit;
 
 /** 播放各种金币动画 */
@@ -53,7 +52,7 @@ export class GoldSprayAni {
      * @param endObject 最后结束对象
      * @param endHandler 动画播放结束回调
      */
-    playObject(parent: View, goldUrl: string, num: number, endObject: GObject, endHandler?: ParamHandler) {
+    playObject(parent: fgui.GComponent, goldUrl: string, num: number, endObject: GObject, endHandler?: ParamHandler) {
         let endPoint = endObject.localToGlobal()
         parent.globalToLocal(endPoint.x, endPoint.y, endPoint)
         // 设置最终位置居中
@@ -72,7 +71,7 @@ export class GoldSprayAni {
      * @param endPoint 最后结束坐标
      * @param endHandler 动画播放结束回调
      */
-    play(parent: View, goldUrl: string, num: number, endPoint: Point, endHandler?: ParamHandler) {
+    play(parent: fgui.GComponent, goldUrl: string, num: number, endPoint: Point, endHandler?: ParamHandler) {
         this.endPoint = endPoint
         this.endHandler = endHandler
         this.centreY = parent.root.height / 2

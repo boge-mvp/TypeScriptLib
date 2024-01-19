@@ -59,23 +59,6 @@ export class APP {
         HistoryManager.backHistory(value)
     }
 
-    // /**
-    //  * app手机调用js方法
-    //  * @param action 执行动作
-    //  * @param value 执行命令
-    //  *
-    //  */
-    // appRunJs(action: number, ...value) {
-    //     switch (action) {
-    //         case 2:// 获得手机图片数据
-    //             App.inst.sendAction(ActionLib.GET_MOBILE_PHONE_IMAGE_DATA, value)
-    //             break
-    //         default:
-    //             break
-    //
-    //     }
-    // }
-
     /**
      * app回调数据
      * @param json
