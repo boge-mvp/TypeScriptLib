@@ -85,7 +85,11 @@ export class BaseSlotGameData extends BaseGameData {
         this.gameType = GameType.SLOT
     }
 
-    /** 总共要投注的钱 */
+    /**
+     * 总共要投注的钱
+     * @example 默认
+     * this.lineValue * this.betValue
+     */
     override getTotalBetMoney() {
         return this.lineValue * this.betValue
     }

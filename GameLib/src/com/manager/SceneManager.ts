@@ -38,8 +38,6 @@ import {Cmd, CommonCmd} from "../net/Common";
 import {GameConfigKit} from "../kit/GameConfigKit";
 import {AssetsLoader} from "./AssetsLoader";
 import {StateCode} from "../utils/StateCode";
-import {GameServlet} from "../core/GameServlet";
-import {BaseGameData} from "../core/BaseGameData";
 
 /**
  * 舞台
@@ -450,7 +448,6 @@ export class SceneManager extends EProxy {
                 Player.inst.money = Player.inst.cacheMoney
 
             Player.inst.cacheMoney = 0
-            Player.inst.gameData = null
             Player.inst.isGuest = false
             Player.inst.gameId = CommonCmd.GAME_HOME
         }
