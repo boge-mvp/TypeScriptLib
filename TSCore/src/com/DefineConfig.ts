@@ -400,7 +400,7 @@ export class DefineConfig {
         })
 
         // 修复 HTML 富文本空格被清除的问题
-        const regExp = /(?<=\s|\S)\s*(?=\[\w{0,10}=.{0,10}])|(?<=\s|\S)\s*(?=\[\/\w{0,6}])|(?<=\[\w{0,10}=.{0,10}])\s*(?=\s|\S)|(?<=\[\/\w{0,10}])\s*(?=\s|\S)/g
+        const regExp = /(?<=\s|\S)\s+(?=\[\w{0,10}=.{0,10}])|(?<=\s|\S)\s+(?=\[\/\w{0,6}])|(?<=\[\w{0,10}=.{0,10}])\s+(?=\s|\S)|(?<=\[\/\w{0,10}])\s+(?=\s|\S)/g
         const UBBParser_parse = fgui.UBBParser.prototype.parse
         Object.defineProperty(fgui.UBBParser.prototype, "parse", {
             value: function (text: string, remove?: boolean): string {
