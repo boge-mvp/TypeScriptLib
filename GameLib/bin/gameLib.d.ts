@@ -2828,26 +2828,26 @@ declare namespace gameLib {
          * @param fun - 处理查询结果的回调函数，接受一个布尔值作为参数
          * @param keys - 用于定位json对象内目标值的一系列键名组成的数组
          */
-        getQueryBoolean(json: any, fun: (value: boolean) => void, ...keys: string[]): void;
+        getQueryBoolean(json: any | null, fun: (value: boolean) => void, ...keys: string[]): void;
         /**
          * 执行参数设置 如果存在将调用fun 如果不存在或是空 将不会调用fun
          * @param json
          * @param fun
          * @param keys
          */
-        getQuery(json: any, fun: (value: string) => void, ...keys: string[]): void;
+        getQuery(json: any | null, fun: (value: string) => void, ...keys: string[]): void;
         /**
          * 获取指定的key的布尔值 空值、false、0 都将返回false
          * @param json
          * @param keys
          */
-        getValueBoolean(json: any, ...keys: string[]): boolean;
+        getValueBoolean(json: any | null, ...keys: string[]): boolean;
         /**
          * 获取url上的参数key=value
          * @param json
          * @param keys
          */
-        getValue(json: any, ...keys: string[]): string | undefined;
+        getValue(json: any | null, ...keys: string[]): string | undefined;
         get amount(): string;
         get inviteCode(): string;
         /**

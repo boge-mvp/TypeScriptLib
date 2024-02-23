@@ -5475,8 +5475,11 @@ window.gameLib = {};
             this.getQueryBoolean(json, v => Laya.SoundManager.soundMuted = v, "soundMuted");
             // 游戏id
             this.getQuery(json, v => this.openGame = v, "openGame", "gameId");
+            const tempGameName = this.getValue(json, "gameName");
             // 游戏名字
-            this.getQuery(json, v => AppRecordManager.executeJson = { type: 2, data: Laya.Utils.parseInt(this.openGame), gameName: v }, "gameName");
+            if (this.openGame || tempGameName) {
+                AppRecordManager.executeJson = { type: 2, data: Laya.Utils.parseInt(this.openGame), gameName: tempGameName };
+            }
         }
         /**
          * 该函数用于从给定的json对象中通过一系列键名路径获取对应的值，并将这个值转化为布尔类型后传递给回调函数进行处理。

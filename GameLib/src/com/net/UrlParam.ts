@@ -94,8 +94,11 @@ export class UrlParam {
         this.getQueryBoolean(json, v=> SoundManager.soundMuted = v, "soundMuted")
         // 游戏id
         this.getQuery(json, v=> this.openGame = v, "openGame", "gameId")
+        const tempGameName = this.getValue(json, "gameName")
         // 游戏名字
-        this.getQuery(json, v=> AppRecordManager.executeJson = {type: 2, data: Utils.parseInt(this.openGame), gameName: v}, "gameName")
+        if (this.openGame || tempGameName) {
+            AppRecordManager.executeJson = {type: 2, data: Utils.parseInt(this.openGame), gameName: tempGameName}
+        }
 
     }
 
@@ -107,7 +110,7 @@ export class UrlParam {
      * @param fun - 处理查询结果的回调函数，接受一个布尔值作为参数
      * @param keys - 用于定位json对象内目标值的一系列键名组成的数组
      */
-    getQueryBoolean(json: any, fun: (value: boolean) => void, ...keys: string[]) {
+    getQueryBoolean(json: any | null, fun: (value: boolean) => void, ...keys: string[]) {
         const value = this.getValue(json, ...keys)
         // 判断获取的值是否存在且不等同于"false"或"0"
         if (value) {
@@ -121,7 +124,7 @@ export class UrlParam {
      * @param fun
      * @param keys
      */
-    getQuery(json: any, fun: (value: string) => void, ...keys: string[]) {
+    getQuery(json: any | null, fun: (value: string) => void, ...keys: string[]) {
         const value = this.getValue(json, ...keys)
         if (value) {
             fun(value)
@@ -133,7 +136,7 @@ export class UrlParam {
      * @param json
      * @param keys
      */
-    getValueBoolean(json: any, ...keys: string[]) {
+    getValueBoolean(json: any | null, ...keys: string[]) {
         const value = this.getValue(json, ...keys)
         return !(!value || value.equalsAnyIgnore("false", "0"))
     }
@@ -143,7 +146,7 @@ export class UrlParam {
      * @param json
      * @param keys
      */
-    getValue(json: any, ...keys: string[]): string | undefined {
+    getValue(json: any | null, ...keys: string[]): string | undefined {
         let value: string = undefined
         for (const key of keys) {
             if (json && key in json) {
