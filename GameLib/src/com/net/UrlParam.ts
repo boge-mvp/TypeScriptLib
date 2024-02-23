@@ -2,7 +2,6 @@ import Utils = Laya.Utils;
 import Render = Laya.Render;
 import SoundManager = Laya.SoundManager;
 import UtilKit = tsCore.UtilKit;
-import StringUtil = tsCore.StringUtil;
 import Log = tsCore.Log;
 import {Player} from "../Player"
 import {AppRecordManager} from "../manager/AppRecordManager"
@@ -78,72 +77,42 @@ export class UrlParam {
         isweb ??= Render.isConchApp ? "false" : "true"
         Player.inst.isWeb = (isweb != "false")
 
-        const isGuest = this.getValue(json, "isGuest", "guest", "demo")
-        if (!StringUtil.isEmpty(isGuest)) {
-            Player.inst.isGuest = isGuest == "true"
-        }
-
-        const debug = this.getValue(json, "debug")
-        if (debug) {
-            this.debug = debug == "true"
-        }
-
-        let token = this.getValue(json, "token")
-        if (token) {
-            Player.inst.token = token
-        }
-
-        let tempChannel = this.getValue(json, "channel")
-        if (!!tempChannel) this.channel = tempChannel
-
-        let tempCountry = this.getValue(json, "country")
-        if (!StringUtil.isEmpty(tempCountry)) this._country = tempCountry
-
-        let tempLanguage = this.getValue(json, "language", "lang")
-        if (!StringUtil.isEmpty(tempLanguage)) this._language = tempLanguage
-
-        let tempIsGift = this.getValue(json, "isGift", "gift")
-        if (!StringUtil.isEmpty(tempIsGift)) this._isGift = Utils.parseInt(tempIsGift)
-
-        let isCall = this.getValue(json, "isCall", "call")
-        if (!StringUtil.isEmpty(isCall)) SceneManager.inst.isCall = !(isCall === "false")
-
-        let tempPlayWith = this.getValue(json, "playWith")
-        if (!StringUtil.isEmpty(tempPlayWith)) this._playWith = tempPlayWith
-
-        let tempRoomId = this.getValue(json, "roomId")
-        if (!StringUtil.isEmpty(tempRoomId)) this._roomId = tempRoomId
-
-        let tempRole = this.getValue(json, "role")
-        if (!StringUtil.isEmpty(tempRole)) this._role = Utils.parseInt(tempRole)
-
-        let tempAmount = this.getValue(json, "amount")
-        if (!StringUtil.isEmpty(tempAmount)) this._amount = tempAmount
-
-        let tempInviteCode = this.getValue(json, "invite_code")
-        if (!StringUtil.isEmpty(tempInviteCode)) this._inviteCode = tempInviteCode
-
-        let tempMusicMuted = this.getValue(json, "musicMuted")
-        if (!StringUtil.isEmpty(tempMusicMuted)) SoundManager.musicMuted = tempMusicMuted == "true"
-
-        let tempSoundMuted = this.getValue(json, "soundMuted")
-        if (!StringUtil.isEmpty(tempSoundMuted)) SoundManager.soundMuted = tempSoundMuted == "true"
+        this.getQueryBoolean(json, v => Player.inst.isGuest = v, "isGuest", "guest", "demo")
+        this.getQueryBoolean(json, v => this.debug = v, "debug")
+        this.getQuery(json, v=> Player.inst.token = v, "token")
+        this.getQuery(json, v=> this.channel = v, "channel")
+        this.getQuery(json, v=> this._country = v, "country")
+        this.getQuery(json, v=> this._language = v, "language", "lang")
+        this.getQuery(json, v=> this._playWith = v, "playWith")
+        this.getQuery(json, v=> this._roomId = v, "roomId")
+        this.getQuery(json, v=> this._role = Utils.parseInt(v), "role")
+        this.getQuery(json, v=> this._amount = v, "amount")
+        this.getQuery(json, v=> this._inviteCode = v, "invite_code")
+        this.getQueryBoolean(json, v=> this._isGift = v ? 1 : 0, "isGift", "gift")
+        this.getQueryBoolean(json, v=> SceneManager.inst.isCall = v, "isCall", "call")
+        this.getQueryBoolean(json, v=> SoundManager.musicMuted = v, "musicMuted")
+        this.getQueryBoolean(json, v=> SoundManager.soundMuted = v, "soundMuted")
         // 游戏id
-        let tempOpenGame = this.getValue(json, "openGame", "gameId")
+        this.getQuery(json, v=> this.openGame = v, "openGame", "gameId")
         // 游戏名字
-        let tempGameName = this.getValue(json, "gameName")
-        if (!StringUtil.isEmpty(tempOpenGame) || !StringUtil.isEmpty(tempGameName)) {
-            this.openGame = tempOpenGame
-            AppRecordManager.executeJson = {type: 2, data: Utils.parseInt(this.openGame), gameName: tempGameName}
-        }
+        this.getQuery(json, v=> AppRecordManager.executeJson = {type: 2, data: Utils.parseInt(this.openGame), gameName: v}, "gameName")
 
     }
 
-    getQueryBoolean(json: any, fun: (value: boolean) => {}, ...keys: string[]) {
+    /**
+     * 该函数用于从给定的json对象中通过一系列键名路径获取对应的值，并将这个值转化为布尔类型后传递给回调函数进行处理。
+     * 具体转化逻辑为：若获取到的值存在且不等于"false"或"0"（忽略大小写），则将其转换为true并传入回调函数；否则转换为false。
+     *
+     * @param json - 需要从中查询数据的json对象
+     * @param fun - 处理查询结果的回调函数，接受一个布尔值作为参数
+     * @param keys - 用于定位json对象内目标值的一系列键名组成的数组
+     */
+    getQueryBoolean(json: any, fun: (value: boolean) => void, ...keys: string[]) {
         const value = this.getValue(json, ...keys)
+        // 判断获取的值是否存在且不等同于"false"或"0"
         if (value) {
-            fun(!(!value || value.equalsAnyIgnore("false", "0")))
-        }
+            fun(!value.equalsAnyIgnore("false", "0"))
+        } else fun(false)
     }
 
     /**
@@ -152,16 +121,15 @@ export class UrlParam {
      * @param fun
      * @param keys
      */
-    getQuery<T>(json: any, fun: (value: T) => void, ...keys: string[]) {
+    getQuery(json: any, fun: (value: string) => void, ...keys: string[]) {
         const value = this.getValue(json, ...keys)
         if (value) {
-            // @ts-ignore
             fun(value)
         }
     }
 
     /**
-     * 获取指定的key的布尔值 空或false、0 都将返回false
+     * 获取指定的key的布尔值 空值、false、0 都将返回false
      * @param json
      * @param keys
      */
@@ -175,8 +143,8 @@ export class UrlParam {
      * @param json
      * @param keys
      */
-    getValue(json: any, ...keys: string[]) {
-        let value: string
+    getValue(json: any, ...keys: string[]): string | undefined {
+        let value: string = undefined
         for (const key of keys) {
             if (json && key in json) {
                 value = json[key] + ""

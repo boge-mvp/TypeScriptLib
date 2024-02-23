@@ -157,15 +157,11 @@ export class SlotScrollModel<T extends BaseSlotGameData = BaseSlotGameData> exte
     protected callRunTween() {
         this.onLogicLotteryStart()
         this.tweenList.splice(0, this.tweenList.length)
-        let itemHeight: number
-        let list: GList
-        for (let i = 0; i < this.listRolls.length; i++) {
-            list = this.listRolls[i]
-            this.setRenderListData(i)
-            if (!this.isRunList(list, i))
-                continue
-            this.createTween(i, list)
-        }
+        this.listRolls.forEach((value, index) => {
+            this.setRenderListData(index)
+            if (this.isRunList(value, index))
+                this.createTween(index, value)
+        })
         // 防止tween 没有及时跟上  延迟100ms 在清理
         Laya.timer.once(400, this, this.clearCall)
         this.onLogicLotteryEnd()

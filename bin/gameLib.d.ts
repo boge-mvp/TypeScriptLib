@@ -2820,16 +2820,24 @@ declare namespace gameLib {
             debug?: boolean;
         });
         parseData(json: ExecuteData): void;
-        getQueryBoolean(json: any, fun: (value: boolean) => {}, ...keys: string[]): void;
+        /**
+         * 该函数用于从给定的json对象中通过一系列键名路径获取对应的值，并将这个值转化为布尔类型后传递给回调函数进行处理。
+         * 具体转化逻辑为：若获取到的值存在且不等于"false"或"0"（忽略大小写），则将其转换为true并传入回调函数；否则转换为false。
+         *
+         * @param json - 需要从中查询数据的json对象
+         * @param fun - 处理查询结果的回调函数，接受一个布尔值作为参数
+         * @param keys - 用于定位json对象内目标值的一系列键名组成的数组
+         */
+        getQueryBoolean(json: any, fun: (value: boolean) => void, ...keys: string[]): void;
         /**
          * 执行参数设置 如果存在将调用fun 如果不存在或是空 将不会调用fun
          * @param json
          * @param fun
          * @param keys
          */
-        getQuery<T>(json: any, fun: (value: T) => void, ...keys: string[]): void;
+        getQuery(json: any, fun: (value: string) => void, ...keys: string[]): void;
         /**
-         * 获取指定的key的布尔值 空或false、0 都将返回false
+         * 获取指定的key的布尔值 空值、false、0 都将返回false
          * @param json
          * @param keys
          */
@@ -2839,7 +2847,7 @@ declare namespace gameLib {
          * @param json
          * @param keys
          */
-        getValue(json: any, ...keys: string[]): string;
+        getValue(json: any, ...keys: string[]): string | undefined;
         get amount(): string;
         get inviteCode(): string;
         /**

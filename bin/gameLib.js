@@ -2646,15 +2646,11 @@ window.gameLib = {};
         callRunTween() {
             this.onLogicLotteryStart();
             this.tweenList.splice(0, this.tweenList.length);
-            let itemHeight;
-            let list;
-            for (let i = 0; i < this.listRolls.length; i++) {
-                list = this.listRolls[i];
-                this.setRenderListData(i);
-                if (!this.isRunList(list, i))
-                    continue;
-                this.createTween(i, list);
-            }
+            this.listRolls.forEach((value, index) => {
+                this.setRenderListData(index);
+                if (this.isRunList(value, index))
+                    this.createTween(index, value);
+            });
             // 防止tween 没有及时跟上  延迟100ms 在清理
             Laya.timer.once(400, this, this.clearCall);
             this.onLogicLotteryEnd();
@@ -5462,68 +5458,42 @@ window.gameLib = {};
             let isweb = this.getValue(json, "isweb");
             isweb !== null && isweb !== void 0 ? isweb : (isweb = Laya.Render.isConchApp ? "false" : "true");
             Player.inst.isWeb = (isweb != "false");
-            const isGuest = this.getValue(json, "isGuest", "guest", "demo");
-            if (!tsCore.StringUtil.isEmpty(isGuest)) {
-                Player.inst.isGuest = isGuest == "true";
-            }
-            const debug = this.getValue(json, "debug");
-            if (debug) {
-                this.debug = debug == "true";
-            }
-            let token = this.getValue(json, "token");
-            if (token) {
-                Player.inst.token = token;
-            }
-            let tempChannel = this.getValue(json, "channel");
-            if (!!tempChannel)
-                this.channel = tempChannel;
-            let tempCountry = this.getValue(json, "country");
-            if (!tsCore.StringUtil.isEmpty(tempCountry))
-                this._country = tempCountry;
-            let tempLanguage = this.getValue(json, "language", "lang");
-            if (!tsCore.StringUtil.isEmpty(tempLanguage))
-                this._language = tempLanguage;
-            let tempIsGift = this.getValue(json, "isGift", "gift");
-            if (!tsCore.StringUtil.isEmpty(tempIsGift))
-                this._isGift = Laya.Utils.parseInt(tempIsGift);
-            let isCall = this.getValue(json, "isCall", "call");
-            if (!tsCore.StringUtil.isEmpty(isCall))
-                SceneManager.inst.isCall = !(isCall === "false");
-            let tempPlayWith = this.getValue(json, "playWith");
-            if (!tsCore.StringUtil.isEmpty(tempPlayWith))
-                this._playWith = tempPlayWith;
-            let tempRoomId = this.getValue(json, "roomId");
-            if (!tsCore.StringUtil.isEmpty(tempRoomId))
-                this._roomId = tempRoomId;
-            let tempRole = this.getValue(json, "role");
-            if (!tsCore.StringUtil.isEmpty(tempRole))
-                this._role = Laya.Utils.parseInt(tempRole);
-            let tempAmount = this.getValue(json, "amount");
-            if (!tsCore.StringUtil.isEmpty(tempAmount))
-                this._amount = tempAmount;
-            let tempInviteCode = this.getValue(json, "invite_code");
-            if (!tsCore.StringUtil.isEmpty(tempInviteCode))
-                this._inviteCode = tempInviteCode;
-            let tempMusicMuted = this.getValue(json, "musicMuted");
-            if (!tsCore.StringUtil.isEmpty(tempMusicMuted))
-                Laya.SoundManager.musicMuted = tempMusicMuted == "true";
-            let tempSoundMuted = this.getValue(json, "soundMuted");
-            if (!tsCore.StringUtil.isEmpty(tempSoundMuted))
-                Laya.SoundManager.soundMuted = tempSoundMuted == "true";
+            this.getQueryBoolean(json, v => Player.inst.isGuest = v, "isGuest", "guest", "demo");
+            this.getQueryBoolean(json, v => this.debug = v, "debug");
+            this.getQuery(json, v => Player.inst.token = v, "token");
+            this.getQuery(json, v => this.channel = v, "channel");
+            this.getQuery(json, v => this._country = v, "country");
+            this.getQuery(json, v => this._language = v, "language", "lang");
+            this.getQuery(json, v => this._playWith = v, "playWith");
+            this.getQuery(json, v => this._roomId = v, "roomId");
+            this.getQuery(json, v => this._role = Laya.Utils.parseInt(v), "role");
+            this.getQuery(json, v => this._amount = v, "amount");
+            this.getQuery(json, v => this._inviteCode = v, "invite_code");
+            this.getQueryBoolean(json, v => this._isGift = v ? 1 : 0, "isGift", "gift");
+            this.getQueryBoolean(json, v => SceneManager.inst.isCall = v, "isCall", "call");
+            this.getQueryBoolean(json, v => Laya.SoundManager.musicMuted = v, "musicMuted");
+            this.getQueryBoolean(json, v => Laya.SoundManager.soundMuted = v, "soundMuted");
             // 游戏id
-            let tempOpenGame = this.getValue(json, "openGame", "gameId");
+            this.getQuery(json, v => this.openGame = v, "openGame", "gameId");
             // 游戏名字
-            let tempGameName = this.getValue(json, "gameName");
-            if (!tsCore.StringUtil.isEmpty(tempOpenGame) || !tsCore.StringUtil.isEmpty(tempGameName)) {
-                this.openGame = tempOpenGame;
-                AppRecordManager.executeJson = { type: 2, data: Laya.Utils.parseInt(this.openGame), gameName: tempGameName };
-            }
+            this.getQuery(json, v => AppRecordManager.executeJson = { type: 2, data: Laya.Utils.parseInt(this.openGame), gameName: v }, "gameName");
         }
+        /**
+         * 该函数用于从给定的json对象中通过一系列键名路径获取对应的值，并将这个值转化为布尔类型后传递给回调函数进行处理。
+         * 具体转化逻辑为：若获取到的值存在且不等于"false"或"0"（忽略大小写），则将其转换为true并传入回调函数；否则转换为false。
+         *
+         * @param json - 需要从中查询数据的json对象
+         * @param fun - 处理查询结果的回调函数，接受一个布尔值作为参数
+         * @param keys - 用于定位json对象内目标值的一系列键名组成的数组
+         */
         getQueryBoolean(json, fun, ...keys) {
             const value = this.getValue(json, ...keys);
+            // 判断获取的值是否存在且不等同于"false"或"0"
             if (value) {
-                fun(!(!value || value.equalsAnyIgnore("false", "0")));
+                fun(!value.equalsAnyIgnore("false", "0"));
             }
+            else
+                fun(false);
         }
         /**
          * 执行参数设置 如果存在将调用fun 如果不存在或是空 将不会调用fun
@@ -5534,12 +5504,11 @@ window.gameLib = {};
         getQuery(json, fun, ...keys) {
             const value = this.getValue(json, ...keys);
             if (value) {
-                // @ts-ignore
                 fun(value);
             }
         }
         /**
-         * 获取指定的key的布尔值 空或false、0 都将返回false
+         * 获取指定的key的布尔值 空值、false、0 都将返回false
          * @param json
          * @param keys
          */
@@ -5553,7 +5522,7 @@ window.gameLib = {};
          * @param keys
          */
         getValue(json, ...keys) {
-            let value;
+            let value = undefined;
             for (const key of keys) {
                 if (json && key in json) {
                     value = json[key] + "";
