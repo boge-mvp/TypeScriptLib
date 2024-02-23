@@ -1082,6 +1082,11 @@ window.gameLib = {};
         darkCancel() {
             this.state = SlotItemType.NORMAL;
         }
+        /**
+         * 播放跌落动画
+         */
+        playLandingAni() {
+        }
     }
     gameLib.BaseSlotItem = BaseSlotItem;
     class BaseSlotView extends BaseView {

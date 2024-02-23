@@ -619,6 +619,10 @@ declare namespace gameLib {
          * @deprecated
          */
         darkCancel(): void;
+        /**
+         * 播放跌落动画
+         */
+        playLandingAni(): void;
     }
     export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends BaseView {
         /** 线的面板 */

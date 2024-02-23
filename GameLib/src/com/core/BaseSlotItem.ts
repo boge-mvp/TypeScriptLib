@@ -56,4 +56,10 @@ export class BaseSlotItem extends ELabel {
         this.state = SlotItemType.NORMAL
     }
 
+    /**
+     * 播放跌落动画
+     */
+    playLandingAni() {
+
+    }
 }
