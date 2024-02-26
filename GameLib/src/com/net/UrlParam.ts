@@ -88,8 +88,8 @@ export class UrlParam {
         this.getQuery(json, v=> this._role = Utils.parseInt(v), "role")
         this.getQuery(json, v=> this._amount = v, "amount")
         this.getQuery(json, v=> this._inviteCode = v, "invite_code")
+        this.getQuery(json, v=> SceneManager.inst.isCall = !v.equalsAnyIgnore("false", "0"), "isCall", "call")
         this.getQueryBoolean(json, v=> this._isGift = v ? 1 : 0, "isGift", "gift")
-        this.getQueryBoolean(json, v=> SceneManager.inst.isCall = v, "isCall", "call")
         this.getQueryBoolean(json, v=> SoundManager.musicMuted = v, "musicMuted")
         this.getQueryBoolean(json, v=> SoundManager.soundMuted = v, "soundMuted")
         // 游戏id

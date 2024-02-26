@@ -149,7 +149,7 @@ declare module tsCore.SoundUtils {
      * @param [startTime=0] 声音播放起始时间 单位秒
      * @param [coverBefore=false] 是否覆盖正在播放的音乐
      */
-    export function playGameMusic(url: string, loops?: number, complete?: Laya.Handler, volume?: number, startTime?: number, coverBefore?: boolean)
+    export function playGameMusic(url: string, loops?: number, complete?: Laya.Handler, volume?: number, startTime?: number, coverBefore?: boolean): any
 
     /**
      *
@@ -159,7 +159,7 @@ declare module tsCore.SoundUtils {
      * @param [volume=1] 音量范围从 0（静音）至 1（最大音量）。
      * @param [startTime=0] 声音播放起始时间。 单位秒
      */
-    export function playGameSound(url: string, loops?: number, complete?: Laya.Handler, volume?: number, startTime?: number)
+    export function playGameSound(url: string, loops?: number, complete?: Laya.Handler, volume?: number, startTime?: number): Laya.SoundChannel
 }
 
 
