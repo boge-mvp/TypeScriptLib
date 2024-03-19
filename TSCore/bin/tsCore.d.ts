@@ -2087,7 +2087,7 @@ declare namespace tsCore {
          * @param optional
          * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
          */
-        static createSpine<T extends new () => GSkeleton | GSpineSkeleton | undefined>(url: string | ISkeletonData, optional?: ISkeletonData | T, skeletonClass?: T): T extends new () => infer R ? R : GSkeleton | GSpineSkeleton;
+        static createSpine<T extends new () => GSkeleton | GSpineSkeleton | undefined>(url: string | ISkeletonData, optional?: ISkeletonData | T, skeletonClass?: T): T extends new () => infer R ? R : GSpineSkeleton | GSkeleton;
         /**
          * 判断是否是接口 用 prototype 是否存在判断
          * @param optional
