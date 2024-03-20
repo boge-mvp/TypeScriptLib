@@ -1376,8 +1376,12 @@ window.tsCore = {};
                 // @ts-ignore
                 Laya.SoundManager._stageOnFocus();
                 // @ts-ignore
-                if (!Laya.SoundManager._blurPaused && Laya.SoundManager._musicChannel)
+                if (!Laya.SoundManager._blurPaused && Laya.SoundManager._musicChannel) {
+                    // @ts-ignore
+                    if (Laya.SoundManager._musicChannel.isStopped)
+                        Laya.SoundManager._musicChannel.resume();
                     return;
+                }
                 let bgMusic = Laya.SoundManager["_bgMusic"];
                 // @ts-ignore
                 Laya.SoundManager._blurPaused = false;
