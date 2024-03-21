@@ -2146,6 +2146,7 @@ window.gameLib = {};
                 WaitResult.inst.hide();
                 // this.showNotResult(data, false)
                 StateCode.execute(data.code, data);
+                runFun(handler, false);
                 return;
             }
             data = data.data;

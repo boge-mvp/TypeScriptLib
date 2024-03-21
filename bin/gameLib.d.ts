@@ -1074,8 +1074,8 @@ declare namespace gameLib {
          * @param id
          * @param handler
          */
-        jackPotClaim(id: string, handler: ParamHandler): void;
-        protected jackPotClaimHandler(handler: ParamHandler, data: any): void;
+        jackPotClaim(id: string, handler: Laya.Handler | ((remove: boolean, win: number) => void)): void;
+        protected jackPotClaimHandler(handler: Laya.Handler | ((remove: boolean, win: number) => void), data: any): void;
         /**
          * 显示获取的非200的结果显示弹窗
          * @param data 服务器返回的完整数据

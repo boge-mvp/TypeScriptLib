@@ -426,7 +426,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
      * @param id
      * @param handler
      */
-    jackPotClaim(id: string, handler: ParamHandler) {
+    jackPotClaim(id: string, handler: Handler | ((remove: boolean, win: number) => void)) {
         let obj: any = {}
         obj.token = Player.inst.token
         obj.game_id = Player.inst.gameId
@@ -437,11 +437,12 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
             })
     }
 
-    protected jackPotClaimHandler(handler: ParamHandler, data: any) {
+    protected jackPotClaimHandler(handler: Handler | ((remove: boolean, win: number) => void), data: any) {
         if (data.code != HttpCode.OK) {
             WaitResult.inst.hide()
             // this.showNotResult(data, false)
             StateCode.execute(data.code, data)
+            runFun(handler, false)
             return
         }
         data = data.data
