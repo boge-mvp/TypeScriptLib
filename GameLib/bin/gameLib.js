@@ -2376,9 +2376,7 @@ window.gameLib = {};
          * @protected
          */
         countFreeBonus() {
-            if (this.gameData.freeBonusNum == 0) {
-                this.gameData.freeBonusNum = this.gameData.lotteryId.count(value => value == this.SPECIAL_PLAY);
-            }
+            this.gameData.freeBonusNum = this.gameData.lotteryId.count(value => value == this.SPECIAL_PLAY);
             return this.gameData.freeBonusNum;
         }
         /*@override*/
