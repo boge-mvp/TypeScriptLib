@@ -7389,7 +7389,7 @@ Object.defineProperty(Array.prototype, "distinctBy", {
 });
 Object.defineProperty(Array.prototype, "groupBy", {
     value: function (keySelector, valueTransform) {
-        return this.groupByTo({}, keySelector, valueTransform);
+        return this.groupByTo(new Map(), keySelector, valueTransform);
     }
 });
 Object.defineProperty(Array.prototype, "groupByTo", {

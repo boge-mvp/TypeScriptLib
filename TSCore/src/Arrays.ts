@@ -21,7 +21,7 @@ Object.defineProperty(Array.prototype, "distinctBy", {
 
 Object.defineProperty(Array.prototype, "groupBy", {
     value: function <T, K, V>(keySelector: (value: T) => K, valueTransform?: (value: T) => V) {
-        return this.groupByTo({}, keySelector, valueTransform)
+        return this.groupByTo(new Map(), keySelector, valueTransform)
     }
 })
 
