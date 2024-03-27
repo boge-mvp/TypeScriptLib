@@ -3278,45 +3278,50 @@ window.tsCore = {};
             return left + right;
         }
         /**
-         * 从 nums数组中查找 大于value并且最接近value的数据信息
-         * @param nums
-         * @param value
-         * @param [equal=true] 包括等于 相当于 >=
+         * 从数组中获取大于指定值的元素及其索引
+         * @param nums 数值数组
+         * @param value 指定的值
+         * @param includeEqual 是否包括等于指定值的元素，默认为true
+         * @returns 返回一个对象，包含找到的元素的索引和值，如果没有找到则索引为-1，值为undefined
          */
-        static getGreater(nums, value, equal = true) {
-            let index = -1;
-            let result = undefined;
+        static findFirstGreaterOrEqual(nums, value, includeEqual = true) {
+            let index = -1; // 初始化索引为-1，表示未找到
+            let result = undefined; // 初始化结果为undefined
+            // 从数组末尾开始向前遍历
             for (let i = nums.length - 1; i >= 0; i--) {
-                const num = nums[i];
-                if (num > value || (equal && num === value)) {
-                    index = i;
-                    result = num;
+                const num = nums[i]; // 当前遍历的元素
+                // 如果元素大于指定值，或者等于指定值且equal参数为true
+                if (num > value || (includeEqual && num === value)) {
+                    index = i; // 更新索引
+                    result = num; // 更新结果
                 }
                 else
-                    break;
+                    break; // 如果找到不满足条件的元素，则终止循环
             }
-            return { index, value: result };
+            return { index, value: result }; // 返回结果对象
         }
         /**
-         * 从 nums数组中查找 小于value并且最接近value的数据信息
-         * @param nums
-         * @param value
-         * @param [equal=true] 包括等于 相当于 <=
+         * 在给定的数字数组中，从后向前查找第一个小于等于指定值的元素。
+         * @param nums 数字数组，作为查找范围。
+         * @param value 指定的值，用于与数组元素进行比较。
+         * @param includeEqual 是否包括等于指定值的元素，默认为true。
+         * @returns 返回一个对象，包含找到的元素的索引和值。如果没有找到符合条件的元素，则索引为-1，值为undefined。
          */
-        static getLess(nums, value, equal = true) {
-            let index = -1;
-            let result = undefined;
+        static findFirstLessOrEqual(nums, value, includeEqual = true) {
+            let index = -1; // 初始化索引为-1，表示未找到
+            let result = undefined; // 初始化结果为undefined
+            // 从数组末尾开始向前遍历
             for (let i = nums.length - 1; i >= 0; i--) {
-                const num = nums[i];
-                if (num <= value) {
-                    if (num === value && !equal)
-                        continue;
-                    index = i;
-                    result = num;
-                    break;
+                const num = nums[i]; // 当前遍历的元素
+                // 如果元素大于指定值，或者等于指定值且equal参数为true
+                if (num > value || (includeEqual && num === value)) {
+                    index = i; // 更新索引
+                    result = num; // 更新结果
                 }
+                else
+                    break; // 如果找到不满足条件的元素，则终止循环
             }
-            return { index, value: result };
+            return { index, value: result }; // 返回结果对象
         }
         /**
          * 比较两个值  获得返回值   用于数组排序   从小到大
@@ -3382,6 +3387,16 @@ window.tsCore = {};
     MathKit.RAD_TO_DEG = 180 / Math.PI;
     /** 计算弧度的公式  Math.PI / 180 */
     MathKit.DEG_TO_RAD = Math.PI / 180;
+    /**
+     * @deprecated
+     * @see findFirstGreaterOrEqual
+     */
+    MathKit.getGreater = MathKit.findFirstGreaterOrEqual;
+    /**
+     * @deprecated
+     * @see findFirstLessOrEqual
+     */
+    MathKit.getLess = MathKit.findFirstLessOrEqual;
     tsCore.MathKit = MathKit;
     /**
      * @deprecated

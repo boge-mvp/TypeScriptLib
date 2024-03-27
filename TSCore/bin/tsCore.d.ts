@@ -1234,25 +1234,37 @@ declare namespace tsCore {
          */
         static toFixedStr(value: number | string, p?: number): string;
         /**
-         * 从 nums数组中查找 大于value并且最接近value的数据信息
-         * @param nums
-         * @param value
-         * @param [equal=true] 包括等于 相当于 >=
+         * 从数组中获取大于指定值的元素及其索引
+         * @param nums 数值数组
+         * @param value 指定的值
+         * @param includeEqual 是否包括等于指定值的元素，默认为true
+         * @returns 返回一个对象，包含找到的元素的索引和值，如果没有找到则索引为-1，值为undefined
          */
-        static getGreater(nums: number[], value: number, equal?: boolean): {
+        static findFirstGreaterOrEqual(nums: number[], value: number, includeEqual?: boolean): {
             index: number;
             value: any;
         };
         /**
-         * 从 nums数组中查找 小于value并且最接近value的数据信息
-         * @param nums
-         * @param value
-         * @param [equal=true] 包括等于 相当于 <=
+         * @deprecated
+         * @see findFirstGreaterOrEqual
          */
-        static getLess(nums: number[], value: number, equal?: boolean): {
+        static getGreater: typeof MathKit.findFirstGreaterOrEqual;
+        /**
+         * 在给定的数字数组中，从后向前查找第一个小于等于指定值的元素。
+         * @param nums 数字数组，作为查找范围。
+         * @param value 指定的值，用于与数组元素进行比较。
+         * @param includeEqual 是否包括等于指定值的元素，默认为true。
+         * @returns 返回一个对象，包含找到的元素的索引和值。如果没有找到符合条件的元素，则索引为-1，值为undefined。
+         */
+        static findFirstLessOrEqual(nums: number[], value: number, includeEqual?: boolean): {
             index: number;
             value: any;
         };
+        /**
+         * @deprecated
+         * @see findFirstLessOrEqual
+         */
+        static getLess: typeof MathKit.findFirstLessOrEqual;
         /**
          * 比较两个值  获得返回值   用于数组排序   从小到大
          * @param aPrice 第一个值
