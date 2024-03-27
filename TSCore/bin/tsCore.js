@@ -7394,7 +7394,6 @@ Object.defineProperty(Array.prototype, "groupBy", {
 });
 Object.defineProperty(Array.prototype, "groupByTo", {
     value: function (destination, keySelector, valueTransform) {
-        var _a;
         let len = this.length;
         for (let i = len - 1; i > 0; i--) {
             const key = keySelector(this[i]);
@@ -7403,7 +7402,7 @@ Object.defineProperty(Array.prototype, "groupByTo", {
                 list = [];
                 destination.set(key, list);
             }
-            list.push((_a = valueTransform === null || valueTransform === void 0 ? void 0 : valueTransform(this[i])) !== null && _a !== void 0 ? _a : this[i]);
+            list.push(valueTransform ? valueTransform(this[i]) : this[i]);
         }
         return destination;
     }

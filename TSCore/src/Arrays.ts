@@ -35,7 +35,7 @@ Object.defineProperty(Array.prototype, "groupByTo", {
                 list = []
                 destination.set(key, list)
             }
-            list.push(valueTransform?.(this[i]) ?? this[i])
+            list.push(valueTransform ? valueTransform(this[i]) : this[i])
         }
         return destination
     }
