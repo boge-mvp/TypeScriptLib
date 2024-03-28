@@ -1,9 +1,10 @@
 /**
- * 执行 ParamHandler 方法
- * @param func ParamHandler 对象
- * @param args 参数 传入数组会将数组当场一个参数传递
+ * 执行提供的 ParamHandler 函数。
+ * @param func 可选，要执行的函数或Laya.Handler实例。如果提供，它将根据其类型执行。
+ * @param args 可变参数，传递给函数的参数。
+ * @returns 如果func存在且不为null，则根据func的类型执行并返回相应的结果；否则返回null。
  */
-function runFun(func?: ParamHandler, ...args) {
+function runFun(func?: ParamHandler, ...args: any[]) {
     if (func) return func instanceof Laya.Handler ? func.runWith(args) : func.apply(null, args)
     return null
 }
@@ -13,7 +14,7 @@ function runFun(func?: ParamHandler, ...args) {
  * @param id 获取文案的key
  * @param args 如果包含占位符，这里可传入占位符的替换文案
  */
-function getString(id: string | number, ...args) {
+function getString(id: string | number, ...args: any[]) {
     // @ts-ignore
     let content = tsCore.LanguageUtils.inst.getStr(id)
     if (args.length == 0) return content

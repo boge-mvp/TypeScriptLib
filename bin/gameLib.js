@@ -6007,7 +6007,7 @@ window.gameLib = {};
             }
         }
         /** 展示牌 铺开 */
-        bySuit(handler = null) {
+        bySuit(handler) {
             if (this.isRun)
                 return;
             this.isRun = true;
@@ -6029,13 +6029,13 @@ window.gameLib = {};
                     this.completeNum++;
                     if (this.completeNum == len) {
                         this.isRun = false;
-                        handler === null || handler === void 0 ? void 0 : handler.run();
+                        runFun(handler);
                     }
                 }, [card, i]));
             }
         }
         /** 展示牌 */
-        fan(handler = null) {
+        fan(handler) {
             if (this.isRun)
                 return;
             this.isRun = true;
@@ -6056,7 +6056,7 @@ window.gameLib = {};
          * @param handler 执行完成回调
          * @param num 执行次数 暂未实现
          */
-        shuffle(handler = null, num = 1) {
+        shuffle(handler, num = 1) {
             if (this.isRun)
                 return;
             this.isRun = true;

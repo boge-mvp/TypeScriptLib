@@ -3150,15 +3150,15 @@ declare namespace gameLib {
          */
         sort(handler?: ParamHandler, sort?: boolean): void;
         /** 展示牌 铺开 */
-        bySuit(handler?: Laya.Handler): void;
+        bySuit(handler?: ParamHandler): void;
         /** 展示牌 */
-        fan(handler?: Laya.Handler): void;
+        fan(handler?: ParamHandler): void;
         /**
          * 洗牌
          * @param handler 执行完成回调
          * @param num 执行次数 暂未实现
          */
-        shuffle(handler?: Laya.Handler, num?: number): void;
+        shuffle(handler?: ParamHandler, num?: number): void;
         private moveHandler;
         private plusMinus;
         setChildIndexHandler(card: Card, index: number): void;

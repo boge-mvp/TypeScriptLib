@@ -1,6 +1,5 @@
 import {Card} from "./Card"
 
-
 export class Deck {
 
     /** 存放的卡牌 */
@@ -81,7 +80,7 @@ export class Deck {
     }
 
     /** 展示牌 铺开 */
-    bySuit(handler: Laya.Handler = null) {
+    bySuit(handler?: ParamHandler) {
         if (this.isRun) return
         this.isRun = true
         this.handler = handler
@@ -105,14 +104,14 @@ export class Deck {
                     this.completeNum++
                     if (this.completeNum == len) {
                         this.isRun = false
-                        handler?.run()
+                        runFun(handler)
                     }
                 }, [card, i]))
         }
     }
 
     /** 展示牌 */
-    fan(handler: Laya.Handler = null) {
+    fan(handler?: ParamHandler) {
         if (this.isRun) return
         this.isRun = true
         this.handler = handler
@@ -135,7 +134,7 @@ export class Deck {
      * @param handler 执行完成回调
      * @param num 执行次数 暂未实现
      */
-    shuffle(handler: Laya.Handler = null, num = 1) {
+    shuffle(handler?: ParamHandler, num = 1) {
         if (this.isRun) return
         this.isRun = true
         this.executeNum = num
