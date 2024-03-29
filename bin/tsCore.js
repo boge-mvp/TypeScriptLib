@@ -7134,7 +7134,7 @@ function getString(id, ...args) {
  * @param args 方法参数
  */
 function delayCall(delay, fun, ...args) {
-    Laya.timer.once(delay, fun.caller, fun, args);
+    Laya.timer.once(delay, this, fun, args);
 }
 /**
  * 延迟到下一帧执行方法
@@ -7142,7 +7142,7 @@ function delayCall(delay, fun, ...args) {
  * @param args 方法参数
  */
 function callLater(fun, ...args) {
-    Laya.timer.callLater(fun.caller, fun, args);
+    Laya.timer.callLater(this, fun, args);
 }
 /**
  * 配置定义

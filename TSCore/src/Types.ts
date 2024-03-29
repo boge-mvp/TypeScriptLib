@@ -29,7 +29,7 @@ function getString(id: string | number, ...args: any[]) {
  * @param args 方法参数
  */
 function delayCall(delay: number, fun: Function, ...args: any[]) {
-    Laya.timer.once(delay, fun.caller, fun, args)
+    Laya.timer.once(delay, this, fun, args)
 }
 
 /**
@@ -38,7 +38,7 @@ function delayCall(delay: number, fun: Function, ...args: any[]) {
  * @param args 方法参数
  */
 function callLater(fun: Function, ...args: any[]) {
-    Laya.timer.callLater(fun.caller, fun, args)
+    Laya.timer.callLater(this, fun, args)
 }
 
 /**
