@@ -3128,6 +3128,10 @@ declare namespace gameLib {
         offsetMultiple: number;
         /** 中心点 */
         tempPivot: Laya.Point;
+        /**
+         * 初始化牌
+         * @param id 0开始的牌id
+         */
         init(id: number): void;
         protected suitName(value: number): string;
         createUI(): void;
@@ -3151,8 +3155,12 @@ declare namespace gameLib {
         sort(handler?: ParamHandler, sort?: boolean): void;
         /** 展示牌 铺开 */
         bySuit(handler?: ParamHandler): void;
-        /** 展示牌 */
-        fan(handler?: ParamHandler): void;
+        /**
+         * 展示牌
+         * @param handler
+         * @param pivot 设置单张牌的中心点
+         */
+        fan(handler?: ParamHandler, pivot?: Laya.Point): void;
         /**
          * 洗牌
          * @param handler 执行完成回调

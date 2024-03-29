@@ -1,4 +1,5 @@
 import {Card} from "./Card"
+import Point = Laya.Point;
 
 export class Deck {
 
@@ -46,7 +47,7 @@ export class Deck {
         }
         let len = this.cards.length
         for (let i = 0; i < len; i++) {
-            let card: Card = this.cards[i]
+            let card = this.cards[i]
             let tempPivot: Laya.Point = card.tempPivot
             card.setPivot(tempPivot.x, tempPivot.y)
             card.offset = i * card.offsetMultiple
@@ -91,14 +92,13 @@ export class Deck {
         let len = this.cards.length
         for (let i = 0; i < len; i++) {
             let card = this.cards[i]
-
             let value = card.value
             let suit = card.suit
             let delay = i * 10
             let posX = -(6.75 - value) * 20 + card.initX
             let posY = -(1.5 - suit) * (card.height + 5) + card.initY
 
-            Laya.Tween.to(card, {x: posX, y: posY}, delay, null,
+            Laya.Tween.to(card, {x: posX, y: posY, rotation: 0}, delay, null,
                 Laya.Handler.create(this, (card: Card, i: number) => {
                     this.setChildIndexHandler(card, i)
                     this.completeNum++
@@ -110,19 +110,23 @@ export class Deck {
         }
     }
 
-    /** 展示牌 */
-    fan(handler?: ParamHandler) {
+    /**
+     * 展示牌
+     * @param handler
+     * @param pivot 设置单张牌的中心点
+     */
+    fan(handler?: ParamHandler, pivot: Laya.Point = new Point(.5, 1.3)) {
         if (this.isRun) return
         this.isRun = true
         this.handler = handler
         this.completeNum = 0
         let len = this.cards.length
         for (let i = 0; i < len; i++) {
-            let card: Card = this.cards[i]
+            let card = this.cards[i]
             card.offset = i / 4
             let delay = i * 10
             let rot = i / (len - 1) * 260 - 130
-            card.setPivot(.5, 2.3)
+            card.setPivot(pivot.x, pivot.y)
 
             Laya.Tween.to(card, {x: card.initX - card.offset, y: card.initY - card.offset, rotation: rot},
                 300 + delay, null, Laya.Handler.create(this, this.moveHandler, [card]), delay)
@@ -143,12 +147,12 @@ export class Deck {
         this.completeNum = 0
         this.cards.shuffle()
         for (let i = 0; i < this.cards.length; i++) {
-            let card: Card = this.cards[i]
+            let card = this.cards[i]
             card.offset = i * card.offsetMultiple
             let offsetX = this.plusMinus(Math.random() * 90 + 30) + card.initX
             let delay = i * 2
 
-            Laya.Tween.to(card, {x: offsetX, y: card.initY - card.offset}, 200, null,
+            Laya.Tween.to(card, {x: offsetX, y: card.initY - card.offset, rotation: 0}, 200, null,
                 Laya.Handler.create(this, this.moveHandler, [card]), delay)
 
             Laya.timer.once(100 + delay, this, this.setChildIndexHandler, [card, i], false)

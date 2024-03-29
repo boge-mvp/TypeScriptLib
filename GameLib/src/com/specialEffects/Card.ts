@@ -24,6 +24,10 @@ export class Card extends ELabel {
     /** 中心点 */
     tempPivot: Laya.Point = new Laya.Point()
 
+    /**
+     * 初始化牌
+     * @param id 0开始的牌id
+     */
     init(id: number) {
         this.code = id
 
