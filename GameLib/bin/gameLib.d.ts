@@ -3136,9 +3136,9 @@ declare namespace gameLib {
         protected suitName(value: number): string;
         createUI(): void;
     }
-    export class Deck {
+    export class Deck<T extends Card = Card> {
         /** 存放的卡牌 */
-        cards: Card[];
+        cards: T[];
         /** 已经完成了动画个数 */
         private completeNum;
         /** 是否正在运行动画 */
@@ -3146,11 +3146,12 @@ declare namespace gameLib {
         private handler;
         createCard(): void;
         /**
-         * 收集牌
-         * @param handler
-         * @param sort 是否需要排序
+         * 对卡片进行排序和动画处理。
+         * @param handler 处理参数的函数，默认为null，用于在排序前后对卡片进行额外处理。
+         * @param sort 是否对卡片进行排序，默认为true。如果为true，则按照卡片的code属性降序排序。
+         * @param onceComplete 在每个卡片动画完成时调用的回调函数，默认为undefined。接收一个参数card，表示当前完成动画的卡片。
          */
-        sort(handler?: ParamHandler, sort?: boolean): void;
+        sort(handler?: ParamHandler, sort?: boolean, onceComplete?: (card: T) => void): void;
         /** 展示牌 铺开 */
         bySuit(handler?: ParamHandler, spacing?: number, offsetY?: number): void;
         /**
@@ -3171,7 +3172,7 @@ declare namespace gameLib {
         private _shuffle;
         private onAnimationFinish;
         private plusMinus;
-        setChildIndexHandler(card: Card, index: number): void;
+        setChildIndexHandler(card: T, index: number): void;
         dispose(): void;
     }
     /**

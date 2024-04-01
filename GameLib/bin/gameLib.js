@@ -5964,29 +5964,32 @@ window.gameLib = {};
             }
         }
         /**
-         * 收集牌
-         * @param handler
-         * @param sort 是否需要排序
+         * 对卡片进行排序和动画处理。
+         * @param handler 处理参数的函数，默认为null，用于在排序前后对卡片进行额外处理。
+         * @param sort 是否对卡片进行排序，默认为true。如果为true，则按照卡片的code属性降序排序。
+         * @param onceComplete 在每个卡片动画完成时调用的回调函数，默认为undefined。接收一个参数card，表示当前完成动画的卡片。
          */
-        sort(handler = null, sort = true) {
+        sort(handler = null, sort = true, onceComplete) {
+            // 判断是否已经执行过排序，如果执行过则不再执行
             if (this.isRun)
                 return;
-            this.isRun = true;
-            this.handler = handler;
-            this.completeNum = 0;
+            this.isRun = true; // 标记为正在执行排序
+            this.handler = handler; // 存储传入的处理函数
+            this.completeNum = 0; // 初始化完成动画的卡片数量为0
+            // 如果需要排序，则按照卡片的code进行降序排序
             if (sort) {
                 this.cards.sort((a, b) => {
                     return b.code - a.code;
                 });
             }
-            let len = this.cards.length;
+            let len = this.cards.length; // 获取卡片数量
             for (let i = 0; i < len; i++) {
-                let card = this.cards[i];
-                let tempPivot = card.tempPivot;
-                card.setPivot(tempPivot.x, tempPivot.y);
-                card.offset = i * card.offsetMultiple;
-                let _delay = i * 10;
-                // Log.debug(card.y, card.y + (- card.height * 1.5))
+                let card = this.cards[i]; // 获取当前遍历的卡片
+                let tempPivot = card.tempPivot; // 获取临时中心点
+                card.setPivot(tempPivot.x, tempPivot.y); // 设置卡片的中心点
+                card.offset = i * card.offsetMultiple; // 计算卡片的偏移量
+                let _delay = i * 10; // 计算动画延迟时间，使每个卡片依次延迟一定时间后开始动画
+                // 开始第一个阶段的动画，将卡片旋转并移动到初始位置下方
                 Laya.Tween.to(card, {
                     x: card.initX - card.offset,
                     y: card.y + (-card.height * 1.5),
@@ -5994,17 +5997,21 @@ window.gameLib = {};
                     scaleX: 1,
                     scaleY: 1
                 }, _delay, null, Laya.Handler.create(this, (card) => {
+                    // 开始第二个阶段的动画，将卡片移动到初始位置
                     Laya.Tween.to(card, {
                         x: card.initX - card.offset,
                         y: card.initY - card.offset
-                    }, 400, null, Laya.Handler.create(this, () => {
-                        this.completeNum++;
+                    }, 400, null, Laya.Handler.create(this, (card) => {
+                        onceComplete === null || onceComplete === void 0 ? void 0 : onceComplete(card); // 调用完成回调函数
+                        this.completeNum++; // 完成动画的卡片数量加1
+                        // 如果所有卡片都完成了动画，则重置isRun标志，并调用handler函数
                         if (len == this.completeNum) {
                             this.isRun = false;
                             runFun(handler);
                         }
-                    }));
+                    }, [card]));
                 }, [card]));
+                // 设置卡片在动画过程中的子级索引处理，确保动画顺序正确
                 Laya.timer.once(200 + _delay, this, this.setChildIndexHandler, [card, i], false);
             }
         }

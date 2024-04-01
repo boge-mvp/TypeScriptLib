@@ -2,10 +2,10 @@ import {Card} from "./Card"
 import Point = Laya.Point;
 import Handler = Laya.Handler;
 
-export class Deck {
+export class Deck<T extends Card = Card> {
 
     /** 存放的卡牌 */
-    cards: Card[] = []
+    cards: T[] = []
     /** 已经完成了动画个数 */
     private completeNum = 0
     /** 是否正在运行动画 */
@@ -15,7 +15,7 @@ export class Deck {
 
     createCard() {
         for (let i = 0; i < 54; i++) {
-            let card: Card = new Card()
+            let card = new Card()
             card.init(i)
             card.createUI()
             card.initX = 400
@@ -24,58 +24,66 @@ export class Deck {
             card.offset = i * card.offsetMultiple
             card.setXY(card.initX - card.offset, card.initY - card.offset)
             fgui.GRoot.inst.addChild(card)
-            this.cards.push(card)
+            this.cards.push(card as T)
         }
     }
 
     /**
-     * 收集牌
-     * @param handler
-     * @param sort 是否需要排序
+     * 对卡片进行排序和动画处理。
+     * @param handler 处理参数的函数，默认为null，用于在排序前后对卡片进行额外处理。
+     * @param sort 是否对卡片进行排序，默认为true。如果为true，则按照卡片的code属性降序排序。
+     * @param onceComplete 在每个卡片动画完成时调用的回调函数，默认为undefined。接收一个参数card，表示当前完成动画的卡片。
      */
-    sort(handler: ParamHandler = null, sort = true) {
+    sort(handler: ParamHandler = null, sort = true, onceComplete?: (card: T) => void) {
+        // 判断是否已经执行过排序，如果执行过则不再执行
         if (this.isRun) return
-        this.isRun = true
-        this.handler = handler
+        this.isRun = true  // 标记为正在执行排序
 
-        this.completeNum = 0
+        this.handler = handler  // 存储传入的处理函数
+
+        this.completeNum = 0  // 初始化完成动画的卡片数量为0
+        // 如果需要排序，则按照卡片的code进行降序排序
         if (sort) {
-            this.cards.sort((a: Card, b: Card) => {
+            this.cards.sort((a: T, b: T) => {
                 return b.code - a.code
             })
         }
-        let len = this.cards.length
-        for (let i = 0; i < len; i++) {
-            let card = this.cards[i]
-            let tempPivot: Laya.Point = card.tempPivot
-            card.setPivot(tempPivot.x, tempPivot.y)
-            card.offset = i * card.offsetMultiple
-            let _delay = i * 10
 
-            // Log.debug(card.y, card.y + (- card.height * 1.5))
+        let len = this.cards.length  // 获取卡片数量
+        for (let i = 0; i < len; i++) {
+            let card = this.cards[i]  // 获取当前遍历的卡片
+            let tempPivot: Laya.Point = card.tempPivot  // 获取临时中心点
+            card.setPivot(tempPivot.x, tempPivot.y)  // 设置卡片的中心点
+            card.offset = i * card.offsetMultiple  // 计算卡片的偏移量
+            let _delay = i * 10  // 计算动画延迟时间，使每个卡片依次延迟一定时间后开始动画
+
+            // 开始第一个阶段的动画，将卡片旋转并移动到初始位置下方
             Laya.Tween.to(card, {
                 x: card.initX - card.offset,
                 y: card.y + (-card.height * 1.5),
                 rotation: 0,
                 scaleX: 1,
                 scaleY: 1
-            }, _delay, null, Laya.Handler.create(this, (card: Card) => {
+            }, _delay, null, Laya.Handler.create(this, (card: T) => {
 
+                // 开始第二个阶段的动画，将卡片移动到初始位置
                 Laya.Tween.to(card, {
                     x: card.initX - card.offset,
                     y: card.initY - card.offset
-                }, 400, null, Laya.Handler.create(this, () => {
-                    this.completeNum++
+                }, 400, null, Laya.Handler.create(this, (card: T) => {
+                    onceComplete?.(card)  // 调用完成回调函数
+                    this.completeNum++  // 完成动画的卡片数量加1
+                    // 如果所有卡片都完成了动画，则重置isRun标志，并调用handler函数
                     if (len == this.completeNum) {
                         this.isRun = false
                         runFun(handler)
                     }
-                }))
+                }, [card]))
 
             }, [card]))
 
+            // 设置卡片在动画过程中的子级索引处理，确保动画顺序正确
             Laya.timer.once(200 + _delay, this, this.setChildIndexHandler, [card, i], false)
-
         }
     }
 
@@ -85,7 +93,7 @@ export class Deck {
         this.isRun = true
         this.handler = handler
         this.completeNum = 0
-        this.cards.sort((a: Card, b: Card) => {
+        this.cards.sort((a: T, b: T) => {
             return a.code - b.code
         })
         let len = this.cards.length
@@ -100,7 +108,7 @@ export class Deck {
                     y: posY,
                     rotation: 0
                 }, delay, null,
-                Laya.Handler.create(this, (card: Card, i: number) => {
+                Laya.Handler.create(this, (card: T, i: number) => {
                     this.setChildIndexHandler(card, i)
                     this.completeNum++
                     if (this.completeNum == len) {
@@ -186,7 +194,7 @@ export class Deck {
         }
     }
 
-    private onAnimationFinish(card: Card, callback?: Handler) {
+    private onAnimationFinish(card: T, callback?: Handler) {
         Laya.Tween.to(card, {
             x: card.initX - card.offset,
             y: card.initY - card.offset
@@ -206,7 +214,7 @@ export class Deck {
         return plus_minus * value
     }
 
-    setChildIndexHandler(card: Card, index: number) {
+    setChildIndexHandler(card: T, index: number) {
         card.parent.setChildIndex(card, index)
     }
 
