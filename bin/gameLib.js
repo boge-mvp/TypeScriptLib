@@ -7043,21 +7043,45 @@ window.gameLib = {};
     gameLib.ObjectUtil = ObjectUtil;
     class RotationUtils {
         constructor() {
-            /** 速度最大值 */
+            /**
+             * 速度最大值
+             * @default 10
+             */
             this.maxSpeed = 10;
-            /** 减速后最小值 */
+            /**
+             * 减速后最小值
+             * @default 0
+             */
             this.minSpeed = 0;
-            /** 格子数量 */
+            /**
+             * 格子数量
+             * @default 20
+             */
             this.count = 20;
-            /** 第一个奖区起始点与0点位置的偏移比例 */
+            /**
+             * 第一个奖区起始点与0点位置的偏移比例
+             * @default -0.5
+             */
             this.skew = -0.5;
-            /** 最少圈数 */
+            /**
+             * 最少圈数
+             * @default 5
+             */
             this.minCircle = 5;
-            /** 最多圈数 */
+            /**
+             * 最多圈数
+             * @default 8
+             */
             this.maxCircle = 8;
-            /** 指针所停位置离奖区边缘的比例 */
+            /**
+             * 指针所停位置离奖区边缘的比例
+             * @default 0.5
+             */
             this.offset = 0.5;
-            /** 旋转花费的时间，单位毫秒。 只有tween有用 */
+            /**
+             * 旋转花费的时间，单位毫秒。 只有tween有用
+             * @default 1000*5
+             */
             this.duration = 1000 * 5;
         }
         /**

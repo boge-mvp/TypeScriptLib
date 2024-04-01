@@ -20,21 +20,45 @@ export class RotationUtils {
     /** 缓动 */
     private tween: Laya.Tween
 
-    /** 速度最大值 */
+    /**
+     * 速度最大值
+     * @default 10
+     */
     public maxSpeed = 10
-    /** 减速后最小值 */
+    /**
+     * 减速后最小值
+     * @default 0
+     */
     public minSpeed = 0
-    /** 格子数量 */
+    /**
+     * 格子数量
+     * @default 20
+     */
     public count = 20
-    /** 第一个奖区起始点与0点位置的偏移比例 */
+    /**
+     * 第一个奖区起始点与0点位置的偏移比例
+     * @default -0.5
+     */
     public skew = -0.5
-    /** 最少圈数 */
+    /**
+     * 最少圈数
+     * @default 5
+     */
     public minCircle = 5
-    /** 最多圈数 */
+    /**
+     * 最多圈数
+     * @default 8
+     */
     public maxCircle = 8
-    /** 指针所停位置离奖区边缘的比例 */
+    /**
+     * 指针所停位置离奖区边缘的比例
+     * @default 0.5
+     */
     public offset = 0.5
-    /** 旋转花费的时间，单位毫秒。 只有tween有用 */
+    /**
+     * 旋转花费的时间，单位毫秒。 只有tween有用
+     * @default 1000*5
+     */
     public duration = 1000 * 5
 
     /**

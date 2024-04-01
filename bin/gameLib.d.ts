@@ -3498,21 +3498,45 @@ declare namespace gameLib {
         private proCall;
         /** 缓动 */
         private tween;
-        /** 速度最大值 */
+        /**
+         * 速度最大值
+         * @default 10
+         */
         maxSpeed: number;
-        /** 减速后最小值 */
+        /**
+         * 减速后最小值
+         * @default 0
+         */
         minSpeed: number;
-        /** 格子数量 */
+        /**
+         * 格子数量
+         * @default 20
+         */
         count: number;
-        /** 第一个奖区起始点与0点位置的偏移比例 */
+        /**
+         * 第一个奖区起始点与0点位置的偏移比例
+         * @default -0.5
+         */
         skew: number;
-        /** 最少圈数 */
+        /**
+         * 最少圈数
+         * @default 5
+         */
         minCircle: number;
-        /** 最多圈数 */
+        /**
+         * 最多圈数
+         * @default 8
+         */
         maxCircle: number;
-        /** 指针所停位置离奖区边缘的比例 */
+        /**
+         * 指针所停位置离奖区边缘的比例
+         * @default 0.5
+         */
         offset: number;
-        /** 旋转花费的时间，单位毫秒。 只有tween有用 */
+        /**
+         * 旋转花费的时间，单位毫秒。 只有tween有用
+         * @default 1000*5
+         */
         duration: number;
         /**
          *
