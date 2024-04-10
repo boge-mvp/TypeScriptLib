@@ -2108,10 +2108,12 @@ window.gameLib = {};
                 runFun(callback, data);
             }, this.onSendBetError.bind(this));
         }
+        /**
+         * 处理发送bet请求时的错误。
+         */
         onSendBetError() {
             WaitResult.inst.hide();
             this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1005 /* LibStr.NET_ERROR */, null, () => {
-                // this.sendAction(ActionLib.GAME_RESET_BET)
                 SceneManager.inst.gameErrorExit();
             });
         }
@@ -5467,6 +5469,13 @@ window.gameLib = {};
             this._isGift = 0;
             /** 是否是debug模式 */
             this.debug = false;
+            /**
+             * 图片清晰度
+             *  0 高清
+             *  1 压缩
+             *  2 webp
+             */
+            this.imageQuality = 1;
             this._country = defaults === null || defaults === void 0 ? void 0 : defaults.country;
             this._language = defaults === null || defaults === void 0 ? void 0 : defaults.language;
             this.channel = defaults === null || defaults === void 0 ? void 0 : defaults.channel;
@@ -5510,6 +5519,7 @@ window.gameLib = {};
             this.getQuery(json, v => this._language = v, "language", "lang");
             this.getQuery(json, v => this._playWith = v, "playWith");
             this.getQuery(json, v => this._roomId = v, "roomId");
+            this.getQuery(json, v => this.imageQuality = v.toInt(), "imgQ", "imageQuality");
             this.getQuery(json, v => this._role = v.toInt(), "role");
             this.getQuery(json, v => this._amount = v, "amount");
             this.getQuery(json, v => this._inviteCode = v, "invite_code");

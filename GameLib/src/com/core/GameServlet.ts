@@ -401,20 +401,23 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
         }, this.onSendBetError.bind(this))
     }
 
+    /**
+     * 处理发送bet请求时的错误。
+     */
     protected onSendBetError() {
         WaitResult.inst.hide()
         this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.NET_ERROR, null, () => {
-            // this.sendAction(ActionLib.GAME_RESET_BET)
             SceneManager.inst.gameErrorExit()
         })
     }
+
 
     /**
      * 当请求不通过的时候  发出提示信息并重置bet
      * @param data
      * @param isWindow
      */
-    betFail(data: HttpResponse, isWindow = false) {
+    betFail(data?: HttpResponse, isWindow = false) {
         if (isWindow) this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, StateCode.getShowMessage(data))
         else MessageTip.showTip(StateCode.getShowMessage(data))
         this.sendAction(ActionLib.GAME_STOP_SLOT_LIST_RUN_ANI)

@@ -31,6 +31,13 @@ export class UrlParam {
     private _isGift = 0
     /** 是否是debug模式 */
     debug = false
+    /**
+     * 图片清晰度
+     *  0 高清
+     *  1 压缩
+     *  2 webp
+     */
+    imageQuality: number = 1
 
     constructor(defaults?: { country?: string, language?: string, channel?: string, debug?: boolean }) {
 
@@ -83,6 +90,7 @@ export class UrlParam {
         this.getQuery(json, v => this._language = v, "language", "lang")
         this.getQuery(json, v => this._playWith = v, "playWith")
         this.getQuery(json, v => this._roomId = v, "roomId")
+        this.getQuery(json, v => this.imageQuality = v.toInt(), "imgQ", "imageQuality")
         this.getQuery(json, v => this._role = v.toInt(), "role")
         this.getQuery(json, v => this._amount = v, "amount")
         this.getQuery(json, v => this._inviteCode = v, "invite_code")

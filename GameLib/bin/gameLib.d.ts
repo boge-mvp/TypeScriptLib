@@ -1067,13 +1067,16 @@ declare namespace gameLib {
          * @param callback
          */
         sendBet(url: string, data: any, callback: ParamHandler): void;
+        /**
+         * 处理发送bet请求时的错误。
+         */
         protected onSendBetError(): void;
         /**
          * 当请求不通过的时候  发出提示信息并重置bet
          * @param data
          * @param isWindow
          */
-        betFail(data: HttpResponse, isWindow?: boolean): void;
+        betFail(data?: HttpResponse, isWindow?: boolean): void;
         /**
          * 领取奖金池
          * @param id
@@ -2849,6 +2852,13 @@ declare namespace gameLib {
         private _isGift;
         /** 是否是debug模式 */
         debug: boolean;
+        /**
+         * 图片清晰度
+         *  0 高清
+         *  1 压缩
+         *  2 webp
+         */
+        imageQuality: number;
         constructor(defaults?: {
             country?: string;
             language?: string;
