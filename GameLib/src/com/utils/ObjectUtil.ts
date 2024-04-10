@@ -59,13 +59,17 @@ export class ObjectUtil {
 
     /**
      * 深度赋值对象 <br/>
-     *        赋值            浅层拷贝    深层拷贝    getter/setter <br/>
-     * Object.assign      ok      no         no<br/>
-     * JSON.stringify      ok      ok         no<br/>
-     * Object.create      ok      no         ok<br/>
+     * ```
+     *     赋值          浅层拷贝  深层拷贝  getter/setter
+     *
+     * Object.assign       ok      no         no
+     * JSON.stringify      ok      ok         no
+     * Object.create       ok      no         ok
+     * ```
      * @param source
      * @param isCls
-     * @deprecated
+     *
+     * @deprecated Object.create
      *
      */
     static copy(source: any, isCls = false) {

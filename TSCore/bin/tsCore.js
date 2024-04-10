@@ -4023,7 +4023,7 @@ window.tsCore = {};
         toArray() {
             const arr = [];
             for (let i = this.start; i <= this.endInclusive; i++) {
-                arr[i] = i;
+                arr[arr.length] = i;
             }
             return arr;
         }

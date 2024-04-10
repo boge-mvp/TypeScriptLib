@@ -160,6 +160,12 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
 
     /**
      * 全部滚动结束调用方法，当 allEndDelay 参数大于0时 会延迟执行
+     *
+     * 会调用以下方法
+     * ```
+     * this.countFreeBonus()
+     * this.lotteryComplete()
+     * ```
      * @protected
      */
     protected rollComplete() {
