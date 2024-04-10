@@ -14,6 +14,7 @@ export class GoldLoader extends mixinExt(BezierCurves, GLoader) {
     static readonly NAME = "GoldLoaderPool"
     private _timeLine: TimeLine
     private playEndCallback: ParamHandler
+    private playEndRecover = false
 
     /**
      * 从对象池获取一个 GoldLoader
@@ -95,7 +96,19 @@ export class GoldLoader extends mixinExt(BezierCurves, GLoader) {
         return this
     }
 
+    /**
+     * 播放动画。播放结束后回收自身
+     * @param timeOrLabel 开启播放的时间点或标签名。
+     * @param loop 是否循环播放。
+     */
+    playToRecover(timeOrLabel?: any, loop?: boolean) {
+        this.playEndRecover = true
+        this._timeLine?.play(timeOrLabel, loop)
+        return this
+    }
+
     private onPlayEnd() {
         runFun(this.playEndCallback)
+        if (this.playEndRecover) this.recover()
     }
 }

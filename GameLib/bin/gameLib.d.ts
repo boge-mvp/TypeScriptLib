@@ -1222,6 +1222,12 @@ declare namespace gameLib {
         protected oneComplete(list: fgui.GList): void;
         /**
          * 全部滚动结束调用方法，当 allEndDelay 参数大于0时 会延迟执行
+         *
+         * 会调用以下方法
+         * ```
+         * this.countFreeBonus()
+         * this.lotteryComplete()
+         * ```
          * @protected
          */
         protected rollComplete(): void;
@@ -1432,6 +1438,7 @@ declare namespace gameLib {
         static readonly NAME = "GoldLoaderPool";
         private _timeLine;
         private playEndCallback;
+        private playEndRecover;
         /**
          * 从对象池获取一个 GoldLoader
          */
@@ -1466,6 +1473,12 @@ declare namespace gameLib {
          * @param loop 是否循环播放。
          */
         play(timeOrLabel?: any, loop?: boolean): this;
+        /**
+         * 播放动画。播放结束后回收自身
+         * @param timeOrLabel 开启播放的时间点或标签名。
+         * @param loop 是否循环播放。
+         */
+        playToRecover(timeOrLabel?: any, loop?: boolean): this;
         private onPlayEnd;
     }
     export class GoldSpray extends GoldLoader {
@@ -3440,13 +3453,17 @@ declare namespace gameLib {
         static setColorMatrixFilter(source: Laya.Sprite, value: string): void;
         /**
          * 深度赋值对象 <br/>
-         *        赋值            浅层拷贝    深层拷贝    getter/setter <br/>
-         * Object.assign      ok      no         no<br/>
-         * JSON.stringify      ok      ok         no<br/>
-         * Object.create      ok      no         ok<br/>
+         * ```
+         *     赋值          浅层拷贝  深层拷贝  getter/setter
+         *
+         * Object.assign       ok      no         no
+         * JSON.stringify      ok      ok         no
+         * Object.create       ok      no         ok
+         * ```
          * @param source
          * @param isCls
-         * @deprecated
+         *
+         * @deprecated Object.create
          *
          */
         static copy(source: any, isCls?: boolean): any;

@@ -2368,6 +2368,12 @@ window.gameLib = {};
         oneComplete(list) { }
         /**
          * 全部滚动结束调用方法，当 allEndDelay 参数大于0时 会延迟执行
+         *
+         * 会调用以下方法
+         * ```
+         * this.countFreeBonus()
+         * this.lotteryComplete()
+         * ```
          * @protected
          */
         rollComplete() {
@@ -3047,6 +3053,7 @@ window.gameLib = {};
         }
         constructor() {
             super();
+            this.playEndRecover = false;
             this.fill = fgui.LoaderFillType.Scale;
             this.setPivot(.5, .5);
         }
@@ -3118,8 +3125,21 @@ window.gameLib = {};
             (_a = this._timeLine) === null || _a === void 0 ? void 0 : _a.play(timeOrLabel, loop);
             return this;
         }
+        /**
+         * 播放动画。播放结束后回收自身
+         * @param timeOrLabel 开启播放的时间点或标签名。
+         * @param loop 是否循环播放。
+         */
+        playToRecover(timeOrLabel, loop) {
+            var _a;
+            this.playEndRecover = true;
+            (_a = this._timeLine) === null || _a === void 0 ? void 0 : _a.play(timeOrLabel, loop);
+            return this;
+        }
         onPlayEnd() {
             runFun(this.playEndCallback);
+            if (this.playEndRecover)
+                this.recover();
         }
     }
     GoldLoader.NAME = "GoldLoaderPool";
@@ -6890,13 +6910,17 @@ window.gameLib = {};
         }
         /**
          * 深度赋值对象 <br/>
-         *        赋值            浅层拷贝    深层拷贝    getter/setter <br/>
-         * Object.assign      ok      no         no<br/>
-         * JSON.stringify      ok      ok         no<br/>
-         * Object.create      ok      no         ok<br/>
+         * ```
+         *     赋值          浅层拷贝  深层拷贝  getter/setter
+         *
+         * Object.assign       ok      no         no
+         * JSON.stringify      ok      ok         no
+         * Object.create       ok      no         ok
+         * ```
          * @param source
          * @param isCls
-         * @deprecated
+         *
+         * @deprecated Object.create
          *
          */
         static copy(source, isCls = false) {
