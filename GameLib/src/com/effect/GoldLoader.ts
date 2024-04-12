@@ -40,9 +40,11 @@ export class GoldLoader extends mixinExt(BezierCurves, GLoader) {
         this.removeFromParent()
         super.recover()
         // 还原属性初始值
+        this.fill = LoaderFillType.Scale
+        this.setPivot(.5, .5)
+        this.autoSize = false
         this.rotation = 0
         this.setSkew(0, 0)
-        this.setPivot(0, 0, false)
         this.setScale(1, 1)
         this.alpha = 1
         this.visible = true
@@ -99,6 +101,7 @@ export class GoldLoader extends mixinExt(BezierCurves, GLoader) {
      * @param loop 是否循环播放。
      */
     play(timeOrLabel?: any, loop?: boolean) {
+        this.playEndRecover = false
         this._timeLine?.play(timeOrLabel, loop)
         return this
     }

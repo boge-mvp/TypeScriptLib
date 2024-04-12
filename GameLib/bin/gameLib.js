@@ -3070,9 +3070,11 @@ window.gameLib = {};
             this.removeFromParent();
             super.recover();
             // 还原属性初始值
+            this.fill = fgui.LoaderFillType.Scale;
+            this.setPivot(.5, .5);
+            this.autoSize = false;
             this.rotation = 0;
             this.setSkew(0, 0);
-            this.setPivot(0, 0, false);
             this.setScale(1, 1);
             this.alpha = 1;
             this.visible = true;
@@ -3129,6 +3131,7 @@ window.gameLib = {};
          */
         play(timeOrLabel, loop) {
             var _a;
+            this.playEndRecover = false;
             (_a = this._timeLine) === null || _a === void 0 ? void 0 : _a.play(timeOrLabel, loop);
             return this;
         }
