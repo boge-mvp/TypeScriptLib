@@ -322,7 +322,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
      * @param data
      *
      */
-    protected abstract parseInitData(data: HttpResponse)
+    protected abstract parseInitData(data: any)
 
     /**
      * 拉取账户金额

@@ -1047,7 +1047,7 @@ declare namespace gameLib {
          * @param data
          *
          */
-        protected abstract parseInitData(data: HttpResponse): any;
+        protected abstract parseInitData(data: any): any;
         /**
          * 拉取账户金额
          * @param callback
