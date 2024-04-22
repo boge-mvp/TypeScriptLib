@@ -167,14 +167,16 @@ declare interface String {
     equalsAnyIgnore(...value: string []): boolean
 
     /**
-     * 判断此字符串中是否包含
-     * @param search
+     * 在字符串中检查是否包含指定的子字符串。
+     * @param search 要搜索的子字符串数组。
+     * @returns 如果找到任何一个子字符串，则返回true，否则返回false。
      */
     contains(...search: string[]): boolean
 
     /**
-     * 判断此字符串中是否包含 忽略大小写
-     * @param search
+     * 在字符串中忽略大小写检查是否包含指定的子字符串。
+     * @param search 要搜索的子字符串数组。
+     * @returns 如果找到任何一个子字符串（忽略大小写），则返回true，否则返回false。
      */
     containsIgnore(...search: string[]): boolean
 
