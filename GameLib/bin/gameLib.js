@@ -2434,8 +2434,14 @@ window.gameLib = {};
                 this.sendAction(ActionLib.GAME_SHOW_FREE_OUT_WINDOW);
                 return;
             }
+            this.lotteryCompleteState();
             this.sendAction(ActionLib.GAME_START);
         }
+        /**
+         * 执行 lotteryComplete 完成 即将执行ActionLib.GAME_START 前调用
+         * @protected
+         */
+        lotteryCompleteState() { }
         /**
          * 判断当前开的奖里面是否有中奖线
          * @param lotteryId 服务器返回的开奖项
