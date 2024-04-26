@@ -174,9 +174,9 @@ export class SlotScrollModel<T extends BaseSlotGameData = BaseSlotGameData> exte
      * @protected
      */
     protected createTween(index: number, list: fgui.GList) {
-        let duration = this.getDuration(index, this.lotteryData[index].isTurboMode)
+        const duration = this.getDuration(index, this.lotteryData[index].isTurboMode)
         // 将列表 设置到最下边
-        let itemHeight = this.getItemHeight(list)
+        const itemHeight = this.getItemHeight(list)
         let end = itemHeight * this.rowNum; // 默认是向下滚动的值
         if (this.isScrollUp) {
             list.scrollPane.posY = end
@@ -186,7 +186,7 @@ export class SlotScrollModel<T extends BaseSlotGameData = BaseSlotGameData> exte
         }
         this.onScrollTween(index, this.lotteryData[index])
         // 开始播放缓动动画
-        let tween = Tween.to(list.scrollPane, {posY: end}, duration,
+        const tween = Tween.to(list.scrollPane, {posY: end}, duration,
             Ease.linearNone, Handler.create(this, this.completeHandler, [list]))
         this.tweenList.push(tween)
         this.scrollData.push({id: index, data: end})

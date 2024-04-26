@@ -12,30 +12,35 @@ export class SlotScrollTweenModel<T extends BaseSlotGameData = BaseSlotGameData>
 
     protected override playLottery(value: SlotLotteryData[]) {
         super.playLottery(value)
-        let list: GList
-        let itemHeight: number
-        let total: number
-        let delay: number
-        let tween: Tween
-        for (let i = 0; i < this.listRolls.length; i++) {
-            list = this.listRolls[i]
-            this.setRenderListData(i)
-            itemHeight = this.getItemHeight(list)
-            let duration = this.getDuration(i, this.lotteryData[i].isTurboMode)
-            delay = this.getDelay(i, this.lotteryData[i].isTurboMode)
-            if (this.isScrollUp) {
-                list.scrollPane.posY = itemHeight * this.lotteryData[i].itemCount
-                total = MathKit.scrollLong(itemHeight, this.lotteryData[i].itemCount, this.getLaps(i), this.getLaps(i), this.rowNum)
-            } else {
-                list.scrollPane.posY = itemHeight * this.lotteryData[i].itemCount * this.getLaps(i)
-                total = itemHeight * this.rowNum
-            }
-            this.onScrollTween(i, this.lotteryData[i])
-            tween = Tween.to(list.scrollPane, {posY: total}, duration, this.backInOut,
-                Handler.create(this, this.completeHandler, [list]), delay)
-            this.tweenList.push(tween)
-        }
+        this.listRolls.forEach((value, index) => {
+            this.setRenderListData(index)
+            this.createTween(index, value)
+        })
         this.startPlayResultTween()
+    }
+
+    /**
+     * 创建list滚动动画
+     * @param index list位置
+     * @param list list对象
+     * @protected
+     */
+    protected createTween(index: number, list: fgui.GList) {
+        const itemHeight = this.getItemHeight(list)
+        let duration = this.getDuration(index, this.lotteryData[index].isTurboMode)
+        const delay = this.getDelay(index, this.lotteryData[index].isTurboMode)
+        let total: number
+        if (this.isScrollUp) {
+            list.scrollPane.posY = itemHeight * this.lotteryData[index].itemCount
+            total = MathKit.scrollLong(itemHeight, this.lotteryData[index].itemCount, this.getLaps(index), this.getLaps(index), this.rowNum)
+        } else {
+            list.scrollPane.posY = itemHeight * this.lotteryData[index].itemCount * this.getLaps(index)
+            total = itemHeight * this.rowNum
+        }
+        this.onScrollTween(index, this.lotteryData[index])
+        const tween = Tween.to(list.scrollPane, {posY: total}, duration, this.backInOut,
+            Handler.create(this, this.completeHandler, [list]), delay)
+        this.tweenList.push(tween)
     }
 
     protected override setRenderListData(index: number) {

@@ -88,7 +88,7 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
     }
 
     /**
-     * 当前滚动列数据处理完毕调用
+     * 当前滚动列数据处理完毕调用 用于额外对数据进行修改
      * @param index 滚动的列
      * @param lotteryData 当前滚动列数据
      */
