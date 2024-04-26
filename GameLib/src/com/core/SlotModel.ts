@@ -301,7 +301,7 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
      * @param arr 通用的数据
      * @return
      */
-    changeListData(arr: any[]) {
+    changeListData<V>(arr: V[]) {
         let temps = []
         let col = this.listRolls.length
         for (let i = 0; i < col; i++) {
