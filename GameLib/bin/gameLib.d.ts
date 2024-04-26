@@ -1175,7 +1175,7 @@ declare namespace gameLib {
         /** 立即停止开奖动画 */
         stopTween(): void;
         /**
-         * 当前滚动列数据处理完毕调用
+         * 当前滚动列数据处理完毕调用 用于额外对数据进行修改
          * @param index 滚动的列
          * @param lotteryData 当前滚动列数据
          */
@@ -1376,6 +1376,13 @@ declare namespace gameLib {
      */
     export class SlotScrollTweenModel<T extends BaseSlotGameData = BaseSlotGameData> extends SlotModel<T> {
         protected playLottery(value: SlotLotteryData[]): void;
+        /**
+         * 创建list滚动动画
+         * @param index list位置
+         * @param list list对象
+         * @protected
+         */
+        protected createTween(index: number, list: fgui.GList): void;
         protected setRenderListData(index: number): void;
         protected getDuration(index: number, isTurboMode: boolean): number;
         protected getDelay(index: number, isTurboMode: boolean): number;

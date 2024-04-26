@@ -2326,7 +2326,7 @@ window.gameLib = {};
             this.tweenList.length = 0;
         }
         /**
-         * 当前滚动列数据处理完毕调用
+         * 当前滚动列数据处理完毕调用 用于额外对数据进行修改
          * @param index 滚动的列
          * @param lotteryData 当前滚动列数据
          */
@@ -2727,9 +2727,9 @@ window.gameLib = {};
          * @protected
          */
         createTween(index, list) {
-            let duration = this.getDuration(index, this.lotteryData[index].isTurboMode);
+            const duration = this.getDuration(index, this.lotteryData[index].isTurboMode);
             // 将列表 设置到最下边
-            let itemHeight = this.getItemHeight(list);
+            const itemHeight = this.getItemHeight(list);
             let end = itemHeight * this.rowNum; // 默认是向下滚动的值
             if (this.isScrollUp) {
                 list.scrollPane.posY = end;
@@ -2740,7 +2740,7 @@ window.gameLib = {};
             }
             this.onScrollTween(index, this.lotteryData[index]);
             // 开始播放缓动动画
-            let tween = Laya.Tween.to(list.scrollPane, { posY: end }, duration, Laya.Ease.linearNone, Laya.Handler.create(this, this.completeHandler, [list]));
+            const tween = Laya.Tween.to(list.scrollPane, { posY: end }, duration, Laya.Ease.linearNone, Laya.Handler.create(this, this.completeHandler, [list]));
             this.tweenList.push(tween);
             this.scrollData.push({ id: index, data: end });
         }
@@ -2814,30 +2814,34 @@ window.gameLib = {};
         /*@override*/
         playLottery(value) {
             super.playLottery(value);
-            let list;
-            let itemHeight;
-            let total;
-            let delay;
-            let tween;
-            for (let i = 0; i < this.listRolls.length; i++) {
-                list = this.listRolls[i];
-                this.setRenderListData(i);
-                itemHeight = this.getItemHeight(list);
-                let duration = this.getDuration(i, this.lotteryData[i].isTurboMode);
-                delay = this.getDelay(i, this.lotteryData[i].isTurboMode);
-                if (this.isScrollUp) {
-                    list.scrollPane.posY = itemHeight * this.lotteryData[i].itemCount;
-                    total = tsCore.MathKit.scrollLong(itemHeight, this.lotteryData[i].itemCount, this.getLaps(i), this.getLaps(i), this.rowNum);
-                }
-                else {
-                    list.scrollPane.posY = itemHeight * this.lotteryData[i].itemCount * this.getLaps(i);
-                    total = itemHeight * this.rowNum;
-                }
-                this.onScrollTween(i, this.lotteryData[i]);
-                tween = Laya.Tween.to(list.scrollPane, { posY: total }, duration, this.backInOut, Laya.Handler.create(this, this.completeHandler, [list]), delay);
-                this.tweenList.push(tween);
-            }
+            this.listRolls.forEach((value, index) => {
+                this.setRenderListData(index);
+                this.createTween(index, value);
+            });
             this.startPlayResultTween();
+        }
+        /**
+         * 创建list滚动动画
+         * @param index list位置
+         * @param list list对象
+         * @protected
+         */
+        createTween(index, list) {
+            const itemHeight = this.getItemHeight(list);
+            let duration = this.getDuration(index, this.lotteryData[index].isTurboMode);
+            const delay = this.getDelay(index, this.lotteryData[index].isTurboMode);
+            let total;
+            if (this.isScrollUp) {
+                list.scrollPane.posY = itemHeight * this.lotteryData[index].itemCount;
+                total = tsCore.MathKit.scrollLong(itemHeight, this.lotteryData[index].itemCount, this.getLaps(index), this.getLaps(index), this.rowNum);
+            }
+            else {
+                list.scrollPane.posY = itemHeight * this.lotteryData[index].itemCount * this.getLaps(index);
+                total = itemHeight * this.rowNum;
+            }
+            this.onScrollTween(index, this.lotteryData[index]);
+            const tween = Laya.Tween.to(list.scrollPane, { posY: total }, duration, this.backInOut, Laya.Handler.create(this, this.completeHandler, [list]), delay);
+            this.tweenList.push(tween);
         }
         /*@override*/
         setRenderListData(index) {
