@@ -1130,14 +1130,14 @@ window.tsCore = {};
         sendAction(action, ...args) {
             let temps;
             let result;
-            for (let groupName in this.obj) {
+            Object.keys(this.obj).forEach(groupName => {
                 temps = args.concat();
                 temps.unshift(action);
                 temps.unshift(groupName);
                 let tempResult = this.sendActionEvent.apply(this, temps);
                 if (tempResult)
                     result = true;
-            }
+            });
             if (!result)
                 Log.debug("action [" + action + "] not exist! Call failure");
         }

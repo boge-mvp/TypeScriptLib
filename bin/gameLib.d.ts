@@ -1275,7 +1275,7 @@ declare namespace gameLib {
          * @param arr 通用的数据
          * @return
          */
-        changeListData<V>(arr: V[]): any[];
+        changeListData<V>(arr: V[]): V[];
         /**
          * 开始运动时是向后跟踪，再倒转方向并朝目标移动，稍微过冲目标，然后再次倒转方向，回来朝目标移动。
          * @param    t 指定当前时间，介于 0 和持续时间之间（包括二者）。

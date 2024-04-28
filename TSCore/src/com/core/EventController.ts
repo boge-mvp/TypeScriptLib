@@ -131,13 +131,13 @@ export class EventController implements IController {
     sendAction(action: string, ...args) {
         let temps: any[]
         let result: boolean
-        for (let groupName in this.obj) {
+        Object.keys(this.obj).forEach(groupName => {
             temps = args.concat()
             temps.unshift(action)
             temps.unshift(groupName)
             let tempResult: boolean = this.sendActionEvent.apply(this, temps)
             if (tempResult) result = true
-        }
+        })
         if (!result)
             Log.debug("action [" + action + "] not exist! Call failure")
     }

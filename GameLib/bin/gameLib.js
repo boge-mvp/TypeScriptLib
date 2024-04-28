@@ -2330,9 +2330,11 @@ window.gameLib = {};
          * @param index 滚动的列
          * @param lotteryData 当前滚动列数据
          */
-        onScrollTween(index, lotteryData) { }
+        onScrollTween(index, lotteryData) {
+        }
         /** 开始播放结果动画 */
-        startPlayResultTween() { }
+        startPlayResultTween() {
+        }
         /**
          * 获取滚动圈数 默认4圈
          * @param index list 所在列
@@ -2370,7 +2372,8 @@ window.gameLib = {};
             return true;
         }
         /** 滚动结束一次调用方法 */
-        oneComplete(list) { }
+        oneComplete(list) {
+        }
         /**
          * 全部滚动结束调用方法，当 allEndDelay 参数大于0时 会延迟执行
          *
@@ -2441,7 +2444,8 @@ window.gameLib = {};
          * 执行 lotteryComplete 完成 即将执行ActionLib.GAME_START 前调用
          * @protected
          */
-        lotteryCompleteState() { }
+        lotteryCompleteState() {
+        }
         /**
          * 判断当前开的奖里面是否有中奖线
          * @param lotteryId 服务器返回的开奖项

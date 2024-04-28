@@ -92,10 +92,12 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
      * @param index 滚动的列
      * @param lotteryData 当前滚动列数据
      */
-    onScrollTween(index: number, lotteryData: SlotLotteryData) {}
+    onScrollTween(index: number, lotteryData: SlotLotteryData) {
+    }
 
     /** 开始播放结果动画 */
-    protected startPlayResultTween() {}
+    protected startPlayResultTween() {
+    }
 
     /**
      * 获取滚动圈数 默认4圈
@@ -156,7 +158,8 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
     }
 
     /** 滚动结束一次调用方法 */
-    protected oneComplete(list: GList) {}
+    protected oneComplete(list: GList) {
+    }
 
     /**
      * 全部滚动结束调用方法，当 allEndDelay 参数大于0时 会延迟执行
@@ -230,7 +233,8 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
      * 执行 lotteryComplete 完成 即将执行ActionLib.GAME_START 前调用
      * @protected
      */
-    protected lotteryCompleteState() {}
+    protected lotteryCompleteState() {
+    }
 
 
     /**
@@ -302,7 +306,7 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
      * @return
      */
     changeListData<V>(arr: V[]) {
-        let temps = []
+        let temps: V[] = []
         let col = this.listRolls.length
         for (let i = 0; i < col; i++) {
             for (let j = 0; j < arr.length; j++) {
