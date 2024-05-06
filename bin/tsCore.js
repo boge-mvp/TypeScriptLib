@@ -1018,18 +1018,16 @@ window.tsCore = {};
     class EventController {
         constructor() {
             /** 事件缓存的所有组 组名字->组object */
-            this.obj = {};
+            this.eventGroup = new Map();
             /**
              * 键值的缓存对象
              */
-            this.cacheTarget = {};
+            this.cacheTarget = new Map();
         }
         regActionHandler(action, handler, group) {
-            var _a;
             let groupObj = this.getGroup(group);
             // 获取此分组下  action 的执行函数存储数组
-            (_a = groupObj[action]) !== null && _a !== void 0 ? _a : (groupObj[action] = []);
-            groupObj[action].push(handler);
+            groupObj.getOrPut(action, () => []).push(handler);
         }
         /**
          * 分组存储对象
@@ -1040,10 +1038,7 @@ window.tsCore = {};
             if (StringUtil.isEmpty(groupKey)) {
                 groupKey = App.DEFAULT_GROUP;
             }
-            let groupObj = this.obj[groupKey];
-            groupObj !== null && groupObj !== void 0 ? groupObj : (groupObj = {});
-            this.obj[groupKey] = groupObj;
-            return groupObj;
+            return this.eventGroup.getOrPut(groupKey, () => new Map());
         }
         regAction(action, caller, method, group, order) {
             const handler = new Laya.Handler(caller, method);
@@ -1051,32 +1046,27 @@ window.tsCore = {};
             this.regActionHandler(action, handler, group);
         }
         clearView() {
-            this.cacheTarget = {};
+            this.cacheTarget.clear();
             EventController._CLSID = 0;
         }
         clearGroup() {
-            this.obj = {};
+            this.eventGroup.clear();
         }
         removeAllAction(...args) {
-            let temps;
-            for (let groupKey in this.obj) { // 获取key
-                temps = args.concat();
-                temps.unshift(groupKey);
-                this.removeGroupActions.apply(this, temps);
+            for (const key of this.eventGroup.keys()) { // 获取key
+                this.removeGroupActions.apply(this, [key, ...args]);
             }
         }
-        removeGroup(group) {
-            delete this.obj[group];
+        removeGroup(groupKey) {
+            this.eventGroup.delete(groupKey);
         }
         removeGroupActions(groupKey, ...args) {
             let groupObj = this.getGroup(groupKey);
-            for (let i = 0; i < args.length; i++) {
-                delete groupObj[args[i]];
-            }
+            groupObj.clear();
         }
         removeActionHandler(action, method, group) {
             if (!group) {
-                for (let groupKey in this.obj) {
+                for (let groupKey of this.eventGroup.values()) {
                     this.removeFunction(groupKey, action, method);
                 }
                 return;
@@ -1095,55 +1085,46 @@ window.tsCore = {};
                     }
                 }
                 if (arr.length == 0)
-                    delete groupObj[action];
+                    groupObj.delete(action);
             }
         }
         removeTargetAll(caller) {
-            for (let groupObj in this.obj) {
-                this.removeTarget(this.obj[groupObj], caller);
+            for (let groupObj of this.eventGroup.keys()) {
+                this.removeTarget(this.eventGroup[groupObj], caller);
             }
         }
         removeTarget(groupObj, caller) {
-            for (let action in groupObj) {
-                let arr = groupObj[action];
-                if (arr) {
-                    for (let i = 0; i < arr.length; i++) {
-                        let h = arr[i];
-                        if (h.caller == caller) {
-                            arr.splice(i, 1);
-                            i--;
-                        }
+            for (const [key, value] of groupObj.entries()) {
+                for (let i = 0; i < value.length; i++) {
+                    let h = value[i];
+                    if (h.caller == caller) {
+                        value.splice(i, 1);
+                        i--;
                     }
-                    if (arr.length == 0)
-                        delete groupObj[action];
                 }
+                if (value.length == 0)
+                    groupObj.delete(key);
             }
         }
         sendGroupAction(group, action, ...args) {
-            args.unshift(action);
-            args.unshift(group);
-            let result = this.sendActionEvent.apply(this, args);
+            let result = this.sendActionEvent.apply(this, [group, action, ...args]);
             if (!result) {
                 Log.debug("group[" + group + "], action [" + action + "] not exist! Call failure");
             }
         }
         sendAction(action, ...args) {
-            let temps;
             let result;
-            Object.keys(this.obj).forEach(groupName => {
-                temps = args.concat();
-                temps.unshift(action);
-                temps.unshift(groupName);
-                let tempResult = this.sendActionEvent.apply(this, temps);
+            for (const groupName of this.eventGroup.keys()) {
+                let tempResult = this.sendActionEvent.apply(this, [groupName, action, ...args]);
                 if (tempResult)
                     result = true;
-            });
+            }
             if (!result)
                 Log.debug("action [" + action + "] not exist! Call failure");
         }
         sendActionEvent(group, action, ...args) {
             let groupObj = this.getGroup(group);
-            let arr = groupObj[action];
+            let arr = groupObj.get(action);
             if (arr) {
                 arr.sort((a, b) => a.order || 100 - b.order || 100)
                     .forEach(value => value.runWith(args));
@@ -1164,7 +1145,7 @@ window.tsCore = {};
                 return false;
             }
             view.setKey(key);
-            this.cacheTarget[key] = view;
+            this.cacheTarget.set(key, view);
             return true;
         }
         removeView(key) {
@@ -1175,7 +1156,7 @@ window.tsCore = {};
             }
             if (StringUtil.isEmpty(key))
                 return;
-            delete this.cacheTarget[key];
+            this.cacheTarget.delete(key);
         }
         getView(key) {
             if (!key)
@@ -1183,7 +1164,7 @@ window.tsCore = {};
             if (typeof key !== "string") {
                 key = this._getClassSign(key);
             }
-            return this.cacheTarget[key];
+            return this.cacheTarget.get(key);
         }
         addProxy(key, proxy) {
             if (typeof key !== "string") {
@@ -1198,7 +1179,7 @@ window.tsCore = {};
                 // return false
             }
             proxy.setKey(key);
-            this.cacheTarget[key] = proxy;
+            this.cacheTarget.set(key, proxy);
             return true;
         }
         removeProxy(key) {
@@ -1209,7 +1190,7 @@ window.tsCore = {};
             }
             if (StringUtil.isEmpty(key))
                 return;
-            delete this.cacheTarget[key];
+            this.cacheTarget.delete(key);
         }
         getProxy(name) {
             if (!name)
@@ -1217,7 +1198,7 @@ window.tsCore = {};
             if (typeof name !== "string") {
                 name = this._getClassSign(name);
             }
-            return this.cacheTarget[name];
+            return this.cacheTarget.get(name);
         }
         getMap() {
             return this.cacheTarget;
@@ -7202,6 +7183,37 @@ window.tsCore = {};
         }
     }
     tsCore.Upload = Upload;
+    /**
+     * 为Map对象定义一个getOrDefault方法，用于获取指定键对应的值，如果键不存在，则返回默认值。
+     * @param key 指定的键
+     * @param defaultValue 当键不存在时返回的默认值
+     * @returns 返回键对应的值，如果键不存在则返回默认值
+     */
+    Object.defineProperty(Map.prototype, "getOrDefault", {
+        value: function (key, defaultValue) {
+            const value = this.get(key); // 尝试获取键对应的值
+            return value !== null && value !== void 0 ? value : defaultValue; // 如果值存在则返回该值，否则返回默认值
+        }
+    });
+    /**
+     * 为Map对象定义一个getOrPut方法，用于获取指定键对应的值，如果键不存在，则调用默认值生成函数，将生成的值设置到该键，并返回该值。
+     * @param key 指定的键
+     * @param defaultValue 一个函数，当键不存在时调用以生成默认值
+     * @returns 返回键对应的值，如果键不存在则调用默认值生成函数并返回新设置的值
+     */
+    Object.defineProperty(Map.prototype, "getOrPut", {
+        value: function (key, defaultValue) {
+            const value = this.get(key); // 尝试获取键对应的值
+            if (value == null) {
+                const answer = defaultValue(); // 如果键不存在，调用默认值生成函数并获取结果
+                this.set(key, answer); // 将结果设置到该键
+                return answer; // 返回新设置的值
+            }
+            else {
+                return value; // 如果键存在，直接返回对应的值
+            }
+        }
+    });
 })(tsCore || (tsCore = {}));
 /**
  * 执行提供的 ParamHandler 函数。

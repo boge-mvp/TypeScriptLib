@@ -334,3 +334,22 @@ declare interface Array<T> {
      */
     random(): T
 }
+
+declare interface Map<K, V> {
+
+    /**
+     * 为Map对象定义一个getOrDefault方法，用于获取指定键对应的值，如果键不存在，则返回默认值。
+     * @param key 指定的键
+     * @param defaultValue 当键不存在时返回的默认值
+     * @returns 返回键对应的值，如果键不存在则返回默认值
+     */
+    getOrDefault(key: K, defaultValue: V): V
+    /**
+     * 为Map对象定义一个getOrPut方法，用于获取指定键对应的值，如果键不存在，则调用默认值生成函数，将生成的值设置到该键，并返回该值。
+     * @param key 指定的键
+     * @param defaultValue 一个函数，当键不存在时调用以生成默认值
+     * @returns 返回键对应的值，如果键不存在则调用默认值生成函数并返回新设置的值
+     */
+    getOrPut(key: K, defaultValue: () => V) :V
+
+}

@@ -448,7 +448,7 @@ declare namespace tsCore {
     export const UtilsTool: typeof UtilKit;
     export class EventController implements IController {
         /** 事件缓存的所有组 组名字->组object */
-        private obj;
+        private eventGroup;
         /**
          * 键值的缓存对象
          */
@@ -460,21 +460,17 @@ declare namespace tsCore {
          * @param groupKey 分组key
          * @return
          */
-        getGroup(groupKey: string): {
-            [key: string]: Laya.Handler[];
-        };
+        getGroup(groupKey: string): Map<string, Laya.Handler[]>;
         regAction(action: string, caller: any, method: Function, group?: string, order?: number): void;
         clearView(): void;
         clearGroup(): void;
         removeAllAction(...args: string[]): void;
-        removeGroup(group: string): void;
+        removeGroup(groupKey: string): void;
         removeGroupActions(groupKey: string, ...args: any[]): void;
         removeActionHandler(action: string, method: Function, group?: string): void;
-        removeFunction(groupObj: any, action: string, method: Function): void;
+        removeFunction(groupObj: Map<string, Laya.Handler[]>, action: string, method: Function): void;
         removeTargetAll(caller: any): void;
-        removeTarget(groupObj: {
-            [p: string]: Laya.Handler[];
-        }, caller: any): void;
+        removeTarget(groupObj: Map<string, Laya.Handler[]>, caller: any): void;
         sendGroupAction(group: string, action: string, ...args: any[]): void;
         sendAction(action: string, ...args: any[]): void;
         sendActionEvent(group: string, action: string, ...args: any[]): boolean;
@@ -492,9 +488,7 @@ declare namespace tsCore {
         getProxy<T>(name: string | {
             new (): T;
         }): T;
-        getMap(): {
-            [key: string]: any;
-        };
+        getMap(): Map<string, any>;
         /**
          * 返回类的唯一标识
          */
@@ -3308,6 +3302,26 @@ declare interface Array<T> {
      */
     random(): T
 }
+
+declare interface Map<K, V> {
+
+    /**
+     * 为Map对象定义一个getOrDefault方法，用于获取指定键对应的值，如果键不存在，则返回默认值。
+     * @param key 指定的键
+     * @param defaultValue 当键不存在时返回的默认值
+     * @returns 返回键对应的值，如果键不存在则返回默认值
+     */
+    getOrDefault(key: K, defaultValue: V): V
+    /**
+     * 为Map对象定义一个getOrPut方法，用于获取指定键对应的值，如果键不存在，则调用默认值生成函数，将生成的值设置到该键，并返回该值。
+     * @param key 指定的键
+     * @param defaultValue 一个函数，当键不存在时调用以生成默认值
+     * @returns 返回键对应的值，如果键不存在则调用默认值生成函数并返回新设置的值
+     */
+    getOrPut(key: K, defaultValue: () => V) :V
+
+}
+
 declare type InitApp = {
     /** 初始化Laya */
     laya?: {

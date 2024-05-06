@@ -6,19 +6,18 @@ import {IController, IKey, IProxy, IView} from "../interfaces/ICommon";
 export class EventController implements IController {
 
     /** 事件缓存的所有组 组名字->组object */
-    private obj: { [key: string]: { [key: string]: Laya.Handler[] } } = {}
+    private eventGroup = new Map<string, Map<string, Laya.Handler[]>>()
     /**
      * 键值的缓存对象
      */
-    private cacheTarget: { [key: string]: any } = {}
+    private cacheTarget = new Map<string, any>()
 
     private static _CLSID = 0
 
     regActionHandler(action: string, handler: Laya.Handler, group?: string) {
         let groupObj = this.getGroup(group)
         // 获取此分组下  action 的执行函数存储数组
-        groupObj[action] ??= []
-        groupObj[action].push(handler)
+        groupObj.getOrPut(action, () => []).push(handler)
     }
 
     /**
@@ -30,10 +29,7 @@ export class EventController implements IController {
         if (StringUtil.isEmpty(groupKey)) {
             groupKey = App.DEFAULT_GROUP
         }
-        let groupObj = this.obj[groupKey]
-        groupObj ??= {}
-        this.obj[groupKey] = groupObj
-        return groupObj
+        return this.eventGroup.getOrPut(groupKey, () => new Map())
     }
 
     regAction(action: string, caller: any, method: Function, group?: string, order?: number) {
@@ -43,38 +39,33 @@ export class EventController implements IController {
     }
 
     clearView() {
-        this.cacheTarget = {}
+        this.cacheTarget.clear()
         EventController._CLSID = 0
     }
 
     clearGroup() {
-        this.obj = {}
+        this.eventGroup.clear()
     }
 
     removeAllAction(...args: string[]) {
-        let temps: string[]
-        for (let groupKey in this.obj) {// 获取key
-            temps = args.concat()
-            temps.unshift(groupKey)
-            this.removeGroupActions.apply(this, temps)
+        for (const key of this.eventGroup.keys()) {// 获取key
+            this.removeGroupActions.apply(this, [key, ...args])
         }
     }
 
-    removeGroup(group: string) {
-        delete this.obj[group]
+    removeGroup(groupKey: string) {
+        this.eventGroup.delete(groupKey)
     }
 
     removeGroupActions(groupKey: string, ...args) {
         let groupObj = this.getGroup(groupKey)
-        for (let i = 0; i < args.length; i++) {
-            delete groupObj[args[i]]
-        }
+        groupObj.clear()
     }
 
     removeActionHandler(action: string, method: Function, group?: string) {
         if (!group) {
-            for (let groupKey in this.obj) {
-                this.removeFunction(<any>groupKey, action, method)
+            for (let groupKey of this.eventGroup.values()) {
+                this.removeFunction(groupKey, action, method)
             }
             return
         }
@@ -82,69 +73,59 @@ export class EventController implements IController {
         this.removeFunction(groupObj, action, method)
     }
 
-    removeFunction(groupObj: any, action: string, method: Function) {
-        let arr: Laya.Handler[] = groupObj[action]
+    removeFunction(groupObj: Map<string, Laya.Handler[]>, action: string, method: Function) {
+        let arr = groupObj[action]
         if (arr) {
             for (let i = 0; i < arr.length; i++) {
-                let h: Laya.Handler = arr[i]
+                let h = arr[i]
                 if (h.method == method) {
                     arr.splice(i, 1)
                     i--
                 }
             }
-            if (arr.length == 0) delete groupObj[action]
+            if (arr.length == 0) groupObj.delete(action)
         }
     }
 
     removeTargetAll(caller: any) {
-        for (let groupObj in this.obj) {
-            this.removeTarget(this.obj[groupObj], caller)
+        for (let groupObj of this.eventGroup.keys()) {
+            this.removeTarget(this.eventGroup[groupObj], caller)
         }
     }
 
-    removeTarget(groupObj: { [p: string]: Laya.Handler[] }, caller: any) {
-
-        for (let action in groupObj) {
-            let arr = groupObj[action]
-            if (arr) {
-                for (let i = 0; i < arr.length; i++) {
-                    let h = arr[i]
-                    if (h.caller == caller) {
-                        arr.splice(i, 1)
-                        i--
-                    }
+    removeTarget(groupObj: Map<string, Laya.Handler[]>, caller: any) {
+        for (const [key, value] of groupObj.entries()) {
+            for (let i = 0; i < value.length; i++) {
+                let h = value[i]
+                if (h.caller == caller) {
+                    value.splice(i, 1)
+                    i--
                 }
-                if (arr.length == 0) delete groupObj[action]
             }
+            if (value.length == 0) groupObj.delete(key)
         }
     }
 
-    sendGroupAction(group: string, action: string, ...args) {
-        args.unshift(action)
-        args.unshift(group)
-        let result: boolean = this.sendActionEvent.apply(this, args)
+    sendGroupAction(group: string, action: string, ...args: any[]) {
+        let result: boolean = this.sendActionEvent.apply(this, [group, action, ...args])
         if (!result) {
             Log.debug("group[" + group + "], action [" + action + "] not exist! Call failure")
         }
     }
 
-    sendAction(action: string, ...args) {
-        let temps: any[]
+    sendAction(action: string, ...args: any[]) {
         let result: boolean
-        Object.keys(this.obj).forEach(groupName => {
-            temps = args.concat()
-            temps.unshift(action)
-            temps.unshift(groupName)
-            let tempResult: boolean = this.sendActionEvent.apply(this, temps)
+        for (const groupName of this.eventGroup.keys()) {
+            let tempResult: boolean = this.sendActionEvent.apply(this, [groupName, action, ...args])
             if (tempResult) result = true
-        })
+        }
         if (!result)
             Log.debug("action [" + action + "] not exist! Call failure")
     }
 
-    sendActionEvent(group: string, action: string, ...args) {
+    sendActionEvent(group: string, action: string, ...args: any[]) {
         let groupObj = this.getGroup(group)
-        let arr = groupObj[action]
+        let arr = groupObj.get(action)
         if (arr) {
             arr.sort((a, b) => a.order || 100 - b.order || 100)
                 .forEach(value =>
@@ -169,7 +150,7 @@ export class EventController implements IController {
             return false
         }
         view.setKey(key)
-        this.cacheTarget[key] = view
+        this.cacheTarget.set(key, view)
         return true
     }
 
@@ -180,7 +161,7 @@ export class EventController implements IController {
         }
         if (StringUtil.isEmpty(key)) return
 
-        delete this.cacheTarget[key]
+        this.cacheTarget.delete(key)
     }
 
     getView<T>(key: string | { new(): T }): T {
@@ -188,7 +169,7 @@ export class EventController implements IController {
         if (typeof key !== "string") {
             key = this._getClassSign(key)
         }
-        return this.cacheTarget[key]
+        return this.cacheTarget.get(key)
     }
 
     addProxy<T extends IProxy & IKey>(key: string | { new(): T }, proxy: T) {
@@ -204,7 +185,7 @@ export class EventController implements IController {
             // return false
         }
         proxy.setKey(key)
-        this.cacheTarget[key] = proxy
+        this.cacheTarget.set(key, proxy)
         return true
     }
 
@@ -214,7 +195,7 @@ export class EventController implements IController {
             key = key.getKey()
         }
         if (StringUtil.isEmpty(key)) return
-        delete this.cacheTarget[key]
+        this.cacheTarget.delete(key)
     }
 
     getProxy<T>(name: string | { new(): T }): T {
@@ -222,7 +203,7 @@ export class EventController implements IController {
         if (typeof name !== "string") {
             name = this._getClassSign(name)
         }
-        return this.cacheTarget[name]
+        return this.cacheTarget.get(name)
     }
 
     getMap() {
