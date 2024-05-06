@@ -1075,7 +1075,7 @@ window.tsCore = {};
             this.removeFunction(groupObj, action, method);
         }
         removeFunction(groupObj, action, method) {
-            let arr = groupObj[action];
+            let arr = groupObj.get(action);
             if (arr) {
                 for (let i = 0; i < arr.length; i++) {
                     let h = arr[i];
@@ -1090,7 +1090,7 @@ window.tsCore = {};
         }
         removeTargetAll(caller) {
             for (let groupObj of this.eventGroup.keys()) {
-                this.removeTarget(this.eventGroup[groupObj], caller);
+                this.removeTarget(this.eventGroup.get(groupObj), caller);
             }
         }
         removeTarget(groupObj, caller) {

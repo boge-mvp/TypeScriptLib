@@ -74,7 +74,7 @@ export class EventController implements IController {
     }
 
     removeFunction(groupObj: Map<string, Laya.Handler[]>, action: string, method: Function) {
-        let arr = groupObj[action]
+        let arr = groupObj.get(action)
         if (arr) {
             for (let i = 0; i < arr.length; i++) {
                 let h = arr[i]
@@ -89,7 +89,7 @@ export class EventController implements IController {
 
     removeTargetAll(caller: any) {
         for (let groupObj of this.eventGroup.keys()) {
-            this.removeTarget(this.eventGroup[groupObj], caller)
+            this.removeTarget(this.eventGroup.get(groupObj), caller)
         }
     }
 
