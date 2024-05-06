@@ -45,6 +45,7 @@ export class EventController implements IController {
 
     clearGroup() {
         this.eventGroup.clear()
+        Log.debug("clear eventGroup")
     }
 
     removeAllAction(...args: string[]) {
@@ -54,12 +55,13 @@ export class EventController implements IController {
     }
 
     removeGroup(groupKey: string) {
+        Log.debug(`removeGroup ${groupKey}`)
         this.eventGroup.delete(groupKey)
     }
 
     removeGroupActions(groupKey: string, ...args) {
         let groupObj = this.getGroup(groupKey)
-        groupObj.clear()
+        args.forEach(value => groupObj.delete(value))
     }
 
     removeActionHandler(action: string, method: Function, group?: string) {

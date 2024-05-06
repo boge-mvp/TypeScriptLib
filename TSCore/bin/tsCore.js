@@ -1051,6 +1051,7 @@ window.tsCore = {};
         }
         clearGroup() {
             this.eventGroup.clear();
+            Log.debug("clear eventGroup");
         }
         removeAllAction(...args) {
             for (const key of this.eventGroup.keys()) { // 获取key
@@ -1058,11 +1059,12 @@ window.tsCore = {};
             }
         }
         removeGroup(groupKey) {
+            Log.debug(`removeGroup ${groupKey}`);
             this.eventGroup.delete(groupKey);
         }
         removeGroupActions(groupKey, ...args) {
             let groupObj = this.getGroup(groupKey);
-            groupObj.clear();
+            args.forEach(value => groupObj.delete(value));
         }
         removeActionHandler(action, method, group) {
             if (!group) {
