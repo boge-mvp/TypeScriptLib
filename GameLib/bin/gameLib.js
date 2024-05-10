@@ -477,9 +477,10 @@ window.gameLib = {};
          * @param isAutoHide 当没有优惠卷使用的时候 是否自动隐藏(默认true)
          */
         initActivityMenu(component, isOpenDrag = true, isAutoHide = true) {
-            var _a;
-            this.activityBtn = component.getChild("activityBtn");
-            (_a = this.activityBtn) !== null && _a !== void 0 ? _a : (this.activityBtn = component.getChild("couponsBtn"));
+            var _a, _b;
+            this.activityBtn = component.getChild("coupons");
+            (_a = this.activityBtn) !== null && _a !== void 0 ? _a : (this.activityBtn = component.getChild("activityBtn"));
+            (_b = this.activityBtn) !== null && _b !== void 0 ? _b : (this.activityBtn = component.getChild("couponsBtn"));
             if (this.activityBtn) {
                 this.activityBtn.isAutoHide = isAutoHide;
                 if (isOpenDrag)
@@ -525,9 +526,6 @@ window.gameLib = {};
         addedHandler() {
             super.addedHandler();
             tsCore.HistoryManager.addHistory(null, this);
-            //        if (jackpotBtn && Player.inst.isGuest) {
-            //            jackpotBtn.visible = false
-            //        }
             this.updateRoomIdChange(Player.inst.gameId);
             // 因为有旋转屏幕  为了获取正确的宽高  延迟执行添加舞台
             Laya.timer.callLater(this, this.regEvent);

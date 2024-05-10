@@ -144,7 +144,8 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
      * @param isAutoHide 当没有优惠卷使用的时候 是否自动隐藏(默认true)
      */
     protected initActivityMenu(component: GComponent, isOpenDrag = true, isAutoHide = true) {
-        this.activityBtn = <ActivityButton>component.getChild("activityBtn")
+        this.activityBtn = <ActivityButton>component.getChild("coupons")
+        this.activityBtn ??= <ActivityButton>component.getChild("activityBtn")
         this.activityBtn ??= <ActivityButton>component.getChild("couponsBtn")
         if (this.activityBtn) {
             this.activityBtn.isAutoHide = isAutoHide
@@ -193,9 +194,6 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
     protected override addedHandler() {
         super.addedHandler()
         HistoryManager.addHistory(null, this)
-//        if (jackpotBtn && Player.inst.isGuest) {
-//            jackpotBtn.visible = false
-//        }
         this.updateRoomIdChange(Player.inst.gameId)
         // 因为有旋转屏幕  为了获取正确的宽高  延迟执行添加舞台
         Laya.timer.callLater(this, this.regEvent)
