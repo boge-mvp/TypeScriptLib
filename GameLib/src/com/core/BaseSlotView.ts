@@ -294,7 +294,7 @@ export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends
             if (list) {
                 for (let j = 0; j < list.numChildren; j++) {
                     let item = (<BaseSlotItem>list.getChildAt(j))
-                    item.dark()
+                    item?.dark()
                 }
             }
         }

@@ -1427,7 +1427,7 @@ window.gameLib = {};
                 if (list) {
                     for (let j = 0; j < list.numChildren; j++) {
                         let item = list.getChildAt(j);
-                        item.dark();
+                        item === null || item === void 0 ? void 0 : item.dark();
                     }
                 }
             }
