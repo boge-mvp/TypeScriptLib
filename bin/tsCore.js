@@ -2579,6 +2579,7 @@ window.tsCore = {};
             this.asSkeleton.resume();
         }
         stop() {
+            Laya.timer.clearAll(this);
             this.asSkeleton.stop();
         }
         getAniNameByIndex(index) {
