@@ -122,3 +122,66 @@ Object.defineProperty(Array.prototype, "random", {
         return this[random(0, this.length)]
     }
 })
+
+Object.defineProperty(Array.prototype, "removeIf", {
+    value: function <T>(filter: (value: T) => boolean) {
+        let removed = false
+        for (let i = 0; i < this.length; i++) {
+            if (filter(this[i])) {
+                this.splice(i, 1)
+                i--
+                removed = true
+            }
+        }
+        return removed
+    }
+})
+
+Object.defineProperty(Array.prototype, "removeAll", {
+    value: function <T>(predicate: (value: T) => boolean) {
+        return filterInPlace(this,  predicate, true)
+    }
+})
+
+Object.defineProperty(Array.prototype, "retainAll", {
+    value: function <T>(predicate: (value: T) => boolean) {
+        return filterInPlace(this,  predicate, false)
+    }
+})
+
+/**
+ * 在原数组上进行过滤操作，根据predicate函数的结果保留或移除元素。
+ * 该函数尝试在原数组上进行过滤，避免创建新的数组实例，以提高性能和减少内存使用。
+ *
+ * @param array 原数组，将直接在该数组上进行过滤操作。
+ * @param predicate 过滤条件函数，接受数组元素作为参数，返回一个布尔值。
+ * @param predicateResultToRemove 指定过滤条件的结果，与该结果一致的元素将被移除。
+ * @returns 如果数组发生了改变（有元素被移除），则返回true；否则返回false。
+ */
+function filterInPlace<T>(array: Array<T>, predicate: (value: T) => boolean, predicateResultToRemove: boolean): boolean {
+    // 初始化写入索引，用于跟踪过滤后的新数组长度。
+    let writeIndex = 0
+    // 遍历原数组，对每个元素应用过滤条件。
+    for (let i = 0; i < array.length; i++) {
+        const element = array[i]
+        // 如果元素满足移除条件，则跳过该元素。
+        if (predicate(element) == predicateResultToRemove)
+            continue
+        // 如果当前元素的位置不等于写入索引，说明有元素被移除，需要更新数组。
+        if (writeIndex != i)
+            array[writeIndex] = element
+        // 更新写入索引，准备写入下一个元素。
+        writeIndex++
+    }
+    // 如果写入索引小于原数组长度，说明有元素被移除，需要进一步修剪数组。
+    if (writeIndex < array.length) {
+        // 使用splice方法移除剩余的元素，修剪数组。
+        array.splice(writeIndex)
+        // 返回true，表示数组发生了改变。
+        return true
+    } else {
+        // 如果数组没有发生改变，返回false。
+        return false
+    }
+}
+

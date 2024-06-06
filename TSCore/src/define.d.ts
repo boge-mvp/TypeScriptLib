@@ -333,6 +333,25 @@ declare interface Array<T> {
      * 从数组中随机获取一个值
      */
     random(): T
+
+    /**
+     * 在原数组上进行过滤操作，根据predicate函数的结果移除元素。
+     * 该函数尝试在原数组上进行过滤，避免创建新的数组实例，以提高性能和减少内存使用。
+     *
+     * @param predicate 过滤条件函数，接受数组元素作为参数，返回一个布尔值。
+     * @returns 如果数组发生了改变（有元素被移除），则返回true；否则返回false。
+     */
+    removeAll(predicate: (value: T) => boolean)
+
+    /**
+     * 在原数组上进行过滤操作，根据predicate函数的结果保留元素。
+     * 该函数尝试在原数组上进行过滤，避免创建新的数组实例，以提高性能和减少内存使用。
+     *
+     * @param predicate 过滤条件函数，接受数组元素作为参数，返回一个布尔值。
+     * @returns 如果数组发生了改变（有元素被移除），则返回true；否则返回false。
+     */
+    retainAll(predicate: (value: T) => boolean)
+
 }
 
 declare interface Map<K, V> {

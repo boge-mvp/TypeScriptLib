@@ -2989,6 +2989,16 @@ declare function random(minNum: number, maxNum: number): number;
  * @return
  */
 declare function randomFloat(minNum: number, maxNum: number, p?: number): number;
+/**
+ * 在原数组上进行过滤操作，根据predicate函数的结果保留或移除元素。
+ * 该函数尝试在原数组上进行过滤，避免创建新的数组实例，以提高性能和减少内存使用。
+ *
+ * @param array 原数组，将直接在该数组上进行过滤操作。
+ * @param predicate 过滤条件函数，接受数组元素作为参数，返回一个布尔值。
+ * @param predicateResultToRemove 指定过滤条件的结果，与该结果一致的元素将被移除。
+ * @returns 如果数组发生了改变（有元素被移除），则返回true；否则返回false。
+ */
+declare function filterInPlace<T>(array: Array<T>, predicate: (value: T) => boolean, predicateResultToRemove: boolean): boolean;
 
 /**
  * 动态参数 function 或 Laya.Handler
@@ -3325,6 +3335,25 @@ declare interface Array<T> {
      * 从数组中随机获取一个值
      */
     random(): T
+
+    /**
+     * 在原数组上进行过滤操作，根据predicate函数的结果移除元素。
+     * 该函数尝试在原数组上进行过滤，避免创建新的数组实例，以提高性能和减少内存使用。
+     *
+     * @param predicate 过滤条件函数，接受数组元素作为参数，返回一个布尔值。
+     * @returns 如果数组发生了改变（有元素被移除），则返回true；否则返回false。
+     */
+    removeAll(predicate: (value: T) => boolean)
+
+    /**
+     * 在原数组上进行过滤操作，根据predicate函数的结果保留元素。
+     * 该函数尝试在原数组上进行过滤，避免创建新的数组实例，以提高性能和减少内存使用。
+     *
+     * @param predicate 过滤条件函数，接受数组元素作为参数，返回一个布尔值。
+     * @returns 如果数组发生了改变（有元素被移除），则返回true；否则返回false。
+     */
+    retainAll(predicate: (value: T) => boolean)
+
 }
 
 declare interface Map<K, V> {
