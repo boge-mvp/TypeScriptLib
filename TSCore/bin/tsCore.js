@@ -7610,6 +7610,22 @@ Object.defineProperty(Array.prototype, "random", {
     }
 });
 /**
+ * 过滤数组中特定类型的元素。
+ *
+ * @param {Function} type - 一个构造函数，用于判断数组元素是否是这个类型的实例。
+ * @returns {Array} 返回一个新的数组，其中包含了原数组中所有是传入类型实例的元素。
+ */
+Object.defineProperty(Array.prototype, "filterIsInstance", {
+    value: function (type) {
+        /**
+         * 使用Array的filter方法来过滤数组。
+         * filter方法会创建一个新数组，其中包含了所有通过测试的元素。
+         * 这里使用的测试是检查数组元素是否是传入的构造函数的实例。
+         */
+        return this.filter((value) => value instanceof type);
+    }
+});
+/**
  * 通过提供一个回调函数来定义移除元素的条件。
  * 如果数组中存在满足条件的元素，则移除该元素并返回true，否则返回false。
  *

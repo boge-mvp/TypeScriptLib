@@ -335,6 +335,14 @@ declare interface Array<T> {
     random(): T
 
     /**
+     * 过滤数组中特定类型的元素。
+     *
+     * @param {Function} type - 一个构造函数，用于判断数组元素是否是这个类型的实例。
+     * @returns {Array} 返回一个新的数组，其中包含了原数组中所有是传入类型实例的元素。
+     */
+    filterIsInstance<C>(type: { new(): C }) : Array<C>
+
+    /**
      * 通过提供一个回调函数来定义移除元素的条件。
      * 如果数组中存在满足条件的元素，则移除该元素并返回true，否则返回false。
      *
