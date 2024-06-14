@@ -3767,7 +3767,53 @@ window.tsCore = {};
         }
         /*@override*/
         send(url, data, method, responseType, headers) {
-            super.send(url, data, method, responseType, headers);
+            // super.send(url, data, method, responseType, headers)
+            this._responseType = responseType;
+            this._data = null;
+            if (Laya.Browser.onVVMiniGame || Laya.Browser.onQGMiniGame || Laya.Browser.onQQMiniGame || Laya.Browser.onAlipayMiniGame || Laya.Browser.onBLMiniGame || Laya.Browser.onHWMiniGame || Laya.Browser.onTTMiniGame || Laya.Browser.onTBMiniGame) {
+                // @ts-ignore
+                url = Laya.HttpRequest._urlEncode(url);
+            }
+            this._url = url;
+            var http = this._http;
+            //临时，因为微信不支持以下文件格式
+            http.open(method, url, this.async || true);
+            let isJson = false;
+            if (headers) {
+                for (let i = 0; i < headers.length; i++) {
+                    http.setRequestHeader(headers[i++], headers[i]);
+                }
+            }
+            else if (!(window.conch)) {
+                if (!data || typeof (data) == 'string')
+                    http.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                else {
+                    http.setRequestHeader("Content-Type", "application/json");
+                    if (!(data instanceof ArrayBuffer) && typeof data !== "string") {
+                        isJson = true;
+                    }
+                }
+            }
+            let restype = responseType !== "arraybuffer" ? "text" : "arraybuffer";
+            http.responseType = restype;
+            if (http.dataType) { //for Ali
+                http.dataType = restype;
+            }
+            http.onerror = (e) => {
+                this._onError(e);
+            };
+            http.onabort = (e) => {
+                this._onAbort(e);
+            };
+            http.onprogress = (e) => {
+                this._onProgress(e);
+            };
+            http.onload = (e) => {
+                this._onLoad(e);
+            };
+            if (Laya.Browser.onBLMiniGame && Laya.Browser.onAndroid && !data)
+                data = {};
+            http.send(isJson ? JSON.stringify(data) : data);
         }
         onHttpError(obj) {
             runFun(this.errorHandler, obj);
