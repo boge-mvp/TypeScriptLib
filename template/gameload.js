@@ -110,15 +110,17 @@ function version(url) {
         }
         version = {}
         window["$_version"] = version
-        let chills = crc.lastChild.childNodes
-        for (let i = 0; i < chills.length; i++) {
-            const child = chills[i]
-            const url = child.getAttribute("url")
-            if (url.endsWith(".js") && !url.endsWith(".min.js")) {
-                version[url.replace(".js", ".min.js")] = child.getAttribute("crc")
+        if (crc.lastChild) {
+            let chills = crc.lastChild.childNodes
+            for (let i = 0; i < chills.length; i++) {
+                const child = chills[i]
+                const url = child.getAttribute("url")
+                if (url.endsWith(".js") && !url.endsWith(".min.js")) {
+                    version[url.replace(".js", ".min.js")] = child.getAttribute("crc")
+                }
+                version[url] = child.getAttribute("crc")
             }
-            version[url] = child.getAttribute("crc")
-        }
+        } else return
     }
     if (!version) return
 
