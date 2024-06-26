@@ -110,7 +110,7 @@ function version(url) {
         }
         version = {}
         window["$_version"] = version
-        if (crc.lastChild) {
+        if (crc.lastChild && crc.lastChild.childNodes) {
             let chills = crc.lastChild.childNodes
             for (let i = 0; i < chills.length; i++) {
                 const child = chills[i]
