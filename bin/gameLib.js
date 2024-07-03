@@ -1034,7 +1034,10 @@ window.gameLib = {};
          */
         /*@override*/
         getTotalBetMoney() {
-            return this.lineValue * this.betValue;
+            if (this.gameType == GameType.SLOT) {
+                return this.lineValue * this.betValue;
+            }
+            return this.betValue;
         }
         /** 获取当前的开奖数据 */
         getLotteryId() {
@@ -2037,7 +2040,12 @@ window.gameLib = {};
         }
         nextInit() {
             this.onUserData.call(this, (result) => {
-                result.succeed ? this.getCoupon(this.initComplete.bind(this)) : this.enterFail(true, result.msg);
+                if (result.succeed) {
+                    this.getCoupon(this.initComplete.bind(this));
+                }
+                else {
+                    this.enterFail(true, result.msg);
+                }
             });
         }
         /**
@@ -2524,7 +2532,7 @@ window.gameLib = {};
                         return null; //小于wild 并且和对比值不一样 并且才是第2个对比 这里就表示这组数据本来就不是一组中奖数据
                     }
                     if (i == 1) { // 2个一样  且不再小奖里面
-                        if (duibi < this.WILD && duibi != this.SPECIAL_PLAY && this.smallPrize.indexOf(duibi) != -1) {
+                        if (duibi < this.WILD && duibi != this.SPECIAL_PLAY && this.smallPrize.includes(duibi)) {
                             return tempArray;
                         }
                     }
