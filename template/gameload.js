@@ -1,24 +1,26 @@
 /**
- * @type {(number)=>void}
+ * @param value {number}
  */
-let onProgress
+window.onProgress = null
 
 /**
  * @type {()=>void}
  */
-let onError
+window.onError = null
 
 /**
  * @type {string|(()=>string)}
  */
-let crashUrl
+window.crashUrl = null
 
 /**
  * 上传错误验证函数
  * @type {(msg:Event|string, url:string)=>boolean}
- * @return false 验证失败 true 验证成功可以上传
+ * @param msg {Event|string}
+ * @param url {string}
+ * @return {boolean} false 验证失败 true 验证成功可以上传
  */
-let sendErrorVerifies
+window.sendErrorVerifies = null
 
 /**
  * 批量加载资源
@@ -225,10 +227,7 @@ function sendError(data) {
             }
             data = formData
         }
-        if (typeof crashUrl === "function") {
-            crashUrl = crashUrl()
-        }
-        let url = crashUrl
+        let url = typeof crashUrl === "function" ? crashUrl() : crashUrl
         let http = new XMLHttpRequest();
         http.open("post", url, true)
         http.send(data)
