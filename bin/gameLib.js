@@ -1491,7 +1491,7 @@ window.gameLib = {};
                 fgui.GRoot.inst.addChild(this.baseScene);
                 const name = url.substringAfterLast("/");
                 const _name = name.charAt(0).toLowerCase() + name.slice(1);
-                if (tsCore.App.inst.hasBean(_name) && tsCore.App.beanClassComponent.has(cls.name)) {
+                if (!tsCore.App.inst.hasBean(_name) && tsCore.App.beanClassComponent.has(cls.name)) {
                     tsCore.App.inst.addBean(_name, this.baseScene);
                 }
                 runFun(this.callback);

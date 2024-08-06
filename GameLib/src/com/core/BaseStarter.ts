@@ -53,7 +53,7 @@ export class BaseStarter extends EProxy {
 
             const name = url.substringAfterLast("/")
             const _name = name.charAt(0).toLowerCase() + name.slice(1)
-            if (App.inst.hasBean(_name) && App.beanClassComponent.has(cls.name)) {
+            if (!App.inst.hasBean(_name) && App.beanClassComponent.has(cls.name)) {
                 App.inst.addBean(_name, this.baseScene)
             }
             runFun(this.callback)
