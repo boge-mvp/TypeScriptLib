@@ -119,9 +119,10 @@ export interface IController extends IView, IProxy {
      *
      * @param {string | { new(): T }} key - bean的唯一标识符，可以是字符串或构造函数
      * @param {T} bean - 要添加的bean实例
+     * @param {boolean} saveClassName
      * @returns {boolean} - 添加成功返回true，否则返回false
      */
-    addBean<T>(key: string | { new(): T }, bean: T): boolean
+    addBean<T>(key: string | { new(): T }, bean: T, saveClassName?: boolean): boolean
 
     /**
      * 从缓存中移除一个bean实例
@@ -147,7 +148,7 @@ export interface IController extends IView, IProxy {
      * @param key {string | { new(): T }} - 要检查的键，可以是字符串，也可以是类的构造函数
      * @returns {boolean} - 如果键存在缓存中，则返回true；否则返回false
      */
-    hasBean<T>(key: string | { new(): T }):boolean
+    hasBean<T>(key: string | { new(): T }): boolean
 
     /** 清除所有UI缓存 */
     clearView(): void

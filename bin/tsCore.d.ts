@@ -26,7 +26,7 @@ declare namespace tsCore {
          * 绑定的类
          * 类名 -> 类 class
          */
-        static beanClassComponent: Map<string, new () => any>;
+        static beanClassComponent: Map<string, ComponentData>;
         /**
          * 绑定的方法
          * 类名 -> 生成方法
@@ -69,7 +69,7 @@ declare namespace tsCore {
         sendGroupAction(group: string, action: string, ...args: any[]): void;
         addBean<T>(key: string | {
             new (): T;
-        }, bean: T): boolean;
+        }, bean: T, saveClassName?: boolean): boolean;
         removeBean<T extends {
             new (...args: any[]): any;
         }>(key: string | T): void;
@@ -508,7 +508,7 @@ declare namespace tsCore {
         sendActionEvent(group: string, action: string, ...args: any[]): boolean;
         addBean<T>(key: string | {
             new (): T;
-        }, bean: T): boolean;
+        }, bean: T, saveClassName?: boolean): boolean;
         removeBean<T extends {
             new (...args: any[]): any;
         }>(key: string | T): void;
@@ -993,11 +993,12 @@ declare namespace tsCore {
          *
          * @param {string | { new(): T }} key - bean的唯一标识符，可以是字符串或构造函数
          * @param {T} bean - 要添加的bean实例
+         * @param {boolean} saveClassName
          * @returns {boolean} - 添加成功返回true，否则返回false
          */
         addBean<T>(key: string | {
             new (): T;
-        }, bean: T): boolean;
+        }, bean: T, saveClassName?: boolean): boolean;
         /**
          * 从缓存中移除一个bean实例
          *
@@ -3083,49 +3084,76 @@ declare function randomFloat(minNum: number, maxNum: number, p?: number): number
  */
 declare function filterInPlace<T>(array: Array<T>, predicate: (value: T) => boolean, predicateResultToRemove: boolean): boolean;
 /**
- * 初始化多个类实例，并将它们作为 Bean 添加到应用上下文中。
- * @param cls 一个或多个类的数组，这些类将被实例化并注册为 Bean。
- */
-declare function initBean(...cls: {
-    new (): any;
-}[]): void;
-/**
- * 获取指定名称的 Bean 实例。
- * 如果 Bean 尚未创建，则根据提供的构造函数创建一个新的实例。
- * @param name Bean 的名称或构造函数。
- * @param bean 可选参数，用于指定构造函数。
- * @returns 返回指定名称的 Bean 实例。
+ * 获取一个指定名称或类型的Bean实例。
+ * @param name - Bean的名称或构造函数。
+ * @returns T 返回指定的Bean实例。
  */
 declare function getBean<T>(name: string | {
     new (): T;
-}, bean?: {
-    new (): T;
 }): T;
 /**
- * 一个装饰器，用于标记类作为组件。
- * 当此类被实例化时，它会自动注册其依赖项。
- * @param classTarget 要装饰的类。
- * @returns 返回经过装饰处理的新类。
+ * 组件数据类，用于创建组件实例。
+ */
+declare class ComponentData {
+    /**
+     * 目标类的构造函数。
+     */
+    classTarget: {
+        new (): any;
+    };
+    /**
+     * 创建UI的路径。
+     */
+    createUi?: string;
+    /**
+     * 构造函数。
+     * @param classTarget - 目标类的构造函数。
+     * @param createUi - 创建UI的路径。
+     */
+    constructor(classTarget: {
+        new (): any;
+    }, createUi?: string);
+    /**
+     * 创建组件实例。
+     * @returns 返回创建的组件实例。
+     */
+    create(): any;
+}
+/**
+ * 组件装饰器，用于注册和创建组件实例。
+ * @param value - 组件标识符或目标构造函数。 如果是null值 将不会被添加到依赖管理器中，默认使用类名 首字母大小写都有
+ * @param uiUrl - UI资源的URL。
+ * @returns any 返回装饰后的类。
  */
 declare function Component<T extends {
     new (...args: any[]): {};
-}>(classTarget: T): {
-    new (...args: any[]): {};
-} & T;
+}>(value?: string | T, uiUrl?: string): any;
 /**
- * 一个装饰器，用于标记类成员变量为资源依赖。
- * 这些依赖将在类实例化时自动注入。
- * @param target 类的原型。
- * @param propertyKey 成员变量的键名。
+ * 资源装饰器，标记类属性为资源依赖。
+ * @param target - 类的原型。
+ * @param propertyKey - 属性键名。
  */
 declare function Resource(target: any, propertyKey: string): void;
 /**
- * 一个装饰器，用于标记方法返回值为 Bean。
- * @param target 类的原型。
- * @param propertyKey 方法的键名。
- * @param descriptor 属性描述符。
+ * Bean装饰器，标记类方法为返回Bean实例的方法。
+ * @param target - 类的原型。
+ * @param propertyKey - 属性键名。
+ * @param descriptor - 属性描述符。
  */
 declare function Bean(target: any, propertyKey: string, descriptor: PropertyDescriptor): void;
+/**
+ * 运行应用程序，并初始化所有Bean实例。
+ * @param classTarget - 应用程序主类的构造函数。
+ */
+declare function runApplication<T>(classTarget: {
+    new (...args: any[]): T;
+}): T;
+/**
+ * 应用程序运行接口。
+ */
+interface IRunApplication {
+    start(): void;
+}
 
 /**
  * 动态参数 function 或 Laya.Handler

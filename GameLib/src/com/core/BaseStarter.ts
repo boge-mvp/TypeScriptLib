@@ -48,14 +48,8 @@ export class BaseStarter extends EProxy {
     protected createShowScene(url: string, cls?: new () => fgui.GObject) {
         // 部分手机太垃圾了  需要延迟点
         Laya.timer.callLater(this, () => {
-            this.baseScene = UIPackage.createObjectFromURL(url, cls) as BaseScene
+            this.baseScene = getBean(BaseScene) || UIPackage.createObjectFromURL(url, cls) as BaseScene
             GRoot.inst.addChild(this.baseScene)
-
-            const name = url.substringAfterLast("/")
-            const _name = name.charAt(0).toLowerCase() + name.slice(1)
-            if (!App.inst.hasBean(_name) && App.beanClassComponent.has(cls.name)) {
-                App.inst.addBean(_name, this.baseScene)
-            }
             runFun(this.callback)
         })
 

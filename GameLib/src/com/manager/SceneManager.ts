@@ -380,7 +380,7 @@ export class SceneManager extends EProxy {
             AssetsLoader.inst.runLoad()
             // 启动按键
             TouchManager.I.enable = MouseManager.enabled = KeyBoardManager.enabled = true
-//                // 放到下一帧去播放  不然 进入需要旋转的游戏 渲染跟不上
+            // 放到下一帧去播放  不然 进入需要旋转的游戏 渲染跟不上
             Laya.timer.callLater(this, function () {
                 Log.debug("call close loading")
                 LoadingWindow.inst.hide()

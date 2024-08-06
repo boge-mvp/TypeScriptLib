@@ -142,7 +142,7 @@ export class EventController implements IController {
         return false
     }
 
-    addBean<T>(key: string | { new(): T }, bean: T) {
+    addBean<T>(key: string | { new(): T }, bean: T, saveClassName = true) {
         if (typeof key !== "string") {
             key = this._getClassSign(key)
         }
@@ -155,7 +155,9 @@ export class EventController implements IController {
             return false
         }
         this.cacheTarget.set(key, bean)
-        this.cacheClassTarget.set(bean.constructor.name, bean)
+        if (saveClassName) {
+            this.cacheClassTarget.set(bean.constructor.name, bean)
+        }
         return true
     }
 
@@ -166,7 +168,7 @@ export class EventController implements IController {
         }
         if (StringUtil.isEmpty(key)) return
         this.cacheTarget.delete(key)
-        this.cacheClassTarget.delete(key)
+        this.cacheClassTarget.delete(key.charAt(0).toUpperCase() + key.slice(1))
     }
 
     getBean<T>(key: string | { new(): T }): T {

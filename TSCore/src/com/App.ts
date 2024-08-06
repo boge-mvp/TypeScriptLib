@@ -5,9 +5,8 @@ import {ELoader} from "./extends/ELoader";
 import {ConfigKit, EnvType} from "./kit/ConfigKit";
 import {Log} from "./Log";
 import {IController, IInitEngine, IKey, IProxy, IView} from "./interfaces/ICommon";
-import Handler = Laya.Handler;
 import {Path} from "./Path";
-import {StringUtil} from "./utils/StringUtil";
+import Handler = Laya.Handler;
 
 export class App implements IAction {
 
@@ -42,7 +41,7 @@ export class App implements IAction {
      * 绑定的类
      * 类名 -> 类 class
      */
-    static beanClassComponent = new Map<string, { new(): any }>()
+    static beanClassComponent = new Map<string, ComponentData>()
     /**
      * 绑定的方法
      * 类名 -> 生成方法
@@ -218,8 +217,8 @@ export class App implements IAction {
     }
 
 
-    addBean<T>(key: string | { new(): T }, bean: T) {
-        return this._controller.addBean(key, bean)
+    addBean<T>(key: string | { new(): T }, bean: T, saveClassName?: boolean) {
+        return this._controller.addBean(key, bean, saveClassName)
     }
 
     removeBean<T extends { new(...args: any[]) }>(key: string | T) {
