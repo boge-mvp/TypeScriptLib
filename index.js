@@ -72,6 +72,12 @@ class GenerateModule {
     settings
 
     /**
+     *
+     * @type {MinifyOptions}
+     */
+    terserOpt = {}
+
+    /**
      * 要放到全局的ts
      * @type {string[]}
      */
@@ -233,7 +239,7 @@ class GenerateModule {
         if (!files) files = chunk ? [chunk.path] : []
         !files.length && files.push(path.join(this.distPath, this.project + ".js"))
         !minDir && (minDir = this.minifyPath)
-        const terserOpt = {
+        const terserOpt = defaults(this.terserOpt, {
             timings: true,
             // toplevel: true,
             compress: {
@@ -248,7 +254,7 @@ class GenerateModule {
             format: {
                 // beautify: true, // 不进行删除空白和换行
             },
-        }
+        })
         const stream = mJs(files, terserOpt)
             .pipe(gulp.dest(minDir))
             .pipe(print("生成 min.js"))
