@@ -1057,9 +1057,13 @@ window.tsCore = {};
             /** 事件缓存的所有组 组名字->组object */
             this.eventGroup = new Map();
             /**
-             * 键值的缓存对象
+             * 缓存key -> 实例
              */
             this.cacheTarget = new Map();
+            /**
+             * 缓存类名 -> 实例
+             */
+            this.cacheClassTarget = new Map();
         }
         regActionHandler(action, handler, group) {
             let groupObj = this.getGroup(group);
@@ -1184,6 +1188,7 @@ window.tsCore = {};
                 return false;
             }
             this.cacheTarget.set(key, bean);
+            this.cacheClassTarget.set(bean.constructor.name, bean);
             return true;
         }
         removeBean(key) {
@@ -1195,14 +1200,16 @@ window.tsCore = {};
             if (StringUtil.isEmpty(key))
                 return;
             this.cacheTarget.delete(key);
+            this.cacheClassTarget.delete(key);
         }
         getBean(key) {
+            var _a;
             if (!key)
                 return;
             if (typeof key !== "string") {
                 key = this._getClassSign(key, false);
             }
-            return this.cacheTarget.get(key);
+            return (_a = this.cacheTarget.get(key)) !== null && _a !== void 0 ? _a : this.cacheClassTarget.get(key);
         }
         hasBean(key) {
             if (typeof key !== "string") {
@@ -1210,23 +1217,17 @@ window.tsCore = {};
             }
             if (!key)
                 return false;
-            return this.cacheTarget.has(key);
+            return this.cacheTarget.has(key) || this.cacheClassTarget.has(key);
         }
         addView(key, view) {
-            if (typeof key !== "string") {
-                key = this._getClassSign(key);
+            if (this.addBean(key, view)) {
+                if (typeof key !== "string") {
+                    key = this._getClassSign(key);
+                }
+                view.setKey(key);
+                return true;
             }
-            if (StringUtil.isEmpty(key)) {
-                Log.warn("cannot be empty, key = " + key);
-                return false;
-            }
-            if (this.getView(key)) {
-                Log.warn("already exist key = " + key + ", add failure!");
-                return false;
-            }
-            view.setKey(key);
-            this.cacheTarget.set(key, view);
-            return true;
+            return false;
         }
         removeView(key) {
             if (!key)
@@ -1234,28 +1235,20 @@ window.tsCore = {};
             if (typeof key !== "string") {
                 key = key.getKey();
             }
-            if (StringUtil.isEmpty(key))
-                return;
-            this.cacheTarget.delete(key);
+            this.removeBean(key);
         }
         getView(key) {
             return this.getBean(key);
         }
         addProxy(key, proxy) {
-            if (typeof key !== "string") {
-                key = this._getClassSign(key);
+            if (this.addBean(key, proxy)) {
+                if (typeof key !== "string") {
+                    key = this._getClassSign(key);
+                }
+                proxy.setKey(key);
+                return true;
             }
-            if (StringUtil.isEmpty(key)) {
-                Log.warn("Proxy name cannot be empty!");
-                return false;
-            }
-            if (this.getProxy(key)) {
-                Log.warn("already exist key = " + key + ", add failure!");
-                // return false
-            }
-            proxy.setKey(key);
-            this.cacheTarget.set(key, proxy);
-            return true;
+            return false;
         }
         removeProxy(key) {
             if (!key)
@@ -1263,9 +1256,7 @@ window.tsCore = {};
             if (typeof key !== "string") {
                 key = key.getKey();
             }
-            if (StringUtil.isEmpty(key))
-                return;
-            this.cacheTarget.delete(key);
+            this.removeBean(key);
         }
         getProxy(name) {
             return this.getBean(name);
@@ -1277,7 +1268,7 @@ window.tsCore = {};
          * 返回类的唯一标识
          */
         _getClassSign(cla, create = true) {
-            let className = cla.name.charAt(0).toLowerCase() + cla.name.slice(1) || cla["__className"] || cla["_cacheId"];
+            let className = cla.name || cla["__className"] || cla["_cacheId"];
             if (!className && create) {
                 cla["_cacheId"] = className = `${App.DEFAULT_CACHE_HEAD}_${EventController._CLSID}`;
                 EventController._CLSID++;

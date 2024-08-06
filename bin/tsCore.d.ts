@@ -478,9 +478,13 @@ declare namespace tsCore {
         /** 事件缓存的所有组 组名字->组object */
         private eventGroup;
         /**
-         * 键值的缓存对象
+         * 缓存key -> 实例
          */
         private cacheTarget;
+        /**
+         * 缓存类名 -> 实例
+         */
+        private cacheClassTarget;
         private static _CLSID;
         regActionHandler(action: string, handler: Laya.Handler, group?: string): void;
         /**
