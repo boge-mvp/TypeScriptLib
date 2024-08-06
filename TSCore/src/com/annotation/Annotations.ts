@@ -1,9 +1,6 @@
 /**
- * 初始化Bean对象
- * 该函数接受一个或多个类的构造函数，为每个类创建一个实例，并将其添加到应用程序的Bean管理器中
- * 如果应用程序的Bean管理器中尚不存在某个类的实例，则创建该类的实例并添加
- *
- * @param cls 一个或多个类的构造函数，这些类是准备初始化为Bean对象的
+ * 初始化多个类实例，并将它们作为 Bean 添加到应用上下文中。
+ * @param cls 一个或多个类的数组，这些类将被实例化并注册为 Bean。
  */
 function initBean(...cls: { new(): any }[]) {
     cls.forEach(value => {
@@ -16,14 +13,12 @@ function initBean(...cls: { new(): any }[]) {
         }
     })
 }
-
 /**
- * 根据给定的名称或构造函数获取单例bean对象
- * 如果bean不存在，则根据名称或构造函数创建并添加bean对象
- *
- * @param name - bean的名称或构造函数
- * @param bean - 可选参数，bean的构造函数
- * @returns 返回获取到的bean对象
+ * 获取指定名称的 Bean 实例。
+ * 如果 Bean 尚未创建，则根据提供的构造函数创建一个新的实例。
+ * @param name Bean 的名称或构造函数。
+ * @param bean 可选参数，用于指定构造函数。
+ * @returns 返回指定名称的 Bean 实例。
  */
 function getBean<T>(name: string | { new(): T }, bean?: { new(): T }): T {
     if (typeof name !== "string") {
@@ -54,13 +49,11 @@ function getBean<T>(name: string | { new(): T }, bean?: { new(): T }): T {
     // @ts-ignore
     return tsCore.App.inst.getBean(name)
 }
-
 /**
- * 一个用于创建组件的高阶函数，它接受一个类作为参数，并返回一个继承了该类的新类。
- * 这个新类会在实例化时自动注册到应用的容器中，以便于依赖注入和管理。
- *
- * @param classTarget 被装饰的类。
- * @return 返回一个继承了传入类的新类。
+ * 一个装饰器，用于标记类作为组件。
+ * 当此类被实例化时，它会自动注册其依赖项。
+ * @param classTarget 要装饰的类。
+ * @returns 返回经过装饰处理的新类。
  */
 function Component<T extends { new(...args: any[]): {} }>(classTarget: T) {
     const classTemp = class extends classTarget {
@@ -86,13 +79,11 @@ function Component<T extends { new(...args: any[]): {} }>(classTarget: T) {
     tsCore.App.beanClassComponent.set(classTemp.name, classTemp)
     return classTemp
 }
-
 /**
- * 一个装饰器函数，用于标记类的属性，该属性对应的对象会被自动实例化并注册到应用的容器中。
- * 这个函数主要解决了如何自动实例化和注册类的依赖，以便于在应用中使用时能够轻松地进行依赖注入。
- *
- * @param target 被装饰的类的实例。
- * @param propertyKey 被装饰的属性的键名。
+ * 一个装饰器，用于标记类成员变量为资源依赖。
+ * 这些依赖将在类实例化时自动注入。
+ * @param target 类的原型。
+ * @param propertyKey 成员变量的键名。
  */
 function Resource(target: any, propertyKey: string) {
     const classTarget = Reflect.getMetadata("design:type", target, propertyKey)
@@ -104,14 +95,11 @@ function Resource(target: any, propertyKey: string) {
         tsCore.App.beanClassProperty.set(target.constructor.name, bean)
     } else throw Error("class type null")
 }
-
 /**
- * Bean装饰器函数，用于自动注册带有该装饰器的类实例到应用容器中
- * 它通过反射机制获取类的返回类型，并将类实例注册为一个Bean
- *
- * @param target 被装饰的类的原型
- * @param propertyKey 被装饰的方法的属性名
- * @param descriptor 被装饰的方法的属性描述符
+ * 一个装饰器，用于标记方法返回值为 Bean。
+ * @param target 类的原型。
+ * @param propertyKey 方法的键名。
+ * @param descriptor 属性描述符。
  */
 function Bean(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const returnTarget = Reflect.getMetadata("design:returntype", target, propertyKey)
