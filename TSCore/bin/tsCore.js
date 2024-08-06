@@ -1277,7 +1277,7 @@ window.tsCore = {};
          * 返回类的唯一标识
          */
         _getClassSign(cla, create = true) {
-            let className = cla.name || cla["__className"] || cla["_cacheId"];
+            let className = cla.name.charAt(0).toLowerCase() + cla.name.slice(1) || cla["__className"] || cla["_cacheId"];
             if (!className && create) {
                 cla["_cacheId"] = className = `${App.DEFAULT_CACHE_HEAD}_${EventController._CLSID}`;
                 EventController._CLSID++;
