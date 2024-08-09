@@ -155,7 +155,8 @@ export abstract class BaseSlotGameData extends BaseGameData {
      * @param index 列
      */
     getSlotListArr(index: number): number[] {
-        return this[`slotList${index}`] ?? (this[`slotList${index}`] = [] && this.getSlotListArr(index))
+        this[`slotList${index}`] ??= []
+        return this[`slotList${index}`]
     }
 
     /**

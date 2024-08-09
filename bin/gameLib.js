@@ -1056,7 +1056,9 @@ window.gameLib = {};
          */
         getSlotListArr(index) {
             var _a;
-            return (_a = this[`slotList${index}`]) !== null && _a !== void 0 ? _a : (this[`slotList${index}`] = [] && this.getSlotListArr(index));
+            var _b;
+            (_a = this[_b = `slotList${index}`]) !== null && _a !== void 0 ? _a : (this[_b] = []);
+            return this[`slotList${index}`];
         }
         /**
          * 为每列 list 赋新的值
@@ -1487,13 +1489,8 @@ window.gameLib = {};
         createShowScene(url, cls) {
             // 部分手机太垃圾了  需要延迟点
             Laya.timer.callLater(this, () => {
-                this.baseScene = fgui.UIPackage.createObjectFromURL(url, cls);
+                this.baseScene = getBean(BaseScene) || fgui.UIPackage.createObjectFromURL(url, cls);
                 fgui.GRoot.inst.addChild(this.baseScene);
-                const name = url.substringAfterLast("/");
-                const _name = name.charAt(0).toLowerCase() + name.slice(1);
-                if (!tsCore.App.inst.hasBean(_name) && tsCore.App.beanClassComponent.has(cls.name)) {
-                    tsCore.App.inst.addBean(_name, this.baseScene);
-                }
                 runFun(this.callback);
             });
             //        Laya.timer.once(2000, this, function() {
@@ -5125,7 +5122,7 @@ window.gameLib = {};
                 AssetsLoader.inst.runLoad();
                 // 启动按键
                 Laya.TouchManager.I.enable = Laya.MouseManager.enabled = Laya.KeyBoardManager.enabled = true;
-                //                // 放到下一帧去播放  不然 进入需要旋转的游戏 渲染跟不上
+                // 放到下一帧去播放  不然 进入需要旋转的游戏 渲染跟不上
                 Laya.timer.callLater(this, function () {
                     tsCore.Log.debug("call close loading");
                     LoadingWindow.inst.hide();
