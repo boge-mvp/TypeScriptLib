@@ -83,7 +83,7 @@ export class EView extends View implements IRecord {
     }
 
     /** 注册游戏数据 */
-    override regGameAction(action: string, caller: any, method: Function) {
+    override regGameAction(action: string | number, caller: any, method: Function) {
         super.regAction(action, caller, method, App.GAME_GROUP)
     }
 

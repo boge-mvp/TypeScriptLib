@@ -138,16 +138,16 @@ export class StringBlock {
 
 export class ActionEvent implements IAction {
 
-    regAction(action: string, caller: any, method: Function, group?: string, order?: number) {
+    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number) {
         App.inst.regAction(action, caller, method, group, order)
     }
 
-    regActionHandler(action: string, handler: Laya.Handler, group?: string) {
+    regActionHandler(action: string | number, handler: Laya.Handler, group?: string) {
         App.inst.regActionHandler(action, handler, group)
     }
 
     /** 注册游戏数据 */
-    regGameAction(action: string, caller: any, method: Function, order?: number) {
+    regGameAction(action: string | number, caller: any, method: Function, order?: number) {
         this.regAction(action, caller, method, App.GAME_GROUP, order)
     }
 
@@ -164,11 +164,11 @@ export class ActionEvent implements IAction {
         App.inst.removeGroupActions.apply(App.inst, args)
     }
 
-    removeActionHandler(action: string, method: Function, group?: string) {
+    removeActionHandler(action: string | number, method: Function, group?: string) {
         App.inst.removeActionHandler(action, method, group)
     }
 
-    removeFunction(groupObj: any, action: string, method: Function) {
+    removeFunction(groupObj: any, action: string | number, method: Function) {
         App.inst.removeFunction(groupObj, action, method)
     }
 
@@ -180,12 +180,12 @@ export class ActionEvent implements IAction {
         App.inst.removeTarget(groupObj, caller)
     }
 
-    sendAction(action: string, ...args) {
+    sendAction(action: string | number, ...args) {
         args.unshift(action)
         App.inst.sendAction.apply(App.inst, args)
     }
 
-    sendGroupAction(group: string, action: string, ...args) {
+    sendGroupAction(group: string, action: string | number, ...args) {
         args.unshift(action)
         args.unshift(group)
         App.inst.sendGroupAction.apply(App.inst, args)

@@ -250,6 +250,10 @@ window.tsCore = {};
      * 类名 -> 生成方法
      */
     App.beanClassFunction = new Map();
+    /**
+     * 绑定事件处理方法
+     */
+    App.beanActionsFunction = [];
     tsCore.App = App;
     class BezierCurves {
         constructor() {
@@ -7923,18 +7927,6 @@ String.prototype.toInt = function () {
     return value;
 };
 /**
- * 获取一个指定名称或类型的Bean实例。
- * @param name - Bean的名称或构造函数。
- * @returns T 返回指定的Bean实例。
- */
-function getBean(name) {
-    if (typeof name !== "string") {
-        name = name.name.charAt(0).toLowerCase() + name.name.slice(1);
-    }
-    // @ts-ignore
-    return tsCore.App.inst.getBean(name);
-}
-/**
  * 组件数据类，用于创建组件实例。
  */
 class ComponentData {
@@ -7959,8 +7951,32 @@ class ComponentData {
     }
 }
 /**
+ * 事件处理的绑定数据
+ */
+class ActionsData {
+    constructor(className, fun, action, group, order) {
+        this.className = className;
+        this.fun = fun;
+        this.action = action;
+        this.group = group;
+        this.order = order;
+    }
+}
+/**
+ * 获取一个指定名称或类型的Bean实例。
+ * @param name - Bean的名称或构造函数。
+ * @returns T 返回指定的Bean实例。
+ */
+function getBean(name) {
+    if (typeof name !== "string") {
+        name = name.name.charAt(0).toLowerCase() + name.name.slice(1);
+    }
+    // @ts-ignore
+    return tsCore.App.inst.getBean(name);
+}
+/**
  * 组件装饰器，用于注册和创建组件实例。
- * @param value - 组件标识符或目标构造函数。 如果是null值 将不会被添加到依赖管理器中，默认使用类名 首字母大小写都有
+ * @param value - 组件标识符或目标构造函数。 如果是null值 将不会自动初始化和添加到依赖管理器中，默认使用类名 首字母大小写都有
  * @param uiUrl - UI资源的URL。
  * @returns any 返回装饰后的类。
  */
@@ -7976,14 +7992,7 @@ function Component(value = "", uiUrl) {
                 constructor(...args) {
                     super(...args);
                     const name = classTarget.name;
-                    // @ts-ignore
-                    let beanProperty = tsCore.App.beanClassProperty.get(name);
-                    beanProperty === null || beanProperty === void 0 ? void 0 : beanProperty.forEach((value) => {
-                        // @ts-ignore
-                        const propertyClass = Reflect.getMetadata("design:type", this, value);
-                        // @ts-ignore
-                        this[value] = getBean(value, propertyClass);
-                    });
+                    addBeanProperty(this, name);
                 }
             };
             Object.defineProperty(classTemp, "name", {
@@ -8000,7 +8009,7 @@ function Component(value = "", uiUrl) {
     return decorator;
 }
 /**
- * 资源装饰器，标记类属性为资源依赖。
+ * 资源装饰器，标记类属性为资源依赖。 只有被@Component加入依赖管理的类才会被绑定属性
  * @param target - 类的原型。
  * @param propertyKey - 属性键名。
  */
@@ -8031,6 +8040,24 @@ function Bean(target, propertyKey, descriptor) {
     else
         throw Error("class type null");
 }
+function Actions(action, group, order) {
+    return function (target, propertyKey, descriptor) {
+        const className = target.constructor.name;
+        const paramtypes = Reflect.getMetadata("design:paramtypes", target, propertyKey);
+        const fun = descriptor.value;
+        // @ts-ignore
+        tsCore.App.beanActionsFunction.push(new ActionsData(className, fun, action, group, order));
+    };
+}
+function addBeanProperty(target, name) {
+    // @ts-ignore
+    let beanProperty = tsCore.App.beanClassProperty.get(name);
+    beanProperty === null || beanProperty === void 0 ? void 0 : beanProperty.forEach((value) => {
+        // @ts-ignore
+        // const propertyClass = Reflect.getMetadata("design:type", target, value)
+        target[value] = getBean(value);
+    });
+}
 /**
  * 运行应用程序，并初始化所有Bean实例。
  * @param classTarget - 应用程序主类的构造函数。
@@ -8055,8 +8082,9 @@ function runApplication(classTarget) {
     tsCore.App.beanClassComponent.forEach((value, key) => {
         // @ts-ignore
         if (!tsCore.App.inst.hasBean(key)) {
+            const classTargetName = value.classTarget.name;
             const target = value.create();
-            if (/^[A-Z]/.test(key.charAt(0)) && key.toLowerCase() == value.classTarget.name.toLowerCase()) {
+            if (/^[A-Z]/.test(key.charAt(0)) && key.toLowerCase() == classTargetName.toLowerCase()) {
                 // @ts-ignore
                 tsCore.App.inst.addBean(key.charAt(0).toLowerCase() + key.slice(1), target);
             }
@@ -8064,19 +8092,17 @@ function runApplication(classTarget) {
                 // @ts-ignore
                 tsCore.App.inst.addBean(key, target, false);
             }
+            addBeanProperty(target, classTargetName);
+            // @ts-ignore
+            tsCore.App.beanActionsFunction
+                .filter((actionData) => classTargetName == actionData.className)
+                .forEach((actionData) => {
+                // @ts-ignore
+                tsCore.App.inst.regAction(actionData.action, target, actionData.fun, actionData.group || tsCore.App.GAME_GROUP, actionData.order);
+            });
         }
     });
-    // @ts-ignore
-    for (const target of tsCore.App.inst._controller.cacheTarget.values()) {
-        const name = target.constructor.name;
-        // @ts-ignore
-        let beanProperty = tsCore.App.beanClassProperty.get(name);
-        beanProperty === null || beanProperty === void 0 ? void 0 : beanProperty.forEach((value) => {
-            // @ts-ignore
-            // const propertyClass = Reflect.getMetadata("design:type", target, value)
-            target[value] = getBean(value);
-        });
-    }
+    addBeanProperty(app, classTarget.name);
     if (typeof app["start"] == "function") {
         app["start"]();
     }

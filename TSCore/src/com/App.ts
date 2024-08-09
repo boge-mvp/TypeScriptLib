@@ -47,6 +47,10 @@ export class App implements IAction {
      * 类名 -> 生成方法
      */
     static beanClassFunction = new Map<string, Function>()
+    /**
+     * 绑定事件处理方法
+     */
+    static beanActionsFunction: ActionsData[] = []
 
     /**
      *
@@ -168,11 +172,11 @@ export class App implements IAction {
         this._controller = new EventController()
     }
 
-    regActionHandler(action: string, handler: Handler, group: string = null) {
+    regActionHandler(action: string | number, handler: Handler, group: string = null) {
         this._controller.regActionHandler(action, handler, group)
     }
 
-    regAction(action: string, caller: any, method: Function, group: string = null, order?: number) {
+    regAction(action: string | number, caller: any, method: Function, group: string = null, order?: number) {
         this._controller.regAction(action, caller, method, group, order)
     }
 
@@ -189,11 +193,11 @@ export class App implements IAction {
         this._controller.removeGroupActions.apply(this._controller, args)
     }
 
-    removeActionHandler(action: string, method: Function, group: string = null) {
+    removeActionHandler(action: string | number, method: Function, group: string = null) {
         this._controller.removeActionHandler(action, method, group)
     }
 
-    removeFunction(groupObj: any, action: string, method: Function) {
+    removeFunction(groupObj: any, action: string | number, method: Function) {
         this._controller.removeFunction(groupObj, action, method)
     }
 
@@ -205,12 +209,12 @@ export class App implements IAction {
         this._controller.removeTarget(groupObj, caller)
     }
 
-    sendAction(action: string, ...args) {
+    sendAction(action: string | number, ...args) {
         args.unshift(action)
         this._controller.sendAction.apply(this._controller, args)
     }
 
-    sendGroupAction(group: string, action: string, ...args) {
+    sendGroupAction(group: string, action: string | number, ...args) {
         args.unshift(action)
         args.unshift(group)
         this._controller.sendGroupAction.apply(this._controller, args)

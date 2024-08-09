@@ -33,6 +33,10 @@ declare namespace tsCore {
          */
         static beanClassFunction: Map<string, Function>;
         /**
+         * 绑定事件处理方法
+         */
+        static beanActionsFunction: ActionsData[];
+        /**
          *
          * @param init
          * @param options
@@ -56,17 +60,17 @@ declare namespace tsCore {
         openResize(): void;
         private onResize;
         protected initController(): void;
-        regActionHandler(action: string, handler: Laya.Handler, group?: string): void;
-        regAction(action: string, caller: any, method: Function, group?: string, order?: number): void;
+        regActionHandler(action: string | number, handler: Laya.Handler, group?: string): void;
+        regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void;
         removeAllAction(...args: string[]): void;
         removeGroup(group: string): void;
         removeGroupActions(group: string, ...args: any[]): void;
-        removeActionHandler(action: string, method: Function, group?: string): void;
-        removeFunction(groupObj: any, action: string, method: Function): void;
+        removeActionHandler(action: string | number, method: Function, group?: string): void;
+        removeFunction(groupObj: any, action: string | number, method: Function): void;
         removeTargetAll(caller: any): void;
         removeTarget(groupObj: any, caller: any): void;
-        sendAction(action: string, ...args: any[]): void;
-        sendGroupAction(group: string, action: string, ...args: any[]): void;
+        sendAction(action: string | number, ...args: any[]): void;
+        sendGroupAction(group: string, action: string | number, ...args: any[]): void;
         addBean<T>(key: string | {
             new (): T;
         }, bean: T, saveClassName?: boolean): boolean;
@@ -172,19 +176,19 @@ declare namespace tsCore {
         getString(id: string | number, ...args: any[]): string;
     }
     export class ActionEvent implements IAction {
-        regAction(action: string, caller: any, method: Function, group?: string, order?: number): void;
-        regActionHandler(action: string, handler: Laya.Handler, group?: string): void;
+        regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void;
+        regActionHandler(action: string | number, handler: Laya.Handler, group?: string): void;
         /** 注册游戏数据 */
-        regGameAction(action: string, caller: any, method: Function, order?: number): void;
+        regGameAction(action: string | number, caller: any, method: Function, order?: number): void;
         removeAllAction(...args: string[]): void;
         removeGroup(group: string): void;
         removeGroupActions(group: string, ...args: string[]): void;
-        removeActionHandler(action: string, method: Function, group?: string): void;
-        removeFunction(groupObj: any, action: string, method: Function): void;
+        removeActionHandler(action: string | number, method: Function, group?: string): void;
+        removeFunction(groupObj: any, action: string | number, method: Function): void;
         removeTargetAll(caller: any): void;
         removeTarget(groupObj: any, caller: any): void;
-        sendAction(action: string, ...args: any[]): void;
-        sendGroupAction(group: string, action: string, ...args: any[]): void;
+        sendAction(action: string | number, ...args: any[]): void;
+        sendGroupAction(group: string, action: string | number, ...args: any[]): void;
     }
     const View_base: Constructor<fairygui.GComponent & ViewBlock & StringBlock & ActionEvent>;
     export class View extends View_base implements IView, IKey {
@@ -231,7 +235,7 @@ declare namespace tsCore {
         /** 设置扩展 */
         protected insertExtUrl(url: string, clas: any): void;
         /** 注册游戏数据 */
-        regGameAction(action: string, caller: any, method: Function): void;
+        regGameAction(action: string | number, caller: any, method: Function): void;
     }
     /**
      * 切换参数
@@ -486,26 +490,26 @@ declare namespace tsCore {
          */
         private cacheClassTarget;
         private static _CLSID;
-        regActionHandler(action: string, handler: Laya.Handler, group?: string): void;
+        regActionHandler(action: string | number, handler: Laya.Handler, group?: string): void;
         /**
          * 分组存储对象
          * @param groupKey 分组key
          * @return
          */
-        getGroup(groupKey: string): Map<string, Laya.Handler[]>;
-        regAction(action: string, caller: any, method: Function, group?: string, order?: number): void;
+        getGroup(groupKey: string): Map<string | number, Laya.Handler[]>;
+        regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void;
         clearView(): void;
         clearGroup(): void;
         removeAllAction(...args: string[]): void;
         removeGroup(groupKey: string): void;
         removeGroupActions(groupKey: string, ...args: any[]): void;
-        removeActionHandler(action: string, method: Function, group?: string): void;
-        removeFunction(groupObj: Map<string, Laya.Handler[]>, action: string, method: Function): void;
+        removeActionHandler(action: string | number, method: Function, group?: string): void;
+        removeFunction(groupObj: Map<string | number, Laya.Handler[]>, action: string | number, method: Function): void;
         removeTargetAll(caller: any): void;
-        removeTarget(groupObj: Map<string, Laya.Handler[]>, caller: any): void;
-        sendGroupAction(group: string, action: string, ...args: any[]): void;
-        sendAction(action: string, ...args: any[]): void;
-        sendActionEvent(group: string, action: string, ...args: any[]): boolean;
+        removeTarget(groupObj: Map<string | number, Laya.Handler[]>, caller: any): void;
+        sendGroupAction(group: string, action: string | number, ...args: any[]): void;
+        sendAction(action: string | number, ...args: any[]): void;
+        sendActionEvent(group: string, action: string | number, ...args: any[]): boolean;
         addBean<T>(key: string | {
             new (): T;
         }, bean: T, saveClassName?: boolean): boolean;
@@ -687,7 +691,7 @@ declare namespace tsCore {
          */
         static GAME_GROUP: string;
         /** 注册游戏数据 */
-        regGameAction(action: string, caller: any, method: Function): void;
+        regGameAction(action: string | number, caller: any, method: Function): void;
         /** 设置扩展 */
         protected insertExt(pkgName: string, resName: string, clas: any): void;
         /** 设置扩展 */
@@ -822,7 +826,7 @@ declare namespace tsCore {
          * @param handler 处理事件函数
          * @param group 分组集合
          */
-        regActionHandler(action: string, handler: Laya.Handler, group?: string): any;
+        regActionHandler(action: string | number, handler: Laya.Handler, group?: string): void;
         /**
          * 注册事件
          * @param action 事件名字
@@ -831,37 +835,37 @@ declare namespace tsCore {
          * @param group 分组集合
          * @param order 值越大 越后执行 默认 100
          */
-        regAction(action: string, caller: any, method: Function, group?: string, order?: number): any;
+        regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void;
         /**
          * 删除所有分组中的此动作
          * @param args 动作名字
          */
-        removeAllAction(...args: string[]): any;
+        removeAllAction(...args: string[]): void;
         /**
          * 删除一个分组
          * @param group 分组集合
          */
-        removeGroup(group: string): any;
+        removeGroup(group: string): void;
         /**
          * 删除一个分组的所有动作
          * @param group 分组集合
          * @param args 事件名字 数组
          */
-        removeGroupActions(group: string, ...args: string[]): any;
+        removeGroupActions(group: string, ...args: string[]): void;
         /**
          * 删除事件
          * @param action 事件名字
          * @param method 删除指定的 Function 处理事件
          * @param group 分组集合
          */
-        removeActionHandler(action: string, method: Function, group?: string): void;
+        removeActionHandler(action: string | number, method: Function, group?: string): void;
         /**
          * 根据方法删除
          * @param groupObj 分组集合
          * @param action 事件名字
          * @param method 执行方法
          */
-        removeFunction(groupObj: any, action: string, method: Function): void;
+        removeFunction(groupObj: any, action: string | number, method: Function): void;
         /**
          * 删除目标所有事件
          * @param caller 目标
@@ -879,13 +883,13 @@ declare namespace tsCore {
          * @param action 事件名字
          * @param args 发送的数据
          */
-        sendGroupAction(group: string, action: string, ...args: any[]): void;
+        sendGroupAction(group: string, action: string | number, ...args: any[]): void;
         /**
          * 发送事件
          * @param action 事件名字
          * @param args 发送的数据
          */
-        sendAction(action: string, ...args: any[]): void;
+        sendAction(action: string | number, ...args: any[]): void;
     }
     export enum Method {
         GET = "get",
@@ -3084,14 +3088,6 @@ declare function randomFloat(minNum: number, maxNum: number, p?: number): number
  */
 declare function filterInPlace<T>(array: Array<T>, predicate: (value: T) => boolean, predicateResultToRemove: boolean): boolean;
 /**
- * 获取一个指定名称或类型的Bean实例。
- * @param name - Bean的名称或构造函数。
- * @returns T 返回指定的Bean实例。
- */
-declare function getBean<T>(name: string | {
-    new (): T;
-}): T;
-/**
  * 组件数据类，用于创建组件实例。
  */
 declare class ComponentData {
@@ -3120,8 +3116,27 @@ declare class ComponentData {
     create(): any;
 }
 /**
+ * 事件处理的绑定数据
+ */
+declare class ActionsData {
+    className: string;
+    fun: Function;
+    action: number | string;
+    group?: string;
+    order?: number;
+    constructor(className: string, fun: Function, action: number | string, group: string, order: number);
+}
+/**
+ * 获取一个指定名称或类型的Bean实例。
+ * @param name - Bean的名称或构造函数。
+ * @returns T 返回指定的Bean实例。
+ */
+declare function getBean<T>(name: string | {
+    new (): T;
+}): T;
+/**
  * 组件装饰器，用于注册和创建组件实例。
- * @param value - 组件标识符或目标构造函数。 如果是null值 将不会被添加到依赖管理器中，默认使用类名 首字母大小写都有
+ * @param value - 组件标识符或目标构造函数。 如果是null值 将不会自动初始化和添加到依赖管理器中，默认使用类名 首字母大小写都有
  * @param uiUrl - UI资源的URL。
  * @returns any 返回装饰后的类。
  */
@@ -3129,7 +3144,7 @@ declare function Component<T extends {
     new (...args: any[]): {};
 }>(value?: string | T, uiUrl?: string): any;
 /**
- * 资源装饰器，标记类属性为资源依赖。
+ * 资源装饰器，标记类属性为资源依赖。 只有被@Component加入依赖管理的类才会被绑定属性
  * @param target - 类的原型。
  * @param propertyKey - 属性键名。
  */
@@ -3141,6 +3156,8 @@ declare function Resource(target: any, propertyKey: string): void;
  * @param descriptor - 属性描述符。
  */
 declare function Bean(target: any, propertyKey: string, descriptor: PropertyDescriptor): void;
+declare function Actions(action: number | string, group?: string, order?: number): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
+declare function addBeanProperty(target: any, name: string): void;
 /**
  * 运行应用程序，并初始化所有Bean实例。
  * @param classTarget - 应用程序主类的构造函数。
