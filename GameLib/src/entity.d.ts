@@ -160,6 +160,8 @@ declare module tsCore.SoundUtils {
      * @param [startTime=0] 声音播放起始时间。 单位秒
      */
     export function playGameSound(url: string, loops?: number, complete?: Laya.Handler, volume?: number, startTime?: number): Laya.SoundChannel
+
+    export function stopGameSound(url: string): void
 }
 
 

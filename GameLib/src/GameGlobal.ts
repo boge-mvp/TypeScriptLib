@@ -48,3 +48,11 @@ Object.defineProperty(tsCore.SoundUtils, "playGameSound", {
         return tsCore.SoundUtils.playSound(url, loops, complete, volume, startTime)
     }
 })
+
+Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
+    value: function (url: string) {
+        // @ts-ignore
+        url = `sounds/${gameLib.Player.inst.simpleName}/${url}`
+        return tsCore.SoundUtils.stopSound(url)
+    }
+})
