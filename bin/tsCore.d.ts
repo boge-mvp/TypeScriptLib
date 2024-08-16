@@ -26,7 +26,7 @@ declare namespace tsCore {
          * 绑定的类
          * 类名 -> 类 class
          */
-        static beanClassComponent: Map<string, ComponentData>;
+        static beanClassComponent: ComponentData[];
         /**
          * 绑定的方法
          * 类名 -> 生成方法
@@ -3090,42 +3090,41 @@ declare function filterInPlace<T>(array: Array<T>, predicate: (value: T) => bool
 /**
  * 组件数据类，用于创建组件实例。
  */
-declare class ComponentData {
+declare type ComponentData = {
+    /**
+     * 创建key
+     */
+    key?: string;
     /**
      * 目标类的构造函数。
      */
-    classTarget: {
+    classTarget?: {
         new (): any;
     };
+    /**
+     * 是否自动初始化 默认true
+     */
+    autoInit?: boolean;
+    /**
+     * 自动创建顺序 默认0 越大越后创建
+     * @type {number}
+     */
+    order?: number;
     /**
      * 创建UI的路径。
      */
     createUi?: string;
-    /**
-     * 构造函数。
-     * @param classTarget - 目标类的构造函数。
-     * @param createUi - 创建UI的路径。
-     */
-    constructor(classTarget: {
-        new (): any;
-    }, createUi?: string);
-    /**
-     * 创建组件实例。
-     * @returns 返回创建的组件实例。
-     */
-    create(): any;
-}
+};
 /**
  * 事件处理的绑定数据
  */
-declare class ActionsData {
+declare type ActionsData = {
     className: string;
     fun: Function;
     action: number | string;
     group?: string;
     order?: number;
-    constructor(className: string, fun: Function, action: number | string, group: string, order: number);
-}
+};
 /**
  * 获取一个指定名称或类型的Bean实例。
  * @param name - Bean的名称或构造函数。
@@ -3137,12 +3136,11 @@ declare function getBean<T>(name: string | {
 /**
  * 组件装饰器，用于注册和创建组件实例。
  * @param value - 组件标识符或目标构造函数。 如果是null值 将不会自动初始化和添加到依赖管理器中，默认使用类名 首字母大小写都有
- * @param uiUrl - UI资源的URL。
  * @returns any 返回装饰后的类。
  */
 declare function Component<T extends {
     new (...args: any[]): {};
-}>(value?: string | T, uiUrl?: string): any;
+}>(value?: string | T | ComponentData): any;
 /**
  * 资源装饰器，标记类属性为资源依赖。 只有被@Component加入依赖管理的类才会被绑定属性
  * @param target - 类的原型。
@@ -3164,6 +3162,14 @@ declare function Bean(target: any, propertyKey: string, descriptor: PropertyDesc
  */
 declare function Actions(action: number | string, group?: string, order?: number): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
 declare function initBean(target: any, name: string): void;
+/**
+ * 包装成代理类
+ * @param {{new(...args: any[]): any}} classTarget
+ * @param beanName 如果传入 将会被缓存到bean集合中 否则不存
+ */
+declare function proxyClass(classTarget: {
+    new (...args: any[]): any;
+}, beanName?: string): any;
 /**
  * 运行应用程序，并初始化所有Bean实例。
  * @param classTarget - 应用程序主类的构造函数。
@@ -3310,6 +3316,10 @@ declare module fgui {
 
 declare interface String {
 
+    /**
+     * 首字母保证小写
+     */
+    firstLowerCase(): string
     /**
      * 确定是否按指定字符串开始.满足一个返回 true
      * @param search

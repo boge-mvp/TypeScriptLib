@@ -41,7 +41,7 @@ export class App implements IAction {
      * 绑定的类
      * 类名 -> 类 class
      */
-    static beanClassComponent = new Map<string, ComponentData>()
+    static beanClassComponent: ComponentData[] = []
     /**
      * 绑定的方法
      * 类名 -> 生成方法

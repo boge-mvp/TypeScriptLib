@@ -1,3 +1,6 @@
+String.prototype.firstLowerCase = function () {
+    return this.charAt(0).toLowerCase() + this.slice(1)
+}
 String.prototype.startsWithAny = function (...search: string []) {
     return search.some((value) => this.startsWith(value))
 }

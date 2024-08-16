@@ -1,6 +1,10 @@
 import Stage = Laya.Stage;
 import SoundManager = Laya.SoundManager;
 import UIPackage = fgui.UIPackage;
+import EProxy = tsCore.EProxy;
+import Log = tsCore.Log;
+import StringUtil = tsCore.StringUtil;
+import Render = Laya.Render;
 import {IGameModel} from "../interfaces/IGameModel"
 import {IGameScene} from "../interfaces/IGameScene"
 import {IGameServlet} from "../interfaces/IGameServlet"
@@ -14,15 +18,10 @@ import {SceneManager} from "../manager/SceneManager"
 import {LibStr} from "../LibStr"
 import {Cmd} from "../net/Common";
 import {BaseGameData} from "./BaseGameData";
-import EProxy = tsCore.EProxy;
-import Log = tsCore.Log;
 import {GameConfigKit} from "../kit/GameConfigKit";
-import StringUtil = tsCore.StringUtil;
 import {LoaderConfig} from "../configs/LoaderConfig";
 import {AssetsLoader} from "../manager/AssetsLoader";
 import {IGameData} from "../Interfaces";
-import Browser = Laya.Browser;
-import Render = Laya.Render;
 
 /**
  *
@@ -61,11 +60,13 @@ export class GameModel<T extends IGameData = BaseGameData> extends EProxy implem
     protected constructor() {
         super()
         this.regGameAction(ActionLib.GAME_CLEAR_RES, this, this.clearRes)
-        this.regGameAction(ActionLib.GAME_INSERT_EXTENSION, this, this.insertExtension)
         this.regGameAction(ActionLib.GAME_INIT_SOCKET_EVENT, this, this.initSocketEvent)
         this.regGameAction(ActionLib.GAME_INIT_DATA, this, this.initModel)
         this.regGameAction(ActionLib.GAME_DISPOSE, this, this.dispose)
         this.regGameAction(ActionLib.GAME_LOTTERY_ANI_COMPLETE, this, this.lotteryComplete)
+
+        this.sendAction(ActionLib.GAME_INSERT_EXTENSION)
+        this.insertExtension()
 
     }
 

@@ -244,7 +244,7 @@ window.tsCore = {};
      * 绑定的类
      * 类名 -> 类 class
      */
-    App.beanClassComponent = new Map();
+    App.beanClassComponent = [];
     /**
      * 绑定的方法
      * 类名 -> 生成方法
@@ -7816,6 +7816,9 @@ function filterInPlace(array, predicate, predicateResultToRemove) {
         return false;
     }
 }
+String.prototype.firstLowerCase = function () {
+    return this.charAt(0).toLowerCase() + this.slice(1);
+};
 String.prototype.startsWithAny = function (...search) {
     return search.some((value) => this.startsWith(value));
 };
@@ -7927,49 +7930,13 @@ String.prototype.toInt = function () {
     return value;
 };
 /**
- * 组件数据类，用于创建组件实例。
- */
-class ComponentData {
-    /**
-     * 构造函数。
-     * @param classTarget - 目标类的构造函数。
-     * @param createUi - 创建UI的路径。
-     */
-    constructor(classTarget, createUi) {
-        this.classTarget = classTarget;
-        this.createUi = createUi;
-    }
-    /**
-     * 创建组件实例。
-     * @returns 返回创建的组件实例。
-     */
-    create() {
-        if (this.createUi) {
-            return fgui.UIPackage.createObjectFromURL(this.createUi, this.classTarget);
-        }
-        return new this.classTarget();
-    }
-}
-/**
- * 事件处理的绑定数据
- */
-class ActionsData {
-    constructor(className, fun, action, group, order) {
-        this.className = className;
-        this.fun = fun;
-        this.action = action;
-        this.group = group;
-        this.order = order;
-    }
-}
-/**
  * 获取一个指定名称或类型的Bean实例。
  * @param name - Bean的名称或构造函数。
  * @returns T 返回指定的Bean实例。
  */
 function getBean(name) {
     if (typeof name !== "string") {
-        name = name.name.charAt(0).toLowerCase() + name.name.slice(1);
+        name = name.name.firstLowerCase();
     }
     // @ts-ignore
     return tsCore.App.inst.getBean(name);
@@ -7977,33 +7944,32 @@ function getBean(name) {
 /**
  * 组件装饰器，用于注册和创建组件实例。
  * @param value - 组件标识符或目标构造函数。 如果是null值 将不会自动初始化和添加到依赖管理器中，默认使用类名 首字母大小写都有
- * @param uiUrl - UI资源的URL。
  * @returns any 返回装饰后的类。
  */
-function Component(value = "", uiUrl) {
+function Component(value = "") {
     let decorator = function (classTarget) {
+        var _a;
         if (value != null) {
+            let data = {};
+            if (typeof value === "object") {
+                data = value;
+                value = classTarget;
+            }
+            (_a = data.autoInit) !== null && _a !== void 0 ? _a : (data.autoInit = true);
+            data.key = typeof value === "string" && value.trim().length > 0 ? value : classTarget.name.firstLowerCase();
+            data.classTarget = classTarget;
+            if (!data.autoInit) {
+                return proxyClass(classTarget, typeof value === "string" ? value : data.key);
+            }
             // @ts-ignore
-            tsCore.App.beanClassComponent.set(typeof value === "string" && value.trim().length > 0 ? value : classTarget.name, new ComponentData(classTarget, uiUrl));
+            tsCore.App.beanClassComponent.push(data);
             return classTarget;
         }
         else {
-            const classTemp = class extends classTarget {
-                constructor(...args) {
-                    super(...args);
-                    const name = classTarget.name;
-                    initBean(this, name);
-                }
-            };
-            Object.defineProperty(classTemp, "name", {
-                get() {
-                    return classTarget.name;
-                }
-            });
-            return classTemp;
+            return proxyClass(classTarget);
         }
     };
-    if (value && typeof value !== "string") {
+    if (value && typeof value == "function") {
         decorator = decorator(value);
     }
     return decorator;
@@ -8052,7 +8018,7 @@ function Actions(action, group, order) {
         const paramtypes = Reflect.getMetadata("design:paramtypes", target, propertyKey);
         const fun = descriptor.value;
         // @ts-ignore
-        tsCore.App.beanActionsFunction.push(new ActionsData(className, fun, action, group, order));
+        tsCore.App.beanActionsFunction.push({ className, fun, action, group, order });
     };
 }
 function initBean(target, name) {
@@ -8072,6 +8038,35 @@ function initBean(target, name) {
     });
 }
 /**
+ * 包装成代理类
+ * @param {{new(...args: any[]): any}} classTarget
+ * @param beanName 如果传入 将会被缓存到bean集合中 否则不存
+ */
+function proxyClass(classTarget, beanName) {
+    const classTemp = class extends classTarget {
+        constructor(...args) {
+            super(...args);
+            const name = classTarget.name;
+            initBean(this, name);
+            if (this.isBean) {
+                // @ts-ignore
+                tsCore.App.inst.addBean(beanName || name.firstLowerCase(), this);
+            }
+        }
+    };
+    Object.defineProperty(classTemp.prototype, "isBean", {
+        get() {
+            return beanName != null;
+        }
+    });
+    Object.defineProperty(classTemp, "name", {
+        get() {
+            return classTarget.name;
+        }
+    });
+    return classTemp;
+}
+/**
  * 运行应用程序，并初始化所有Bean实例。
  * @param classTarget - 应用程序主类的构造函数。
  */
@@ -8080,7 +8075,7 @@ function runApplication(classTarget) {
     // @ts-ignore
     if (!tsCore.App.inst.hasBean(classTarget.name)) {
         // @ts-ignore
-        tsCore.App.inst.addBean(classTarget.name.charAt(0).toLowerCase() + classTarget.name.slice(1), app);
+        tsCore.App.inst.addBean(classTarget.name.firstLowerCase(), app);
     }
     // @ts-ignore
     tsCore.App.beanClassFunction.forEach((value, key) => {
@@ -8092,18 +8087,23 @@ function runApplication(classTarget) {
         }
     });
     // @ts-ignore
-    tsCore.App.beanClassComponent.forEach((value, key) => {
+    tsCore.App.beanClassComponent.sort((a, b) => a.order || 0 - b.order || 0).forEach((value) => {
         // @ts-ignore
-        if (!tsCore.App.inst.hasBean(key)) {
+        if (!tsCore.App.inst.hasBean(value.key)) {
             const classTargetName = value.classTarget.name;
-            const target = value.create();
-            if (/^[A-Z]/.test(key.charAt(0)) && key.toLowerCase() == classTargetName.toLowerCase()) {
+            let target;
+            if (value.createUi) {
+                target = fgui.UIPackage.createObjectFromURL(this.createUi, this.classTarget);
+            }
+            else
+                target = new value.classTarget();
+            if (/^[A-Z]/.test(value.key.charAt(0)) && value.key.toLowerCase() == classTargetName.toLowerCase()) {
                 // @ts-ignore
-                tsCore.App.inst.addBean(key.charAt(0).toLowerCase() + key.slice(1), target);
+                tsCore.App.inst.addBean(value.key.firstLowerCase(), target);
             }
             else {
                 // @ts-ignore
-                tsCore.App.inst.addBean(key, target, false);
+                tsCore.App.inst.addBean(value.key, target);
             }
             initBean(target, classTargetName);
         }

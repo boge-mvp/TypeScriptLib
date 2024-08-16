@@ -131,6 +131,10 @@ declare module fgui {
 declare interface String {
 
     /**
+     * 首字母保证小写
+     */
+    firstLowerCase(): string
+    /**
      * 确定是否按指定字符串开始.满足一个返回 true
      * @param search
      */

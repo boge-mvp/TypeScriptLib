@@ -360,7 +360,6 @@ export class SceneManager extends EProxy {
         AnalyticsManager.openGame()
         Player.inst.status = 1
         this.sendAction(ActionLib.GAME_CONNECT_SOCKET)
-        this.sendAction(ActionLib.GAME_INSERT_EXTENSION)
 
         MessageTip.clearAll()
         this.sendAction(ActionLib.GAME_INIT_SOCKET_EVENT)

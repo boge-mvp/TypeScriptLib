@@ -1489,7 +1489,7 @@ window.gameLib = {};
         createShowScene(url, cls) {
             // 部分手机太垃圾了  需要延迟点
             Laya.timer.callLater(this, () => {
-                this.baseScene = getBean(BaseScene) || fgui.UIPackage.createObjectFromURL(url, cls);
+                this.baseScene = fgui.UIPackage.createObjectFromURL(url, cls);
                 fgui.GRoot.inst.addChild(this.baseScene);
                 runFun(this.callback);
             });
@@ -1556,11 +1556,12 @@ window.gameLib = {};
              */
             this.delayNextRound = 200;
             this.regGameAction(ActionLib.GAME_CLEAR_RES, this, this.clearRes);
-            this.regGameAction(ActionLib.GAME_INSERT_EXTENSION, this, this.insertExtension);
             this.regGameAction(ActionLib.GAME_INIT_SOCKET_EVENT, this, this.initSocketEvent);
             this.regGameAction(ActionLib.GAME_INIT_DATA, this, this.initModel);
             this.regGameAction(ActionLib.GAME_DISPOSE, this, this.dispose);
             this.regGameAction(ActionLib.GAME_LOTTERY_ANI_COMPLETE, this, this.lotteryComplete);
+            this.sendAction(ActionLib.GAME_INSERT_EXTENSION);
+            this.insertExtension();
         }
         initModel() {
             this.setupMusic();
@@ -5104,7 +5105,6 @@ window.gameLib = {};
             AnalyticsManager.openGame();
             Player.inst.status = 1;
             this.sendAction(ActionLib.GAME_CONNECT_SOCKET);
-            this.sendAction(ActionLib.GAME_INSERT_EXTENSION);
             tsCore.MessageTip.clearAll();
             this.sendAction(ActionLib.GAME_INIT_SOCKET_EVENT);
             tsCore.SoundUtils.stopMusic(); // 关闭进入游戏前的音乐
