@@ -2174,10 +2174,8 @@ window.gameLib = {};
                 else {
                     Player.inst.gameData.playCount++;
                     Player.inst.playCount++;
-                    if (Player.inst.isGuest) {
+                    if (Player.inst.isGuest)
                         Player.inst.guestModel.guestPlayCount++;
-                        Player.inst.guestModel.guestTotalWin += data.data.win;
-                    }
                 }
                 runFun(callback, data);
             }, this.onSendBetError.bind(this));

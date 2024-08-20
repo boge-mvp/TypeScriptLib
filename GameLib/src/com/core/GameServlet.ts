@@ -6,6 +6,7 @@ import MessageTip = tsCore.MessageTip;
 import MathKit = tsCore.MathKit;
 import StringUtil = tsCore.StringUtil;
 import Method = tsCore.Method;
+import Handler = Laya.Handler;
 import {IGameServlet} from "../interfaces/IGameServlet"
 import {IGameModel} from "../interfaces/IGameModel"
 import {ActionLib} from "../ActionLib"
@@ -19,7 +20,6 @@ import {WaitResult} from "../view/WaitResult"
 import {CommonCmd, HttpCode, Urls} from "../net/Common";
 import {BaseGameData} from "./BaseGameData";
 import {StateCode} from "../utils/StateCode";
-import Handler = Laya.Handler;
 
 /**
  * 游戏基础类
@@ -398,10 +398,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
             } else {
                 Player.inst.gameData.playCount++
                 Player.inst.playCount++
-                if (Player.inst.isGuest) {
-                    Player.inst.guestModel.guestPlayCount++
-                    Player.inst.guestModel.guestTotalWin += data.data.win
-                }
+                if (Player.inst.isGuest) Player.inst.guestModel.guestPlayCount++
             }
             runFun(callback, data)
         }, this.onSendBetError.bind(this))

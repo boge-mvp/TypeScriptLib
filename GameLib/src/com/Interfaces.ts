@@ -110,8 +110,6 @@ export interface IGuestModel {
     guestUID: number
     /** 游客模式玩次数 */
     guestPlayCount: number
-    /** 游客模式总win额度 */
-    guestTotalWin: number
     /**
      * 游客初始金额
      */
@@ -119,6 +117,9 @@ export interface IGuestModel {
 
     /** 清除数据  */
     clearData(): void
+
+    /** 游客模式总win额度 */
+    getTotalWin(): number
 
     /**
      * post请求 返回数据  可以在这里对返回数据进行修改
