@@ -6892,11 +6892,11 @@ window.gameLib = {};
             // 双斜杠开头  默认添加协议头
             if (page.page.startsWith("//"))
                 page.page = window.location.protocol + page.page;
-            else if (page.page.startsWith("/"))
+            else if (JSUtils.autoEscapeURL && page.page.startsWith("/"))
                 page.page = `${window.location.protocol}//{host}/{lang}` + page.page;
             // 替换域名和 语言
             page.page = page.page.replace(/{host}/g, window.location.host)
-                .replace(/\/{lang}/g, "/" + Player.inst.urlParam.language);
+                .replace(/\/{lang}/g, Player.inst.urlParam.language ? "/" + Player.inst.urlParam.language : "");
             if (AppManager.callIOS("openPage", page))
                 return;
             (_c = (_b = Laya.Browser.window.APP) === null || _b === void 0 ? void 0 : _b.openPage) === null || _c === void 0 ? void 0 : _c.call(_b, page, isCloseGame);
@@ -6959,6 +6959,10 @@ window.gameLib = {};
             AppManager.showWeb({ javascript: "window.GameToHall.openReviseAvatarNickNameDrawer && window.GameToHall.openReviseAvatarNickNameDrawer()" });
         }
     }
+    /**
+     * 在处理 /开头的url 是否自动转义 成完整路径
+     */
+    JSUtils.autoEscapeURL = true;
     JSUtils.getProgress = JSUtils.progress;
     /**
      * @deprecated

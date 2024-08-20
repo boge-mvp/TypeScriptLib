@@ -3463,6 +3463,10 @@ declare namespace gameLib {
     }
     export class JSUtils {
         /**
+         * 在处理 /开头的url 是否自动转义 成完整路径
+         */
+        static autoEscapeURL: boolean;
+        /**
          * 刷新页面  如果有父页面  刷新父页面
          */
         static reloadAll(): void;

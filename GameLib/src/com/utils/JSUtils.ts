@@ -7,6 +7,11 @@ import {Player} from "../Player";
 export class JSUtils {
 
     /**
+     * 在处理 /开头的url 是否自动转义 成完整路径
+     */
+    static autoEscapeURL = true
+
+    /**
      * 刷新页面  如果有父页面  刷新父页面
      */
     static reloadAll() {
@@ -104,11 +109,11 @@ export class JSUtils {
         // 双斜杠开头  默认添加协议头
         if (page.page.startsWith("//"))
             page.page = window.location.protocol + page.page
-        else if (page.page.startsWith("/")) page.page = `${window.location.protocol}//{host}/{lang}` + page.page
+        else if (JSUtils.autoEscapeURL && page.page.startsWith("/")) page.page = `${window.location.protocol}//{host}/{lang}` + page.page
 
         // 替换域名和 语言
         page.page = page.page.replace(/{host}/g, window.location.host)
-            .replace(/\/{lang}/g, "/" + Player.inst.urlParam.language)
+            .replace(/\/{lang}/g, Player.inst.urlParam.language ? "/" + Player.inst.urlParam.language : "")
 
 
         if (AppManager.callIOS("openPage", page)) return
