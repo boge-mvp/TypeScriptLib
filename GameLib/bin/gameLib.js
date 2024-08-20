@@ -6896,7 +6896,7 @@ window.gameLib = {};
                 page.page = `${window.location.protocol}//{host}/{lang}` + page.page;
             // 替换域名和 语言
             page.page = page.page.replace(/{host}/g, window.location.host)
-                .replace(/{lang}/g, Player.inst.urlParam.language);
+                .replace(/\/{lang}/g, "/" + Player.inst.urlParam.language);
             if (AppManager.callIOS("openPage", page))
                 return;
             (_c = (_b = Laya.Browser.window.APP) === null || _b === void 0 ? void 0 : _b.openPage) === null || _c === void 0 ? void 0 : _c.call(_b, page, isCloseGame);

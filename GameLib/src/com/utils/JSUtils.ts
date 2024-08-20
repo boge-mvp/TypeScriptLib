@@ -108,7 +108,8 @@ export class JSUtils {
 
         // 替换域名和 语言
         page.page = page.page.replace(/{host}/g, window.location.host)
-            .replace(/{lang}/g, Player.inst.urlParam.language)
+            .replace(/\/{lang}/g, "/" + Player.inst.urlParam.language)
+
 
         if (AppManager.callIOS("openPage", page)) return
         Browser.window.APP?.openPage?.(page, isCloseGame)
