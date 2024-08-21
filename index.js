@@ -153,7 +153,7 @@ class GenerateModule {
                                 let className = match[0]
                                 if (className) {
                                     className = className.replace("class", "").trim()
-                                    newContent.push(`@Reflect.metadata("className", "${className}")`)
+                                    newContent.push(`@Reflect.metadata("class:name", "${className}")`)
                                 }
                             }
                         }
