@@ -41,8 +41,8 @@ export abstract class ESkeleton extends mixinExt(BezierCurves, ActionEvent, GCom
      * @param    nameOrIndex    动画名字或者索引 如果此值是ISkeletonPlay对象，后面设置的全部将失效
      * @param    [loop=true]        是否循环播放
      * @param    [force=true]        false,如果要播的动画跟上一个相同就不生效,true,强制生效
-     * @param    [start=0]        起始时间
-     * @param    [end=0]            结束时间
+     * @param    [start=0]        起始时间 毫秒
+     * @param    [end=0]            结束时间 毫秒
      * @param    [freshSkin=true]    是否刷新皮肤数据
      * @param    [playAudio=true]    是否播放音频
      */

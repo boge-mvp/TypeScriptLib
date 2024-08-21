@@ -4020,6 +4020,7 @@ declare namespace gameLib {
         showCancelTip(msg: string | number | any[], options?: IPromptData, callback?: ParamHandler, continueFun?: ParamHandler, isAction?: boolean): void;
         protected _showWindow(msg: string | number | any[] | PromptData, options?: IPromptData, callback?: ParamHandler, continueFun?: ParamHandler, isAction?: boolean): void;
         protected _show(data: PromptData): void;
+        protected setControllers(data: PromptData): void;
         dispose(): void;
         /**
          * 判断是否是接口 用 prototype 是否存在判断

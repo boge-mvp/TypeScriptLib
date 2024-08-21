@@ -183,13 +183,13 @@ declare type PlaySkeletonFrame = {
      */
     force?: boolean
     /**
-     * 起始时间
+     * 起始时间 毫秒
      * 只有 nameOrIndex 为数字或名字时才有用
      * @default 0
      */
     start?: number
     /**
-     * 结束时间
+     * 结束时间 毫秒
      * 只有 nameOrIndex 为数字或名字时才有用
      * @default 0
      */
@@ -268,13 +268,13 @@ declare type ISkeletonPlay = {
      */
     force?: boolean
     /**
-     * 起始时间
+     * 起始时间 毫秒
      * 只有 nameOrIndex 为数字或名字时才有用
      * @default 0
      */
     start?: number
     /**
-     * 结束时间
+     * 结束时间 毫秒
      * 只有 nameOrIndex 为数字或名字时才有用
      * @default 0
      */

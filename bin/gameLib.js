@@ -8622,18 +8622,21 @@ window.gameLib = {};
                 this.continueBtn.text = obj.okName;
             if (this.cancelBtn)
                 this.cancelBtn.text = obj.cancelName;
-            if (this.buttonController)
-                this.buttonController.selectedIndex = data.continue ? 1 : 0;
-            if (this.titleDisplayController)
-                this.titleDisplayController.selectedIndex = data.title ? 1 : 0;
-            if (this.closeButtonDisplayController)
-                this.closeButtonDisplayController.selectedIndex = data.close ? 1 : 0;
+            this.setControllers(data);
             this.content.text = msg;
             if (this.titleText)
                 this.titleText.text = data.title || "";
             this.callback = data.callback;
             this.continueFun = data.continue;
             this.closeFun = data.close;
+        }
+        setControllers(data) {
+            if (this.buttonController)
+                this.buttonController.selectedIndex = data.continue ? 1 : 0;
+            if (this.titleDisplayController)
+                this.titleDisplayController.selectedIndex = data.title ? 1 : 0;
+            if (this.closeButtonDisplayController)
+                this.closeButtonDisplayController.selectedIndex = data.close ? 1 : 0;
         }
         /*@override*/
         dispose() {
