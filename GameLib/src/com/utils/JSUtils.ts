@@ -27,17 +27,17 @@ export class JSUtils {
         Browser.window.location.reload()
     }
 
-    /** 进入登录界面 */
+    /** 进入登录界面 /login */
     static login() {
         JSUtils.openPage("/login")
     }
 
-    /** 充值 */
+    /** 充值 /deposit */
     static deposit() {
         JSUtils.openPage("/deposit")
     }
 
-    /** 进入刮刮卡 */
+    /** 进入刮刮卡 /jackpot */
     static jackpot() {
         JSUtils.openPage("/jackpot")
     }

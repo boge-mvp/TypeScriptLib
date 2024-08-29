@@ -335,8 +335,10 @@ export class GSkeleton extends ESkeleton {
 
     override dispose() {
         const obj = Templet["TEMPLET_DICTIONARY"]
-        const tTemple: Templet = obj[this._aniPath + this.cacheName]
-        if (tTemple) delete obj[this._aniPath + this.cacheName]
+        if (obj) {
+            const tTemple: Templet = obj[this._aniPath + this.cacheName]
+            if (tTemple) delete obj[this._aniPath + this.cacheName]
+        }
         // tTemple?.destroy()
         while (this.stoppedHandler.length) {
             this.stoppedHandler.shift().clear()

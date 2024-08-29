@@ -729,8 +729,8 @@ declare namespace tsCore {
          * @param    nameOrIndex    动画名字或者索引 如果此值是ISkeletonPlay对象，后面设置的全部将失效
          * @param    [loop=true]        是否循环播放
          * @param    [force=true]        false,如果要播的动画跟上一个相同就不生效,true,强制生效
-         * @param    [start=0]        起始时间
-         * @param    [end=0]            结束时间
+         * @param    [start=0]        起始时间 毫秒
+         * @param    [end=0]            结束时间 毫秒
          * @param    [freshSkin=true]    是否刷新皮肤数据
          * @param    [playAudio=true]    是否播放音频
          */
@@ -3767,13 +3767,13 @@ declare type PlaySkeletonFrame = {
      */
     force?: boolean
     /**
-     * 起始时间
+     * 起始时间 毫秒
      * 只有 nameOrIndex 为数字或名字时才有用
      * @default 0
      */
     start?: number
     /**
-     * 结束时间
+     * 结束时间 毫秒
      * 只有 nameOrIndex 为数字或名字时才有用
      * @default 0
      */
@@ -3852,13 +3852,13 @@ declare type ISkeletonPlay = {
      */
     force?: boolean
     /**
-     * 起始时间
+     * 起始时间 毫秒
      * 只有 nameOrIndex 为数字或名字时才有用
      * @default 0
      */
     start?: number
     /**
-     * 结束时间
+     * 结束时间 毫秒
      * 只有 nameOrIndex 为数字或名字时才有用
      * @default 0
      */
