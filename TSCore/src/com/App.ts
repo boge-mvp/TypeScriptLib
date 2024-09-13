@@ -51,6 +51,10 @@ export class App implements IAction {
      * 绑定事件处理方法
      */
     static beanActionsFunction: ActionsData[] = []
+    /**
+     * 绑定监听事件处理方法
+     */
+    static beanEventFunction: EventData[] = []
 
     /**
      *

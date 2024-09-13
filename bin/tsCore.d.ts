@@ -37,6 +37,10 @@ declare namespace tsCore {
          */
         static beanActionsFunction: ActionsData[];
         /**
+         * 绑定监听事件处理方法
+         */
+        static beanEventFunction: EventData[];
+        /**
          *
          * @param init
          * @param options
@@ -3126,6 +3130,25 @@ declare type ActionsData = {
     order?: number;
 };
 /**
+ * 点击事件处理的绑定数据
+ */
+declare type EventData = {
+    className: string;
+    fun: Function;
+    /**
+     * Laya.Event
+     */
+    eventName: string;
+    /**
+     * this.getChild(childName)
+     */
+    childName?: string;
+    /**
+     * 附带值
+     */
+    args?: any[];
+};
+/**
  * 获取一个指定名称或类型的Bean实例。
  * @param name - Bean的名称或构造函数。
  * @returns T 返回指定的Bean实例。
@@ -3161,7 +3184,40 @@ declare function Bean(target: any, propertyKey: string, descriptor: PropertyDesc
  * @param {number} order 值越大 越后执行 默认 100
  */
 declare function Actions(action: number | string, group?: string, order?: number): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
+/**
+ * 点击事件装饰器
+ *
+ * 该装饰器用于在FGUI的GObject上注册点击事件监听，并将事件委托给特定的方法处理
+ * 它会将相关信息（如类名、方法、事件名称、子节点名称和参数）推送到全局事件函数列表中
+ * 并劫持GObject的constructFromResource方法以注册组件事件代理
+ *
+ * @param childName 子节点名称，可选
+ * @param args 附加参数，可选
+ */
+declare function ClickOn(childName: string, args?: any[]): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
+/**
+ * 通用事件监听装饰器
+ *
+ * 该装饰器允许开发者为FGUI的GObject动态添加各种事件监听，而不仅仅是点击事件
+ * 它的工作原理类似于ClickOn装饰器，主要区别在于监听的事件类型可以自定义
+ *
+ * @param eventName 要监听的事件名称
+ * @param childName 子节点名称，可选
+ * @param args 附加参数，可选
+ */
+declare function EventOn(eventName: string, childName?: string, args?: any[]): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
 declare function initBean(target: any, name: string): void;
+/**
+ * 代理组件事件函数
+ *
+ * 该函数的作用是将事件绑定从目标对象代理到其子对象或自身
+ * 它通过事件数据过滤出需要绑定的事件，并根据事件数据中的信息
+ * 决定将事件绑定到目标对象的子对象还是目标对象自身
+ *
+ * @param target 事件的目标对象
+ * @param name 组件的名称，用于过滤事件数据
+ */
+declare function proxyComponentEvent(target: any, name: string): void;
 /**
  * 包装成代理类
  * @param {{new(...args: any[]): any}} classTarget

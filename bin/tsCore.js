@@ -254,6 +254,10 @@ window.tsCore = {};
      * 绑定事件处理方法
      */
     App.beanActionsFunction = [];
+    /**
+     * 绑定监听事件处理方法
+     */
+    App.beanEventFunction = [];
     tsCore.App = App;
     class BezierCurves {
         constructor() {
@@ -8024,6 +8028,79 @@ function Actions(action, group, order) {
         tsCore.App.beanActionsFunction.push({ className, fun, action, group, order });
     };
 }
+/**
+ * 点击事件装饰器
+ *
+ * 该装饰器用于在FGUI的GObject上注册点击事件监听，并将事件委托给特定的方法处理
+ * 它会将相关信息（如类名、方法、事件名称、子节点名称和参数）推送到全局事件函数列表中
+ * 并劫持GObject的constructFromResource方法以注册组件事件代理
+ *
+ * @param childName 子节点名称，可选
+ * @param args 附加参数，可选
+ */
+function ClickOn(childName, args) {
+    return function (target, propertyKey, descriptor) {
+        // 确保目标是一个FGUI的GObject实例
+        if (target instanceof fgui.GObject) {
+            const className = target.constructor.name;
+            const paramtypes = Reflect.getMetadata("design:paramtypes", target, propertyKey);
+            const fun = descriptor.value;
+            const eventName = Laya.Event.CLICK;
+            // 将事件处理信息推送到全局列表中
+            // @ts-ignore
+            tsCore.App.beanEventFunction.push({ className, fun, eventName, childName, args });
+            // 劫持constructFromResource方法以确保在构造GObject时注册事件
+            const constructFromResource = target.constructFromResource;
+            Object.defineProperty(target, "constructFromResource", {
+                value: function () {
+                    constructFromResource.call(this);
+                    proxyComponentEvent(this, this.constructor.name);
+                }
+            });
+        }
+        else {
+            // 如果目标不是FGUI的GObject实例，输出调试日志
+            // @ts-ignore
+            tsCore.Log.debug("[click] Can only be used in fgui.GObject = " + data.childName);
+        }
+    };
+}
+/**
+ * 通用事件监听装饰器
+ *
+ * 该装饰器允许开发者为FGUI的GObject动态添加各种事件监听，而不仅仅是点击事件
+ * 它的工作原理类似于ClickOn装饰器，主要区别在于监听的事件类型可以自定义
+ *
+ * @param eventName 要监听的事件名称
+ * @param childName 子节点名称，可选
+ * @param args 附加参数，可选
+ */
+function EventOn(eventName, childName, args) {
+    return function (target, propertyKey, descriptor) {
+        // 确保目标是一个FGUI的GObject实例
+        if (target instanceof fgui.GObject) {
+            const className = target.constructor.name;
+            const paramtypes = Reflect.getMetadata("design:paramtypes", target, propertyKey);
+            const fun = descriptor.value;
+            // 将事件处理信息推送到全局列表中
+            // @ts-ignore
+            tsCore.App.beanEventFunction.push({ className, fun, eventName, childName, args });
+            // 劫持constructFromResource方法以确保在构造GObject时注册事件
+            const constructFromResource = target.constructFromResource;
+            Object.defineProperty(target, "constructFromResource", {
+                value: function () {
+                    constructFromResource.call(this);
+                    proxyComponentEvent(this, this.constructor.name);
+                }
+            });
+        }
+        else {
+            // 如果目标不是FGUI的GObject实例，输出调试日志
+            // @ts-ignore
+            tsCore.Log.debug("[click] Can only be used in fgui.GObject = " + data.childName);
+        }
+    };
+}
 function initBean(target, name) {
     // @ts-ignore
     let beanProperty = tsCore.App.beanClassProperty.get(name);
@@ -8038,6 +8115,33 @@ function initBean(target, name) {
         .forEach((actionData) => {
         // @ts-ignore
         tsCore.App.inst.regAction(actionData.action, target, actionData.fun, actionData.group || tsCore.App.GAME_GROUP, actionData.order);
+    });
+}
+/**
+ * 代理组件事件函数
+ *
+ * 该函数的作用是将事件绑定从目标对象代理到其子对象或自身
+ * 它通过事件数据过滤出需要绑定的事件，并根据事件数据中的信息
+ * 决定将事件绑定到目标对象的子对象还是目标对象自身
+ *
+ * @param target 事件的目标对象
+ * @param name 组件的名称，用于过滤事件数据
+ */
+function proxyComponentEvent(target, name) {
+    // @ts-ignore
+    tsCore.App.beanEventFunction
+        .filter((data) => name == data.className)
+        .forEach((data) => {
+        if (data.childName) {
+            const child = target.getChild(data.childName);
+            if (child)
+                child.on(data.eventName, target, data.fun);
+            else { // @ts-ignore
+                tsCore.Log.debug(`[${data.eventName}] not find child name = ${data.childName}`);
+            }
+        }
+        else
+            target.on(data.eventName, target, data.fun, data.args);
     });
 }
 /**
