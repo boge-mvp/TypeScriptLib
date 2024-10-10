@@ -510,16 +510,20 @@ export class SceneManager extends EProxy {
 
     /** 获取游戏开奖结果超时退出游戏 */
     gameGameTimeOutExit() {
-        this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.GET_GAME_RESULTS_TIME_OUT, null, Handler.create(this, function () {
-            this.sendAction(ActionLib.GAME_RECONNECTION_NET, Handler.create(this, function () {
-                Laya.timer.callLater(this, function () {
-                    if (Player.inst.gameId != CommonCmd.GAME_HOME) {
-                        AppRecordManager.backHistory()
-                        AnalyticsManager.send("exit_game_net_timeout_error_" + Player.inst.gameId)
-                    }
-                })
-            }))
-        }))
+        const promptData: PromptData = {
+            msg: LibStr.GET_GAME_RESULTS_TIME_OUT,
+            continue: () => {
+                this.sendAction(ActionLib.GAME_RECONNECTION_NET, Handler.create(this, function () {
+                    Laya.timer.callLater(this, function () {
+                        if (Player.inst.gameId != CommonCmd.GAME_HOME) {
+                            AppRecordManager.backHistory()
+                            AnalyticsManager.send("exit_game_net_timeout_error_" + Player.inst.gameId)
+                        }
+                    })
+                }))
+            }
+        }
+        this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, promptData)
     }
 
     /** 游戏报错 退出游戏 */
@@ -534,7 +538,7 @@ export class SceneManager extends EProxy {
                     }
                 })
             }
-        };
+        }
         this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, promptData)
     }
 
@@ -545,14 +549,18 @@ export class SceneManager extends EProxy {
      */
     unexpectedExitGame(msg?: string, callback?: ParamHandler) {
         msg ??= getString(LibStr.GAME_ERROR)
-        this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, msg, null, Handler.create(this, function () {
-            Laya.timer.callLater(this, function () {
-                if (Player.inst.gameId != CommonCmd.GAME_HOME) {
-                    AppRecordManager.backGame()
-                }
-                runFun(callback)
-            })
-        }))
+        const promptData: PromptData = {
+            msg: msg,
+            continue: () => {
+                Laya.timer.callLater(this, function () {
+                    if (Player.inst.gameId != CommonCmd.GAME_HOME) {
+                        AppRecordManager.backGame()
+                    }
+                    runFun(callback)
+                })
+            }
+        }
+        this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, promptData)
     }
 
     get starter() {

@@ -5252,16 +5252,20 @@ window.gameLib = {};
         }
         /** 获取游戏开奖结果超时退出游戏 */
         gameGameTimeOutExit() {
-            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1011 /* LibStr.GET_GAME_RESULTS_TIME_OUT */, null, Laya.Handler.create(this, function () {
-                this.sendAction(ActionLib.GAME_RECONNECTION_NET, Laya.Handler.create(this, function () {
-                    Laya.timer.callLater(this, function () {
-                        if (Player.inst.gameId != CommonCmd.GAME_HOME) {
-                            AppRecordManager.backHistory();
-                            AnalyticsManager.send("exit_game_net_timeout_error_" + Player.inst.gameId);
-                        }
-                    });
-                }));
-            }));
+            const promptData = {
+                msg: 1011 /* LibStr.GET_GAME_RESULTS_TIME_OUT */,
+                continue: () => {
+                    this.sendAction(ActionLib.GAME_RECONNECTION_NET, Laya.Handler.create(this, function () {
+                        Laya.timer.callLater(this, function () {
+                            if (Player.inst.gameId != CommonCmd.GAME_HOME) {
+                                AppRecordManager.backHistory();
+                                AnalyticsManager.send("exit_game_net_timeout_error_" + Player.inst.gameId);
+                            }
+                        });
+                    }));
+                }
+            };
+            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, promptData);
         }
         /** 游戏报错 退出游戏 */
         gameErrorExit(msg = 1009 /* LibStr.GAME_ERROR */) {
@@ -5285,14 +5289,18 @@ window.gameLib = {};
          */
         unexpectedExitGame(msg, callback) {
             msg !== null && msg !== void 0 ? msg : (msg = getString(1009 /* LibStr.GAME_ERROR */));
-            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, msg, null, Laya.Handler.create(this, function () {
-                Laya.timer.callLater(this, function () {
-                    if (Player.inst.gameId != CommonCmd.GAME_HOME) {
-                        AppRecordManager.backGame();
-                    }
-                    runFun(callback);
-                });
-            }));
+            const promptData = {
+                msg: msg,
+                continue: () => {
+                    Laya.timer.callLater(this, function () {
+                        if (Player.inst.gameId != CommonCmd.GAME_HOME) {
+                            AppRecordManager.backGame();
+                        }
+                        runFun(callback);
+                    });
+                }
+            };
+            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, promptData);
         }
         get starter() {
             return this._starter;
