@@ -1199,6 +1199,8 @@ window.gameLib = {};
             (_a = this.list) !== null && _a !== void 0 ? _a : (this.list = (_b = this.getChild("list")) === null || _b === void 0 ? void 0 : _b.asList);
             if (this.list)
                 this.list.touchable = false;
+            this.aniPanel = new fgui.GComponent();
+            this.addChild(this.aniPanel);
             this.regGameAction(ActionLib.GAME_CLOSE_ALL_ANI, this, this.onCloseAllAni);
         }
         /**

@@ -42,11 +42,19 @@ export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends
     protected isPlayWinLine = false
     /** 自动播放中奖线延迟 默认：1500 */
     protected autoPlayWinLineTime = 1500
+    /**
+     * 用于显示动画的面板
+     */
+    protected aniPanel: GComponent
 
     protected override onInit() {
         super.onInit()
         this.list ??= this.getChild("list")?.asList
-        if(this.list) this.list.touchable = false
+        if (this.list) this.list.touchable = false
+
+        this.aniPanel = new GComponent()
+        this.addChild(this.aniPanel)
+
         this.regGameAction(ActionLib.GAME_CLOSE_ALL_ANI, this, this.onCloseAllAni)
     }
 

@@ -720,6 +720,10 @@ declare namespace gameLib {
         protected isPlayWinLine: boolean;
         /** 自动播放中奖线延迟 默认：1500 */
         protected autoPlayWinLineTime: number;
+        /**
+         * 用于显示动画的面板
+         */
+        protected aniPanel: fgui.GComponent;
         protected onInit(): void;
         /**
          * 播放获胜线状态改成false,清理绘制,清除执行下一步显示线 nextLine
