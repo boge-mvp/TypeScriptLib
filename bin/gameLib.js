@@ -1299,17 +1299,27 @@ window.gameLib = {};
             let wins = this.gameData.userWinArray;
             if (wins.length == 0)
                 return;
-            let currentLine = wins[this.showLineIndex] + 1;
-            // tsCore.Log.debug(wins, currentLine)
-            if (this.gameData.lottery.length < currentLine || this.showLineIndex >= wins.length) {
-                this.nextLine();
-                return;
+            const lineData = wins[this.showLineIndex];
+            if (typeof lineData == "number") {
+                let currentLine = lineData + 1;
+                // tsCore.Log.debug(wins, currentLine)
+                if (this.gameData.lottery.length < currentLine || this.showLineIndex >= wins.length) {
+                    this.nextLine();
+                    return;
+                }
+                // 全部变暗
+                this.allSlotItemDark();
+                this.showWinSlotItem(lineData);
+                // 显示单条线
+                this.showLine(currentLine, true);
             }
-            // 全部变暗
-            this.allSlotItemDark();
-            this.showWinSlotItem(wins[this.showLineIndex]);
-            // 显示单条线
-            this.showLine(wins[this.showLineIndex] + 1, true);
+            else {
+                // 全部变暗
+                this.allSlotItemDark();
+                this.showWinSlotItem(lineData);
+                // 显示单条线
+                this.showLine(lineData, true);
+            }
             Laya.timer.once(this.autoPlayWinLineTime, this, this.nextLine);
         }
         /**
