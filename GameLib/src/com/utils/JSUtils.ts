@@ -130,6 +130,13 @@ export class JSUtils {
         }
     }
 
+    static callMethod(methodName: string, args?: any[]) {
+        Log.debug(`callMethod-> methodName:${methodName}, args=${args}`)
+        if (AppManager.callIOS(methodName, args)) return
+        Browser.window.APP?.[methodName]?.call(null, ...args)
+        Browser.window.parent?.GameToHall?.[methodName]?.call(null, ...args)
+    }
+
     /** 进入游戏进度条 */
     static progress(value: number) {
         Log.debug(`progress->${value}`)

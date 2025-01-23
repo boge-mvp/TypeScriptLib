@@ -382,6 +382,19 @@ declare interface Array<T> {
      */
     retainAll(predicate: (value: T) => boolean): boolean
 
+    any(predicate: (value: T, index: number, array: T[]) => boolean, thisArg?: any): boolean
+
+    all(predicate: (value: T, index: number, array: T[]) => boolean, thisArg?: any): boolean
+
+    /**
+     * 该方法会遍历数组中的每个元素，并使用给定的 transform 函数处理每个元素，
+     * 然后将结果展平到一个新数组中返回。如果提供了可选参数 iterable，则结果会追加到此数组中。
+     * @param transform - 用于处理每个数组元素的函数，返回一个数组。
+     * @param iterable - 可选参数，指定一个数组用于累积结果，默认为空数组。
+     * @returns 返回包含所有处理后元素的新数组。
+     */
+    flatMap(transform: (value: T, index: number) => T, iterable?: T): T
+
 }
 
 declare interface Map<K, V> {

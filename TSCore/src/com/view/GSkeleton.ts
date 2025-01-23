@@ -23,6 +23,22 @@ export class GSkeleton extends ESkeleton {
      * ````
      */
     static readonly UPDATE_BONE_SLOT = "update_bone_slot"
+    /**
+     * 骨骼更新
+     * ````
+     * GSkeleton cmd:DrawTextureCmd
+     * GSpineSkeleton spine.Bone
+     * ````
+     */
+    static readonly UPDATE_BONE_RENDER = "update_bone_render"
+    /**
+     * 插槽更新
+     * ````
+     * GSkeleton cmd:DrawTextureCmd
+     * GSpineSkeleton spine.Slot
+     * ````
+     */
+    static readonly UPDATE_SLOT_RENDER = "update_slot_render"
 
     /** 是否使用混合模式 */
     isBlendModeAdd = false

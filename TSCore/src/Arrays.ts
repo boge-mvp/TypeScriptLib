@@ -4,6 +4,9 @@ Object.defineProperty(Array.prototype, "distinct", {
     }
 })
 
+Object.defineProperty(Array.prototype, "any", {value: Array.prototype.some})
+Object.defineProperty(Array.prototype, "all", {value: Array.prototype.every})
+
 Object.defineProperty(Array.prototype, "distinctBy", {
     value: function (selector: (...args: any[]) => any) {
         const map = {}
@@ -182,6 +185,16 @@ Object.defineProperty(Array.prototype, "removeAll", {
 Object.defineProperty(Array.prototype, "retainAll", {
     value: function <T>(predicate: (value: T) => boolean) {
         return filterInPlace(this, predicate, false)
+    }
+})
+
+Object.defineProperty(Array.prototype, "flatMap", {
+    value: function <T>(transform: (value: T[], index: number) => T[], iterable?: T[]) {
+        iterable ??= []
+        this.forEach((value: T[], index: number) => {
+            iterable.push(...transform(value, index))
+        })
+        return iterable
     }
 })
 

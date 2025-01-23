@@ -6932,6 +6932,14 @@ window.gameLib = {};
                 AppManager.showWeb({ javascript: `window.GameToHall.openWebPageWithoutLeaveGame('${page.page}')` });
             }
         }
+        static callMethod(methodName, args) {
+            var _a, _b, _c, _d, _e;
+            tsCore.Log.debug(`callMethod-> methodName:${methodName}, args=${args}`);
+            if (AppManager.callIOS(methodName, args))
+                return;
+            (_b = (_a = Laya.Browser.window.APP) === null || _a === void 0 ? void 0 : _a[methodName]) === null || _b === void 0 ? void 0 : _b.call(null, ...args);
+            (_e = (_d = (_c = Laya.Browser.window.parent) === null || _c === void 0 ? void 0 : _c.GameToHall) === null || _d === void 0 ? void 0 : _d[methodName]) === null || _e === void 0 ? void 0 : _e.call(null, ...args);
+        }
         /** 进入游戏进度条 */
         static progress(value) {
             var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;

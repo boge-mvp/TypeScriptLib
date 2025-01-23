@@ -704,7 +704,7 @@ export class DefineConfig {
         Object.defineProperty(Laya.SpineTemplet_3_x.prototype, "loadAni", {
             value: function (jsonOrSkelUrl: string) {
                 this.loadResUrl = jsonOrSkelUrl
-                SpineTemplet_3_x_loadAni.call(this,  jsonOrSkelUrl)
+                SpineTemplet_3_x_loadAni.call(this, jsonOrSkelUrl)
             }
         })
         // @ts-ignore
@@ -713,7 +713,7 @@ export class DefineConfig {
         Object.defineProperty(Laya.SpineTemplet_4_0.prototype, "loadAni", {
             value: function (jsonOrSkelUrl: string) {
                 this.loadResUrl = jsonOrSkelUrl
-                SpineTemplet_4_0_loadAni.call(this,  jsonOrSkelUrl)
+                SpineTemplet_4_0_loadAni.call(this, jsonOrSkelUrl)
             }
         })
 
@@ -815,17 +815,42 @@ export class DefineConfig {
                 SpineSkeleton_update.call(this)
                 let events = this._events
                 let slot: string[] = []
+                let slots: string[] = []
+                let bones: string[] = []
                 for (const key in events) {
                     if (key.startsWith(GSkeleton.UPDATE_BONE_SLOT)) {
                         slot.push(StringUtil.remove(key, GSkeleton.UPDATE_BONE_SLOT))
+                    } else if (key.startsWith(GSkeleton.UPDATE_BONE_RENDER)) {
+                        bones.push(StringUtil.remove(key, GSkeleton.UPDATE_BONE_RENDER))
+                    } else if (key.startsWith(GSkeleton.UPDATE_SLOT_RENDER)) {
+                        slots.push(StringUtil.remove(key, GSkeleton.UPDATE_SLOT_RENDER))
                     }
                 }
                 let skeleton: spine.Skeleton = this.skeleton
-                for (const value of skeleton.slots) {
-                    if (slot.indexOf(value.data?.name) > -1) {
-                        this.event(GSkeleton.UPDATE_BONE_SLOT + value.data.name, value)
+
+                if (slot.length > 0) {
+                    for (const value of skeleton.slots) {
+                        if (slot.indexOf(value.data?.name) > -1) {
+                            this.event(GSkeleton.UPDATE_BONE_SLOT + value.data.name, value)
+                        }
                     }
                 }
+                if (slots.length > 0) {
+                    skeleton.slots
+                        .filter(value => slots.includes(value.data?.name))
+                        .forEach(value =>
+                            this.event(GSkeleton.UPDATE_SLOT_RENDER + value.data.name, value)
+                        )
+                }
+
+                if (bones.length > 0) {
+                    skeleton.bones
+                        .filter(value => bones.includes(value.data?.name))
+                        .forEach(value =>
+                            this.event(GSkeleton.UPDATE_BONE_RENDER + value.data.name, value)
+                        )
+                }
+
             }
         })
     }

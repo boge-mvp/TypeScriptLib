@@ -89,27 +89,39 @@ export class HistoryManager {
 
     /** 初始化是否创建一个历史页 默认 true */
     static initCreateHistory = true
+    /**
+     * 启动历史记录监听
+     */
+    static enableHistory = true
+    static historyManager = {history: window.history, call: null}
 
     static init() {
+        if (this.enableHistory) return
         if (!Laya.Browser.onLayaRuntime) {
             HistoryManager.initCreateHistory && HistoryManager.addNewHistory()
             Log.debug("history add event Listener")
-            window.addEventListener("popstate", function (e) {
-                HistoryManager.backHistory(true)
-            }, false)
+            if (this.historyManager.call) {
+                this.historyManager.call.call(null, this.nativeBack)
+            } else window.addEventListener("popstate", this.nativeBack, false)
         }
+    }
+
+    private static nativeBack() {
+        HistoryManager.backHistory(true)
     }
 
     /** 添加新的记录 */
     static addNewHistory() {
+        if (!this.enableHistory) return
         HistoryManager.pushHistory("title", "#")
     }
 
     /** 添加历史记录 */
     static pushHistory(title: string, url: string) {
+        if (!this.enableHistory) return
         Log.debug(`history push state title=${title} url=${url}`)
         const state = {title: title, url: url}
-        window.history.pushState(state, title, url)
+        this.historyManager.history.pushState(state, title, url)
     }
 
 }

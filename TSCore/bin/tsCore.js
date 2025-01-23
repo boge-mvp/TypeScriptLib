@@ -2145,16 +2145,36 @@ window.tsCore = {};
                     SpineSkeleton_update.call(this);
                     let events = this._events;
                     let slot = [];
+                    let slots = [];
+                    let bones = [];
                     for (const key in events) {
                         if (key.startsWith(GSkeleton.UPDATE_BONE_SLOT)) {
                             slot.push(StringUtil.remove(key, GSkeleton.UPDATE_BONE_SLOT));
                         }
+                        else if (key.startsWith(GSkeleton.UPDATE_BONE_RENDER)) {
+                            bones.push(StringUtil.remove(key, GSkeleton.UPDATE_BONE_RENDER));
+                        }
+                        else if (key.startsWith(GSkeleton.UPDATE_SLOT_RENDER)) {
+                            slots.push(StringUtil.remove(key, GSkeleton.UPDATE_SLOT_RENDER));
+                        }
                     }
                     let skeleton = this.skeleton;
-                    for (const value of skeleton.slots) {
-                        if (slot.indexOf((_a = value.data) === null || _a === void 0 ? void 0 : _a.name) > -1) {
-                            this.event(GSkeleton.UPDATE_BONE_SLOT + value.data.name, value);
+                    if (slot.length > 0) {
+                        for (const value of skeleton.slots) {
+                            if (slot.indexOf((_a = value.data) === null || _a === void 0 ? void 0 : _a.name) > -1) {
+                                this.event(GSkeleton.UPDATE_BONE_SLOT + value.data.name, value);
+                            }
                         }
+                    }
+                    if (slots.length > 0) {
+                        skeleton.slots
+                            .filter(value => { var _a; return slots.includes((_a = value.data) === null || _a === void 0 ? void 0 : _a.name); })
+                            .forEach(value => this.event(GSkeleton.UPDATE_SLOT_RENDER + value.data.name, value));
+                    }
+                    if (bones.length > 0) {
+                        skeleton.bones
+                            .filter(value => { var _a; return bones.includes((_a = value.data) === null || _a === void 0 ? void 0 : _a.name); })
+                            .forEach(value => this.event(GSkeleton.UPDATE_BONE_RENDER + value.data.name, value));
                     }
                 }
             });
@@ -3199,6 +3219,9 @@ window.tsCore = {};
     class MathKit {
         /**
          * 角度转弧度
+         *
+         * angle * Math.PI / 180
+         *
          * @param angle 角度
          */
         static angleToRadians(angle) {
@@ -3206,6 +3229,9 @@ window.tsCore = {};
         }
         /**
          * 弧度转角度
+         *
+         * radians * 180 / Math.PI
+         *
          * @param radians 弧度
          */
         static radiansToAngle(radians) {
@@ -3788,23 +3814,34 @@ window.tsCore = {};
             HistoryManager.history.splice(0, HistoryManager.history.length);
         }
         static init() {
+            if (this.enableHistory)
+                return;
             if (!Laya.Browser.onLayaRuntime) {
                 HistoryManager.initCreateHistory && HistoryManager.addNewHistory();
                 Log.debug("history add event Listener");
-                window.addEventListener("popstate", function (e) {
-                    HistoryManager.backHistory(true);
-                }, false);
+                if (this.historyManager.call) {
+                    this.historyManager.call.call(null, this.nativeBack);
+                }
+                else
+                    window.addEventListener("popstate", this.nativeBack, false);
             }
+        }
+        static nativeBack() {
+            HistoryManager.backHistory(true);
         }
         /** 添加新的记录 */
         static addNewHistory() {
+            if (!this.enableHistory)
+                return;
             HistoryManager.pushHistory("title", "#");
         }
         /** 添加历史记录 */
         static pushHistory(title, url) {
+            if (!this.enableHistory)
+                return;
             Log.debug(`history push state title=${title} url=${url}`);
             const state = { title: title, url: url };
-            window.history.pushState(state, title, url);
+            this.historyManager.history.pushState(state, title, url);
         }
     }
     /**
@@ -3815,6 +3852,11 @@ window.tsCore = {};
     HistoryManager.pauseHistory = false;
     /** 初始化是否创建一个历史页 默认 true */
     HistoryManager.initCreateHistory = true;
+    /**
+     * 启动历史记录监听
+     */
+    HistoryManager.enableHistory = true;
+    HistoryManager.historyManager = { history: window.history, call: null };
     tsCore.HistoryManager = HistoryManager;
     /**
      * 网络请求
@@ -6647,6 +6689,22 @@ window.tsCore = {};
      * ````
      */
     GSkeleton.UPDATE_BONE_SLOT = "update_bone_slot";
+    /**
+     * 骨骼更新
+     * ````
+     * GSkeleton cmd:DrawTextureCmd
+     * GSpineSkeleton spine.Bone
+     * ````
+     */
+    GSkeleton.UPDATE_BONE_RENDER = "update_bone_render";
+    /**
+     * 插槽更新
+     * ````
+     * GSkeleton cmd:DrawTextureCmd
+     * GSpineSkeleton spine.Slot
+     * ````
+     */
+    GSkeleton.UPDATE_SLOT_RENDER = "update_slot_render";
     tsCore.GSkeleton = GSkeleton;
     class GSpineSkeleton extends ESkeleton {
         constructor(ver = Laya.SpineVersion.v3_8) {
@@ -7640,6 +7698,8 @@ Object.defineProperty(Array.prototype, "distinct", {
         return [...new Set(this)];
     }
 });
+Object.defineProperty(Array.prototype, "any", { value: Array.prototype.some });
+Object.defineProperty(Array.prototype, "all", { value: Array.prototype.every });
 Object.defineProperty(Array.prototype, "distinctBy", {
     value: function (selector) {
         const map = {};
@@ -7808,6 +7868,15 @@ Object.defineProperty(Array.prototype, "removeAll", {
 Object.defineProperty(Array.prototype, "retainAll", {
     value: function (predicate) {
         return filterInPlace(this, predicate, false);
+    }
+});
+Object.defineProperty(Array.prototype, "flatMap", {
+    value: function (transform, iterable) {
+        iterable !== null && iterable !== void 0 ? iterable : (iterable = []);
+        this.forEach((value, index) => {
+            iterable.push(...transform(value, index));
+        });
+        return iterable;
     }
 });
 /**

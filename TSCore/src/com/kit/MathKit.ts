@@ -12,6 +12,9 @@ export class MathKit {
 
     /**
      * 角度转弧度
+     *
+     * angle * Math.PI / 180
+     *
      * @param angle 角度
      */
     static angleToRadians(angle: number) {
@@ -20,6 +23,9 @@ export class MathKit {
 
     /**
      * 弧度转角度
+     *
+     * radians * 180 / Math.PI
+     *
      * @param radians 弧度
      */
     static radiansToAngle(radians: number) {

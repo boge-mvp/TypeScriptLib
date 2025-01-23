@@ -3515,6 +3515,7 @@ declare namespace gameLib {
          *
          */
         static openPage(page: string | OpenPage, isCloseGame?: boolean): void;
+        static callMethod(methodName: string, args?: any[]): void;
         /** 进入游戏进度条 */
         static progress(value: number): void;
         /**

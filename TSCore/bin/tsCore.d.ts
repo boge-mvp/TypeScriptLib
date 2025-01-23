@@ -1240,11 +1240,17 @@ declare namespace tsCore {
         static DEG_TO_RAD: number;
         /**
          * 角度转弧度
+         *
+         * angle * Math.PI / 180
+         *
          * @param angle 角度
          */
         static angleToRadians(angle: number): number;
         /**
          * 弧度转角度
+         *
+         * radians * 180 / Math.PI
+         *
          * @param radians 弧度
          */
         static radiansToAngle(radians: number): number;
@@ -1512,7 +1518,16 @@ declare namespace tsCore {
         static clearHistory(): void;
         /** 初始化是否创建一个历史页 默认 true */
         static initCreateHistory: boolean;
+        /**
+         * 启动历史记录监听
+         */
+        static enableHistory: boolean;
+        static historyManager: {
+            history: History;
+            call: any;
+        };
         static init(): void;
+        private static nativeBack;
         /** 添加新的记录 */
         static addNewHistory(): void;
         /** 添加历史记录 */
@@ -2693,6 +2708,22 @@ declare namespace tsCore {
          * ````
          */
         static readonly UPDATE_BONE_SLOT = "update_bone_slot";
+        /**
+         * 骨骼更新
+         * ````
+         * GSkeleton cmd:DrawTextureCmd
+         * GSpineSkeleton spine.Bone
+         * ````
+         */
+        static readonly UPDATE_BONE_RENDER = "update_bone_render";
+        /**
+         * 插槽更新
+         * ````
+         * GSkeleton cmd:DrawTextureCmd
+         * GSpineSkeleton spine.Slot
+         * ````
+         */
+        static readonly UPDATE_SLOT_RENDER = "update_slot_render";
         /** 是否使用混合模式 */
         isBlendModeAdd: boolean;
         /** 使用混合模式的插槽 */
@@ -3628,6 +3659,19 @@ declare interface Array<T> {
      * @returns 如果数组发生了改变（有元素被移除），则返回true；否则返回false。
      */
     retainAll(predicate: (value: T) => boolean): boolean
+
+    any(predicate: (value: T, index: number, array: T[]) => boolean, thisArg?: any): boolean
+
+    all(predicate: (value: T, index: number, array: T[]) => boolean, thisArg?: any): boolean
+
+    /**
+     * 该方法会遍历数组中的每个元素，并使用给定的 transform 函数处理每个元素，
+     * 然后将结果展平到一个新数组中返回。如果提供了可选参数 iterable，则结果会追加到此数组中。
+     * @param transform - 用于处理每个数组元素的函数，返回一个数组。
+     * @param iterable - 可选参数，指定一个数组用于累积结果，默认为空数组。
+     * @returns 返回包含所有处理后元素的新数组。
+     */
+    flatMap(transform: (value: T, index: number) => T, iterable?: T): T
 
 }
 
