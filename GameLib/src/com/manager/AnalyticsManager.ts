@@ -62,7 +62,8 @@ export class AnalyticsManager {
      */
     static sendTiming(timingVar: string, timingValue: number) {
         this.isOpenAnalytics = ConfigKit.get("openAnalytics")
-        if (!Browser.onLayaRuntime && this.isOpenAnalytics && window.ga) gaTiming({timingCategory: "game", timingVar: timingVar, timingValue: timingValue})
+        if (!Browser.onLayaRuntime && this.isOpenAnalytics && window.ga)
+            gaTiming({timingCategory: "game", timingVar: timingVar, timingValue: timingValue})
         if (Browser.onLayaRuntime && this.isOpenAnalytics)
             AppManager.enterInvite({eventName: timingVar, eventValue: timingValue}, AppManager.nullFun)
     }
@@ -83,8 +84,17 @@ export class AnalyticsManager {
             const labelLen = encoder.encode(label).length
             Log.debug(`category=${categoryLen} action=${actionLen} label=${labelLen}`)
         }
-        // @ts-ignore
-        if (this.isOpenAnalytics && !Browser.onLayaRuntime && window.ga) ga('send', type, category, action, label)
+        if (this.isOpenAnalytics && !Browser.onLayaRuntime) {
+            if (window.ga) {
+                ga('send', type, category, action, label)
+            }
+            if (window.gtag) {
+                gtag(type, action, {
+                    eventCategory: category,
+                    eventLabel: label
+                })
+            }
+        }
         if (this.isOpenAnalytics && Browser.onLayaRuntime)
             AppManager.enterFeedback({eventName: action, eventValue: label}, AppManager.nullFun)
     }

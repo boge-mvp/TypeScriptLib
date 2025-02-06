@@ -2,7 +2,7 @@ declare function ga(command: string, hitType: string, eventCategory: string, eve
 
 declare function ga(command: CommandType | string, hitType: HitType | string, data: EventType | ExceptionType | TimingType): void
 
-declare function gaSend(hitType: HitType, data: EventType | ExceptionType |TimingType)
+declare function gaSend(hitType: HitType, data: EventType | ExceptionType | TimingType)
 
 declare function gaEvent(data: EventType): void
 
@@ -10,6 +10,7 @@ declare function gaException(data: ExceptionType): void
 
 declare function gaTiming(data: TimingType): void
 
+declare function gtag(hitType: string, data: string, args?: any);
 
 declare type CommandType = "set" | "send" | "create"
 declare type HitType = "event" | "exception" | "timing"

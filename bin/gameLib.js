@@ -3592,9 +3592,17 @@ window.gameLib = {};
                 const labelLen = encoder.encode(label).length;
                 tsCore.Log.debug(`category=${categoryLen} action=${actionLen} label=${labelLen}`);
             }
-            // @ts-ignore
-            if (this.isOpenAnalytics && !Laya.Browser.onLayaRuntime && window.ga)
-                ga('send', type, category, action, label);
+            if (this.isOpenAnalytics && !Laya.Browser.onLayaRuntime) {
+                if (window.ga) {
+                    ga('send', type, category, action, label);
+                }
+                if (window.gtag) {
+                    gtag(type, action, {
+                        eventCategory: category,
+                        eventLabel: label
+                    });
+                }
+            }
             if (this.isOpenAnalytics && Laya.Browser.onLayaRuntime)
                 AppManager.enterFeedback({ eventName: action, eventValue: label }, AppManager.nullFun);
         }
