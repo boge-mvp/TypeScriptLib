@@ -18,13 +18,13 @@ export interface IInitEngine {
     /**
      * 引擎初始化结束
      */
-    run?(): void
+    run?<T>(): Promise<T>
 
     /**
      * 引擎初始化结束
      * Laya fgui
      */
-    onEngine?(): void
+    onEngine?<T>(): Promise<T>
 
     /**
      * 所有初始化完成，包括延迟执行

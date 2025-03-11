@@ -82,15 +82,23 @@ export class App implements IAction {
 
         App.inst.options = options = options ? defaults(options, def) : def
         options.init?.coreLib && App._init()
-        init?.run?.()
 
-        options.init?.laya && Laya.init(options.laya.width, options.laya.height, ...options.laya.renders)
+        const asyncInit = async () => {
 
-        options.init?.fgui && Laya.stage.addChild(fgui.GRoot.inst.displayObject)
+            await init?.run?.()
 
-        init?.onEngine?.()
+            options.init?.laya && Laya.init(options.laya.width, options.laya.height, ...options.laya.renders)
 
-        Laya.timer.callLater(App.inst, App.inst.lastInit)
+            options.init?.fgui && Laya.stage.addChild(fgui.GRoot.inst.displayObject)
+
+            await init?.onEngine?.()
+
+        }
+
+        asyncInit().then(() => {
+            Laya.timer.callLater(App.inst, App.inst.lastInit)
+        })
+
     }
 
     /** 设置默认竖屏布局 */

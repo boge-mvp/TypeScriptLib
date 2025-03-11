@@ -94,7 +94,7 @@ gulp.task('removeTemp', () => {
 })
 
 //完整构建
-gulp.task('build', gulp.series("clean", 'createTs', "createJs", "minifyJs", "mangleJs", "createDTs", "dtsAppend"
+gulp.task('build', gulp.series("clean", 'createTs', "createJs", "minifyJs", "createDTs", "dtsAppend"
     , "removeTemp"
 ))
 
