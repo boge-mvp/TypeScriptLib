@@ -14,24 +14,6 @@ export enum Method {GET = "get", POST = "post"}
  * openResize()
  * App.initEngine?.onEnd?.()
  */
-export interface IInitEngine {
-    /**
-     * 引擎初始化结束
-     */
-    run?<T>(): Promise<T>
-
-    /**
-     * 引擎初始化结束
-     * Laya fgui
-     */
-    onEngine?<T>(): Promise<T>
-
-    /**
-     * 所有初始化完成，包括延迟执行
-     */
-    onEnd?(): void
-}
-
 export interface IFormatPath {
 
     /**

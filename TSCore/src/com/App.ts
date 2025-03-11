@@ -4,7 +4,7 @@ import {EventController} from "./core/EventController"
 import {ELoader} from "./extends/ELoader";
 import {ConfigKit, EnvType} from "./kit/ConfigKit";
 import {Log} from "./Log";
-import {IController, IInitEngine, IKey, IProxy, IView} from "./interfaces/ICommon";
+import {IController, IKey, IProxy, IView} from "./interfaces/ICommon";
 import {Path} from "./Path";
 import Handler = Laya.Handler;
 

@@ -48,6 +48,25 @@ declare type InitApp = {
     isNotchEnable?: boolean
 }
 
+declare type IInitEngine = {
+    /**
+     * 引擎初始化结束
+     */
+    run?: () => Promise<void>
+
+    /**
+     * 引擎初始化结束
+     * Laya fgui
+     */
+    onEngine?: () => Promise<void>
+
+    /**
+     * 所有初始化完成，包括延迟执行
+     */
+    onEnd?: () => void
+}
+
+
 declare type PointType = { x?: number, y?: number }
 declare type RectangleType = { x?: number, y?: number, width?: number, height?: number }
 
