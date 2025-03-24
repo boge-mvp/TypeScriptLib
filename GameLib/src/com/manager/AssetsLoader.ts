@@ -285,7 +285,8 @@ export class AssetsLoader implements IFormatPath {
         let obj = GameConfigKit.gameRes(config)
         let jsName = "js/" + obj.js + ".min.js"
         this.loadJsProgress(0)
-        ELoader.loader.load(jsName, Laya.Handler.create(this, loadJsComplete),
+        const res = obj.libs?.concat(jsName) ?? [jsName]
+        ELoader.loader.load(res, Laya.Handler.create(this, loadJsComplete),
             new Laya.Handler(this.loadJsProgress), Loader.TEXT)
 
         function loadJsComplete(success: boolean) {
@@ -293,9 +294,11 @@ export class AssetsLoader implements IFormatPath {
                 loadJsError()
                 return
             }
-            let jsContent = AssetProxy.inst.getRes(jsName)
-            UtilKit.loadScript(jsContent, true, Render.isConchApp ? null : URL.formatURL(jsName))
-            ELoader.loader.clearRes(jsName)
+            res.forEach(value => {
+                const jsCode = AssetProxy.inst.getRes(value)
+                UtilKit.loadScript(jsCode, true, Render.isConchApp ? null : URL.formatURL(jsName))
+                ELoader.loader.clearRes(value)
+            })
             runFun(handler)
         }
 

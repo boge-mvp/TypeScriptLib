@@ -8,6 +8,8 @@ declare type ResConfig = {
     js: string
     /** 执行启动函数 */
     completeFun: Function
+    /** 要加载的额外库 */
+    libs?: string[],
     /** 引导帮助文档 */
     couponHelp?: string[]
     /** 指引 */

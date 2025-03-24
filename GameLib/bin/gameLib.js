@@ -4444,18 +4444,22 @@ window.gameLib = {};
          * @param errorHandler 加载失败
          */
         loadJS(config, handler, errorHandler) {
+            var _a, _b;
             let obj = GameConfigKit.gameRes(config);
             let jsName = "js/" + obj.js + ".min.js";
             this.loadJsProgress(0);
-            tsCore.ELoader.loader.load(jsName, Laya.Handler.create(this, loadJsComplete), new Laya.Handler(this.loadJsProgress), Laya.Loader.TEXT);
+            const res = (_b = (_a = obj.libs) === null || _a === void 0 ? void 0 : _a.concat(jsName)) !== null && _b !== void 0 ? _b : [jsName];
+            tsCore.ELoader.loader.load(res, Laya.Handler.create(this, loadJsComplete), new Laya.Handler(this.loadJsProgress), Laya.Loader.TEXT);
             function loadJsComplete(success) {
                 if (!success) {
                     loadJsError();
                     return;
                 }
-                let jsContent = fgui.AssetProxy.inst.getRes(jsName);
-                tsCore.UtilKit.loadScript(jsContent, true, Laya.Render.isConchApp ? null : Laya.URL.formatURL(jsName));
-                tsCore.ELoader.loader.clearRes(jsName);
+                res.forEach(value => {
+                    const jsCode = fgui.AssetProxy.inst.getRes(value);
+                    tsCore.UtilKit.loadScript(jsCode, true, Laya.Render.isConchApp ? null : Laya.URL.formatURL(jsName));
+                    tsCore.ELoader.loader.clearRes(value);
+                });
                 runFun(handler);
             }
             function loadJsError() {
