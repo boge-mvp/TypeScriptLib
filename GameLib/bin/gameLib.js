@@ -3572,9 +3572,10 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
             // @ts-ignore
             const table = window.ConfigureTable;
             if (table) {
+                const eqName = ignoreCase ? name.toLowerCase() : name;
                 for (const tableKey in table) {
                     const findName = ignoreCase ? tableKey.toLowerCase() : tableKey;
-                    if (findName == name) {
+                    if (findName == eqName) {
                         return table[tableKey];
                     }
                 }

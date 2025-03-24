@@ -77,14 +77,13 @@ export class GameConfigKit {
     static gameRes(name: string = null, ignoreCase: boolean = false): ResConfig {
         name ??= Player.inst.gameName
         name ??= GameConfigKit.gameNameCanonical()
-
-
         // @ts-ignore
         const table: { [key: string]: ResConfig } = window.ConfigureTable
         if (table) {
+            const eqName = ignoreCase ? name.toLowerCase() : name
             for (const tableKey in table) {
                 const findName = ignoreCase ? tableKey.toLowerCase() : tableKey
-                if (findName == name) {
+                if (findName == eqName) {
                     return table[tableKey]
                 }
             }
