@@ -2054,6 +2054,12 @@ declare namespace gameLib {
          */
         static CONFIG_NAME: string;
         /**
+         * 场景初始化完成 自动通知加载完成并关闭加载页
+         * @type {boolean}
+         * @default true
+         */
+        static autoSendOnLoadEnd: boolean;
+        /**
          * 获取游戏配置表
          */
         static gameConfig(): {

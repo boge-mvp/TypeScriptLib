@@ -9,6 +9,12 @@ export class GameConfigKit {
      * @default gameIdConfig
      */
     static CONFIG_NAME = "gameIdConfig"
+    /**
+     * 场景初始化完成 自动通知加载完成并关闭加载页
+     * @type {boolean}
+     * @default true
+     */
+    static autoSendOnLoadEnd = true
 
     /**
      * 获取游戏配置表

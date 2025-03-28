@@ -3587,6 +3587,12 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
      * @default gameIdConfig
      */
     GameConfigKit.CONFIG_NAME = "gameIdConfig";
+    /**
+     * 场景初始化完成 自动通知加载完成并关闭加载页
+     * @type {boolean}
+     * @default true
+     */
+    GameConfigKit.autoSendOnLoadEnd = true;
     gameLib.GameConfigKit = GameConfigKit;
     /**
      * 统计管理器
@@ -5202,10 +5208,12 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
                 Laya.TouchManager.I.enable = Laya.MouseManager.enabled = Laya.KeyBoardManager.enabled = true;
                 // 放到下一帧去播放  不然 进入需要旋转的游戏 渲染跟不上
                 Laya.timer.callLater(this, function () {
-                    tsCore.Log.debug("call close loading");
-                    LoadingWindow.inst.hide();
-                    JSUtils.gameOnload();
                     Player.inst.guestModel.guestPlayCount = 0;
+                    tsCore.Log.debug("call close loading");
+                    if (GameConfigKit.autoSendOnLoadEnd) {
+                        LoadingWindow.inst.hide();
+                        JSUtils.gameOnload();
+                    }
                 });
             }));
         }
