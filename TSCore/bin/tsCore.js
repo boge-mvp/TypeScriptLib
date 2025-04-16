@@ -5571,11 +5571,12 @@ function runApplication(classTarget) {
             out !== null && out !== void 0 ? out : (out = []);
             const element = this.getElement(str);
             if ((element === null || element === void 0 ? void 0 : element.nodeName) == "array") {
-                element.childNodes.forEach(value => {
-                    if (value instanceof Element) {
-                        out.push(this.__getStr(value));
+                for (let i = 0; i < element.childNodes.length; i++) {
+                    const childNode = element.childNodes[i];
+                    if (childNode.nodeType == Node.ELEMENT_NODE) {
+                        out.push(this.__getStr(childNode));
                     }
-                });
+                }
             }
             return out;
         }

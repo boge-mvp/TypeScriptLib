@@ -54,11 +54,12 @@ export class LanguageUtils {
         out ??= []
         const element = this.getElement(str)
         if (element?.nodeName == "array") {
-            element.childNodes.forEach(value => {
-                if (value instanceof Element) {
-                    out.push(this.__getStr(value))
+            for (let i = 0; i < element.childNodes.length; i++) {
+                const childNode = element.childNodes[i]
+                if (childNode.nodeType == Node.ELEMENT_NODE) {
+                    out.push(this.__getStr(<Element>childNode))
                 }
-            })
+            }
         }
         return out
     }
