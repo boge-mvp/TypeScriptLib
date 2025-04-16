@@ -10,7 +10,7 @@
 xmlTots_start_id = 1000
 xmlTots_readXMLFile = "D:/WorkSpace/LayaBox/TypeScriptLib/assets/lib_str.xml"
 xmlTots_writeXMLFile = xmlTots_readXMLFile
-xmlTots_writeTsFile = "D:/WorkSpace/LayaBox/TypeScriptLib/src/com/LibStr.ts"
+xmlTots_writeTsFile = "D:/WorkSpace/LayaBox/TypeScriptLib/GameLib/src/com/LibStr.ts"
 --xmlTots_namespaceName = "coreLib"
 
 

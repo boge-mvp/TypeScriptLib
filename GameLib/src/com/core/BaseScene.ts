@@ -347,7 +347,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
         HistoryManager.pauseHistory = true
         // 同步用户金额
         PromptWindow.inst.clearCache()
-        this.gameModel.gameServlet.getUserMoney((obj: any) => {
+        this.gameModel.gameServlet.getUserMoney((obj: HttpResponse) => {
             if (obj.code == HttpCode.OK) {
                 let data = obj.data
                 Player.inst.money = data.balance

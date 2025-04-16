@@ -19,7 +19,7 @@
   <!-- 中奖结果正在计算中 -->
   <string name="WINING_RESULTS" id="1008">Loading wining results...</string>
   <!-- 游戏错误 退出游戏 -->
-  <string name="GAME_ERROR" id="1009">Unable to connect to the Internet! please enter game again</string>
+  <string name="GAME_ERROR" id="1009">Insufficient memory detected. The game cannot render smoothly. Please exit and restart the game to free up resources.</string>
   <!-- 网络错误，押注失败 -->
   <string name="BET_FAIL" id="1010">Failed to bet due to network delay. Please make sure you have good Internet connection.</string>
   <!-- 获取游戏开奖超时 -->
