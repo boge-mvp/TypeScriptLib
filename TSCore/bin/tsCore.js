@@ -1,4 +1,893 @@
 window.tsCore = {};
+/**
+ * 执行提供的 ParamHandler 函数。
+ * @param func 可选，要执行的函数或Laya.Handler实例。如果提供，它将根据其类型执行。
+ * @param args 可变参数，传递给函数的参数。
+ * @returns 如果func存在且不为null，则根据func的类型执行并返回相应的结果；否则返回null。
+ */
+function runFun(func, ...args) {
+    if (func)
+        return func instanceof Laya.Handler ? func.runWith(args) : func.apply(null, args);
+    return null;
+}
+/**
+ * 根据语言包id获取字符串
+ * @param id 获取文案的key
+ * @param args 如果包含占位符，这里可传入占位符的替换文案
+ */
+function getString(id, ...args) {
+    // @ts-ignore
+    let content = tsCore.LanguageUtils.inst.getStr(id);
+    if (args.length == 0)
+        return content;
+    // @ts-ignore
+    return tsCore.StringUtil.format(content, ...args);
+}
+/**
+ * 配置定义
+ *
+ * @param args 自定义的配置
+ * @param defs 默认配置
+ * @param [croak=false] 验证配置在默认中存在否 如果原型中不存在将抛出错误
+ * @param [append=false] 如果存在键，如果值是数组是否追加在尾部，排除存在的
+ *
+ *
+ * @example
+ *
+ * const defs = {a: [0], c: {c:"c", a: 0}, s: "s"}
+ * const config = {a: [18], c: {a: 66}, s: "d", e:"e"}
+ *
+ * defaults(config, defs)
+ * result:  {a:[18], c: {c: "c", a: 66}, s: "d", e:"e"}
+ *
+ * defaults(config, defs, true)
+ * result: throw error -> `e` is not a supported option, {a: 0, c: {c:"c", a: 0}, s: "s"}
+ *
+ * defaults(config, defs, false, true)
+ * result: {a:[18, 0], c: {c: "c", a: 66}, s: "d", e:"e"}
+ */
+function defaults(args, defs, croak = false, append = false) {
+    if (args === true) {
+        args = {};
+    }
+    else if (args && typeof args === "object") {
+        args = Object.assign({}, args);
+    }
+    const ret = args || {};
+    if (croak)
+        for (const i in ret) {
+            if (has(ret, i) && !has(defs, i)) {
+                throw new Error("`" + i + "` is not a supported option", defs);
+            }
+        }
+    for (const key in defs) {
+        if (has(defs, key)) { // 原型中存在此值
+            if (!args || !has(args, key)) {
+                // 当新配置不存在 或 新配置中不存在key
+                ret[key] = defs[key]; // 从原型中取值 赋值
+            }
+            else { // 新配置存在 或有 配置key
+                ret[key] = (args && has(args, key)) ? (() => {
+                    // 新配置中存在key
+                    // 获取新的值
+                    let value = args[key];
+                    // 如果 不存在值 直接返回
+                    if (!value)
+                        return value;
+                    // 如果值是数组 并且允许追击到尾部
+                    if (Array.isArray(value) && append) {
+                        for (const defValue of defs[key]) {
+                            // 如果不存在此值 添加到数组末尾
+                            if (!value.includes(defValue))
+                                value.push(defValue);
+                        }
+                    }
+                    else if (typeof value === "object") {
+                        // 如果是个对象
+                        value = defaults(value, defs[key], croak, append);
+                    }
+                    return value;
+                })() : defs[key]; // 新配置中不存在key  直接赋默认值
+            }
+        }
+    }
+    return ret;
+}
+/**
+ *
+ * @param obj
+ * @param prop
+ */
+function has(obj, prop) {
+    return Object.prototype.hasOwnProperty.call(obj, prop);
+}
+/**
+ * 修改 mixin 函数
+ * @deprecated
+ * @param classes
+ */
+function mixin(...classes) {
+    class MixinClass {
+        constructor() {
+            for (const Class of classes) {
+                const instance = new Class();
+                copyProperties(this, instance);
+            }
+        }
+    }
+    for (const Class of classes) {
+        copyProperties(MixinClass.prototype, Class.prototype);
+    }
+    return MixinClass;
+}
+/**
+ * 将后续传入的类的方法和属性复制到第一个类的匿名类上
+ *
+ * 注意 后面类的屬性值会覆盖之前的
+ * @param classes
+ */
+function mixinProperty(...classes) {
+    let parentClass = classes[0];
+    class MixinClass extends parentClass {
+        constructor(...args) {
+            super(...args);
+        }
+    }
+    for (let i = 1; i < classes.length; i++) {
+        const Class = classes[i];
+        copyProperties(MixinClass.prototype, Class.prototype);
+    }
+    return MixinClass;
+}
+/**
+ * 相互继承实现
+ *
+ * 注意 如果有继承类A后面还有类B,那么A类的继承父类会被更换成类B,类A将失去原有的继承属性和方法
+ *
+ * @example
+ * 以下用 : 代替 extends
+ * BaseClass
+ * ClassA:BaseClass
+ * BlockA
+ * BlockB
+ *
+ * mixinExt(ClassA:BaseClass, BlockA, BlockB) = newClass -> ClassA:BlockA:BlockB  BaseClass父类丢失
+ * mixinExt(BlockA, ClassA:BaseClass, BlockB) = newClass -> BlockA:ClassA:BlockB  BaseClass父类丢失
+ * mixinExt(BlockA, BlockB, ClassA:BaseClass) = newClass -> BlockA:BlockB:(ClassA:BaseClass) BaseClass父类还在
+ *
+ * @param classes 继承序列  第一个是父类最后一个继承值，最后一个初始类
+ */
+function mixinExt(...classes) {
+    let parentClass = classes[classes.length - 1];
+    let tempClass;
+    let resultClass;
+    const start = classes.length - 2;
+    for (let i = start; i >= 0; i--) {
+        tempClass = class extends parentClass {
+            constructor(...args) {
+                super(...args);
+            }
+        };
+        copyProperties(tempClass.prototype, classes[i].prototype, ["prototype"]);
+        parentClass = tempClass;
+    }
+    resultClass = parentClass;
+    return resultClass;
+}
+/**
+ *
+ * @param target
+ * @param source
+ * @param ignoreProperty
+ * @param [containsSuperClasses=false] 是否包含 super类
+ */
+function copyProperties(target, source, ignoreProperty = ["constructor", "prototype", "name"], containsSuperClasses = false) {
+    for (const key of getPropertyNames(source, containsSuperClasses)) {
+        // 只要有一个满足的
+        if (!ignoreProperty || ignoreProperty.every((value) => {
+            return key !== value;
+        })) {
+            const descriptor = getPropertyDescriptor(source, key, containsSuperClasses);
+            descriptor && Object.defineProperty(target, key, descriptor);
+        }
+    }
+}
+/**
+ * 获取属性标识符
+ * @param source 对象
+ * @param key 健名
+ * @param [containsSuperClasses=false] 是否允许到父类去找
+ */
+function getPropertyDescriptor(source, key, containsSuperClasses = false) {
+    let currentObj = source;
+    let descriptor = Object.getOwnPropertyDescriptor(currentObj, key);
+    descriptor.value;
+    while (containsSuperClasses && !descriptor && currentObj) { // 如果没找到  在允许在父类找的情况下 去父类找
+        // 沿着原型链向上查找
+        currentObj = Object.getPrototypeOf(currentObj);
+        if (currentObj)
+            descriptor = Object.getOwnPropertyDescriptor(currentObj, key);
+    }
+    return descriptor;
+}
+/**
+ * 获取方法或属性的名字
+ * @param obj 对象
+ * @param [containsSuperClasses=false] 是否要包含父类
+ */
+function getPropertyNames(obj, containsSuperClasses = false) {
+    const allPropertyNames = new Set();
+    let currentObj = obj;
+    while (currentObj) {
+        // 获取当前对象的所有属性键（不包括原型链上的属性）
+        const propertyNames = Reflect.ownKeys(currentObj);
+        // 将属性添加到集合中
+        propertyNames.forEach(prop => allPropertyNames.add(prop));
+        if (!containsSuperClasses) {
+            break;
+        }
+        // 沿着原型链向上查找
+        currentObj = Object.getPrototypeOf(currentObj);
+        if (typeof currentObj === "object") {
+            break;
+        }
+    }
+    return Array.from(allPropertyNames);
+}
+/**
+ * 包装一个 windowMy
+ */
+const windowMy = window.self !== window.top ? window.top : window;
+/** 随机数  最小值  最大值(不包括)  */
+function random(minNum, maxNum) {
+    return (Math.floor(Math.random() * (maxNum - minNum)) + minNum);
+}
+/**
+ * 随机数
+ * @param minNum 最小值
+ * @param maxNum 最大值(不包括)
+ * @param p 保留尾数  默认NAN 表示全保留
+ * @return
+ */
+function randomFloat(minNum, maxNum, p = NaN) {
+    let temp = (Math.random() * (maxNum - minNum) + minNum);
+    if (!isNaN(p))
+        temp = parseFloat(temp.toFixed(p));
+    return temp;
+}
+function gaSend(hitType, data) {
+    ga("send", hitType, data);
+}
+function gaEvent(data) {
+    gaSend("event", data);
+}
+function gaException(data) {
+    gaSend("exception", data);
+}
+function gaTiming(data) {
+    gaSend("timing", data);
+}
+Object.defineProperty(Array.prototype, "distinct", {
+    value: function () {
+        return [...new Set(this)];
+    }
+});
+Object.defineProperty(Array.prototype, "any", { value: Array.prototype.some });
+Object.defineProperty(Array.prototype, "all", { value: Array.prototype.every });
+Object.defineProperty(Array.prototype, "distinctBy", {
+    value: function (selector) {
+        const map = {};
+        const list = [];
+        for (let e of this) {
+            const key = selector.call(this, e);
+            if (!map[key]) {
+                map[key] = true;
+                list.push(e);
+            }
+        }
+        return list;
+    }
+});
+Object.defineProperty(Array.prototype, "groupBy", {
+    value: function (keySelector, valueTransform) {
+        return this.groupByTo(new Map(), keySelector, valueTransform);
+    }
+});
+Object.defineProperty(Array.prototype, "groupByTo", {
+    value: function (destination, keySelector, valueTransform) {
+        let len = this.length;
+        for (let i = len - 1; i >= 0; i--) {
+            const key = keySelector(this[i]);
+            let list = destination.get(key);
+            if (list == null) {
+                list = [];
+                destination.set(key, list);
+            }
+            list.push(valueTransform ? valueTransform(this[i]) : this[i]);
+        }
+        return destination;
+    }
+});
+Object.defineProperty(Array.prototype, "shuffle", {
+    value: function () {
+        let len = this.length;
+        for (let i = len - 1; i > 0; i--) {
+            let rnd = Math.floor(Math.random() * (i + 1));
+            [this[i], this[rnd]] = [this[rnd], this[i]];
+        }
+        return this;
+    }
+});
+Object.defineProperty(Array.prototype, "minBy", {
+    value: function (selector) {
+        if (this.length == 0)
+            return null;
+        let minElem = this[0];
+        if (this.length == 1)
+            return minElem;
+        let minValue = selector(minElem);
+        for (let i = 1; i < this.length; i++) {
+            const e = this[i];
+            const v = selector(e);
+            if (minValue > v) {
+                minElem = e;
+                minValue = v;
+            }
+        }
+        return minElem;
+    }
+});
+Object.defineProperty(Array.prototype, "maxBy", {
+    value: function (selector) {
+        if (this.length == 0)
+            return null;
+        let minElem = this[0];
+        if (this.length == 1)
+            return minElem;
+        let minValue = selector(minElem);
+        for (let i = 1; i < this.length; i++) {
+            const e = this[i];
+            const v = selector(e);
+            if (minValue < v) {
+                minElem = e;
+                minValue = v;
+            }
+        }
+        return minElem;
+    }
+});
+Object.defineProperty(Array.prototype, "count", {
+    value: function (predicate) {
+        if (this.length == 0)
+            return 0;
+        let count = 0;
+        for (let element of this)
+            if (predicate(element))
+                ++count;
+        return count;
+    }
+});
+Object.defineProperty(Array.prototype, "sum", {
+    value: function () {
+        let sum = 0;
+        for (let element of this) {
+            sum += element;
+        }
+        return sum;
+    }
+});
+Object.defineProperty(Array.prototype, "sumOf", {
+    value: function (selector) {
+        let sum = 0;
+        for (let element of this) {
+            sum += selector(element);
+        }
+        return sum;
+    }
+});
+Object.defineProperty(Array.prototype, "random", {
+    value: function () {
+        return this[random(0, this.length)];
+    }
+});
+/**
+ * 过滤数组中特定类型的元素。
+ *
+ * @param {Function} type - 一个构造函数，用于判断数组元素是否是这个类型的实例。
+ * @returns {Array} 返回一个新的数组，其中包含了原数组中所有是传入类型实例的元素。
+ */
+Object.defineProperty(Array.prototype, "filterIsInstance", {
+    value: function (type) {
+        /**
+         * 使用Array的filter方法来过滤数组。
+         * filter方法会创建一个新数组，其中包含了所有通过测试的元素。
+         * 这里使用的测试是检查数组元素是否是传入的构造函数的实例。
+         */
+        return this.filter((value) => value instanceof type);
+    }
+});
+/**
+ * 通过提供一个回调函数来定义移除元素的条件。
+ * 如果数组中存在满足条件的元素，则移除该元素并返回true，否则返回false。
+ *
+ * @param filter 一个回调函数，用于测试每个元素是否应该被移除。
+ *               回调函数接受数组的当前元素作为参数，并返回一个布尔值，
+ *               表示该元素是否应该被移除。
+ * @returns 如果成功移除了任何元素，则返回true；否则返回false。
+ */
+Object.defineProperty(Array.prototype, "removeIf", {
+    value: function (filter) {
+        let removed = false; // 初始化一个标志变量，用于记录是否成功移除了元素。
+        // 遍历数组中的每个元素。
+        for (let i = 0; i < this.length; i++) {
+            // 使用提供的过滤函数检查当前元素是否应该被移除。
+            if (filter(this[i])) {
+                // 如果当前元素满足移除条件，则将其从数组中移除。
+                this.splice(i, 1);
+                // 由于元素被移除，数组长度减小，需要调整索引i以避免跳过下一个元素。
+                i--;
+                // 标记已移除元素。
+                removed = true;
+            }
+        }
+        // 返回是否成功移除了元素。
+        return removed;
+    }
+});
+Object.defineProperty(Array.prototype, "removeAll", {
+    value: function (predicate) {
+        return filterInPlace(this, predicate, true);
+    }
+});
+Object.defineProperty(Array.prototype, "retainAll", {
+    value: function (predicate) {
+        return filterInPlace(this, predicate, false);
+    }
+});
+Object.defineProperty(Array.prototype, "flatMap", {
+    value: function (transform, iterable) {
+        iterable !== null && iterable !== void 0 ? iterable : (iterable = []);
+        this.forEach((value, index) => {
+            iterable.push(...transform(value, index));
+        });
+        return iterable;
+    }
+});
+/**
+ * 在原数组上进行过滤操作，根据predicate函数的结果保留或移除元素。
+ * 该函数尝试在原数组上进行过滤，避免创建新的数组实例，以提高性能和减少内存使用。
+ *
+ * @param array 原数组，将直接在该数组上进行过滤操作。
+ * @param predicate 过滤条件函数，接受数组元素作为参数，返回一个布尔值。
+ * @param predicateResultToRemove 指定过滤条件的结果，与该结果一致的元素将被移除。
+ * @returns 如果数组发生了改变（有元素被移除），则返回true；否则返回false。
+ */
+function filterInPlace(array, predicate, predicateResultToRemove) {
+    // 初始化写入索引，用于跟踪过滤后的新数组长度。
+    let writeIndex = 0;
+    // 遍历原数组，对每个元素应用过滤条件。
+    for (let i = 0; i < array.length; i++) {
+        const element = array[i];
+        // 如果元素满足移除条件，则跳过该元素。
+        if (predicate(element) == predicateResultToRemove)
+            continue;
+        // 如果当前元素的位置不等于写入索引，说明有元素被移除，需要更新数组。
+        if (writeIndex != i)
+            array[writeIndex] = element;
+        // 更新写入索引，准备写入下一个元素。
+        writeIndex++;
+    }
+    // 如果写入索引小于原数组长度，说明有元素被移除，需要进一步修剪数组。
+    if (writeIndex < array.length) {
+        // 使用splice方法移除剩余的元素，修剪数组。
+        array.splice(writeIndex);
+        // 返回true，表示数组发生了改变。
+        return true;
+    }
+    else {
+        // 如果数组没有发生改变，返回false。
+        return false;
+    }
+}
+String.prototype.firstLowerCase = function () {
+    return this.charAt(0).toLowerCase() + this.slice(1);
+};
+String.prototype.startsWithAny = function (...search) {
+    return search.some((value) => this.startsWith(value));
+};
+String.prototype.startsWithAnyIgnore = function (...search) {
+    const lowerCase = this.toLowerCase();
+    return search.some((value) => lowerCase.startsWith(value.toLowerCase()));
+};
+String.prototype.endsWithAny = function (...search) {
+    return search.some((value) => this.endsWith(value));
+};
+String.prototype.endsWithAnyIgnore = function (...search) {
+    const lowerCase = this.toLowerCase();
+    return search.some((value) => lowerCase.endsWith(value.toLowerCase()));
+};
+String.prototype.equalsAny = function (...value) {
+    const that = this.valueOf();
+    return value.some((it) => that === it);
+};
+String.prototype.equalsAnyIgnore = function (...value) {
+    const lowerCase = this.toLowerCase();
+    return value.some((it) => lowerCase == it.toLowerCase());
+};
+String.prototype.contains = function (...search) {
+    return search.some((value) => this.includes(value));
+};
+String.prototype.containsIgnore = function (...search) {
+    const lowerCase = this.toLowerCase();
+    return search.some((value) => lowerCase.includes(value.toLowerCase()));
+};
+String.prototype.substringAfter = function (separator) {
+    if (!this || !separator)
+        return this.toString();
+    const pos = this.indexOf(separator);
+    if (pos == -1)
+        return this.toString();
+    return this.substring(pos + separator.length);
+};
+String.prototype.substringAfterLast = function (separator) {
+    if (!this || !separator)
+        return this.toString();
+    const pos = this.lastIndexOf(separator);
+    if (pos == -1 || pos == this.length - separator.length)
+        return this.toString();
+    return this.substring(pos + separator.length);
+};
+String.prototype.substringBefore = function (separator) {
+    if (!this || !separator)
+        return this.toString();
+    const pos = this.indexOf(separator);
+    if (pos == -1)
+        return this.toString();
+    return this.substring(0, pos);
+};
+String.prototype.substringBeforeLast = function (separator) {
+    if (!this || !separator)
+        return this.toString();
+    const pos = this.lastIndexOf(separator);
+    if (pos == -1)
+        return this.toString();
+    return this.substring(0, pos);
+};
+String.prototype.substringBetween = function (open, close) {
+    if (!this || !open || !close)
+        return this.toString();
+    const start = this.indexOf(open);
+    if (start != -1) {
+        const end = this.indexOf(close, start + open.length);
+        if (end != -1)
+            return this.substring(start + open.length, end);
+    }
+    return this.toString();
+};
+String.prototype.substringsBetween = function (open, close) {
+    const list = [];
+    if (!this || !open || !close)
+        return list;
+    const strLen = this.length;
+    if (strLen == 0) {
+        return list;
+    }
+    const closeLen = close.length;
+    const openLen = open.length;
+    let pos = 0;
+    while (pos < strLen - closeLen) {
+        let start = this.indexOf(open, pos);
+        if (start < 0) {
+            break;
+        }
+        start += openLen;
+        const end = this.indexOf(close, start);
+        if (end < 0) {
+            break;
+        }
+        list.push(this.substring(start, end));
+        pos = end + closeLen;
+    }
+    return list;
+};
+String.prototype.toBoolean = function () {
+    return this !== null && this.trim().length > 0 && !this.equalsAnyIgnore("false", "0");
+};
+String.prototype.toInt = function () {
+    let value = 0;
+    try {
+        value = parseInt(this);
+    }
+    catch (e) {
+    }
+    return value;
+};
+/**
+ * 获取一个指定名称或类型的Bean实例。
+ * @param name - Bean的名称或构造函数。
+ * @returns T 返回指定的Bean实例。
+ */
+function getBean(name) {
+    if (typeof name !== "string") {
+        name = name.name.firstLowerCase();
+    }
+    // @ts-ignore
+    return tsCore.App.inst.getBean(name);
+}
+/**
+ * 组件装饰器，用于注册和创建组件实例。
+ * @param value - 组件标识符或目标构造函数。 如果是null值 将不会自动初始化和添加到依赖管理器中，默认使用类名 首字母大小写都有
+ * @returns any 返回装饰后的类。
+ */
+function Component(value = "") {
+    let decorator = function (classTarget) {
+        var _a;
+        if (value != null) {
+            let data = {};
+            if (typeof value === "object") {
+                data = value;
+                value = classTarget;
+            }
+            (_a = data.autoInit) !== null && _a !== void 0 ? _a : (data.autoInit = true);
+            const className = Reflect.getMetadata("class:name", classTarget) || classTarget.name;
+            data.key = typeof value === "string" && value.trim().length > 0 ? value : className.firstLowerCase();
+            data.classTarget = classTarget;
+            if (!data.autoInit) {
+                return proxyClass(classTarget, typeof value === "string" ? value : data.key);
+            }
+            // @ts-ignore
+            tsCore.App.beanClassComponent.push(data);
+            return classTarget;
+        }
+        else {
+            return proxyClass(classTarget);
+        }
+    };
+    if (value && typeof value == "function") {
+        decorator = decorator(value);
+    }
+    return decorator;
+}
+/**
+ * 资源装饰器，标记类属性为资源依赖。 只有被@Component加入依赖管理的类才会被绑定属性
+ * @param target - 类的原型。
+ * @param propertyKey - 属性键名。
+ */
+function Resource(target, propertyKey) {
+    const classTarget = Reflect.getMetadata("design:type", target, propertyKey);
+    if (classTarget) {
+        // @ts-ignore
+        let bean = tsCore.App.beanClassProperty.get(target.constructor.name) || [];
+        bean.push(propertyKey);
+        // @ts-ignore
+        tsCore.App.beanClassProperty.set(target.constructor.name, bean);
+    }
+    else
+        throw Error("class type null");
+}
+/**
+ * Bean装饰器，标记类方法为返回Bean实例的方法。
+ * @param target - 类的原型。
+ * @param propertyKey - 属性键名。
+ * @param descriptor - 属性描述符。
+ */
+function Bean(target, propertyKey, descriptor) {
+    const returnTarget = Reflect.getMetadata("design:returntype", target, propertyKey);
+    if (returnTarget) {
+        // @ts-ignore
+        tsCore.App.beanClassFunction.set(propertyKey, descriptor.value);
+    }
+    else
+        throw Error("class type null");
+}
+/**
+ * 注册事件
+ * @param {number | string} action 事件名字
+ * @param {string} group 分组集合
+ * @param {number} order 值越大 越后执行 默认 100
+ */
+function Actions(action, group, order) {
+    return function (target, propertyKey, descriptor) {
+        const className = target.constructor.name;
+        const paramtypes = Reflect.getMetadata("design:paramtypes", target, propertyKey);
+        const fun = descriptor.value;
+        // @ts-ignore
+        tsCore.App.beanActionsFunction.push({ className, fun, action, group, order });
+    };
+}
+/**
+ * 点击事件装饰器
+ *
+ * 该装饰器用于在FGUI的GObject上注册点击事件监听，并将事件委托给特定的方法处理
+ * 它会将相关信息（如类名、方法、事件名称、子节点名称和参数）推送到全局事件函数列表中
+ * 并劫持GObject的constructFromResource方法以注册组件事件代理
+ *
+ * @param childName 子节点名称，可选
+ * @param args 附加参数，可选
+ */
+function ClickOn(childName, args) {
+    return function (target, propertyKey, descriptor) {
+        // 确保目标是一个FGUI的GObject实例
+        if (target instanceof fgui.GObject) {
+            const className = target.constructor.name;
+            const paramtypes = Reflect.getMetadata("design:paramtypes", target, propertyKey);
+            const fun = descriptor.value;
+            const eventName = Laya.Event.CLICK;
+            // 将事件处理信息推送到全局列表中
+            // @ts-ignore
+            tsCore.App.beanEventFunction.push({ className, fun, eventName, childName, args });
+            // 劫持constructFromResource方法以确保在构造GObject时注册事件
+            const constructFromResource = target.constructFromResource;
+            Object.defineProperty(target, "constructFromResource", {
+                value: function () {
+                    constructFromResource.call(this);
+                    proxyComponentEvent(this, this.constructor.name);
+                }
+            });
+        }
+        else {
+            // 如果目标不是FGUI的GObject实例，输出调试日志
+            // @ts-ignore
+            tsCore.Log.debug("[click] Can only be used in fgui.GObject = " + data.childName);
+        }
+    };
+}
+/**
+ * 通用事件监听装饰器
+ *
+ * 该装饰器允许开发者为FGUI的GObject动态添加各种事件监听，而不仅仅是点击事件
+ * 它的工作原理类似于ClickOn装饰器，主要区别在于监听的事件类型可以自定义
+ *
+ * @param eventName 要监听的事件名称
+ * @param childName 子节点名称，可选
+ * @param args 附加参数，可选
+ */
+function EventOn(eventName, childName, args) {
+    return function (target, propertyKey, descriptor) {
+        // 确保目标是一个FGUI的GObject实例
+        if (target instanceof fgui.GObject) {
+            const className = target.constructor.name;
+            const paramtypes = Reflect.getMetadata("design:paramtypes", target, propertyKey);
+            const fun = descriptor.value;
+            // 将事件处理信息推送到全局列表中
+            // @ts-ignore
+            tsCore.App.beanEventFunction.push({ className, fun, eventName, childName, args });
+            // 劫持constructFromResource方法以确保在构造GObject时注册事件
+            const constructFromResource = target.constructFromResource;
+            Object.defineProperty(target, "constructFromResource", {
+                value: function () {
+                    constructFromResource.call(this);
+                    proxyComponentEvent(this, this.constructor.name);
+                }
+            });
+        }
+        else {
+            // 如果目标不是FGUI的GObject实例，输出调试日志
+            // @ts-ignore
+            tsCore.Log.debug("[click] Can only be used in fgui.GObject = " + data.childName);
+        }
+    };
+}
+function initBean(target, name) {
+    // @ts-ignore
+    let beanProperty = tsCore.App.beanClassProperty.get(name);
+    beanProperty === null || beanProperty === void 0 ? void 0 : beanProperty.forEach((value) => {
+        // @ts-ignore
+        // const propertyClass = Reflect.getMetadata("design:type", target, value)
+        target[value] = getBean(value);
+    });
+    // @ts-ignore
+    tsCore.App.beanActionsFunction
+        .filter((actionData) => name == actionData.className)
+        .forEach((actionData) => {
+        // @ts-ignore
+        tsCore.App.inst.regAction(actionData.action, target, actionData.fun, actionData.group || tsCore.App.GAME_GROUP, actionData.order);
+    });
+}
+/**
+ * 代理组件事件函数
+ *
+ * 该函数的作用是将事件绑定从目标对象代理到其子对象或自身
+ * 它通过事件数据过滤出需要绑定的事件，并根据事件数据中的信息
+ * 决定将事件绑定到目标对象的子对象还是目标对象自身
+ *
+ * @param target 事件的目标对象
+ * @param name 组件的名称，用于过滤事件数据
+ */
+function proxyComponentEvent(target, name) {
+    // @ts-ignore
+    tsCore.App.beanEventFunction
+        .filter((data) => name == data.className)
+        .forEach((data) => {
+        if (data.childName) {
+            const child = target.getChild(data.childName);
+            if (child)
+                child.on(data.eventName, target, data.fun);
+            else { // @ts-ignore
+                tsCore.Log.debug(`[${data.eventName}] not find child name = ${data.childName}`);
+            }
+        }
+        else
+            target.on(data.eventName, target, data.fun, data.args);
+    });
+}
+/**
+ * 包装成代理类
+ * @param {{new(...args: any[]): any}} classTarget
+ * @param beanName 如果传入 将会被缓存到bean集合中 否则不存
+ */
+function proxyClass(classTarget, beanName) {
+    const classTemp = class extends classTarget {
+        constructor(...args) {
+            super(...args);
+            const name = classTarget.name;
+            initBean(this, name);
+            if (this.isBean) {
+                // @ts-ignore
+                tsCore.App.inst.addBean(beanName || name.firstLowerCase(), this);
+            }
+        }
+    };
+    Object.defineProperty(classTemp.prototype, "isBean", {
+        get() {
+            return beanName != null;
+        }
+    });
+    Object.defineProperty(classTemp, "name", {
+        get() {
+            return classTarget.name;
+        }
+    });
+    return classTemp;
+}
+/**
+ * 运行应用程序，并初始化所有Bean实例。
+ * @param classTarget - 应用程序主类的构造函数。
+ */
+function runApplication(classTarget) {
+    const app = new classTarget();
+    // @ts-ignore
+    if (!tsCore.App.inst.hasBean(classTarget.name)) {
+        // @ts-ignore
+        tsCore.App.inst.addBean(classTarget.name.firstLowerCase(), app);
+    }
+    // @ts-ignore
+    tsCore.App.beanClassFunction.forEach((value, key) => {
+        // @ts-ignore
+        if (!tsCore.App.inst.hasBean(key)) {
+            const target = value();
+            // @ts-ignore
+            tsCore.App.inst.addBean(key, target, false);
+        }
+    });
+    // @ts-ignore
+    tsCore.App.beanClassComponent.sort((a, b) => a.order || 0 - b.order || 0).forEach((value) => {
+        // @ts-ignore
+        if (!tsCore.App.inst.hasBean(value.key)) {
+            const classTargetName = value.classTarget.name;
+            let target;
+            if (value.createUi) {
+                target = fgui.UIPackage.createObjectFromURL(this.createUi, this.classTarget);
+            }
+            else
+                target = new value.classTarget();
+            if (/^[A-Z]/.test(value.key.charAt(0)) && value.key.toLowerCase() == classTargetName.toLowerCase()) {
+                // @ts-ignore
+                tsCore.App.inst.addBean(value.key.firstLowerCase(), target);
+            }
+            else {
+                // @ts-ignore
+                tsCore.App.inst.addBean(value.key, target);
+            }
+            initBean(target, classTargetName);
+        }
+    });
+    initBean(app, classTarget.name);
+    if (typeof app["start"] == "function") {
+        app["start"]();
+    }
+    return app;
+}
 
 (function (tsCore) {
     class App {
@@ -1391,7 +2280,7 @@ window.tsCore = {};
         static defineLaya() {
             Object.defineProperty(Laya.Stage.prototype, "_changeCanvasSize", {
                 value: function () {
-                    Log.debug("_changeCanvasSize = " + Laya.Browser.clientWidth + " | " + Laya.Browser.clientHeight);
+                    // Log.debug("_changeCanvasSize = " + Laya.Browser.clientWidth + " | " + Laya.Browser.clientHeight)
                     if (Laya.Browser.clientHeight == Laya.Browser.clientWidth) {
                         Log.debug("refuse =!");
                         this.setScreenSize(this._width, this._height);
@@ -4655,8 +5544,8 @@ window.tsCore = {};
             this.replaces = {};
         }
         static get inst() {
-            if (!LanguageUtils._instance)
-                LanguageUtils._instance = new LanguageUtils();
+            var _a;
+            (_a = LanguageUtils._instance) !== null && _a !== void 0 ? _a : (LanguageUtils._instance = new LanguageUtils());
             return LanguageUtils._instance;
         }
         setXml(xml) {
@@ -4668,28 +5557,48 @@ window.tsCore = {};
          * @param str key
          */
         getStr(str) {
-            if (typeof (str) !== "string") {
+            var _a;
+            if (typeof (str) == "number") {
                 str = str + "";
             }
-            if (!this.xml)
-                return str;
-            let element = this.xml.getElementById(str);
-            if (element) {
-                return this.__getStr(element);
+            const element = this.getElement(str);
+            return (_a = this.__getStr(element)) !== null && _a !== void 0 ? _a : str;
+        }
+        getStrArray(str, out) {
+            if (typeof (str) == "number") {
+                str = str + "";
             }
-            let elements = this.xml.getElementsByName(str);
-            if (elements.length > 0) {
-                if (elements.length > 1)
-                    throw new Error("Language configuration has duplicate items：" + str);
-                return this.__getStr(elements.item(0));
+            out !== null && out !== void 0 ? out : (out = []);
+            const element = this.getElement(str);
+            if ((element === null || element === void 0 ? void 0 : element.nodeName) == "array") {
+                element.childNodes.forEach(value => {
+                    if (value instanceof Element) {
+                        out.push(this.__getStr(value));
+                    }
+                });
             }
-            else if (this.ignoreCase) {
-                const els = this.getElementsByNameIgnoreCase(this.xml.documentElement, str);
-                if (els.length > 0) {
-                    return this.__getStr(els[0]);
+            return out;
+        }
+        getElement(str) {
+            if (this.xml) {
+                let element = this.xml.getElementById(str);
+                if (element) {
+                    return element;
+                }
+                let elements = this.xml.getElementsByName(str);
+                if (elements.length > 0) {
+                    if (elements.length > 1)
+                        throw new Error("Language configuration has duplicate items：" + str);
+                    return elements.item(0);
+                }
+                else if (this.ignoreCase) {
+                    const els = this.getElementsByNameIgnoreCase(this.xml.documentElement, str);
+                    if (els.length > 0) {
+                        return els[0];
+                    }
                 }
             }
-            return str;
+            return null;
         }
         __getStr(element) {
             let content = element.textContent;
@@ -7430,892 +8339,3 @@ window.tsCore = {};
         }
     });
 })(tsCore || (tsCore = {}));
-/**
- * 执行提供的 ParamHandler 函数。
- * @param func 可选，要执行的函数或Laya.Handler实例。如果提供，它将根据其类型执行。
- * @param args 可变参数，传递给函数的参数。
- * @returns 如果func存在且不为null，则根据func的类型执行并返回相应的结果；否则返回null。
- */
-function runFun(func, ...args) {
-    if (func)
-        return func instanceof Laya.Handler ? func.runWith(args) : func.apply(null, args);
-    return null;
-}
-/**
- * 根据语言包id获取字符串
- * @param id 获取文案的key
- * @param args 如果包含占位符，这里可传入占位符的替换文案
- */
-function getString(id, ...args) {
-    // @ts-ignore
-    let content = tsCore.LanguageUtils.inst.getStr(id);
-    if (args.length == 0)
-        return content;
-    // @ts-ignore
-    return tsCore.StringUtil.format(content, ...args);
-}
-/**
- * 配置定义
- *
- * @param args 自定义的配置
- * @param defs 默认配置
- * @param [croak=false] 验证配置在默认中存在否 如果原型中不存在将抛出错误
- * @param [append=false] 如果存在键，如果值是数组是否追加在尾部，排除存在的
- *
- *
- * @example
- *
- * const defs = {a: [0], c: {c:"c", a: 0}, s: "s"}
- * const config = {a: [18], c: {a: 66}, s: "d", e:"e"}
- *
- * defaults(config, defs)
- * result:  {a:[18], c: {c: "c", a: 66}, s: "d", e:"e"}
- *
- * defaults(config, defs, true)
- * result: throw error -> `e` is not a supported option, {a: 0, c: {c:"c", a: 0}, s: "s"}
- *
- * defaults(config, defs, false, true)
- * result: {a:[18, 0], c: {c: "c", a: 66}, s: "d", e:"e"}
- */
-function defaults(args, defs, croak = false, append = false) {
-    if (args === true) {
-        args = {};
-    }
-    else if (args && typeof args === "object") {
-        args = Object.assign({}, args);
-    }
-    const ret = args || {};
-    if (croak)
-        for (const i in ret) {
-            if (has(ret, i) && !has(defs, i)) {
-                throw new Error("`" + i + "` is not a supported option", defs);
-            }
-        }
-    for (const key in defs) {
-        if (has(defs, key)) { // 原型中存在此值
-            if (!args || !has(args, key)) {
-                // 当新配置不存在 或 新配置中不存在key
-                ret[key] = defs[key]; // 从原型中取值 赋值
-            }
-            else { // 新配置存在 或有 配置key
-                ret[key] = (args && has(args, key)) ? (() => {
-                    // 新配置中存在key
-                    // 获取新的值
-                    let value = args[key];
-                    // 如果 不存在值 直接返回
-                    if (!value)
-                        return value;
-                    // 如果值是数组 并且允许追击到尾部
-                    if (Array.isArray(value) && append) {
-                        for (const defValue of defs[key]) {
-                            // 如果不存在此值 添加到数组末尾
-                            if (!value.includes(defValue))
-                                value.push(defValue);
-                        }
-                    }
-                    else if (typeof value === "object") {
-                        // 如果是个对象
-                        value = defaults(value, defs[key], croak, append);
-                    }
-                    return value;
-                })() : defs[key]; // 新配置中不存在key  直接赋默认值
-            }
-        }
-    }
-    return ret;
-}
-/**
- *
- * @param obj
- * @param prop
- */
-function has(obj, prop) {
-    return Object.prototype.hasOwnProperty.call(obj, prop);
-}
-/**
- * 修改 mixin 函数
- * @deprecated
- * @param classes
- */
-function mixin(...classes) {
-    class MixinClass {
-        constructor() {
-            for (const Class of classes) {
-                const instance = new Class();
-                copyProperties(this, instance);
-            }
-        }
-    }
-    for (const Class of classes) {
-        copyProperties(MixinClass.prototype, Class.prototype);
-    }
-    return MixinClass;
-}
-/**
- * 将后续传入的类的方法和属性复制到第一个类的匿名类上
- *
- * 注意 后面类的屬性值会覆盖之前的
- * @param classes
- */
-function mixinProperty(...classes) {
-    let parentClass = classes[0];
-    class MixinClass extends parentClass {
-        constructor(...args) {
-            super(...args);
-        }
-    }
-    for (let i = 1; i < classes.length; i++) {
-        const Class = classes[i];
-        copyProperties(MixinClass.prototype, Class.prototype);
-    }
-    return MixinClass;
-}
-/**
- * 相互继承实现
- *
- * 注意 如果有继承类A后面还有类B,那么A类的继承父类会被更换成类B,类A将失去原有的继承属性和方法
- *
- * @example
- * 以下用 : 代替 extends
- * BaseClass
- * ClassA:BaseClass
- * BlockA
- * BlockB
- *
- * mixinExt(ClassA:BaseClass, BlockA, BlockB) = newClass -> ClassA:BlockA:BlockB  BaseClass父类丢失
- * mixinExt(BlockA, ClassA:BaseClass, BlockB) = newClass -> BlockA:ClassA:BlockB  BaseClass父类丢失
- * mixinExt(BlockA, BlockB, ClassA:BaseClass) = newClass -> BlockA:BlockB:(ClassA:BaseClass) BaseClass父类还在
- *
- * @param classes 继承序列  第一个是父类最后一个继承值，最后一个初始类
- */
-function mixinExt(...classes) {
-    let parentClass = classes[classes.length - 1];
-    let tempClass;
-    let resultClass;
-    const start = classes.length - 2;
-    for (let i = start; i >= 0; i--) {
-        tempClass = class extends parentClass {
-            constructor(...args) {
-                super(...args);
-            }
-        };
-        copyProperties(tempClass.prototype, classes[i].prototype, ["prototype"]);
-        parentClass = tempClass;
-    }
-    resultClass = parentClass;
-    return resultClass;
-}
-/**
- *
- * @param target
- * @param source
- * @param ignoreProperty
- * @param [containsSuperClasses=false] 是否包含 super类
- */
-function copyProperties(target, source, ignoreProperty = ["constructor", "prototype", "name"], containsSuperClasses = false) {
-    for (const key of getPropertyNames(source, containsSuperClasses)) {
-        // 只要有一个满足的
-        if (!ignoreProperty || ignoreProperty.every((value) => {
-            return key !== value;
-        })) {
-            const descriptor = getPropertyDescriptor(source, key, containsSuperClasses);
-            descriptor && Object.defineProperty(target, key, descriptor);
-        }
-    }
-}
-/**
- * 获取属性标识符
- * @param source 对象
- * @param key 健名
- * @param [containsSuperClasses=false] 是否允许到父类去找
- */
-function getPropertyDescriptor(source, key, containsSuperClasses = false) {
-    let currentObj = source;
-    let descriptor = Object.getOwnPropertyDescriptor(currentObj, key);
-    descriptor.value;
-    while (containsSuperClasses && !descriptor && currentObj) { // 如果没找到  在允许在父类找的情况下 去父类找
-        // 沿着原型链向上查找
-        currentObj = Object.getPrototypeOf(currentObj);
-        if (currentObj)
-            descriptor = Object.getOwnPropertyDescriptor(currentObj, key);
-    }
-    return descriptor;
-}
-/**
- * 获取方法或属性的名字
- * @param obj 对象
- * @param [containsSuperClasses=false] 是否要包含父类
- */
-function getPropertyNames(obj, containsSuperClasses = false) {
-    const allPropertyNames = new Set();
-    let currentObj = obj;
-    while (currentObj) {
-        // 获取当前对象的所有属性键（不包括原型链上的属性）
-        const propertyNames = Reflect.ownKeys(currentObj);
-        // 将属性添加到集合中
-        propertyNames.forEach(prop => allPropertyNames.add(prop));
-        if (!containsSuperClasses) {
-            break;
-        }
-        // 沿着原型链向上查找
-        currentObj = Object.getPrototypeOf(currentObj);
-        if (typeof currentObj === "object") {
-            break;
-        }
-    }
-    return Array.from(allPropertyNames);
-}
-/**
- * 包装一个 windowMy
- */
-const windowMy = window.self !== window.top ? window.top : window;
-/** 随机数  最小值  最大值(不包括)  */
-function random(minNum, maxNum) {
-    return (Math.floor(Math.random() * (maxNum - minNum)) + minNum);
-}
-/**
- * 随机数
- * @param minNum 最小值
- * @param maxNum 最大值(不包括)
- * @param p 保留尾数  默认NAN 表示全保留
- * @return
- */
-function randomFloat(minNum, maxNum, p = NaN) {
-    let temp = (Math.random() * (maxNum - minNum) + minNum);
-    if (!isNaN(p))
-        temp = parseFloat(temp.toFixed(p));
-    return temp;
-}
-function gaSend(hitType, data) {
-    ga("send", hitType, data);
-}
-function gaEvent(data) {
-    gaSend("event", data);
-}
-function gaException(data) {
-    gaSend("exception", data);
-}
-function gaTiming(data) {
-    gaSend("timing", data);
-}
-Object.defineProperty(Array.prototype, "distinct", {
-    value: function () {
-        return [...new Set(this)];
-    }
-});
-Object.defineProperty(Array.prototype, "any", { value: Array.prototype.some });
-Object.defineProperty(Array.prototype, "all", { value: Array.prototype.every });
-Object.defineProperty(Array.prototype, "distinctBy", {
-    value: function (selector) {
-        const map = {};
-        const list = [];
-        for (let e of this) {
-            const key = selector.call(this, e);
-            if (!map[key]) {
-                map[key] = true;
-                list.push(e);
-            }
-        }
-        return list;
-    }
-});
-Object.defineProperty(Array.prototype, "groupBy", {
-    value: function (keySelector, valueTransform) {
-        return this.groupByTo(new Map(), keySelector, valueTransform);
-    }
-});
-Object.defineProperty(Array.prototype, "groupByTo", {
-    value: function (destination, keySelector, valueTransform) {
-        let len = this.length;
-        for (let i = len - 1; i >= 0; i--) {
-            const key = keySelector(this[i]);
-            let list = destination.get(key);
-            if (list == null) {
-                list = [];
-                destination.set(key, list);
-            }
-            list.push(valueTransform ? valueTransform(this[i]) : this[i]);
-        }
-        return destination;
-    }
-});
-Object.defineProperty(Array.prototype, "shuffle", {
-    value: function () {
-        let len = this.length;
-        for (let i = len - 1; i > 0; i--) {
-            let rnd = Math.floor(Math.random() * (i + 1));
-            [this[i], this[rnd]] = [this[rnd], this[i]];
-        }
-        return this;
-    }
-});
-Object.defineProperty(Array.prototype, "minBy", {
-    value: function (selector) {
-        if (this.length == 0)
-            return null;
-        let minElem = this[0];
-        if (this.length == 1)
-            return minElem;
-        let minValue = selector(minElem);
-        for (let i = 1; i < this.length; i++) {
-            const e = this[i];
-            const v = selector(e);
-            if (minValue > v) {
-                minElem = e;
-                minValue = v;
-            }
-        }
-        return minElem;
-    }
-});
-Object.defineProperty(Array.prototype, "maxBy", {
-    value: function (selector) {
-        if (this.length == 0)
-            return null;
-        let minElem = this[0];
-        if (this.length == 1)
-            return minElem;
-        let minValue = selector(minElem);
-        for (let i = 1; i < this.length; i++) {
-            const e = this[i];
-            const v = selector(e);
-            if (minValue < v) {
-                minElem = e;
-                minValue = v;
-            }
-        }
-        return minElem;
-    }
-});
-Object.defineProperty(Array.prototype, "count", {
-    value: function (predicate) {
-        if (this.length == 0)
-            return 0;
-        let count = 0;
-        for (let element of this)
-            if (predicate(element))
-                ++count;
-        return count;
-    }
-});
-Object.defineProperty(Array.prototype, "sum", {
-    value: function () {
-        let sum = 0;
-        for (let element of this) {
-            sum += element;
-        }
-        return sum;
-    }
-});
-Object.defineProperty(Array.prototype, "sumOf", {
-    value: function (selector) {
-        let sum = 0;
-        for (let element of this) {
-            sum += selector(element);
-        }
-        return sum;
-    }
-});
-Object.defineProperty(Array.prototype, "random", {
-    value: function () {
-        return this[random(0, this.length)];
-    }
-});
-/**
- * 过滤数组中特定类型的元素。
- *
- * @param {Function} type - 一个构造函数，用于判断数组元素是否是这个类型的实例。
- * @returns {Array} 返回一个新的数组，其中包含了原数组中所有是传入类型实例的元素。
- */
-Object.defineProperty(Array.prototype, "filterIsInstance", {
-    value: function (type) {
-        /**
-         * 使用Array的filter方法来过滤数组。
-         * filter方法会创建一个新数组，其中包含了所有通过测试的元素。
-         * 这里使用的测试是检查数组元素是否是传入的构造函数的实例。
-         */
-        return this.filter((value) => value instanceof type);
-    }
-});
-/**
- * 通过提供一个回调函数来定义移除元素的条件。
- * 如果数组中存在满足条件的元素，则移除该元素并返回true，否则返回false。
- *
- * @param filter 一个回调函数，用于测试每个元素是否应该被移除。
- *               回调函数接受数组的当前元素作为参数，并返回一个布尔值，
- *               表示该元素是否应该被移除。
- * @returns 如果成功移除了任何元素，则返回true；否则返回false。
- */
-Object.defineProperty(Array.prototype, "removeIf", {
-    value: function (filter) {
-        let removed = false; // 初始化一个标志变量，用于记录是否成功移除了元素。
-        // 遍历数组中的每个元素。
-        for (let i = 0; i < this.length; i++) {
-            // 使用提供的过滤函数检查当前元素是否应该被移除。
-            if (filter(this[i])) {
-                // 如果当前元素满足移除条件，则将其从数组中移除。
-                this.splice(i, 1);
-                // 由于元素被移除，数组长度减小，需要调整索引i以避免跳过下一个元素。
-                i--;
-                // 标记已移除元素。
-                removed = true;
-            }
-        }
-        // 返回是否成功移除了元素。
-        return removed;
-    }
-});
-Object.defineProperty(Array.prototype, "removeAll", {
-    value: function (predicate) {
-        return filterInPlace(this, predicate, true);
-    }
-});
-Object.defineProperty(Array.prototype, "retainAll", {
-    value: function (predicate) {
-        return filterInPlace(this, predicate, false);
-    }
-});
-Object.defineProperty(Array.prototype, "flatMap", {
-    value: function (transform, iterable) {
-        iterable !== null && iterable !== void 0 ? iterable : (iterable = []);
-        this.forEach((value, index) => {
-            iterable.push(...transform(value, index));
-        });
-        return iterable;
-    }
-});
-/**
- * 在原数组上进行过滤操作，根据predicate函数的结果保留或移除元素。
- * 该函数尝试在原数组上进行过滤，避免创建新的数组实例，以提高性能和减少内存使用。
- *
- * @param array 原数组，将直接在该数组上进行过滤操作。
- * @param predicate 过滤条件函数，接受数组元素作为参数，返回一个布尔值。
- * @param predicateResultToRemove 指定过滤条件的结果，与该结果一致的元素将被移除。
- * @returns 如果数组发生了改变（有元素被移除），则返回true；否则返回false。
- */
-function filterInPlace(array, predicate, predicateResultToRemove) {
-    // 初始化写入索引，用于跟踪过滤后的新数组长度。
-    let writeIndex = 0;
-    // 遍历原数组，对每个元素应用过滤条件。
-    for (let i = 0; i < array.length; i++) {
-        const element = array[i];
-        // 如果元素满足移除条件，则跳过该元素。
-        if (predicate(element) == predicateResultToRemove)
-            continue;
-        // 如果当前元素的位置不等于写入索引，说明有元素被移除，需要更新数组。
-        if (writeIndex != i)
-            array[writeIndex] = element;
-        // 更新写入索引，准备写入下一个元素。
-        writeIndex++;
-    }
-    // 如果写入索引小于原数组长度，说明有元素被移除，需要进一步修剪数组。
-    if (writeIndex < array.length) {
-        // 使用splice方法移除剩余的元素，修剪数组。
-        array.splice(writeIndex);
-        // 返回true，表示数组发生了改变。
-        return true;
-    }
-    else {
-        // 如果数组没有发生改变，返回false。
-        return false;
-    }
-}
-String.prototype.firstLowerCase = function () {
-    return this.charAt(0).toLowerCase() + this.slice(1);
-};
-String.prototype.startsWithAny = function (...search) {
-    return search.some((value) => this.startsWith(value));
-};
-String.prototype.startsWithAnyIgnore = function (...search) {
-    const lowerCase = this.toLowerCase();
-    return search.some((value) => lowerCase.startsWith(value.toLowerCase()));
-};
-String.prototype.endsWithAny = function (...search) {
-    return search.some((value) => this.endsWith(value));
-};
-String.prototype.endsWithAnyIgnore = function (...search) {
-    const lowerCase = this.toLowerCase();
-    return search.some((value) => lowerCase.endsWith(value.toLowerCase()));
-};
-String.prototype.equalsAny = function (...value) {
-    const that = this.valueOf();
-    return value.some((it) => that === it);
-};
-String.prototype.equalsAnyIgnore = function (...value) {
-    const lowerCase = this.toLowerCase();
-    return value.some((it) => lowerCase == it.toLowerCase());
-};
-String.prototype.contains = function (...search) {
-    return search.some((value) => this.includes(value));
-};
-String.prototype.containsIgnore = function (...search) {
-    const lowerCase = this.toLowerCase();
-    return search.some((value) => lowerCase.includes(value.toLowerCase()));
-};
-String.prototype.substringAfter = function (separator) {
-    if (!this || !separator)
-        return this.toString();
-    const pos = this.indexOf(separator);
-    if (pos == -1)
-        return this.toString();
-    return this.substring(pos + separator.length);
-};
-String.prototype.substringAfterLast = function (separator) {
-    if (!this || !separator)
-        return this.toString();
-    const pos = this.lastIndexOf(separator);
-    if (pos == -1 || pos == this.length - separator.length)
-        return this.toString();
-    return this.substring(pos + separator.length);
-};
-String.prototype.substringBefore = function (separator) {
-    if (!this || !separator)
-        return this.toString();
-    const pos = this.indexOf(separator);
-    if (pos == -1)
-        return this.toString();
-    return this.substring(0, pos);
-};
-String.prototype.substringBeforeLast = function (separator) {
-    if (!this || !separator)
-        return this.toString();
-    const pos = this.lastIndexOf(separator);
-    if (pos == -1)
-        return this.toString();
-    return this.substring(0, pos);
-};
-String.prototype.substringBetween = function (open, close) {
-    if (!this || !open || !close)
-        return this.toString();
-    const start = this.indexOf(open);
-    if (start != -1) {
-        const end = this.indexOf(close, start + open.length);
-        if (end != -1)
-            return this.substring(start + open.length, end);
-    }
-    return this.toString();
-};
-String.prototype.substringsBetween = function (open, close) {
-    const list = [];
-    if (!this || !open || !close)
-        return list;
-    const strLen = this.length;
-    if (strLen == 0) {
-        return list;
-    }
-    const closeLen = close.length;
-    const openLen = open.length;
-    let pos = 0;
-    while (pos < strLen - closeLen) {
-        let start = this.indexOf(open, pos);
-        if (start < 0) {
-            break;
-        }
-        start += openLen;
-        const end = this.indexOf(close, start);
-        if (end < 0) {
-            break;
-        }
-        list.push(this.substring(start, end));
-        pos = end + closeLen;
-    }
-    return list;
-};
-String.prototype.toBoolean = function () {
-    return this !== null && this.trim().length > 0 && !this.equalsAnyIgnore("false", "0");
-};
-String.prototype.toInt = function () {
-    let value = 0;
-    try {
-        value = parseInt(this);
-    }
-    catch (e) {
-    }
-    return value;
-};
-/**
- * 获取一个指定名称或类型的Bean实例。
- * @param name - Bean的名称或构造函数。
- * @returns T 返回指定的Bean实例。
- */
-function getBean(name) {
-    if (typeof name !== "string") {
-        name = name.name.firstLowerCase();
-    }
-    // @ts-ignore
-    return tsCore.App.inst.getBean(name);
-}
-/**
- * 组件装饰器，用于注册和创建组件实例。
- * @param value - 组件标识符或目标构造函数。 如果是null值 将不会自动初始化和添加到依赖管理器中，默认使用类名 首字母大小写都有
- * @returns any 返回装饰后的类。
- */
-function Component(value = "") {
-    let decorator = function (classTarget) {
-        var _a;
-        if (value != null) {
-            let data = {};
-            if (typeof value === "object") {
-                data = value;
-                value = classTarget;
-            }
-            (_a = data.autoInit) !== null && _a !== void 0 ? _a : (data.autoInit = true);
-            const className = Reflect.getMetadata("class:name", classTarget) || classTarget.name;
-            data.key = typeof value === "string" && value.trim().length > 0 ? value : className.firstLowerCase();
-            data.classTarget = classTarget;
-            if (!data.autoInit) {
-                return proxyClass(classTarget, typeof value === "string" ? value : data.key);
-            }
-            // @ts-ignore
-            tsCore.App.beanClassComponent.push(data);
-            return classTarget;
-        }
-        else {
-            return proxyClass(classTarget);
-        }
-    };
-    if (value && typeof value == "function") {
-        decorator = decorator(value);
-    }
-    return decorator;
-}
-/**
- * 资源装饰器，标记类属性为资源依赖。 只有被@Component加入依赖管理的类才会被绑定属性
- * @param target - 类的原型。
- * @param propertyKey - 属性键名。
- */
-function Resource(target, propertyKey) {
-    const classTarget = Reflect.getMetadata("design:type", target, propertyKey);
-    if (classTarget) {
-        // @ts-ignore
-        let bean = tsCore.App.beanClassProperty.get(target.constructor.name) || [];
-        bean.push(propertyKey);
-        // @ts-ignore
-        tsCore.App.beanClassProperty.set(target.constructor.name, bean);
-    }
-    else
-        throw Error("class type null");
-}
-/**
- * Bean装饰器，标记类方法为返回Bean实例的方法。
- * @param target - 类的原型。
- * @param propertyKey - 属性键名。
- * @param descriptor - 属性描述符。
- */
-function Bean(target, propertyKey, descriptor) {
-    const returnTarget = Reflect.getMetadata("design:returntype", target, propertyKey);
-    if (returnTarget) {
-        // @ts-ignore
-        tsCore.App.beanClassFunction.set(propertyKey, descriptor.value);
-    }
-    else
-        throw Error("class type null");
-}
-/**
- * 注册事件
- * @param {number | string} action 事件名字
- * @param {string} group 分组集合
- * @param {number} order 值越大 越后执行 默认 100
- */
-function Actions(action, group, order) {
-    return function (target, propertyKey, descriptor) {
-        const className = target.constructor.name;
-        const paramtypes = Reflect.getMetadata("design:paramtypes", target, propertyKey);
-        const fun = descriptor.value;
-        // @ts-ignore
-        tsCore.App.beanActionsFunction.push({ className, fun, action, group, order });
-    };
-}
-/**
- * 点击事件装饰器
- *
- * 该装饰器用于在FGUI的GObject上注册点击事件监听，并将事件委托给特定的方法处理
- * 它会将相关信息（如类名、方法、事件名称、子节点名称和参数）推送到全局事件函数列表中
- * 并劫持GObject的constructFromResource方法以注册组件事件代理
- *
- * @param childName 子节点名称，可选
- * @param args 附加参数，可选
- */
-function ClickOn(childName, args) {
-    return function (target, propertyKey, descriptor) {
-        // 确保目标是一个FGUI的GObject实例
-        if (target instanceof fgui.GObject) {
-            const className = target.constructor.name;
-            const paramtypes = Reflect.getMetadata("design:paramtypes", target, propertyKey);
-            const fun = descriptor.value;
-            const eventName = Laya.Event.CLICK;
-            // 将事件处理信息推送到全局列表中
-            // @ts-ignore
-            tsCore.App.beanEventFunction.push({ className, fun, eventName, childName, args });
-            // 劫持constructFromResource方法以确保在构造GObject时注册事件
-            const constructFromResource = target.constructFromResource;
-            Object.defineProperty(target, "constructFromResource", {
-                value: function () {
-                    constructFromResource.call(this);
-                    proxyComponentEvent(this, this.constructor.name);
-                }
-            });
-        }
-        else {
-            // 如果目标不是FGUI的GObject实例，输出调试日志
-            // @ts-ignore
-            tsCore.Log.debug("[click] Can only be used in fgui.GObject = " + data.childName);
-        }
-    };
-}
-/**
- * 通用事件监听装饰器
- *
- * 该装饰器允许开发者为FGUI的GObject动态添加各种事件监听，而不仅仅是点击事件
- * 它的工作原理类似于ClickOn装饰器，主要区别在于监听的事件类型可以自定义
- *
- * @param eventName 要监听的事件名称
- * @param childName 子节点名称，可选
- * @param args 附加参数，可选
- */
-function EventOn(eventName, childName, args) {
-    return function (target, propertyKey, descriptor) {
-        // 确保目标是一个FGUI的GObject实例
-        if (target instanceof fgui.GObject) {
-            const className = target.constructor.name;
-            const paramtypes = Reflect.getMetadata("design:paramtypes", target, propertyKey);
-            const fun = descriptor.value;
-            // 将事件处理信息推送到全局列表中
-            // @ts-ignore
-            tsCore.App.beanEventFunction.push({ className, fun, eventName, childName, args });
-            // 劫持constructFromResource方法以确保在构造GObject时注册事件
-            const constructFromResource = target.constructFromResource;
-            Object.defineProperty(target, "constructFromResource", {
-                value: function () {
-                    constructFromResource.call(this);
-                    proxyComponentEvent(this, this.constructor.name);
-                }
-            });
-        }
-        else {
-            // 如果目标不是FGUI的GObject实例，输出调试日志
-            // @ts-ignore
-            tsCore.Log.debug("[click] Can only be used in fgui.GObject = " + data.childName);
-        }
-    };
-}
-function initBean(target, name) {
-    // @ts-ignore
-    let beanProperty = tsCore.App.beanClassProperty.get(name);
-    beanProperty === null || beanProperty === void 0 ? void 0 : beanProperty.forEach((value) => {
-        // @ts-ignore
-        // const propertyClass = Reflect.getMetadata("design:type", target, value)
-        target[value] = getBean(value);
-    });
-    // @ts-ignore
-    tsCore.App.beanActionsFunction
-        .filter((actionData) => name == actionData.className)
-        .forEach((actionData) => {
-        // @ts-ignore
-        tsCore.App.inst.regAction(actionData.action, target, actionData.fun, actionData.group || tsCore.App.GAME_GROUP, actionData.order);
-    });
-}
-/**
- * 代理组件事件函数
- *
- * 该函数的作用是将事件绑定从目标对象代理到其子对象或自身
- * 它通过事件数据过滤出需要绑定的事件，并根据事件数据中的信息
- * 决定将事件绑定到目标对象的子对象还是目标对象自身
- *
- * @param target 事件的目标对象
- * @param name 组件的名称，用于过滤事件数据
- */
-function proxyComponentEvent(target, name) {
-    // @ts-ignore
-    tsCore.App.beanEventFunction
-        .filter((data) => name == data.className)
-        .forEach((data) => {
-        if (data.childName) {
-            const child = target.getChild(data.childName);
-            if (child)
-                child.on(data.eventName, target, data.fun);
-            else { // @ts-ignore
-                tsCore.Log.debug(`[${data.eventName}] not find child name = ${data.childName}`);
-            }
-        }
-        else
-            target.on(data.eventName, target, data.fun, data.args);
-    });
-}
-/**
- * 包装成代理类
- * @param {{new(...args: any[]): any}} classTarget
- * @param beanName 如果传入 将会被缓存到bean集合中 否则不存
- */
-function proxyClass(classTarget, beanName) {
-    const classTemp = class extends classTarget {
-        constructor(...args) {
-            super(...args);
-            const name = classTarget.name;
-            initBean(this, name);
-            if (this.isBean) {
-                // @ts-ignore
-                tsCore.App.inst.addBean(beanName || name.firstLowerCase(), this);
-            }
-        }
-    };
-    Object.defineProperty(classTemp.prototype, "isBean", {
-        get() {
-            return beanName != null;
-        }
-    });
-    Object.defineProperty(classTemp, "name", {
-        get() {
-            return classTarget.name;
-        }
-    });
-    return classTemp;
-}
-/**
- * 运行应用程序，并初始化所有Bean实例。
- * @param classTarget - 应用程序主类的构造函数。
- */
-function runApplication(classTarget) {
-    const app = new classTarget();
-    // @ts-ignore
-    if (!tsCore.App.inst.hasBean(classTarget.name)) {
-        // @ts-ignore
-        tsCore.App.inst.addBean(classTarget.name.firstLowerCase(), app);
-    }
-    // @ts-ignore
-    tsCore.App.beanClassFunction.forEach((value, key) => {
-        // @ts-ignore
-        if (!tsCore.App.inst.hasBean(key)) {
-            const target = value();
-            // @ts-ignore
-            tsCore.App.inst.addBean(key, target, false);
-        }
-    });
-    // @ts-ignore
-    tsCore.App.beanClassComponent.sort((a, b) => a.order || 0 - b.order || 0).forEach((value) => {
-        // @ts-ignore
-        if (!tsCore.App.inst.hasBean(value.key)) {
-            const classTargetName = value.classTarget.name;
-            let target;
-            if (value.createUi) {
-                target = fgui.UIPackage.createObjectFromURL(this.createUi, this.classTarget);
-            }
-            else
-                target = new value.classTarget();
-            if (/^[A-Z]/.test(value.key.charAt(0)) && value.key.toLowerCase() == classTargetName.toLowerCase()) {
-                // @ts-ignore
-                tsCore.App.inst.addBean(value.key.firstLowerCase(), target);
-            }
-            else {
-                // @ts-ignore
-                tsCore.App.inst.addBean(value.key, target);
-            }
-            initBean(target, classTargetName);
-        }
-    });
-    initBean(app, classTarget.name);
-    if (typeof app["start"] == "function") {
-        app["start"]();
-    }
-    return app;
-}

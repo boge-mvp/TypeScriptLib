@@ -1,3 +1,271 @@
+/**
+ * 执行提供的 ParamHandler 函数。
+ * @param func 可选，要执行的函数或Laya.Handler实例。如果提供，它将根据其类型执行。
+ * @param args 可变参数，传递给函数的参数。
+ * @returns 如果func存在且不为null，则根据func的类型执行并返回相应的结果；否则返回null。
+ */
+declare function runFun(func?: ParamHandler, ...args: any[]): any;
+/**
+ * 根据语言包id获取字符串
+ * @param id 获取文案的key
+ * @param args 如果包含占位符，这里可传入占位符的替换文案
+ */
+declare function getString(id: string | number, ...args: any[]): string;
+/**
+ * 配置定义
+ *
+ * @param args 自定义的配置
+ * @param defs 默认配置
+ * @param [croak=false] 验证配置在默认中存在否 如果原型中不存在将抛出错误
+ * @param [append=false] 如果存在键，如果值是数组是否追加在尾部，排除存在的
+ *
+ *
+ * @example
+ *
+ * const defs = {a: [0], c: {c:"c", a: 0}, s: "s"}
+ * const config = {a: [18], c: {a: 66}, s: "d", e:"e"}
+ *
+ * defaults(config, defs)
+ * result:  {a:[18], c: {c: "c", a: 66}, s: "d", e:"e"}
+ *
+ * defaults(config, defs, true)
+ * result: throw error -> `e` is not a supported option, {a: 0, c: {c:"c", a: 0}, s: "s"}
+ *
+ * defaults(config, defs, false, true)
+ * result: {a:[18, 0], c: {c: "c", a: 66}, s: "d", e:"e"}
+ */
+declare function defaults(args: any, defs: any, croak?: boolean, append?: boolean): any;
+/**
+ *
+ * @param obj
+ * @param prop
+ */
+declare function has(obj: any, prop: any): any;
+/**
+ * 修改 mixin 函数
+ * @deprecated
+ * @param classes
+ */
+declare function mixin<T extends Constructor[]>(...classes: T): Constructor<UnionToIntersection<InstanceTypeOfConstructor<T[number]>>>;
+/**
+ * 将后续传入的类的方法和属性复制到第一个类的匿名类上
+ *
+ * 注意 后面类的屬性值会覆盖之前的
+ * @param classes
+ */
+declare function mixinProperty<T extends Constructor[]>(...classes: T): Constructor<UnionToIntersection<InstanceTypeOfConstructor<T[number]>>>;
+/**
+ * 相互继承实现
+ *
+ * 注意 如果有继承类A后面还有类B,那么A类的继承父类会被更换成类B,类A将失去原有的继承属性和方法
+ *
+ * @example
+ * 以下用 : 代替 extends
+ * BaseClass
+ * ClassA:BaseClass
+ * BlockA
+ * BlockB
+ *
+ * mixinExt(ClassA:BaseClass, BlockA, BlockB) = newClass -> ClassA:BlockA:BlockB  BaseClass父类丢失
+ * mixinExt(BlockA, ClassA:BaseClass, BlockB) = newClass -> BlockA:ClassA:BlockB  BaseClass父类丢失
+ * mixinExt(BlockA, BlockB, ClassA:BaseClass) = newClass -> BlockA:BlockB:(ClassA:BaseClass) BaseClass父类还在
+ *
+ * @param classes 继承序列  第一个是父类最后一个继承值，最后一个初始类
+ */
+declare function mixinExt<T extends Constructor[]>(...classes: T): Constructor<UnionToIntersection<InstanceTypeOfConstructor<T[number]>>>;
+/**
+ *
+ * @param target
+ * @param source
+ * @param ignoreProperty
+ * @param [containsSuperClasses=false] 是否包含 super类
+ */
+declare function copyProperties(target: any, source: any, ignoreProperty?: string[], containsSuperClasses?: boolean): void;
+/**
+ * 获取属性标识符
+ * @param source 对象
+ * @param key 健名
+ * @param [containsSuperClasses=false] 是否允许到父类去找
+ */
+declare function getPropertyDescriptor(source: any, key: string | symbol, containsSuperClasses?: boolean): PropertyDescriptor;
+/**
+ * 获取方法或属性的名字
+ * @param obj 对象
+ * @param [containsSuperClasses=false] 是否要包含父类
+ */
+declare function getPropertyNames(obj: any, containsSuperClasses?: boolean): (string | symbol)[];
+/**
+ * 包装一个 windowMy
+ */
+declare const windowMy: Window;
+/** 随机数  最小值  最大值(不包括)  */
+declare function random(minNum: number, maxNum: number): number;
+/**
+ * 随机数
+ * @param minNum 最小值
+ * @param maxNum 最大值(不包括)
+ * @param p 保留尾数  默认NAN 表示全保留
+ * @return
+ */
+declare function randomFloat(minNum: number, maxNum: number, p?: number): number;
+/**
+ * 在原数组上进行过滤操作，根据predicate函数的结果保留或移除元素。
+ * 该函数尝试在原数组上进行过滤，避免创建新的数组实例，以提高性能和减少内存使用。
+ *
+ * @param array 原数组，将直接在该数组上进行过滤操作。
+ * @param predicate 过滤条件函数，接受数组元素作为参数，返回一个布尔值。
+ * @param predicateResultToRemove 指定过滤条件的结果，与该结果一致的元素将被移除。
+ * @returns 如果数组发生了改变（有元素被移除），则返回true；否则返回false。
+ */
+declare function filterInPlace<T>(array: Array<T>, predicate: (value: T) => boolean, predicateResultToRemove: boolean): boolean;
+/**
+ * 组件数据类，用于创建组件实例。
+ */
+declare type ComponentData = {
+    /**
+     * 创建key
+     */
+    key?: string;
+    /**
+     * 目标类的构造函数。
+     */
+    classTarget?: {
+        new (): any;
+    };
+    /**
+     * 是否自动初始化 默认true
+     */
+    autoInit?: boolean;
+    /**
+     * 自动创建顺序 默认0 越大越后创建
+     * @type {number}
+     */
+    order?: number;
+    /**
+     * 创建UI的路径。
+     */
+    createUi?: string;
+};
+/**
+ * 事件处理的绑定数据
+ */
+declare type ActionsData = {
+    className: string;
+    fun: Function;
+    action: number | string;
+    group?: string;
+    order?: number;
+};
+/**
+ * 点击事件处理的绑定数据
+ */
+declare type EventData = {
+    className: string;
+    fun: Function;
+    /**
+     * Laya.Event
+     */
+    eventName: string;
+    /**
+     * this.getChild(childName)
+     */
+    childName?: string;
+    /**
+     * 附带值
+     */
+    args?: any[];
+};
+/**
+ * 获取一个指定名称或类型的Bean实例。
+ * @param name - Bean的名称或构造函数。
+ * @returns T 返回指定的Bean实例。
+ */
+declare function getBean<T>(name: string | {
+    new (): T;
+}): T;
+/**
+ * 组件装饰器，用于注册和创建组件实例。
+ * @param value - 组件标识符或目标构造函数。 如果是null值 将不会自动初始化和添加到依赖管理器中，默认使用类名 首字母大小写都有
+ * @returns any 返回装饰后的类。
+ */
+declare function Component<T extends {
+    new (...args: any[]): {};
+}>(value?: string | T | ComponentData): any;
+/**
+ * 资源装饰器，标记类属性为资源依赖。 只有被@Component加入依赖管理的类才会被绑定属性
+ * @param target - 类的原型。
+ * @param propertyKey - 属性键名。
+ */
+declare function Resource(target: any, propertyKey: string): void;
+/**
+ * Bean装饰器，标记类方法为返回Bean实例的方法。
+ * @param target - 类的原型。
+ * @param propertyKey - 属性键名。
+ * @param descriptor - 属性描述符。
+ */
+declare function Bean(target: any, propertyKey: string, descriptor: PropertyDescriptor): void;
+/**
+ * 注册事件
+ * @param {number | string} action 事件名字
+ * @param {string} group 分组集合
+ * @param {number} order 值越大 越后执行 默认 100
+ */
+declare function Actions(action: number | string, group?: string, order?: number): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
+/**
+ * 点击事件装饰器
+ *
+ * 该装饰器用于在FGUI的GObject上注册点击事件监听，并将事件委托给特定的方法处理
+ * 它会将相关信息（如类名、方法、事件名称、子节点名称和参数）推送到全局事件函数列表中
+ * 并劫持GObject的constructFromResource方法以注册组件事件代理
+ *
+ * @param childName 子节点名称，可选
+ * @param args 附加参数，可选
+ */
+declare function ClickOn(childName: string, args?: any[]): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
+/**
+ * 通用事件监听装饰器
+ *
+ * 该装饰器允许开发者为FGUI的GObject动态添加各种事件监听，而不仅仅是点击事件
+ * 它的工作原理类似于ClickOn装饰器，主要区别在于监听的事件类型可以自定义
+ *
+ * @param eventName 要监听的事件名称
+ * @param childName 子节点名称，可选
+ * @param args 附加参数，可选
+ */
+declare function EventOn(eventName: string, childName?: string, args?: any[]): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
+declare function initBean(target: any, name: string): void;
+/**
+ * 代理组件事件函数
+ *
+ * 该函数的作用是将事件绑定从目标对象代理到其子对象或自身
+ * 它通过事件数据过滤出需要绑定的事件，并根据事件数据中的信息
+ * 决定将事件绑定到目标对象的子对象还是目标对象自身
+ *
+ * @param target 事件的目标对象
+ * @param name 组件的名称，用于过滤事件数据
+ */
+declare function proxyComponentEvent(target: any, name: string): void;
+/**
+ * 包装成代理类
+ * @param {{new(...args: any[]): any}} classTarget
+ * @param beanName 如果传入 将会被缓存到bean集合中 否则不存
+ */
+declare function proxyClass(classTarget: {
+    new (...args: any[]): any;
+}, beanName?: string): any;
+/**
+ * 运行应用程序，并初始化所有Bean实例。
+ * @param classTarget - 应用程序主类的构造函数。
+ */
+declare function runApplication<T>(classTarget: {
+    new (...args: any[]): T;
+}): T;
+/**
+ * 应用程序运行接口。
+ */
+interface IRunApplication {
+    start(): void;
+}
 declare namespace tsCore {
     export class App implements IAction {
         private static _instance;
@@ -1347,7 +1615,7 @@ declare namespace tsCore {
          * @return 大于第二个值  1   小于第二个值 -1 相等 0
          *
          */
-        static compare(aPrice: number, bPrice: number): 1 | -1 | 0;
+        static compare(aPrice: number, bPrice: number): 0 | 1 | -1;
         /**
          * 比较两个值  获得返回值   用于数组排序   从大到小
          * @param aPrice 第一个值
@@ -1355,7 +1623,7 @@ declare namespace tsCore {
          * @return 大于第二个值  1   小于第二个值 -1 相等 0
          *
          */
-        static compareOn(aPrice: number, bPrice: number): 1 | -1 | 0;
+        static compareOn(aPrice: number, bPrice: number): 0 | 1 | -1;
         /**
          * 随机数  最小值  最大值(不包括)
          * @deprecated
@@ -1841,7 +2109,7 @@ declare namespace tsCore {
          * @param time1
          * @param time2
          */
-        static compareTime(time1: any, time2: any): 1 | -1 | 0;
+        static compareTime(time1: any, time2: any): 0 | 1 | -1;
         /**
          * 是否闰年
          * @param year 年份
@@ -2055,6 +2323,8 @@ declare namespace tsCore {
          * @param str key
          */
         getStr(str: number | string): string;
+        getStrArray(str: number | string, out?: string[]): string[];
+        getElement(str: string): Element;
         private __getStr;
         /**
          * 使用预置的 LanguageUtils.replaces 替换文本内容
@@ -2980,274 +3250,6 @@ declare namespace tsCore {
     }
     export {};
 }
-/**
- * 执行提供的 ParamHandler 函数。
- * @param func 可选，要执行的函数或Laya.Handler实例。如果提供，它将根据其类型执行。
- * @param args 可变参数，传递给函数的参数。
- * @returns 如果func存在且不为null，则根据func的类型执行并返回相应的结果；否则返回null。
- */
-declare function runFun(func?: ParamHandler, ...args: any[]): any;
-/**
- * 根据语言包id获取字符串
- * @param id 获取文案的key
- * @param args 如果包含占位符，这里可传入占位符的替换文案
- */
-declare function getString(id: string | number, ...args: any[]): string;
-/**
- * 配置定义
- *
- * @param args 自定义的配置
- * @param defs 默认配置
- * @param [croak=false] 验证配置在默认中存在否 如果原型中不存在将抛出错误
- * @param [append=false] 如果存在键，如果值是数组是否追加在尾部，排除存在的
- *
- *
- * @example
- *
- * const defs = {a: [0], c: {c:"c", a: 0}, s: "s"}
- * const config = {a: [18], c: {a: 66}, s: "d", e:"e"}
- *
- * defaults(config, defs)
- * result:  {a:[18], c: {c: "c", a: 66}, s: "d", e:"e"}
- *
- * defaults(config, defs, true)
- * result: throw error -> `e` is not a supported option, {a: 0, c: {c:"c", a: 0}, s: "s"}
- *
- * defaults(config, defs, false, true)
- * result: {a:[18, 0], c: {c: "c", a: 66}, s: "d", e:"e"}
- */
-declare function defaults(args: any, defs: any, croak?: boolean, append?: boolean): any;
-/**
- *
- * @param obj
- * @param prop
- */
-declare function has(obj: any, prop: any): any;
-/**
- * 修改 mixin 函数
- * @deprecated
- * @param classes
- */
-declare function mixin<T extends Constructor[]>(...classes: T): Constructor<UnionToIntersection<InstanceTypeOfConstructor<T[number]>>>;
-/**
- * 将后续传入的类的方法和属性复制到第一个类的匿名类上
- *
- * 注意 后面类的屬性值会覆盖之前的
- * @param classes
- */
-declare function mixinProperty<T extends Constructor[]>(...classes: T): Constructor<UnionToIntersection<InstanceTypeOfConstructor<T[number]>>>;
-/**
- * 相互继承实现
- *
- * 注意 如果有继承类A后面还有类B,那么A类的继承父类会被更换成类B,类A将失去原有的继承属性和方法
- *
- * @example
- * 以下用 : 代替 extends
- * BaseClass
- * ClassA:BaseClass
- * BlockA
- * BlockB
- *
- * mixinExt(ClassA:BaseClass, BlockA, BlockB) = newClass -> ClassA:BlockA:BlockB  BaseClass父类丢失
- * mixinExt(BlockA, ClassA:BaseClass, BlockB) = newClass -> BlockA:ClassA:BlockB  BaseClass父类丢失
- * mixinExt(BlockA, BlockB, ClassA:BaseClass) = newClass -> BlockA:BlockB:(ClassA:BaseClass) BaseClass父类还在
- *
- * @param classes 继承序列  第一个是父类最后一个继承值，最后一个初始类
- */
-declare function mixinExt<T extends Constructor[]>(...classes: T): Constructor<UnionToIntersection<InstanceTypeOfConstructor<T[number]>>>;
-/**
- *
- * @param target
- * @param source
- * @param ignoreProperty
- * @param [containsSuperClasses=false] 是否包含 super类
- */
-declare function copyProperties(target: any, source: any, ignoreProperty?: string[], containsSuperClasses?: boolean): void;
-/**
- * 获取属性标识符
- * @param source 对象
- * @param key 健名
- * @param [containsSuperClasses=false] 是否允许到父类去找
- */
-declare function getPropertyDescriptor(source: any, key: string | symbol, containsSuperClasses?: boolean): PropertyDescriptor;
-/**
- * 获取方法或属性的名字
- * @param obj 对象
- * @param [containsSuperClasses=false] 是否要包含父类
- */
-declare function getPropertyNames(obj: any, containsSuperClasses?: boolean): (string | symbol)[];
-/**
- * 包装一个 windowMy
- */
-declare const windowMy: Window;
-/** 随机数  最小值  最大值(不包括)  */
-declare function random(minNum: number, maxNum: number): number;
-/**
- * 随机数
- * @param minNum 最小值
- * @param maxNum 最大值(不包括)
- * @param p 保留尾数  默认NAN 表示全保留
- * @return
- */
-declare function randomFloat(minNum: number, maxNum: number, p?: number): number;
-/**
- * 在原数组上进行过滤操作，根据predicate函数的结果保留或移除元素。
- * 该函数尝试在原数组上进行过滤，避免创建新的数组实例，以提高性能和减少内存使用。
- *
- * @param array 原数组，将直接在该数组上进行过滤操作。
- * @param predicate 过滤条件函数，接受数组元素作为参数，返回一个布尔值。
- * @param predicateResultToRemove 指定过滤条件的结果，与该结果一致的元素将被移除。
- * @returns 如果数组发生了改变（有元素被移除），则返回true；否则返回false。
- */
-declare function filterInPlace<T>(array: Array<T>, predicate: (value: T) => boolean, predicateResultToRemove: boolean): boolean;
-/**
- * 组件数据类，用于创建组件实例。
- */
-declare type ComponentData = {
-    /**
-     * 创建key
-     */
-    key?: string;
-    /**
-     * 目标类的构造函数。
-     */
-    classTarget?: {
-        new (): any;
-    };
-    /**
-     * 是否自动初始化 默认true
-     */
-    autoInit?: boolean;
-    /**
-     * 自动创建顺序 默认0 越大越后创建
-     * @type {number}
-     */
-    order?: number;
-    /**
-     * 创建UI的路径。
-     */
-    createUi?: string;
-};
-/**
- * 事件处理的绑定数据
- */
-declare type ActionsData = {
-    className: string;
-    fun: Function;
-    action: number | string;
-    group?: string;
-    order?: number;
-};
-/**
- * 点击事件处理的绑定数据
- */
-declare type EventData = {
-    className: string;
-    fun: Function;
-    /**
-     * Laya.Event
-     */
-    eventName: string;
-    /**
-     * this.getChild(childName)
-     */
-    childName?: string;
-    /**
-     * 附带值
-     */
-    args?: any[];
-};
-/**
- * 获取一个指定名称或类型的Bean实例。
- * @param name - Bean的名称或构造函数。
- * @returns T 返回指定的Bean实例。
- */
-declare function getBean<T>(name: string | {
-    new (): T;
-}): T;
-/**
- * 组件装饰器，用于注册和创建组件实例。
- * @param value - 组件标识符或目标构造函数。 如果是null值 将不会自动初始化和添加到依赖管理器中，默认使用类名 首字母大小写都有
- * @returns any 返回装饰后的类。
- */
-declare function Component<T extends {
-    new (...args: any[]): {};
-}>(value?: string | T | ComponentData): any;
-/**
- * 资源装饰器，标记类属性为资源依赖。 只有被@Component加入依赖管理的类才会被绑定属性
- * @param target - 类的原型。
- * @param propertyKey - 属性键名。
- */
-declare function Resource(target: any, propertyKey: string): void;
-/**
- * Bean装饰器，标记类方法为返回Bean实例的方法。
- * @param target - 类的原型。
- * @param propertyKey - 属性键名。
- * @param descriptor - 属性描述符。
- */
-declare function Bean(target: any, propertyKey: string, descriptor: PropertyDescriptor): void;
-/**
- * 注册事件
- * @param {number | string} action 事件名字
- * @param {string} group 分组集合
- * @param {number} order 值越大 越后执行 默认 100
- */
-declare function Actions(action: number | string, group?: string, order?: number): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
-/**
- * 点击事件装饰器
- *
- * 该装饰器用于在FGUI的GObject上注册点击事件监听，并将事件委托给特定的方法处理
- * 它会将相关信息（如类名、方法、事件名称、子节点名称和参数）推送到全局事件函数列表中
- * 并劫持GObject的constructFromResource方法以注册组件事件代理
- *
- * @param childName 子节点名称，可选
- * @param args 附加参数，可选
- */
-declare function ClickOn(childName: string, args?: any[]): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
-/**
- * 通用事件监听装饰器
- *
- * 该装饰器允许开发者为FGUI的GObject动态添加各种事件监听，而不仅仅是点击事件
- * 它的工作原理类似于ClickOn装饰器，主要区别在于监听的事件类型可以自定义
- *
- * @param eventName 要监听的事件名称
- * @param childName 子节点名称，可选
- * @param args 附加参数，可选
- */
-declare function EventOn(eventName: string, childName?: string, args?: any[]): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
-declare function initBean(target: any, name: string): void;
-/**
- * 代理组件事件函数
- *
- * 该函数的作用是将事件绑定从目标对象代理到其子对象或自身
- * 它通过事件数据过滤出需要绑定的事件，并根据事件数据中的信息
- * 决定将事件绑定到目标对象的子对象还是目标对象自身
- *
- * @param target 事件的目标对象
- * @param name 组件的名称，用于过滤事件数据
- */
-declare function proxyComponentEvent(target: any, name: string): void;
-/**
- * 包装成代理类
- * @param {{new(...args: any[]): any}} classTarget
- * @param beanName 如果传入 将会被缓存到bean集合中 否则不存
- */
-declare function proxyClass(classTarget: {
-    new (...args: any[]): any;
-}, beanName?: string): any;
-/**
- * 运行应用程序，并初始化所有Bean实例。
- * @param classTarget - 应用程序主类的构造函数。
- */
-declare function runApplication<T>(classTarget: {
-    new (...args: any[]): T;
-}): T;
-/**
- * 应用程序运行接口。
- */
-interface IRunApplication {
-    start(): void;
-}
 
 /**
  * 动态参数 function 或 Laya.Handler
@@ -3731,7 +3733,7 @@ declare type InitApp = {
  */
 declare type IInitEngine = {
     /**
-     * 引擎初始化结束
+     * 引擎初始化前
      */
     onRun?: () => Promise<void>
 

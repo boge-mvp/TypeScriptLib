@@ -3,8 +3,7 @@ export class LanguageUtils {
     private static _instance: LanguageUtils
 
     static get inst(): LanguageUtils {
-        if (!LanguageUtils._instance)
-            LanguageUtils._instance = new LanguageUtils()
+        LanguageUtils._instance ??= new LanguageUtils()
         return LanguageUtils._instance
     }
 
@@ -41,26 +40,48 @@ export class LanguageUtils {
      * @param str key
      */
     getStr(str: number | string) {
-        if (typeof (str) !== "string") {
+        if (typeof (str) == "number") {
             str = str + ""
         }
-        if (!this.xml) return str
-        let element = this.xml.getElementById(str)
-        if (element) {
-            return this.__getStr(element)
+        const element = this.getElement(str)
+        return this.__getStr(element) ?? str
+    }
+
+    getStrArray(str: number | string, out?: string[]) {
+        if (typeof (str) == "number") {
+            str = str + ""
         }
-        let elements = this.xml.getElementsByName(str)
-        if (elements.length > 0) {
-            if (elements.length > 1)
-                throw new Error("Language configuration has duplicate items：" + str)
-            return this.__getStr(elements.item(0))
-        } else if (this.ignoreCase) {
-            const els = this.getElementsByNameIgnoreCase(this.xml.documentElement, str)
-            if (els.length > 0) {
-                return this.__getStr(els[0])
+        out ??= []
+        const element = this.getElement(str)
+        if (element?.nodeName == "array") {
+            element.childNodes.forEach(value => {
+                if (value instanceof Element) {
+                    out.push(this.__getStr(value))
+                }
+            })
+        }
+        return out
+    }
+
+    getElement(str: string) {
+        if (this.xml) {
+            let element = this.xml.getElementById(str)
+            if (element) {
+                return element
+            }
+            let elements = this.xml.getElementsByName(str)
+            if (elements.length > 0) {
+                if (elements.length > 1)
+                    throw new Error("Language configuration has duplicate items：" + str)
+                return elements.item(0)
+            } else if (this.ignoreCase) {
+                const els = this.getElementsByNameIgnoreCase(this.xml.documentElement, str)
+                if (els.length > 0) {
+                    return els[0]
+                }
             }
         }
-        return str
+        return null
     }
 
     private __getStr(element: Element) {
