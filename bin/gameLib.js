@@ -2057,11 +2057,17 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
                 runFun(handler);
                 return;
             }
+            this.postInit(this.userDataHandler.bind(this), this.userDataErrorHandler.bind(this));
+        }
+        /**
+         * 请求初始化游戏
+         */
+        postInit(succeed, error) {
             let obj = {};
             obj.token = Player.inst.token;
             obj.game_id = Player.inst.gameId;
             obj.is_gift = Player.inst.urlParam.isGift;
-            this.postData("/game/" + this.networkName + "/init", obj, this.userDataHandler.bind(this), this.userDataErrorHandler.bind(this));
+            this.postData(`/game/${this.networkName}/init`, obj, succeed, error);
         }
         /** 连接该游戏的socket */
         connectSocket() {

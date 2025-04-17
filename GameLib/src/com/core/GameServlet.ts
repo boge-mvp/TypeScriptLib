@@ -206,12 +206,18 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
             runFun(handler)
             return
         }
+        this.postInit(this.userDataHandler.bind(this), this.userDataErrorHandler.bind(this))
+    }
+
+    /**
+     * 请求初始化游戏
+     */
+    postInit(succeed: ParamHandler, error: ParamHandler) {
         let obj: any = {}
         obj.token = Player.inst.token
         obj.game_id = Player.inst.gameId
         obj.is_gift = Player.inst.urlParam.isGift
-
-        this.postData("/game/" + this.networkName + "/init", obj, this.userDataHandler.bind(this), this.userDataErrorHandler.bind(this))
+        this.postData(`/game/${this.networkName}/init`, obj, succeed, error)
     }
 
     /** 连接该游戏的socket */

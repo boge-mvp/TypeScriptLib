@@ -1103,6 +1103,10 @@ declare namespace gameLib {
          */
         protected enterFail(isTip?: boolean, message?: string): void;
         init(handler: ParamHandler): void;
+        /**
+         * 请求初始化游戏
+         */
+        postInit(succeed: ParamHandler, error: ParamHandler): void;
         /** 连接该游戏的socket */
         protected connectSocket(): void;
         protected userDataErrorHandler(data: any): void;
