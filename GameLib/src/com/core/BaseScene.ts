@@ -451,7 +451,12 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
         }
     }
 
-    /** 更新金额 */
+    /**
+     * 更新金额
+     * ```
+     * 未实现
+     * ```
+     */
     updateMoney() {
 
     }

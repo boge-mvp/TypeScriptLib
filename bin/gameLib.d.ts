@@ -515,7 +515,12 @@ declare namespace gameLib {
          * 新一轮游戏的开始
          */
         startGame(): void;
-        /** 更新金额 */
+        /**
+         * 更新金额
+         * ```
+         * 未实现
+         * ```
+         */
         updateMoney(): void;
         hideRecord(): void;
         get gameModel(): IGameModel;
@@ -1111,7 +1116,7 @@ declare namespace gameLib {
         protected connectSocket(): void;
         protected userDataErrorHandler(data: any): void;
         /** 用户数据 */
-        protected userDataHandler(data: any): void;
+        protected userDataHandler(response: HttpResponse): void;
         nextInit(): void;
         /**
          * 用户信息初始化完成 返回false表示 出现错误
@@ -1172,7 +1177,7 @@ declare namespace gameLib {
          * @param handler
          */
         jackPotClaim(id: string, handler: Laya.Handler | ((remove: boolean, win: number) => void)): void;
-        protected jackPotClaimHandler(handler: Laya.Handler | ((remove: boolean, win: number) => void), data: any): void;
+        protected jackPotClaimHandler(handler: Laya.Handler | ((remove: boolean, win: number) => void), response: HttpResponse): void;
         /**
          * 显示获取的非200的结果显示弹窗
          * @param data 服务器返回的完整数据

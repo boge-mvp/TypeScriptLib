@@ -231,13 +231,13 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
     }
 
     /** 用户数据 */
-    protected userDataHandler(data: any) {
+    protected userDataHandler(response: HttpResponse) {
 //			trace("MainPanel.userDataHandlerr(data) 服务器拿到游戏房间数据")
-        if (data.code != HttpCode.OK) {
-            this.enterFail(true, StateCode.getShowMessage(data))
+        if (response.code != HttpCode.OK) {
+            this.enterFail(true, StateCode.getShowMessage(response))
             return
         }
-        data = data.data
+        const data = response.data
         this.gameStatus = data.game_status
         // 处理自定义解析
         GameServlet.customParseUser?.call(this, data)
@@ -447,15 +447,15 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
             })
     }
 
-    protected jackPotClaimHandler(handler: Handler | ((remove: boolean, win: number) => void), data: any) {
-        if (data.code != HttpCode.OK) {
+    protected jackPotClaimHandler(handler: Handler | ((remove: boolean, win: number) => void), response: HttpResponse) {
+        if (response.code != HttpCode.OK) {
             WaitResult.inst.hide()
             // this.showNotResult(data, false)
-            StateCode.execute(data.code, data)
+            StateCode.execute(response.code, response)
             runFun(handler, false)
             return
         }
-        data = data.data
+        const data = response.data
         let balance: number = data.balance;//余额
         let win: number = data.win;//赢的钱
         this.readJackpotData(data)

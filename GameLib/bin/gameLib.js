@@ -834,7 +834,12 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
                 }
             }
         }
-        /** 更新金额 */
+        /**
+         * 更新金额
+         * ```
+         * 未实现
+         * ```
+         */
         updateMoney() {
         }
         /*@override*/
@@ -2078,14 +2083,14 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
             this.enterFail(true, getString(1005 /* LibStr.NET_ERROR */));
         }
         /** 用户数据 */
-        userDataHandler(data) {
+        userDataHandler(response) {
             var _a;
             //			trace("MainPanel.userDataHandlerr(data) 服务器拿到游戏房间数据")
-            if (data.code != HttpCode.OK) {
-                this.enterFail(true, StateCode.getShowMessage(data));
+            if (response.code != HttpCode.OK) {
+                this.enterFail(true, StateCode.getShowMessage(response));
                 return;
             }
-            data = data.data;
+            const data = response.data;
             this.gameStatus = data.game_status;
             // 处理自定义解析
             (_a = GameServlet.customParseUser) === null || _a === void 0 ? void 0 : _a.call(this, data);
@@ -2285,15 +2290,15 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
                 runFun(handler, false);
             });
         }
-        jackPotClaimHandler(handler, data) {
-            if (data.code != HttpCode.OK) {
+        jackPotClaimHandler(handler, response) {
+            if (response.code != HttpCode.OK) {
                 WaitResult.inst.hide();
                 // this.showNotResult(data, false)
-                StateCode.execute(data.code, data);
+                StateCode.execute(response.code, response);
                 runFun(handler, false);
                 return;
             }
-            data = data.data;
+            const data = response.data;
             let balance = data.balance; //余额
             let win = data.win; //赢的钱
             this.readJackpotData(data);
