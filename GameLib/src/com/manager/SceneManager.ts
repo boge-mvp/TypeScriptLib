@@ -156,7 +156,7 @@ export class SceneManager extends EProxy {
                 SceneManager.inst.starter?.gameServlet?.checkGamePeriod((sc: boolean) => {
                     GRoot.inst.closeModalWait()
                     if (!sc) {
-                        this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.SYSTEM_BACK_LOBBY, null, Handler.create(this, JSUtils.gameClose))
+                        PromptWindow.inst.showTip(LibStr.SYSTEM_BACK_LOBBY, Handler.create(this, JSUtils.gameClose))
                     }
                 })
             } else {
@@ -190,7 +190,7 @@ export class SceneManager extends EProxy {
      * 显示登录提示窗口
      */
     showLoginTip() {
-        this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.LOGIN, null, null, () => JSUtils.login())
+        PromptWindow.inst.showTip(LibStr.LOGIN, () => JSUtils.login())
     }
 
     /**
@@ -403,7 +403,7 @@ export class SceneManager extends EProxy {
             Player.inst.gameId = CommonCmd.GAME_HOME
             return
         }
-        this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.NET_ERROR, null, Handler.create(this, function () {
+        PromptWindow.inst.showTip(LibStr.NET_ERROR, Handler.create(this, function () {
             LoadingWindow.inst.hide()
             JSUtils.gameClose()
             Player.inst.gameId = CommonCmd.GAME_HOME
@@ -514,7 +514,10 @@ export class SceneManager extends EProxy {
     gameGameTimeOutExit() {
         const promptData: PromptData = {
             msg: LibStr.GET_GAME_RESULTS_TIME_OUT,
-            continue: () => {
+            obj: {
+                cancelName: getString(LibStr.OK)
+            },
+            callback: () => {
                 this.sendAction(ActionLib.GAME_RECONNECTION_NET, Handler.create(this, function () {
                     Laya.timer.callLater(this, function () {
                         if (Player.inst.gameId != CommonCmd.GAME_HOME) {
@@ -532,7 +535,10 @@ export class SceneManager extends EProxy {
     gameErrorExit(msg = LibStr.GAME_ERROR) {
         const promptData: PromptData = {
             msg: msg,
-            continue: () => {
+            obj: {
+                cancelName: getString(LibStr.OK)
+            },
+            callback: () => {
                 Laya.timer.callLater(this, function () {
                     if (Player.inst.gameId != CommonCmd.GAME_HOME) {
                         AnalyticsManager.send("exit_game_net_error_" + Player.inst.gameId)

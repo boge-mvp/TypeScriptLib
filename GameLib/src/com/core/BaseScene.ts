@@ -410,7 +410,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
                             obj.okName = getString(LibStr.DEPOSIT_PLAY)
                         }
                     }
-                    this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.SHOW_INVITE_REAL_MONEY, obj, handler, () => {
+                    PromptWindow.inst.showCancelTip(LibStr.SHOW_INVITE_REAL_MONEY, obj, handler, () => {
                         if (obj.okName == getString(LibStr.DEPOSIT_PLAY)) {
                             JSUtils.gameClose(1)
                             JSUtils.deposit()
@@ -420,7 +420,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
                     })
                 }, () => {
                     WaitResult.inst.hide()
-                    this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.SHOW_INVITE_REAL_MONEY, obj, handler, () => {
+                    PromptWindow.inst.showCancelTip(LibStr.SHOW_INVITE_REAL_MONEY, obj, handler, () => {
                         JSUtils.gameClose(1)
                     })
                 })
@@ -428,7 +428,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
         } else {
             obj.okName = getString(LibStr.LOGIN_PLAY)
         }
-        this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, LibStr.SHOW_INVITE_REAL_MONEY, obj, handler, () => {
+        PromptWindow.inst.showCancelTip(LibStr.SHOW_INVITE_REAL_MONEY, obj, handler, () => {
             if (obj.okName == getString(LibStr.LOGIN_PLAY)) {
                 JSUtils.login()
             } else {
@@ -511,7 +511,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
         // let value: string = LocalStorage.getItem(Player.inst.gameId + "_demo")
         // if (Player.inst.isGuest && !value) {
         if (Player.inst.isGuest && !Player.inst.urlParam.debug) {
-            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW,
+            PromptWindow.inst.showTip(
                 {msg: LibStr.PROMPT_GUEST, obj: {cancelName: getString(LibStr.OK)}, callback: this.runEvent.bind(this)}
             )
             // LocalStorage.setItem(Player.inst.gameId + "_demo", "1")

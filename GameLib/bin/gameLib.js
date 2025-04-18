@@ -792,7 +792,7 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
                             obj.okName = getString(1035 /* LibStr.DEPOSIT_PLAY */);
                         }
                     }
-                    this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1015 /* LibStr.SHOW_INVITE_REAL_MONEY */, obj, handler, () => {
+                    PromptWindow.inst.showCancelTip(1015 /* LibStr.SHOW_INVITE_REAL_MONEY */, obj, handler, () => {
                         if (obj.okName == getString(1035 /* LibStr.DEPOSIT_PLAY */)) {
                             JSUtils.gameClose(1);
                             JSUtils.deposit();
@@ -803,7 +803,7 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
                     });
                 }, () => {
                     WaitResult.inst.hide();
-                    this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1015 /* LibStr.SHOW_INVITE_REAL_MONEY */, obj, handler, () => {
+                    PromptWindow.inst.showCancelTip(1015 /* LibStr.SHOW_INVITE_REAL_MONEY */, obj, handler, () => {
                         JSUtils.gameClose(1);
                     });
                 });
@@ -812,7 +812,7 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
             else {
                 obj.okName = getString(1036 /* LibStr.LOGIN_PLAY */);
             }
-            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1015 /* LibStr.SHOW_INVITE_REAL_MONEY */, obj, handler, () => {
+            PromptWindow.inst.showCancelTip(1015 /* LibStr.SHOW_INVITE_REAL_MONEY */, obj, handler, () => {
                 if (obj.okName == getString(1036 /* LibStr.LOGIN_PLAY */)) {
                     JSUtils.login();
                 }
@@ -889,7 +889,7 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
             // let value: string = Laya.LocalStorage.getItem(Player.inst.gameId + "_demo")
             // if (Player.inst.isGuest && !value) {
             if (Player.inst.isGuest && !Player.inst.urlParam.debug) {
-                this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, { msg: 1013 /* LibStr.PROMPT_GUEST */, obj: { cancelName: getString(1066 /* LibStr.OK */) }, callback: this.runEvent.bind(this) });
+                PromptWindow.inst.showTip({ msg: 1013 /* LibStr.PROMPT_GUEST */, obj: { cancelName: getString(1066 /* LibStr.OK */) }, callback: this.runEvent.bind(this) });
                 // Laya.LocalStorage.setItem(Player.inst.gameId + "_demo", "1")
             }
             else {
@@ -1675,7 +1675,7 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
                     case Cmd.SOCKET_TOP_UP_CHANGE:
                         Player.inst.money = obj.balance;
                         this.sendAction(ActionLib.GAME_UPDATE_MONEY);
-                        this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, [1018 /* LibStr.RECHARGE_SUCCESS */,
+                        PromptWindow.inst.showTip([1018 /* LibStr.RECHARGE_SUCCESS */,
                             Player.inst.getCurrencyUnit() + " " + obj.amount]);
                         break;
                     default:
@@ -2270,7 +2270,7 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
          */
         betFail(data, isWindow = false) {
             if (isWindow)
-                this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, StateCode.getShowMessage(data));
+                PromptWindow.inst.showTip(StateCode.getShowMessage(data));
             else
                 tsCore.MessageTip.showTip(StateCode.getShowMessage(data));
             this.sendAction(ActionLib.GAME_STOP_SLOT_LIST_RUN_ANI);
@@ -2320,7 +2320,7 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
                 JSUtils.gameClose();
             }
             else {
-                this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, str);
+                PromptWindow.inst.showTip(str);
             }
         }
         get gameModel() {
@@ -5015,7 +5015,7 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
                     (_d = (_c = SceneManager.inst.starter) === null || _c === void 0 ? void 0 : _c.gameServlet) === null || _d === void 0 ? void 0 : _d.checkGamePeriod((sc) => {
                         fgui.GRoot.inst.closeModalWait();
                         if (!sc) {
-                            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1012 /* LibStr.SYSTEM_BACK_LOBBY */, null, Laya.Handler.create(this, JSUtils.gameClose));
+                            PromptWindow.inst.showTip(1012 /* LibStr.SYSTEM_BACK_LOBBY */, Laya.Handler.create(this, JSUtils.gameClose));
                         }
                     });
                 }
@@ -5051,7 +5051,7 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
          * 显示登录提示窗口
          */
         showLoginTip() {
-            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1023 /* LibStr.LOGIN */, null, null, () => JSUtils.login());
+            PromptWindow.inst.showTip(1023 /* LibStr.LOGIN */, () => JSUtils.login());
         }
         /**
          * 开启游戏 两个参数二选一  如果使用id第一个必须设置null
@@ -5239,7 +5239,7 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
                 Player.inst.gameId = CommonCmd.GAME_HOME;
                 return;
             }
-            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, 1005 /* LibStr.NET_ERROR */, null, Laya.Handler.create(this, function () {
+            PromptWindow.inst.showTip(1005 /* LibStr.NET_ERROR */, Laya.Handler.create(this, function () {
                 LoadingWindow.inst.hide();
                 JSUtils.gameClose();
                 Player.inst.gameId = CommonCmd.GAME_HOME;
@@ -5342,7 +5342,10 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
         gameGameTimeOutExit() {
             const promptData = {
                 msg: 1011 /* LibStr.GET_GAME_RESULTS_TIME_OUT */,
-                continue: () => {
+                obj: {
+                    cancelName: getString(1066 /* LibStr.OK */)
+                },
+                callback: () => {
                     this.sendAction(ActionLib.GAME_RECONNECTION_NET, Laya.Handler.create(this, function () {
                         Laya.timer.callLater(this, function () {
                             if (Player.inst.gameId != CommonCmd.GAME_HOME) {
@@ -5359,7 +5362,10 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
         gameErrorExit(msg = 1009 /* LibStr.GAME_ERROR */) {
             const promptData = {
                 msg: msg,
-                continue: () => {
+                obj: {
+                    cancelName: getString(1066 /* LibStr.OK */)
+                },
+                callback: () => {
                     Laya.timer.callLater(this, function () {
                         if (Player.inst.gameId != CommonCmd.GAME_HOME) {
                             AnalyticsManager.send("exit_game_net_error_" + Player.inst.gameId);
@@ -7620,7 +7626,7 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
                     if (typeof msg !== "string")
                         msg = StateCode.getShowMessage(msg);
                     msg = msg ? msg : getString(1005 /* LibStr.NET_ERROR */);
-                    tsCore.App.inst.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, msg);
+                    PromptWindow.inst.showTip(msg);
                     return true;
             }
         }

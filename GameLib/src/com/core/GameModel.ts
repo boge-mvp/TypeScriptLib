@@ -22,6 +22,7 @@ import {GameConfigKit} from "../kit/GameConfigKit";
 import {LoaderConfig} from "../configs/LoaderConfig";
 import {AssetsLoader} from "../manager/AssetsLoader";
 import {IGameData} from "../Interfaces";
+import {PromptWindow} from "../view/PromptWindow";
 
 /**
  *
@@ -103,7 +104,7 @@ export class GameModel<T extends IGameData = BaseGameData> extends EProxy implem
                 case Cmd.SOCKET_TOP_UP_CHANGE:
                     Player.inst.money = obj.balance
                     this.sendAction(ActionLib.GAME_UPDATE_MONEY)
-                    this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, [LibStr.RECHARGE_SUCCESS,
+                    PromptWindow.inst.showTip([LibStr.RECHARGE_SUCCESS,
                         Player.inst.getCurrencyUnit() + " " + obj.amount])
                     break
                 default:

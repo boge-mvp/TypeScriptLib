@@ -20,6 +20,7 @@ import {WaitResult} from "../view/WaitResult"
 import {CommonCmd, HttpCode, Urls} from "../net/Common";
 import {BaseGameData} from "./BaseGameData";
 import {StateCode} from "../utils/StateCode";
+import {PromptWindow} from "../view/PromptWindow";
 
 /**
  * 游戏基础类
@@ -425,7 +426,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
      * @param isWindow
      */
     betFail(data?: HttpResponse, isWindow = false) {
-        if (isWindow) this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, StateCode.getShowMessage(data))
+        if (isWindow) PromptWindow.inst.showTip(StateCode.getShowMessage(data))
         else MessageTip.showTip(StateCode.getShowMessage(data))
         this.sendAction(ActionLib.GAME_STOP_SLOT_LIST_RUN_ANI)
         this.sendAction(ActionLib.GAME_RESET_BET)
@@ -477,7 +478,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
             JSUtils.alert(str)
             JSUtils.gameClose()
         } else {
-            this.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, str)
+            PromptWindow.inst.showTip(str)
         }
     }
 

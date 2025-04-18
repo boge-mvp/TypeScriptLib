@@ -1,6 +1,7 @@
 import GRoot = fgui.GRoot;
 import UIPackage = fgui.UIPackage;
 import LocalStorage = Laya.LocalStorage;
+import Log = tsCore.Log;
 import {Player} from "../Player"
 import {JSUtils} from "./JSUtils"
 import {LoadingWindow} from "../view/LoadingWindow"
@@ -10,9 +11,7 @@ import {HomePrompt} from "../view/HomePrompt"
 import {SceneManager} from "../manager/SceneManager"
 import {LibStr} from "../LibStr"
 import {HttpCode} from "../net/Common";
-import {ActionLib} from "../ActionLib";
-import Log = tsCore.Log;
-import App = tsCore.App;
+import {PromptWindow} from "../view/PromptWindow";
 
 /** 状态吗获取显示信息 */
 export class StateCode {
@@ -104,7 +103,7 @@ export class StateCode {
             default:
                 if (typeof msg !== "string") msg = StateCode.getShowMessage(msg)
                 msg = msg ? msg : getString(LibStr.NET_ERROR)
-                App.inst.sendAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, msg)
+                PromptWindow.inst.showTip(msg)
                 return true
         }
     }
