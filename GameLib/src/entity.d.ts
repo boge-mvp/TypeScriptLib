@@ -16,6 +16,8 @@ declare type ResConfig = {
     guide?: (string | LoadRes)[] | string | LoadRes
     /** 游戏赔率 */
     odds?: number[][] | any[][]
+    /** 自定义属性 */
+    [key: string]: any
 }
 
 declare type OpenPage = {
