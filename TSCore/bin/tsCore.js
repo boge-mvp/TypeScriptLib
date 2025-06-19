@@ -3223,16 +3223,50 @@ function runApplication(classTarget) {
             else {
                 let resInfo = this._infoPool.length ? this._infoPool.pop() : new ResInfo();
                 resInfo.url = url;
+                resInfo.type = type;
+                resInfo.cache = cache;
+                resInfo.ignoreCache = ignoreCache;
+                resInfo.originalUrl = null;
                 resInfo.complete = complete;
                 resInfo.progress = progress;
-                resInfo.type = type;
                 resInfo.priority = priority;
-                resInfo.cache = cache;
+                resInfo.createCache = false;
+                resInfo.createConstructParams = null;
+                resInfo.createPropertyParams = null;
                 resInfo.group = group;
-                resInfo.ignoreCache = ignoreCache;
                 resInfo.useWorkerLoader = useWorkerLoader;
                 resInfo.useIndex = 0;
-                this._load(url, resInfo, progress, type, priority, cache, group, ignoreCache, useWorkerLoader);
+                this._load(resInfo);
+            }
+        }
+        create(url, complete, progress, type, constructParams = null, propertyParams = null, priority = 1, cache = true) {
+            if (Array.isArray(url))
+                return this.loadAssets(url, complete, progress, type, priority, cache);
+            let content = this.getRes(url);
+            if (content) {
+                //增加延迟回掉，防止快速回掉导致执行顺序错误
+                Laya.systemTimer.frameOnce(1, null, function () {
+                    progress && progress.runWith(1);
+                    complete && complete.runWith(Array.isArray(content) ? [content] : content);
+                });
+            }
+            else {
+                let resInfo = this._infoPool.length ? this._infoPool.pop() : new ResInfo();
+                resInfo.url = url;
+                resInfo.type = type;
+                resInfo.cache = false;
+                resInfo.ignoreCache = true;
+                resInfo.originalUrl = null;
+                resInfo.createCache = cache;
+                resInfo.createConstructParams = constructParams;
+                resInfo.createPropertyParams = propertyParams;
+                resInfo.group = null;
+                resInfo.priority = priority;
+                resInfo.useWorkerLoader = false;
+                resInfo.complete = complete;
+                resInfo.progress = progress;
+                resInfo.useIndex = 0;
+                this._load(resInfo);
             }
         }
         loadAssets(arr, complete, progress, type, priority, cache, group) {
@@ -3276,10 +3310,14 @@ function runApplication(classTarget) {
                 }
             }
         }
-        _load(url, resInfo = null, progress = null, type = null, priority = 1, cache = true, group = null, ignoreCache = false, useWorkerLoader = false) {
-            ELoader.loader.formatURL(url, resInfo);
-            url = StringUtil.replace(url, "{host}", window.location.host);
-            Laya.loader.load(url, Laya.Handler.create(this, this.onSingleComplete, [resInfo]), progress, type, priority, cache, group, ignoreCache, useWorkerLoader);
+        _load(resInfo = null) {
+            ELoader.loader.formatURL(resInfo);
+            const url = StringUtil.replace(resInfo.url, "{host}", window.location.host);
+            if (resInfo.createCache) {
+                Laya.loader.create(url, Laya.Handler.create(this, this.onSingleComplete, [resInfo]), resInfo.progress, resInfo.type, resInfo.createConstructParams, resInfo.createPropertyParams, resInfo.priority, resInfo.cache);
+            }
+            else
+                Laya.loader.load(url, Laya.Handler.create(this, this.onSingleComplete, [resInfo]), resInfo.progress, resInfo.type, resInfo.priority, resInfo.cache, resInfo.group, resInfo.ignoreCache, resInfo.useWorkerLoader);
         }
         onSingleComplete(resInfo, content) {
             var _a;
@@ -3287,7 +3325,7 @@ function runApplication(classTarget) {
                 if (this.baseUrls) {
                     resInfo.useIndex++;
                     if (resInfo.useIndex < this.baseUrls.length) {
-                        this._load(resInfo.url, resInfo, resInfo.progress, resInfo.type, resInfo.priority, resInfo.cache, resInfo.group, resInfo.ignoreCache, resInfo.useWorkerLoader);
+                        this._load(resInfo);
                         return;
                     }
                 }
@@ -3345,9 +3383,9 @@ function runApplication(classTarget) {
         clearUnLoaded() {
             Laya.loader.clearUnLoaded();
         }
-        formatURL(url, resInfo) {
+        formatURL(resInfo) {
             if (ELoader.checkBaseUrl)
-                this.baseUrls = ELoader.checkBaseUrl(url);
+                this.baseUrls = ELoader.checkBaseUrl(resInfo.url);
             if (this.baseUrls) {
                 let index = resInfo.useIndex;
                 if (this.baseUrls.length <= index) {

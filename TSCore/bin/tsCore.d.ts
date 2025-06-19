@@ -941,6 +941,7 @@ declare namespace tsCore {
          * @return 此 LoaderManager 对象本身。
          */
         load(url: string | (string | LoadRes)[], complete?: Laya.Handler, progress?: Laya.Handler, type?: string, priority?: number, cache?: boolean, group?: string, ignoreCache?: boolean, useWorkerLoader?: boolean): void;
+        create(url: string | (string | LoadRes)[], complete?: Laya.Handler, progress?: Laya.Handler, type?: string, constructParams?: any, propertyParams?: any, priority?: number, cache?: boolean): void;
         private loadAssets;
         private _load;
         private onSingleComplete;

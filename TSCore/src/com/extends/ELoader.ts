@@ -24,11 +24,11 @@ export class ELoader {
      * @param    complete    加载结束回调。根据url类型不同分为2种情况：1. url为String类型，也就是单个资源地址，如果加载成功，则回调参数值为加载完成的资源，否则为null；2. url为数组类型，指定了一组要加载的资源，如果全部加载成功，则回调参数值为true，否则为false。
      * @param    progress    加载进度回调。回调参数值为当前资源的加载进度信息(0-1)。
      * @param    type        资源类型。比如：Loader.IMAGE。
-     * @param    priority    (default = 1)加载的优先级，优先级高的优先加载。有0-4共5个优先级，0最高，4最低。
-     * @param    cache        是否缓存加载结果。
+     * @param    [priority=1]    加载的优先级，优先级高的优先加载。有0-4共5个优先级，0最高，4最低。
+     * @param    [cache=true]        是否缓存加载结果。
      * @param    group        分组，方便对资源进行管理。
-     * @param    ignoreCache    是否忽略缓存，强制重新加载。
-     * @param    useWorkerLoader (default = false)是否使用worker加载（只针对IMAGE类型和ATLAS类型，并且浏览器支持的情况下生效）
+     * @param    [ignoreCache=false]    是否忽略缓存，强制重新加载。
+     * @param    [useWorkerLoader=false] 是否使用worker加载（只针对IMAGE类型和ATLAS类型，并且浏览器支持的情况下生效）
      * @return 此 LoaderManager 对象本身。
      */
     load(url: string | (string | LoadRes)[], complete?: Handler, progress?: Handler, type?: string, priority = 1, cache = true, group?: string, ignoreCache = false, useWorkerLoader = false) {
@@ -43,20 +43,68 @@ export class ELoader {
         } else {
             let resInfo = this._infoPool.length ? this._infoPool.pop() : new ResInfo()
             resInfo.url = url
+            resInfo.type = type
+            resInfo.cache = cache
+            resInfo.ignoreCache = ignoreCache
+            resInfo.originalUrl = null
             resInfo.complete = complete
             resInfo.progress = progress
-            resInfo.type = type
             resInfo.priority = priority
-            resInfo.cache = cache
+            resInfo.createCache = false
+            resInfo.createConstructParams = null;
+            resInfo.createPropertyParams = null;
             resInfo.group = group
-            resInfo.ignoreCache = ignoreCache
             resInfo.useWorkerLoader = useWorkerLoader
             resInfo.useIndex = 0
-            this._load(url, resInfo, progress, type, priority, cache, group, ignoreCache, useWorkerLoader)
+            this._load(resInfo)
         }
     }
 
-    private loadAssets(arr: (string | LoadRes)[], complete: Handler, progress: Handler, type: string, priority: number, cache: boolean, group: string) {
+    /**
+     * <p>根据clas类型创建一个未初始化资源的对象，随后进行异步加载，资源加载完成后，初始化对象的资源，并通过此对象派发 Event.LOADED 事件，事件回调参数值为此对象本身。套嵌资源的子资源会保留资源路径"?"后的部分。</p>
+     * <p>如果url为数组，返回true；否则返回指定的资源类对象，可以通过侦听此对象的 Event.LOADED 事件来判断资源是否已经加载完毕。</p>
+     * <p><b>注意：</b>cache参数只能对文件后缀为atlas的资源进行缓存控制，其他资源会忽略缓存，强制重新加载。</p>
+     * @param	url			资源地址或者数组。如果url和clas同时指定了资源类型，优先使用url指定的资源类型。参数形如：[{url:xx,clas:xx,priority:xx,params:xx},{url:xx,clas:xx,priority:xx,params:xx}]。
+     * @param	complete	加载结束回调。根据url类型不同分为2种情况：1. url为String类型，也就是单个资源地址，如果加载成功，则回调参数值为加载完成的资源，否则为null；2. url为数组类型，指定了一组要加载的资源，如果全部加载成功，则回调参数值为true，否则为false。
+     * @param	progress	资源加载进度回调，回调参数值为当前资源加载的进度信息(0-1)。
+     * @param	type	资源类型。
+     * @param	constructParams		资源构造函数参数。
+     * @param	propertyParams		资源属性参数。
+     * @param	[priority=1]	加载的优先级，优先级高的优先加载。有0-4共5个优先级，0最高，4最低。
+     * @param	[cache=true]		是否缓存加载的资源。
+     * @return	如果url为数组，返回true；否则返回指定的资源类对象。
+     */
+    create(url: string | (string | LoadRes)[], complete?: Handler, progress?: Handler, type?: string, constructParams = null, propertyParams = null, priority = 1, cache = true) {
+        if (Array.isArray(url)) return this.loadAssets(url, complete, progress, type, priority, cache)
+        let content = this.getRes(url)
+        if (content) {
+            //增加延迟回掉，防止快速回掉导致执行顺序错误
+            Laya.systemTimer.frameOnce(1, null, function () {
+                progress && progress.runWith(1)
+                complete && complete.runWith(Array.isArray(content) ? [content] : content)
+            })
+        } else {
+            let resInfo = this._infoPool.length ? this._infoPool.pop() : new ResInfo()
+            resInfo.url = url
+            resInfo.type = type
+            resInfo.cache = false
+            resInfo.ignoreCache = true
+            resInfo.originalUrl = null
+            resInfo.createCache = cache
+            resInfo.createConstructParams = constructParams;
+            resInfo.createPropertyParams = propertyParams;
+            resInfo.group = null
+            resInfo.priority = priority
+            resInfo.useWorkerLoader = false
+            resInfo.complete = complete
+            resInfo.progress = progress
+            resInfo.useIndex = 0
+            this._load(resInfo)
+        }
+    }
+
+
+    private loadAssets(arr: (string | LoadRes)[], complete: Handler, progress: Handler, type: string, priority: number, cache: boolean, group?: string) {
         let itemCount = arr.length
         let loadedCount = 0
         let totalSize = 0
@@ -97,10 +145,12 @@ export class ELoader {
         }
     }
 
-    private _load(url: string, resInfo: ResInfo = null, progress: Handler = null, type: string = null, priority = 1, cache = true, group: string = null, ignoreCache = false, useWorkerLoader = false) {
-        ELoader.loader.formatURL(url, resInfo)
-        url = StringUtil.replace(url, "{host}", window.location.host)
-        Laya.loader.load(url, Handler.create(this, this.onSingleComplete, [resInfo]), progress, type, priority, cache, group, ignoreCache, useWorkerLoader)
+    private _load(resInfo: ResInfo = null) {
+        ELoader.loader.formatURL(resInfo)
+        const url = StringUtil.replace(resInfo.url, "{host}", window.location.host)
+        if (resInfo.createCache) {
+            Laya.loader.create(url, Handler.create(this, this.onSingleComplete, [resInfo]), resInfo.progress, resInfo.type, resInfo.createConstructParams, resInfo.createPropertyParams, resInfo.priority, resInfo.cache)
+        } else Laya.loader.load(url, Handler.create(this, this.onSingleComplete, [resInfo]), resInfo.progress, resInfo.type, resInfo.priority, resInfo.cache, resInfo.group, resInfo.ignoreCache, resInfo.useWorkerLoader)
     }
 
     private onSingleComplete(resInfo: ResInfo, content?: any) {
@@ -108,9 +158,7 @@ export class ELoader {
             if (this.baseUrls) {
                 resInfo.useIndex++
                 if (resInfo.useIndex < this.baseUrls.length) {
-                    this._load(resInfo.url, resInfo, resInfo.progress, resInfo.type,
-                        resInfo.priority, resInfo.cache, resInfo.group, resInfo.ignoreCache,
-                        resInfo.useWorkerLoader)
+                    this._load(resInfo)
                     return
                 }
             }
@@ -169,8 +217,8 @@ export class ELoader {
         Laya.loader.clearUnLoaded()
     }
 
-    private formatURL(url: string, resInfo: ResInfo) {
-        if (ELoader.checkBaseUrl) this.baseUrls = ELoader.checkBaseUrl(url)
+    private formatURL(resInfo: ResInfo) {
+        if (ELoader.checkBaseUrl) this.baseUrls = ELoader.checkBaseUrl(resInfo.url)
         if (this.baseUrls) {
             let index = resInfo.useIndex
             if (this.baseUrls.length <= index) {
@@ -188,13 +236,19 @@ export class ELoader {
 class ResInfo {
     /** 当前单次加载文件使用的域名下标 */
     useIndex: number
+
     url: string
+    type: string
+    cache: boolean
+    ignoreCache: boolean
+    originalUrl: string
+    group: string
+    createCache: boolean
     complete: Laya.Handler
     progress: Laya.Handler
-    type: string
     priority: number
-    cache: boolean
-    group: string
-    ignoreCache: boolean
     useWorkerLoader: boolean
+
+    createConstructParams: any
+    createPropertyParams: any
 }
