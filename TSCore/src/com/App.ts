@@ -60,6 +60,8 @@ export class App implements IAction {
      */
     static enableHistory = false
 
+    private static initStop: boolean | void = false
+
     /**
      *
      * @param init
@@ -83,20 +85,27 @@ export class App implements IAction {
         App.inst.options = options = options ? defaults(options, def) : def
         options.init?.coreLib && App._init()
 
+
         const asyncInit = async () => {
-
-            await init?.onRun?.()
-
+            this.initStop = await init?.onRun?.()
+            if (this.initStop) {
+                return Promise.reject()
+            }
             options.init?.laya && Laya.init(options.laya.width, options.laya.height, ...options.laya.renders)
 
             options.init?.fgui && Laya.stage.addChild(fgui.GRoot.inst.displayObject)
 
-            await init?.onEngine?.()
-
+            this.initStop = await init?.onEngine?.()
+            if (this.initStop) {
+                return Promise.reject()
+            }
+            return Promise.resolve()
         }
 
         asyncInit().then(() => {
             Laya.timer.callLater(App.inst, App.inst.lastInit)
+        }).catch(() => {
+            init?.onFail()
         })
 
     }

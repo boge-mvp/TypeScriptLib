@@ -64,18 +64,22 @@ declare type IInitEngine = {
     /**
      * 引擎初始化前
      */
-    onRun?: () => Promise<void>
+    onRun?: () => Promise<boolean | void>
 
     /**
      * 引擎初始化结束
      * Laya fgui
      */
-    onEngine?: () => Promise<void>
+    onEngine?: () => Promise<boolean | void>
 
     /**
      * 所有初始化完成，包括延迟执行
      */
     onEnd?: () => void
+    /**
+     * 因为某修情况初始化失败
+     */
+    onFail?: () => void
 }
 
 
