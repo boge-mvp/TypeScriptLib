@@ -161,6 +161,10 @@ declare type ActionsData = {
  * 点击事件处理的绑定数据
  */
 declare type EventData = {
+    /**
+     * 绑定注册事件 类的prototype
+     */
+    target?: any;
     className: string;
     fun: Function;
     /**
@@ -236,16 +240,15 @@ declare function ClickOn(childName: string, args?: any[]): (target: any, propert
 declare function EventOn(eventName: string, childName?: string, args?: any[]): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
 declare function initBean(target: any, name: string): void;
 /**
- * 代理组件事件函数
+ * 代理组件事件
  *
- * 该函数的作用是将事件绑定从目标对象代理到其子对象或自身
- * 它通过事件数据过滤出需要绑定的事件，并根据事件数据中的信息
- * 决定将事件绑定到目标对象的子对象还是目标对象自身
+ * 此函数用于遍历事件数据数组，并为每个事件数据绑定相应的事件处理函数
+ * 它主要通过检查事件数据中的子组件名称来决定是为子组件还是当前组件绑定事件
  *
- * @param target 事件的目标对象
- * @param name 组件的名称，用于过滤事件数据
+ * @param events 事件数据数组，包含了需要绑定的事件信息
+ * @param target 当前组件
  */
-declare function proxyComponentEvent(target: any, name: string): void;
+declare function proxyComponentEvent(events: EventData[], target: any): void;
 /**
  * 包装成代理类
  * @param {{new(...args: any[]): any}} classTarget
@@ -3403,9 +3406,13 @@ declare module fgui {
 declare interface String {
 
     /**
-     * 首字母保证小写
+     * 首字母强制小写
      */
     firstLowerCase(): string
+    /**
+     * 首字母强制大写
+     */
+    firstUpperCase(): string
     /**
      * 确定是否按指定字符串开始.满足一个返回 true
      * @param search

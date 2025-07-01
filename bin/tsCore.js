@@ -500,6 +500,9 @@ function filterInPlace(array, predicate, predicateResultToRemove) {
 String.prototype.firstLowerCase = function () {
     return this.charAt(0).toLowerCase() + this.slice(1);
 };
+String.prototype.firstUpperCase = function () {
+    return this.charAt(0).toUpperCase() + this.slice(1);
+};
 String.prototype.startsWithAny = function (...search) {
     return search.some((value) => this.startsWith(value));
 };
@@ -723,15 +726,7 @@ function ClickOn(childName, args) {
             const eventName = Laya.Event.CLICK;
             // 将事件处理信息推送到全局列表中
             // @ts-ignore
-            tsCore.App.beanEventFunction.push({ className, fun, eventName, childName, args });
-            // 劫持constructFromResource方法以确保在构造GObject时注册事件
-            const constructFromResource = target.constructFromResource;
-            Object.defineProperty(target, "constructFromResource", {
-                value: function () {
-                    constructFromResource.call(this);
-                    proxyComponentEvent(this, this.constructor.name);
-                }
-            });
+            tsCore.App.beanEventFunction.push({ target, className, fun, eventName, childName, args });
         }
         else {
             // 如果目标不是FGUI的GObject实例，输出调试日志
@@ -759,15 +754,7 @@ function EventOn(eventName, childName, args) {
             const fun = descriptor.value;
             // 将事件处理信息推送到全局列表中
             // @ts-ignore
-            tsCore.App.beanEventFunction.push({ className, fun, eventName, childName, args });
-            // 劫持constructFromResource方法以确保在构造GObject时注册事件
-            const constructFromResource = target.constructFromResource;
-            Object.defineProperty(target, "constructFromResource", {
-                value: function () {
-                    constructFromResource.call(this);
-                    proxyComponentEvent(this, this.constructor.name);
-                }
-            });
+            tsCore.App.beanEventFunction.push({ target, className, fun, eventName, childName, args });
         }
         else {
             // 如果目标不是FGUI的GObject实例，输出调试日志
@@ -786,30 +773,34 @@ function initBean(target, name) {
     });
 }
 /**
- * 代理组件事件函数
+ * 代理组件事件
  *
- * 该函数的作用是将事件绑定从目标对象代理到其子对象或自身
- * 它通过事件数据过滤出需要绑定的事件，并根据事件数据中的信息
- * 决定将事件绑定到目标对象的子对象还是目标对象自身
+ * 此函数用于遍历事件数据数组，并为每个事件数据绑定相应的事件处理函数
+ * 它主要通过检查事件数据中的子组件名称来决定是为子组件还是当前组件绑定事件
  *
- * @param target 事件的目标对象
- * @param name 组件的名称，用于过滤事件数据
+ * @param events 事件数据数组，包含了需要绑定的事件信息
+ * @param target 当前组件
  */
-function proxyComponentEvent(target, name) {
-    // @ts-ignore
-    tsCore.App.beanEventFunction
-        .filter((data) => name == data.className)
-        .forEach((data) => {
+function proxyComponentEvent(events, target) {
+    // 遍历每个事件数据项
+    events.forEach((data) => {
+        // 检查事件数据中是否包含子组件名称
         if (data.childName) {
+            // 根据子组件名称获取子组件实例
             const child = target.getChild(data.childName);
+            // 如果找到子组件，则为子组件绑定事件处理函数
             if (child)
-                child.on(data.eventName, target, data.fun);
-            else { // @ts-ignore
+                child.on(data.eventName, data.target, data.fun);
+            else {
+                // 如果未找到子组件，则输出调试日志
+                // @ts-ignore
                 tsCore.Log.debug(`[${data.eventName}] not find child name = ${data.childName}`);
             }
         }
-        else
-            target.on(data.eventName, target, data.fun, data.args);
+        else {
+            // 如果事件数据中不包含子组件名称，则直接为当前组件绑定事件处理函数
+            target.on(data.eventName, data.target, data.fun, data.args);
+        }
     });
 }
 /**
@@ -846,6 +837,30 @@ function proxyClass(classTarget, beanName) {
  * @param classTarget - 应用程序主类的构造函数。
  */
 function runApplication(classTarget) {
+    // @ts-ignore
+    const events = tsCore.App.beanEventFunction;
+    const eventMap = events.groupBy(value => value.target);
+    eventMap.forEach((value, key) => {
+        if (fgui.Window.prototype.isPrototypeOf(key)) { // 特殊处理window 因为他不走 constructFromResource
+            const onInit = key.onInit;
+            Object.defineProperty(key, "onInit", {
+                value: function () {
+                    onInit.call(this);
+                    proxyComponentEvent(value, this);
+                }
+            });
+        }
+        else {
+            // 劫持constructFromResource方法以确保在构造GObject时注册事件
+            const constructFromResource = key.constructFromResource;
+            Object.defineProperty(key, "constructFromResource", {
+                value: function () {
+                    constructFromResource.call(this);
+                    proxyComponentEvent(value, this.constructor.name);
+                }
+            });
+        }
+    });
     const app = new classTarget();
     // @ts-ignore
     if (!tsCore.App.inst.hasBean(classTarget.name)) {
