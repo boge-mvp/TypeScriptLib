@@ -642,6 +642,9 @@ function Component(value = "") {
             value = classTarget;
         }
         (_a = data.isJoinBean) !== null && _a !== void 0 ? _a : (data.isJoinBean = true);
+        if (!data.isJoinBean) {
+            return proxyClass(classTarget);
+        }
         (_b = data.autoInit) !== null && _b !== void 0 ? _b : (data.autoInit = true);
         const className = Reflect.getMetadata("class:name", classTarget) || classTarget.name;
         data.key = typeof value === "string" && value.trim().length > 0 ? value : className.firstLowerCase();

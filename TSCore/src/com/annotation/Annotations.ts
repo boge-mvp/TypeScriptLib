@@ -94,11 +94,13 @@ function Component<T extends { new(...args: any[]): {} }>(value: string | T | Co
             value = classTarget
         }
         data.isJoinBean ??= true
+        if (!data.isJoinBean){
+            return proxyClass(classTarget)
+        }
         data.autoInit ??= true
         const className = Reflect.getMetadata("class:name", classTarget) || classTarget.name
         data.key = typeof value === "string" && value.trim().length > 0 ? value : className.firstLowerCase()
         data.classTarget = classTarget
-
         if (!data.autoInit) {
             return proxyClass(classTarget, typeof value === "string" ? value : data.key)
         }
