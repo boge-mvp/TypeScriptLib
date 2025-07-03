@@ -121,7 +121,7 @@ gulp.task('removeTemp', () => {
 // ))
 gulp.task('build', gulp.series("clean", () => {
         return gulp.src([
-            "./TSCore/bin/**/*", "!./TSCore/bin/**/*.json",
+            "./TSCore/bin/**/*",
             "./GameLib/bin/**/*"
         ]).pipe(gulp.dest("./bin"))
     }

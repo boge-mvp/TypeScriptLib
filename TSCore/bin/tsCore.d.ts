@@ -201,6 +201,21 @@ declare function Component<T extends {
     new (...args: any[]): {};
 }>(value?: string | T | ComponentData): any;
 /**
+ * @bindThis 装饰器，用于自动绑定类方法中的this上下文
+ *
+ * 当一个方法被@bindThis装饰器装饰时，该方法会被自动绑定到类的实例上
+ * 这意味着在该方法内部，this将始终指向类的实例，而不会因为函数的调用方式不同而改变
+ *
+ * @param target 目标类的原型
+ * @param propertyKey 方法的名称
+ * @param descriptor 方法的描述符
+ * @throws {TypeError} 如果装饰的不是方法，抛出类型错误
+ */
+declare function bindThis<T extends Function>(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<T>): {
+    configurable: boolean;
+    get(this: T): T;
+};
+/**
  * 资源装饰器，标记类属性为资源依赖。 只有被@Component加入依赖管理的类才会被绑定属性
  * @param target - 类的原型。
  * @param propertyKey - 属性键名。
@@ -223,7 +238,7 @@ declare function Actions(action: number | string, group?: string, order?: number
 /**
  * 点击事件装饰器
  *
- * 该装饰器用于在FGUI的GObject上注册点击事件监听，并将事件委托给特定的方法处理
+ * 该装饰器用于在FGUI的GObject上注册点击事件`Laya.Event.CLICK`监听，并将事件委托给特定的方法处理
  * 它会将相关信息（如类名、方法、事件名称、子节点名称和参数）推送到全局事件函数列表中
  * 并劫持GObject的constructFromResource方法以注册组件事件代理
  *

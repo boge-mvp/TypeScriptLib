@@ -15,6 +15,7 @@ and limitations under the License.
 var Reflect;
 (function (Reflect) {
     // Metadata Proposal
+    // https://github.com/microsoft/reflect-metadata
     // https://rbuckton.github.io/reflect-metadata/
     (function (factory) {
         var root = typeof globalThis === "object" ? globalThis :

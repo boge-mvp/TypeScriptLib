@@ -371,7 +371,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
      */
     static inviteRealMoneyNeed = (): boolean => {
         let gameData = Player.inst.gameData
-        let winLimit = gameData?.getTotalBetMoney() * 3 ?? 0
+        let winLimit = (gameData?.getTotalBetMoney() ?? 0) * 3
         return Player.inst.isGuest && Player.inst.guestModel.guestPlayCount >= CommonCmd.GUEST_MAX_PLAY_COUNT && (
             gameData != null && !gameData.isRecommend && winLimit <= (gameData?.totalWinMoney ?? 100)
         )

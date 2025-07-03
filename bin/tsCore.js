@@ -662,6 +662,38 @@ function Component(value = "") {
     return decorator;
 }
 /**
+ * @bindThis 装饰器，用于自动绑定类方法中的this上下文
+ *
+ * 当一个方法被@bindThis装饰器装饰时，该方法会被自动绑定到类的实例上
+ * 这意味着在该方法内部，this将始终指向类的实例，而不会因为函数的调用方式不同而改变
+ *
+ * @param target 目标类的原型
+ * @param propertyKey 方法的名称
+ * @param descriptor 方法的描述符
+ * @throws {TypeError} 如果装饰的不是方法，抛出类型错误
+ */
+function bindThis(target, propertyKey, descriptor) {
+    // 检查descriptor是否存在且为函数，因为只有函数可以被此装饰器装饰
+    if (!descriptor || (typeof descriptor.value !== 'function')) {
+        throw new TypeError(`Only methods can be decorated with @bindThis. <${propertyKey}> is not a method!`);
+    }
+    return {
+        configurable: true,
+        get() {
+            // 将方法绑定到当前类实例，确保方法内的this指向正确
+            const bound = descriptor.value.bind(this);
+            // 在类实例上定义属性，值为绑定后的函数，以便后续调用
+            Object.defineProperty(this, propertyKey, {
+                value: bound,
+                configurable: true,
+                writable: true
+            });
+            // 返回绑定后的函数
+            return bound;
+        }
+    };
+}
+/**
  * 资源装饰器，标记类属性为资源依赖。 只有被@Component加入依赖管理的类才会被绑定属性
  * @param target - 类的原型。
  * @param propertyKey - 属性键名。
@@ -685,6 +717,9 @@ function Resource(target, propertyKey) {
  * @param descriptor - 属性描述符。
  */
 function Bean(target, propertyKey, descriptor) {
+    if (!descriptor || (typeof descriptor.value !== 'function')) {
+        throw new TypeError(`Only methods can be decorated with @Bean. <${propertyKey}> is not a method!`);
+    }
     const returnTarget = Reflect.getMetadata("design:returntype", target, propertyKey);
     if (returnTarget) {
         // @ts-ignore
@@ -701,6 +736,9 @@ function Bean(target, propertyKey, descriptor) {
  */
 function Actions(action, group, order) {
     return function (target, propertyKey, descriptor) {
+        if (!descriptor || (typeof descriptor.value !== 'function')) {
+            throw new TypeError(`Only methods can be decorated with @Actions. <${propertyKey}> is not a method!`);
+        }
         const className = target.constructor.name;
         const paramtypes = Reflect.getMetadata("design:paramtypes", target, propertyKey);
         const fun = descriptor.value;
@@ -711,7 +749,7 @@ function Actions(action, group, order) {
 /**
  * 点击事件装饰器
  *
- * 该装饰器用于在FGUI的GObject上注册点击事件监听，并将事件委托给特定的方法处理
+ * 该装饰器用于在FGUI的GObject上注册点击事件`Laya.Event.CLICK`监听，并将事件委托给特定的方法处理
  * 它会将相关信息（如类名、方法、事件名称、子节点名称和参数）推送到全局事件函数列表中
  * 并劫持GObject的constructFromResource方法以注册组件事件代理
  *
@@ -719,23 +757,7 @@ function Actions(action, group, order) {
  * @param args 附加参数，可选
  */
 function ClickOn(childName, args) {
-    return function (target, propertyKey, descriptor) {
-        // 确保目标是一个FGUI的GObject实例
-        if (target instanceof fgui.GObject) {
-            const className = target.constructor.name;
-            const paramtypes = Reflect.getMetadata("design:paramtypes", target, propertyKey);
-            const fun = descriptor.value;
-            const eventName = Laya.Event.CLICK;
-            // 将事件处理信息推送到全局列表中
-            // @ts-ignore
-            tsCore.App.beanEventFunction.push({ target, className, fun, eventName, childName, args });
-        }
-        else {
-            // 如果目标不是FGUI的GObject实例，输出调试日志
-            // @ts-ignore
-            tsCore.Log.debug("[click] Can only be used in fgui.GObject = " + data.childName);
-        }
-    };
+    return EventOn(Laya.Event.CLICK, childName, args);
 }
 /**
  * 通用事件监听装饰器
@@ -749,6 +771,9 @@ function ClickOn(childName, args) {
  */
 function EventOn(eventName, childName, args) {
     return function (target, propertyKey, descriptor) {
+        if (!descriptor || (typeof descriptor.value !== 'function')) {
+            throw new TypeError(`Only methods can be decorated with @EventOn. <${propertyKey}> is not a method!`);
+        }
         // 确保目标是一个FGUI的GObject实例
         if (target instanceof fgui.GObject) {
             const className = target.constructor.name;

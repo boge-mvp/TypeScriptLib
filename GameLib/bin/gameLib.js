@@ -982,7 +982,7 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
     BaseScene.inviteRealMoneyNeed = () => {
         var _a, _b;
         let gameData = Player.inst.gameData;
-        let winLimit = (_a = (gameData === null || gameData === void 0 ? void 0 : gameData.getTotalBetMoney()) * 3) !== null && _a !== void 0 ? _a : 0;
+        let winLimit = ((_a = gameData === null || gameData === void 0 ? void 0 : gameData.getTotalBetMoney()) !== null && _a !== void 0 ? _a : 0) * 3;
         return Player.inst.isGuest && Player.inst.guestModel.guestPlayCount >= CommonCmd.GUEST_MAX_PLAY_COUNT && (gameData != null && !gameData.isRecommend && winLimit <= ((_b = gameData === null || gameData === void 0 ? void 0 : gameData.totalWinMoney) !== null && _b !== void 0 ? _b : 100));
     };
     gameLib.BaseScene = BaseScene;
