@@ -146,6 +146,10 @@ declare type ComponentData = {
      * 创建UI的路径。
      */
     createUi?: string;
+    /**
+     * 是否加入bean缓存中 默认true
+     */
+    isJoinBean?: boolean;
 };
 /**
  * 事件处理的绑定数据
@@ -3268,6 +3272,10 @@ declare namespace tsCore {
 
 /**
  * 动态参数 function 或 Laya.Handler
+ *
+ * 可使用 runFun 运行
+ *
+ * @see runFun
  */
 declare type ParamHandler = ((...args) => any) | Laya.Handler
 

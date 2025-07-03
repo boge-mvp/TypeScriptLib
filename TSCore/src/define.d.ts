@@ -1,5 +1,9 @@
 /**
  * 动态参数 function 或 Laya.Handler
+ *
+ * 可使用 runFun 运行
+ *
+ * @see runFun
  */
 declare type ParamHandler = ((...args) => any) | Laya.Handler
 

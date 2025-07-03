@@ -23,6 +23,10 @@ declare type ComponentData = {
      * 创建UI的路径。
      */
     createUi?: string
+    /**
+     * 是否加入bean缓存中 默认true
+     */
+    isJoinBean?: boolean
 }
 
 /**
@@ -81,26 +85,26 @@ function getBean<T>(name: string | { new(): T }): T {
 function Component<T extends { new(...args: any[]): {} }>(value: string | T | ComponentData = "") {
 
     let decorator: any = function (classTarget: T) {
-        if (value != null) {
-            let data: ComponentData = {}
-            if (typeof value === "object") {
-                data = value
-                value = classTarget
-            }
-            data.autoInit ??= true
-            const className = Reflect.getMetadata("class:name", classTarget) || classTarget.name
-            data.key = typeof value === "string" && value.trim().length > 0 ? value : className.firstLowerCase()
-            data.classTarget = classTarget
-
-            if (!data.autoInit) {
-                return proxyClass(classTarget, typeof value === "string" ? value : data.key)
-            }
-            // @ts-ignore
-            tsCore.App.beanClassComponent.push(data)
-            return classTarget
-        } else {
+        if (value == null) {
             return proxyClass(classTarget)
         }
+        let data: ComponentData = {}
+        if (typeof value === "object") {
+            data = value
+            value = classTarget
+        }
+        data.isJoinBean ??= true
+        data.autoInit ??= true
+        const className = Reflect.getMetadata("class:name", classTarget) || classTarget.name
+        data.key = typeof value === "string" && value.trim().length > 0 ? value : className.firstLowerCase()
+        data.classTarget = classTarget
+
+        if (!data.autoInit) {
+            return proxyClass(classTarget, typeof value === "string" ? value : data.key)
+        }
+        // @ts-ignore
+        tsCore.App.beanClassComponent.push(data)
+        return classTarget
     }
     if (value && typeof value == "function") {
         decorator = decorator(value)
@@ -240,7 +244,7 @@ function proxyComponentEvent(events: EventData[], target: any) {
             // 根据子组件名称获取子组件实例
             const child = target.getChild(data.childName)
             // 如果找到子组件，则为子组件绑定事件处理函数
-            if (child) child.on(data.eventName, data.target, data.fun)
+            if (child) child.on(data.eventName, target, data.fun)
             else {
                 // 如果未找到子组件，则输出调试日志
                 // @ts-ignore
@@ -248,7 +252,7 @@ function proxyComponentEvent(events: EventData[], target: any) {
             }
         } else {
             // 如果事件数据中不包含子组件名称，则直接为当前组件绑定事件处理函数
-            target.on(data.eventName, data.target, data.fun, data.args)
+            target.on(data.eventName, target, data.fun, data.args)
         }
     })
 }

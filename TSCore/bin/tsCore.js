@@ -632,27 +632,26 @@ function getBean(name) {
  */
 function Component(value = "") {
     let decorator = function (classTarget) {
-        var _a;
-        if (value != null) {
-            let data = {};
-            if (typeof value === "object") {
-                data = value;
-                value = classTarget;
-            }
-            (_a = data.autoInit) !== null && _a !== void 0 ? _a : (data.autoInit = true);
-            const className = Reflect.getMetadata("class:name", classTarget) || classTarget.name;
-            data.key = typeof value === "string" && value.trim().length > 0 ? value : className.firstLowerCase();
-            data.classTarget = classTarget;
-            if (!data.autoInit) {
-                return proxyClass(classTarget, typeof value === "string" ? value : data.key);
-            }
-            // @ts-ignore
-            tsCore.App.beanClassComponent.push(data);
-            return classTarget;
-        }
-        else {
+        var _a, _b;
+        if (value == null) {
             return proxyClass(classTarget);
         }
+        let data = {};
+        if (typeof value === "object") {
+            data = value;
+            value = classTarget;
+        }
+        (_a = data.isJoinBean) !== null && _a !== void 0 ? _a : (data.isJoinBean = true);
+        (_b = data.autoInit) !== null && _b !== void 0 ? _b : (data.autoInit = true);
+        const className = Reflect.getMetadata("class:name", classTarget) || classTarget.name;
+        data.key = typeof value === "string" && value.trim().length > 0 ? value : className.firstLowerCase();
+        data.classTarget = classTarget;
+        if (!data.autoInit) {
+            return proxyClass(classTarget, typeof value === "string" ? value : data.key);
+        }
+        // @ts-ignore
+        tsCore.App.beanClassComponent.push(data);
+        return classTarget;
     };
     if (value && typeof value == "function") {
         decorator = decorator(value);
@@ -790,7 +789,7 @@ function proxyComponentEvent(events, target) {
             const child = target.getChild(data.childName);
             // 如果找到子组件，则为子组件绑定事件处理函数
             if (child)
-                child.on(data.eventName, data.target, data.fun);
+                child.on(data.eventName, target, data.fun);
             else {
                 // 如果未找到子组件，则输出调试日志
                 // @ts-ignore
@@ -799,7 +798,7 @@ function proxyComponentEvent(events, target) {
         }
         else {
             // 如果事件数据中不包含子组件名称，则直接为当前组件绑定事件处理函数
-            target.on(data.eventName, data.target, data.fun, data.args);
+            target.on(data.eventName, target, data.fun, data.args);
         }
     });
 }
