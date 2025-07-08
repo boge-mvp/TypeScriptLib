@@ -53,6 +53,21 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
         return tsCore.SoundUtils.stopSound(url);
     }
 });
+const ofNewObject = fgui.UIObjectFactory.newObject;
+Object.defineProperty(fgui.UIObjectFactory, "newObject", {
+    value: function (type, userClass) {
+        var _a;
+        if (typeof type !== "number" && !userClass && type.extensionType == null) {
+            const url = `//${(_a = type.owner) === null || _a === void 0 ? void 0 : _a.name}/${type.name}`;
+            const class2 = fgui.UIObjectFactory.extensions[url];
+            if (class2) {
+                type.extensionType = class2;
+                return ofNewObject(type, class2);
+            }
+        }
+        return ofNewObject(type, userClass);
+    }
+});
 /**
  * FguiBindView装饰器用于将一个类绑定到特定的FGUI视图资源
  * 它可以自动处理视图资源的加载和初始化，并将它们与相应的类关联起来
@@ -101,7 +116,6 @@ function FguiBindView(target) {
 function _FguiBindView(classTarget, url) {
     // 如果外部没有提供url，尝试从类的元数据中获取，如果还获取不到，则使用类的名称
     url = url || Reflect.getMetadata("class:name", classTarget) || classTarget.name;
-    // 调用bindView函数来绑定视图资源和类
     bindView(url, classTarget);
 }
 

@@ -23,6 +23,7 @@ declare function bindView(url: string, type: {
 declare function createView<T extends fgui.GObject>(url: string, userClass?: {
     new (): T;
 }): T;
+declare const ofNewObject: typeof fairygui.UIObjectFactory.newObject;
 /**
  * FguiBindView装饰器用于将一个类绑定到特定的FGUI视图资源
  * 它可以自动处理视图资源的加载和初始化，并将它们与相应的类关联起来

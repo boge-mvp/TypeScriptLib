@@ -46,6 +46,5 @@ function FguiBindView<T extends { new(...args: any[]): fgui.GComponent }>(target
 function _FguiBindView<T extends { new(...args: any[]): fgui.GComponent }>(classTarget: T, url?: string) {
     // 如果外部没有提供url，尝试从类的元数据中获取，如果还获取不到，则使用类的名称
     url = url || Reflect.getMetadata("class:name", classTarget) || classTarget.name;
-    // 调用bindView函数来绑定视图资源和类
-    bindView(url, classTarget);
+    bindView(url, classTarget)
 }

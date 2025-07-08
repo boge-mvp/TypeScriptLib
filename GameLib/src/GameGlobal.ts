@@ -56,3 +56,19 @@ Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
         return tsCore.SoundUtils.stopSound(url)
     }
 })
+
+const ofNewObject = fgui.UIObjectFactory.newObject
+Object.defineProperty(fgui.UIObjectFactory, "newObject", {
+    value: function (type: number | fgui.PackageItem, userClass?: new () => fgui.GObject) {
+        if (typeof type !== "number" && !userClass && type.extensionType == null) {
+            const url = `//${type.owner?.name}/${type.name}`
+            const class2 = fgui.UIObjectFactory.extensions[url]
+            if (class2) {
+                type.extensionType = class2
+                return ofNewObject(type, class2)
+            }
+        }
+        return ofNewObject(type, userClass)
+
+    }
+})
