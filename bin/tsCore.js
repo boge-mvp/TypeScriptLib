@@ -1001,7 +1001,7 @@ function runApplication(classTarget) {
             Object.defineProperty(key, "constructFromResource", {
                 value: function () {
                     constructFromResource.call(this);
-                    proxyComponentEvent(value, this.constructor.name);
+                    proxyComponentEvent(value, this);
                 }
             });
         }

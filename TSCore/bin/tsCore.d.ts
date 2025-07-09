@@ -622,9 +622,9 @@ declare namespace tsCore {
         showRecord(): void;
         dispose(): void;
         /** 设置扩展 */
-        protected insertExt(pkgName: string, resName: string, clas: any): void;
+        protected insertExt(pkgName: string, resName: string, clas: new () => fgui.GComponent): void;
         /** 设置扩展 */
-        protected insertExtUrl(url: string, clas: any): void;
+        protected insertExtUrl(url: string, clas: new () => fgui.GComponent): void;
         /** 注册游戏数据 */
         regGameAction(action: string | number, caller: any, method: Function): void;
     }
@@ -1099,9 +1099,9 @@ declare namespace tsCore {
         /** 注册游戏数据 */
         regGameAction(action: string | number, caller: any, method: Function): void;
         /** 设置扩展 */
-        protected insertExt(pkgName: string, resName: string, clas: any): void;
+        protected insertExt(pkgName: string, resName: string, clas: new () => fgui.GComponent): void;
         /** 设置扩展 */
-        protected insertExtUrl(url: string, clas: any): void;
+        protected insertExtUrl(url: string, clas: new () => fgui.GComponent): void;
     }
     const ESkeleton_base: Constructor<fairygui.GComponent & ActionEvent & BezierCurves>;
     export abstract class ESkeleton extends ESkeleton_base implements ISkeleton {

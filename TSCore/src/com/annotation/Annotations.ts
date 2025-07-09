@@ -460,7 +460,7 @@ function runApplication<T>(classTarget: { new(...args: any[]): T }): T {
             Object.defineProperty(key, "constructFromResource", {
                 value: function () {
                     constructFromResource.call(this)
-                    proxyComponentEvent(value, this.constructor.name)
+                    proxyComponentEvent(value, this)
                 }
             })
         }
