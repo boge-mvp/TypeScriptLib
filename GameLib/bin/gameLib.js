@@ -57,10 +57,10 @@ const ofNewObject = fgui.UIObjectFactory.newObject;
 Object.defineProperty(fgui.UIObjectFactory, "newObject", {
     value: function (type, userClass) {
         var _a;
-        if (typeof type !== "number" && !userClass && type.extensionType == null) {
+        if (typeof type !== "number" && !userClass) {
             const url = `//${(_a = type.owner) === null || _a === void 0 ? void 0 : _a.name}/${type.name}`;
             const class2 = fgui.UIObjectFactory.extensions[url];
-            if (class2) {
+            if (class2 && type.extensionType != class2) {
                 type.extensionType = class2;
                 return ofNewObject(type, class2);
             }

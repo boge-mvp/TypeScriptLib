@@ -194,7 +194,22 @@ declare type EventData = {
 declare function getBean<T>(name: string | {
     new (): T;
 }): T;
+/**
+ * Lazy装饰器工厂函数
+ * 用于延迟初始化类的属性，仅在属性值首次被访问时执行初始化
+ *
+ * @param {() => T} callback 一个无参数的回调函数，用于生成属性的值
+ */
 declare function Lazy<T>(callback: () => T): (target: any, propertyKey: string) => PropertyDescriptor;
+/**
+ * 使用装饰器语法，延迟执行目标方法直到当前代码执行完毕
+ * 主要用途是避免在当前执行上下文中直接调用方法，从而延迟到当前代码块执行完毕后调用
+ *
+ * @param target 被装饰的类的原型
+ * @param propertyKey 被装饰的方法的名称
+ * @param descriptor 方法的属性描述符
+ */
+declare function CallLater(target: any, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor;
 /**
  * 组件装饰器函数，用于创建和配置组件类
  * @template T 限制为构造函数类型
