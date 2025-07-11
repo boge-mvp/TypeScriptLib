@@ -311,7 +311,7 @@ declare function Actions(action: number | string, group?: string, order?: number
  * @param childName 子节点名称，可选
  * @param args 附加参数，可选
  */
-declare function ClickOn(childName?: string, args?: any[]): void;
+declare function ClickOn(childName?: string, args?: any[]): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
 /**
  * 通用事件监听装饰器
  *
