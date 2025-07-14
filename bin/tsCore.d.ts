@@ -200,18 +200,33 @@ declare function getBean<T>(name: string | {
  *
  * @param {() => T} callback 一个无参数的回调函数，用于生成属性的值
  */
-declare function Lazy<T>(callback: () => T): (target: any, propertyKey: string) => PropertyDescriptor;
+declare function Lazy<T>(callback: () => T): (targetPrototype: any, propertyKey: string) => PropertyDescriptor;
 /**
- * 使用装饰器语法，延迟执行目标方法直到当前代码执行完毕
- * 主要用途是避免在当前执行上下文中直接调用方法，从而延迟到当前代码块执行完毕后调用
+ * 使用CallLater装饰器来延迟执行方法
+ * 这个装饰器会修改方法的执行方式，使其在当前逻辑帧结束后执行
  *
- * @param target 被装饰的类的原型
+ * @param targetPrototype 被装饰的类的原型
  * @param propertyKey 被装饰的方法的名称
  * @param descriptor 方法的属性描述符
+ * @returns 返回修改后的属性描述符
  */
-declare function CallLater(target: any, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor;
-declare function TimerFrameLoop(): void;
-declare function TimerDelay(): void;
+declare function CallLater(targetPrototype: any, propertyKey: string, descriptor: PropertyDescriptor): PropertyDescriptor;
+/**
+ * 使用CallDelay装饰器来延迟执行方法
+ * 这个装饰器会修改方法的执行方式，使其在指定的毫秒数后执行
+ *
+ * @param num 延迟的毫秒数
+ * @returns 返回一个装饰器，用于装饰方法
+ */
+declare function CallDelay(num: number): (targetPrototype: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor;
+/**
+ * 使用CallDelayByFrame装饰器来延迟执行方法
+ * 这个装饰器会修改方法的执行方式，使其在指定的帧数后执行
+ *
+ * @param num 延迟的帧数
+ * @returns 返回一个装饰器，用于装饰方法
+ */
+declare function CallDelayByFrame(num: number): (targetPrototype: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor;
 declare function AppMain(value: {
     new (...args: any[]): IRunApplication;
 }): void;
@@ -282,13 +297,9 @@ declare function Resource(...args: any[]): ((target: any, propertyKey: string) =
  *
  * 当一个方法被`@BindThis`装饰器装饰时，该方法会被自动绑定到类的实例上
  * 这意味着在该方法内部，this将始终指向类的实例，而不会因为函数的调用方式不同而改变
- *
- * @param target 目标类的原型
- * @param propertyKey 方法的名称
- * @param descriptor 方法的描述符
  * @throws {TypeError} 如果装饰的不是方法，抛出类型错误
  */
-declare function BindThis<T extends Function>(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<T>): {
+declare function BindThis<T extends Function>(targetPrototype: any, propertyKey: string, descriptor: TypedPropertyDescriptor<T>): {
     configurable: boolean;
     get(this: T): T;
 };
@@ -305,7 +316,7 @@ declare function Bean(target: any, propertyKey: string, descriptor: PropertyDesc
  * @param {string} group 分组集合
  * @param {number} order 值越大 越后执行 默认 100
  */
-declare function Actions(action: number | string, group?: string, order?: number): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
+declare function Actions(action: number | string, group?: string, order?: number): (targetPrototype: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
 /**
  * 点击事件装饰器
  *
@@ -316,7 +327,7 @@ declare function Actions(action: number | string, group?: string, order?: number
  * @param childName 子节点名称，可选
  * @param args 附加参数，可选
  */
-declare function ClickOn(childName?: string, args?: any[]): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
+declare function ClickOn(childName?: string, args?: any[]): (targetPrototype: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
 /**
  * 通用事件监听装饰器
  *
@@ -327,7 +338,7 @@ declare function ClickOn(childName?: string, args?: any[]): (target: any, proper
  * @param childName 子节点名称，可选
  * @param args 附加参数，可选
  */
-declare function EventOn(eventName: string, childName?: string, args?: any[]): (target: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
+declare function EventOn(eventName: string, childName?: string, args?: any[]): (targetPrototype: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
 /**
  * 运行应用程序，并初始化所有Bean实例。
  * @param classTarget - 应用程序主类的构造函数。
@@ -386,10 +397,11 @@ interface IRunApplication {
  * }
  * ```
  */
-declare function Fgui(name: string): (target: any, propertyKey: string) => {
+declare function Fgui(name: string): (targetPrototype: any, propertyKey: string) => {
     configurable: boolean;
     get(this: fgui.GComponent): any;
 };
+declare function TimerLoop(interval: number, custom?: () => boolean): (targetProperty: any, propertyKey: string, descriptor: PropertyDescriptor) => void;
 declare namespace tsCore {
     export class App implements IAction {
         private static _instance;
@@ -438,6 +450,7 @@ declare namespace tsCore {
          * 启动历史记录监听
          */
         static enableHistory: boolean;
+        private timerKit;
         private static initStop;
         /**
          *
@@ -2959,6 +2972,32 @@ declare namespace tsCore {
         private onTwinkle;
         dispose(): void;
         get playText(): string;
+    }
+    export class TimerKit {
+        static NAME: string;
+        private static tasks;
+        isPause: boolean;
+        static REG_TASK: TaskHandler[];
+        start(): this;
+        stop(): this;
+        pause(): void;
+        resume(): void;
+        static getHandler(target: fgui.GObject, fun: ParamHandler): TaskHandler;
+        static remove(target: fgui.GObject, fun: ParamHandler): void;
+        static addTask(task: TaskHandler): void;
+        static getNewTask(): TaskHandler;
+        static addHandler(target: fgui.GObject, fun: (...args: any[]) => any, interval?: number, custom?: () => boolean): void;
+        private onUpdate;
+    }
+    class TaskHandler {
+        target: fgui.GObject;
+        customConditions: () => boolean;
+        handler: (...args: any[]) => any;
+        interval: number;
+        targetClassProperty: any;
+        lastRunTime: number;
+        initData(target: fgui.GObject, fun: (...args: any[]) => any, interval?: number, custom?: () => boolean): this;
+        setTargetClass(targetClassProperty: any): this;
     }
     /**
      * 闪烁动画

@@ -7,11 +7,11 @@ import {Log} from "./Log";
 import {IController, IKey, IProxy, IView} from "./interfaces/ICommon";
 import {Path} from "./Path";
 import Handler = Laya.Handler;
+import {TimerKit} from "./utils/TimerKit";
 
 export class App implements IAction {
 
     private static _instance: App
-
     static get inst(): App {
         return this._instance
     }
@@ -59,7 +59,7 @@ export class App implements IAction {
      * 启动历史记录监听
      */
     static enableHistory = false
-
+    private timerKit: TimerKit;
     private static initStop: boolean | void = false
 
     /**
@@ -157,6 +157,7 @@ export class App implements IAction {
 
     lastInit() {
         this.openResize()
+        this.timerKit = new TimerKit().start()
         App.initEngine?.onEnd?.()
     }
 

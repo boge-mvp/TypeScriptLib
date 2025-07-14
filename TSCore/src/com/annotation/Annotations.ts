@@ -86,7 +86,7 @@ function getBean<T>(name: string | { new(): T }): T {
  * @param {() => T} callback 一个无参数的回调函数，用于生成属性的值
  */
 function Lazy<T>(callback: () => T) {
-    return function (target: any, propertyKey: string): PropertyDescriptor {
+    return function (targetPrototype: any, propertyKey: string): PropertyDescriptor {
         return {
             configurable: false,
             get() {
@@ -107,14 +107,15 @@ function Lazy<T>(callback: () => T) {
 }
 
 /**
- * 使用装饰器语法，延迟执行目标方法直到当前代码执行完毕
- * 主要用途是避免在当前执行上下文中直接调用方法，从而延迟到当前代码块执行完毕后调用
+ * 使用CallLater装饰器来延迟执行方法
+ * 这个装饰器会修改方法的执行方式，使其在当前逻辑帧结束后执行
  *
- * @param target 被装饰的类的原型
+ * @param targetPrototype 被装饰的类的原型
  * @param propertyKey 被装饰的方法的名称
  * @param descriptor 方法的属性描述符
+ * @returns 返回修改后的属性描述符
  */
-function CallLater(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+function CallLater(targetPrototype: any, propertyKey: string, descriptor: PropertyDescriptor) {
     const originalMethod = descriptor.value;
     descriptor.value = function (...args: any[]) {
         Laya.timer.callLater(this, originalMethod, args)
@@ -122,14 +123,40 @@ function CallLater(target: any, propertyKey: string, descriptor: PropertyDescrip
     return descriptor;
 }
 
-
-function TimerFrameLoop() {
-
+/**
+ * 使用CallDelay装饰器来延迟执行方法
+ * 这个装饰器会修改方法的执行方式，使其在指定的毫秒数后执行
+ *
+ * @param num 延迟的毫秒数
+ * @returns 返回一个装饰器，用于装饰方法
+ */
+function CallDelay(num: number) {
+    return function (targetPrototype: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        const originalMethod = descriptor.value;
+        descriptor.value = function (...args: any[]) {
+            Laya.timer.once(num, this, originalMethod, args)
+        }
+        return descriptor;
+    }
 }
 
-function TimerDelay() {
-
+/**
+ * 使用CallDelayByFrame装饰器来延迟执行方法
+ * 这个装饰器会修改方法的执行方式，使其在指定的帧数后执行
+ *
+ * @param num 延迟的帧数
+ * @returns 返回一个装饰器，用于装饰方法
+ */
+function CallDelayByFrame(num: number) {
+    return function (targetPrototype: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        const originalMethod = descriptor.value;
+        descriptor.value = function (...args: any[]) {
+            Laya.timer.frameOnce(num, this, originalMethod, args)
+        }
+        return descriptor;
+    }
 }
+
 
 function AppMain(value: { new(...args: any[]): IRunApplication }) {
     // @ts-ignore
@@ -229,16 +256,16 @@ function Resource(...args: any[]) {
     }
     // 作为直接装饰器调用 @Resource
     if (args.length >= 2 && typeof args[0] === 'object' && typeof args[1] === 'string') {
-        const [target, propertyKey] = args;
-        return _Resource(null, target, propertyKey)
+        const [targetPrototype, propertyKey] = args;
+        return _Resource(null, targetPrototype, propertyKey)
     }
 }
 
 /**
  * @internal
  */
-function _Resource(name: string, target: any, propertyKey: string) {
-    const classTarget = Reflect.getMetadata("design:type", target, propertyKey)
+function _Resource(name: string, targetPrototype: any, propertyKey: string) {
+    const classTarget = Reflect.getMetadata("design:type", targetPrototype, propertyKey)
     if (classTarget) {
         return {
             configurable: true,
@@ -266,13 +293,9 @@ function _Resource(name: string, target: any, propertyKey: string) {
  *
  * 当一个方法被`@BindThis`装饰器装饰时，该方法会被自动绑定到类的实例上
  * 这意味着在该方法内部，this将始终指向类的实例，而不会因为函数的调用方式不同而改变
- *
- * @param target 目标类的原型
- * @param propertyKey 方法的名称
- * @param descriptor 方法的描述符
  * @throws {TypeError} 如果装饰的不是方法，抛出类型错误
  */
-function BindThis<T extends Function>(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<T>) {
+function BindThis<T extends Function>(targetPrototype: any, propertyKey: string, descriptor: TypedPropertyDescriptor<T>) {
     // 检查descriptor是否存在且为函数，因为只有函数可以被此装饰器装饰
     if (!descriptor || (typeof descriptor.value !== 'function')) {
         throw new TypeError(`Only methods can be decorated with @BindThis. <${propertyKey}> is not a method!`);
@@ -318,12 +341,12 @@ function Bean(target: any, propertyKey: string, descriptor: PropertyDescriptor) 
  * @param {number} order 值越大 越后执行 默认 100
  */
 function Actions(action: number | string, group?: string, order?: number) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    return function (targetPrototype: any, propertyKey: string, descriptor: PropertyDescriptor) {
         if (!descriptor || (typeof descriptor.value !== 'function')) {
             throw new TypeError(`Only methods can be decorated with @Actions. <${propertyKey}> is not a method!`);
         }
-        const className = target.constructor.name
-        const paramtypes: any[] = Reflect.getMetadata("design:paramtypes", target, propertyKey)
+        const className = targetPrototype.constructor.name
+        const paramtypes: any[] = Reflect.getMetadata("design:paramtypes", targetPrototype, propertyKey)
         const fun = descriptor.value
         // @ts-ignore
         tsCore.App.beanActionsFunction.push({className, fun, action, group, order})
@@ -347,8 +370,8 @@ function ClickOn(childName?: string, args?: any[]) {
     }
     // 作为直接装饰器调用 @ClickOn
     if (arguments.length > 2 && typeof arguments[0] === 'object' && typeof arguments[1] === 'string') {
-        const [target, propertyKey, descriptor] = arguments;
-        _eventOn(target, propertyKey, descriptor, Laya.Event.CLICK)
+        const [targetPrototype, propertyKey, descriptor] = arguments;
+        _eventOn(targetPrototype, propertyKey, descriptor, Laya.Event.CLICK)
     }
 }
 
@@ -363,30 +386,30 @@ function ClickOn(childName?: string, args?: any[]) {
  * @param args 附加参数，可选
  */
 function EventOn(eventName: string, childName?: string, args?: any[]) {
-    return function (target: any, propertyKey: string, descriptor: PropertyDescriptor) {
-        _eventOn(target, propertyKey, descriptor, eventName, childName, args)
+    return function (targetPrototype: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        _eventOn(targetPrototype, propertyKey, descriptor, eventName, childName, args)
     }
 }
 
 /**
  * @internal
  */
-function _eventOn(target: any, propertyKey: string, descriptor: PropertyDescriptor, eventName: string, childName?: string, args?: any[]) {
+function _eventOn(targetPrototype: any, propertyKey: string, descriptor: PropertyDescriptor, eventName: string, childName?: string, args?: any[]) {
     if (!descriptor || (typeof descriptor.value !== 'function')) {
         throw new TypeError(`Only methods can be decorated with @EventOn. <${propertyKey}> is not a method!`);
     }
     // 确保目标是一个FGUI的GObject实例
-    if (target instanceof fgui.GObject) {
-        const className = target.constructor.name
-        const paramtypes: any[] = Reflect.getMetadata("design:paramtypes", target, propertyKey)
+    if (targetPrototype instanceof fgui.GObject) {
+        const className = targetPrototype.constructor.name
+        const paramtypes: any[] = Reflect.getMetadata("design:paramtypes", targetPrototype, propertyKey)
         const fun = descriptor.value
         // 将事件处理信息推送到全局列表中
         // @ts-ignore
-        tsCore.App.beanEventFunction.push({target, className, fun, eventName, childName, args})
+        tsCore.App.beanEventFunction.push({target: targetPrototype, className, fun, eventName, childName, args})
     } else {
         // 如果目标不是FGUI的GObject实例，输出调试日志
         // @ts-ignore
-        tsCore.Log.debug("[click] Can only be used in fgui.GObject = " + target)
+        tsCore.Log.debug("[click] Can only be used in fgui.GObject = " + targetPrototype)
     }
 }
 
@@ -402,6 +425,16 @@ function initBean(target: any, name: string) {
             // @ts-ignore
             tsCore.App.inst.regAction(actionData.action, target, actionData.fun, actionData.group || tsCore.App.GAME_GROUP, actionData.order)
         })
+
+    // @ts-ignore
+    tsCore.TimerKit.REG_TASK
+        .filter(value => value.targetClassProperty.constructor.name == name)
+        .forEach(value => {
+            value.target = target
+            // @ts-ignore
+            tsCore.TimerKit.addTask(value)
+        })
+
 }
 
 

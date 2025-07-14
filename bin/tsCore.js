@@ -632,7 +632,7 @@ function getBean(name) {
  * @param {() => T} callback 一个无参数的回调函数，用于生成属性的值
  */
 function Lazy(callback) {
-    return function (target, propertyKey) {
+    return function (targetPrototype, propertyKey) {
         return {
             configurable: false,
             get() {
@@ -652,23 +652,52 @@ function Lazy(callback) {
     };
 }
 /**
- * 使用装饰器语法，延迟执行目标方法直到当前代码执行完毕
- * 主要用途是避免在当前执行上下文中直接调用方法，从而延迟到当前代码块执行完毕后调用
+ * 使用CallLater装饰器来延迟执行方法
+ * 这个装饰器会修改方法的执行方式，使其在当前逻辑帧结束后执行
  *
- * @param target 被装饰的类的原型
+ * @param targetPrototype 被装饰的类的原型
  * @param propertyKey 被装饰的方法的名称
  * @param descriptor 方法的属性描述符
+ * @returns 返回修改后的属性描述符
  */
-function CallLater(target, propertyKey, descriptor) {
+function CallLater(targetPrototype, propertyKey, descriptor) {
     const originalMethod = descriptor.value;
     descriptor.value = function (...args) {
         Laya.timer.callLater(this, originalMethod, args);
     };
     return descriptor;
 }
-function TimerFrameLoop() {
+/**
+ * 使用CallDelay装饰器来延迟执行方法
+ * 这个装饰器会修改方法的执行方式，使其在指定的毫秒数后执行
+ *
+ * @param num 延迟的毫秒数
+ * @returns 返回一个装饰器，用于装饰方法
+ */
+function CallDelay(num) {
+    return function (targetPrototype, propertyKey, descriptor) {
+        const originalMethod = descriptor.value;
+        descriptor.value = function (...args) {
+            Laya.timer.once(num, this, originalMethod, args);
+        };
+        return descriptor;
+    };
 }
-function TimerDelay() {
+/**
+ * 使用CallDelayByFrame装饰器来延迟执行方法
+ * 这个装饰器会修改方法的执行方式，使其在指定的帧数后执行
+ *
+ * @param num 延迟的帧数
+ * @returns 返回一个装饰器，用于装饰方法
+ */
+function CallDelayByFrame(num) {
+    return function (targetPrototype, propertyKey, descriptor) {
+        const originalMethod = descriptor.value;
+        descriptor.value = function (...args) {
+            Laya.timer.frameOnce(num, this, originalMethod, args);
+        };
+        return descriptor;
+    };
 }
 function AppMain(value) {
     // @ts-ignore
@@ -767,15 +796,15 @@ function Resource(...args) {
     }
     // 作为直接装饰器调用 @Resource
     if (args.length >= 2 && typeof args[0] === 'object' && typeof args[1] === 'string') {
-        const [target, propertyKey] = args;
-        return _Resource(null, target, propertyKey);
+        const [targetPrototype, propertyKey] = args;
+        return _Resource(null, targetPrototype, propertyKey);
     }
 }
 /**
  * @internal
  */
-function _Resource(name, target, propertyKey) {
-    const classTarget = Reflect.getMetadata("design:type", target, propertyKey);
+function _Resource(name, targetPrototype, propertyKey) {
+    const classTarget = Reflect.getMetadata("design:type", targetPrototype, propertyKey);
     if (classTarget) {
         return {
             configurable: true,
@@ -804,13 +833,9 @@ function _Resource(name, target, propertyKey) {
  *
  * 当一个方法被`@BindThis`装饰器装饰时，该方法会被自动绑定到类的实例上
  * 这意味着在该方法内部，this将始终指向类的实例，而不会因为函数的调用方式不同而改变
- *
- * @param target 目标类的原型
- * @param propertyKey 方法的名称
- * @param descriptor 方法的描述符
  * @throws {TypeError} 如果装饰的不是方法，抛出类型错误
  */
-function BindThis(target, propertyKey, descriptor) {
+function BindThis(targetPrototype, propertyKey, descriptor) {
     // 检查descriptor是否存在且为函数，因为只有函数可以被此装饰器装饰
     if (!descriptor || (typeof descriptor.value !== 'function')) {
         throw new TypeError(`Only methods can be decorated with @BindThis. <${propertyKey}> is not a method!`);
@@ -856,12 +881,12 @@ function Bean(target, propertyKey, descriptor) {
  * @param {number} order 值越大 越后执行 默认 100
  */
 function Actions(action, group, order) {
-    return function (target, propertyKey, descriptor) {
+    return function (targetPrototype, propertyKey, descriptor) {
         if (!descriptor || (typeof descriptor.value !== 'function')) {
             throw new TypeError(`Only methods can be decorated with @Actions. <${propertyKey}> is not a method!`);
         }
-        const className = target.constructor.name;
-        const paramtypes = Reflect.getMetadata("design:paramtypes", target, propertyKey);
+        const className = targetPrototype.constructor.name;
+        const paramtypes = Reflect.getMetadata("design:paramtypes", targetPrototype, propertyKey);
         const fun = descriptor.value;
         // @ts-ignore
         tsCore.App.beanActionsFunction.push({ className, fun, action, group, order });
@@ -884,8 +909,8 @@ function ClickOn(childName, args) {
     }
     // 作为直接装饰器调用 @ClickOn
     if (arguments.length > 2 && typeof arguments[0] === 'object' && typeof arguments[1] === 'string') {
-        const [target, propertyKey, descriptor] = arguments;
-        _eventOn(target, propertyKey, descriptor, Laya.Event.CLICK);
+        const [targetPrototype, propertyKey, descriptor] = arguments;
+        _eventOn(targetPrototype, propertyKey, descriptor, Laya.Event.CLICK);
     }
 }
 /**
@@ -899,30 +924,30 @@ function ClickOn(childName, args) {
  * @param args 附加参数，可选
  */
 function EventOn(eventName, childName, args) {
-    return function (target, propertyKey, descriptor) {
-        _eventOn(target, propertyKey, descriptor, eventName, childName, args);
+    return function (targetPrototype, propertyKey, descriptor) {
+        _eventOn(targetPrototype, propertyKey, descriptor, eventName, childName, args);
     };
 }
 /**
  * @internal
  */
-function _eventOn(target, propertyKey, descriptor, eventName, childName, args) {
+function _eventOn(targetPrototype, propertyKey, descriptor, eventName, childName, args) {
     if (!descriptor || (typeof descriptor.value !== 'function')) {
         throw new TypeError(`Only methods can be decorated with @EventOn. <${propertyKey}> is not a method!`);
     }
     // 确保目标是一个FGUI的GObject实例
-    if (target instanceof fgui.GObject) {
-        const className = target.constructor.name;
-        const paramtypes = Reflect.getMetadata("design:paramtypes", target, propertyKey);
+    if (targetPrototype instanceof fgui.GObject) {
+        const className = targetPrototype.constructor.name;
+        const paramtypes = Reflect.getMetadata("design:paramtypes", targetPrototype, propertyKey);
         const fun = descriptor.value;
         // 将事件处理信息推送到全局列表中
         // @ts-ignore
-        tsCore.App.beanEventFunction.push({ target, className, fun, eventName, childName, args });
+        tsCore.App.beanEventFunction.push({ target: targetPrototype, className, fun, eventName, childName, args });
     }
     else {
         // 如果目标不是FGUI的GObject实例，输出调试日志
         // @ts-ignore
-        tsCore.Log.debug("[click] Can only be used in fgui.GObject = " + target);
+        tsCore.Log.debug("[click] Can only be used in fgui.GObject = " + targetPrototype);
     }
 }
 /**
@@ -935,6 +960,14 @@ function initBean(target, name) {
         .forEach((actionData) => {
         // @ts-ignore
         tsCore.App.inst.regAction(actionData.action, target, actionData.fun, actionData.group || tsCore.App.GAME_GROUP, actionData.order);
+    });
+    // @ts-ignore
+    tsCore.TimerKit.REG_TASK
+        .filter(value => value.targetClassProperty.constructor.name == name)
+        .forEach(value => {
+        value.target = target;
+        // @ts-ignore
+        tsCore.TimerKit.addTask(value);
     });
 }
 /**
@@ -1124,14 +1157,14 @@ function runApplication(classTarget) {
  * ```
  */
 function Fgui(name) {
-    return function (target, propertyKey) {
+    return function (targetPrototype, propertyKey) {
         return {
             configurable: true,
             get() {
                 const pathSegments = name.split(".");
                 let current = this;
                 let obj = null;
-                const classTarget = Reflect.getMetadata("design:type", target, propertyKey);
+                const classTarget = Reflect.getMetadata("design:type", targetPrototype, propertyKey);
                 switch (true) {
                     case classTarget == fgui.GObject || classTarget.prototype instanceof fgui.GObject:
                         obj = fguiFindChild(this, pathSegments);
@@ -1188,6 +1221,12 @@ function fguiFindChild(target, childs) {
         }
     }
     return obj;
+}
+function TimerLoop(interval, custom) {
+    return function (targetProperty, propertyKey, descriptor) {
+        // @ts-ignore
+        tsCore.TimerKit.REG_TASK.push(tsCore.TimerKit.getNewTask().initData(null, descriptor.value, interval, custom).setTargetClass(targetProperty));
+    };
 }
 
 (function (tsCore) {
@@ -1284,6 +1323,7 @@ function fguiFindChild(target, childs) {
         lastInit() {
             var _a, _b;
             this.openResize();
+            this.timerKit = new TimerKit().start();
             (_b = (_a = App.initEngine) === null || _a === void 0 ? void 0 : _a.onEnd) === null || _b === void 0 ? void 0 : _b.call(_a);
         }
         constructor() {
@@ -7163,6 +7203,89 @@ function fguiFindChild(target, childs) {
         }
     }
     tsCore.TextAniUtils = TextAniUtils;
+    class TimerKit {
+        constructor() {
+            this.isPause = false;
+        }
+        start() {
+            stop();
+            Laya.timer.frameLoop(1, this, this.onUpdate);
+            return this;
+        }
+        stop() {
+            Laya.timer.clear(this, this.onUpdate);
+            return this;
+        }
+        pause() {
+            this.isPause = true;
+        }
+        resume() {
+            this.isPause = false;
+        }
+        static getHandler(target, fun) {
+            const index = TimerKit.tasks.findIndex(value => value.target == target && value.handler == fun);
+            return TimerKit.tasks[index];
+        }
+        static remove(target, fun) {
+            const index = TimerKit.tasks.findIndex(value => value.target == target && value.handler == fun);
+            if (index > -1) {
+                const handlers = TimerKit.tasks.splice(index, 1);
+                handlers.forEach(value => Laya.Pool.recover(TimerKit.NAME, value));
+            }
+        }
+        static addTask(task) {
+            TimerKit.tasks.push(task);
+        }
+        static getNewTask() {
+            return Laya.Pool.getItemByClass(TimerKit.NAME, TaskHandler);
+        }
+        static addHandler(target, fun, interval = 0, custom) {
+            if (!target || !fun)
+                return;
+            let handler = this.getHandler(target, fun);
+            if (handler) {
+                handler.initData(target, fun, interval, custom);
+            }
+            handler = this.getNewTask();
+            handler.initData(target, fun, interval, custom);
+            this.addTask(handler);
+        }
+        onUpdate() {
+            if (this.isPause)
+                return;
+            const time = Laya.Browser.now();
+            for (let i = 0; i < TimerKit.tasks.length; i++) {
+                const task = TimerKit.tasks[i];
+                if ((task.customConditions && task.customConditions()) ||
+                    (!task.target.isDisposed
+                        && task.target.parent
+                        && task.target.alpha > 0
+                        && task.target.internalVisible2
+                        && task.lastRunTime + task.interval < time)) {
+                    task.lastRunTime = time;
+                    task.handler.call(task.target);
+                }
+            }
+        }
+    }
+    TimerKit.NAME = "TimerDecorators";
+    TimerKit.tasks = [];
+    TimerKit.REG_TASK = [];
+    tsCore.TimerKit = TimerKit;
+    class TaskHandler {
+        initData(target, fun, interval = 0, custom) {
+            this.target = target;
+            this.handler = fun;
+            this.customConditions = custom;
+            this.interval = interval;
+            this.lastRunTime = 0;
+            return this;
+        }
+        setTargetClass(targetClassProperty) {
+            this.targetClassProperty = targetClassProperty;
+            return this;
+        }
+    }
     /**
      * 闪烁动画
      */

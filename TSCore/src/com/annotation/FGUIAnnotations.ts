@@ -44,14 +44,14 @@
  * ```
  */
 function Fgui(name: string) {
-    return function (target: any, propertyKey: string) {
+    return function (targetPrototype: any, propertyKey: string) {
         return {
             configurable: true,
             get(this: fgui.GComponent) {
                 const pathSegments = name.split(".")
                 let current: fgui.GObject = this
                 let obj = null
-                const classTarget = Reflect.getMetadata("design:type", target, propertyKey)
+                const classTarget = Reflect.getMetadata("design:type", targetPrototype, propertyKey)
                 switch (true) {
                     case classTarget == fgui.GObject || classTarget.prototype instanceof fgui.GObject:
                         obj = fguiFindChild(this, pathSegments)
@@ -103,4 +103,16 @@ function fguiFindChild(target: fgui.GComponent, childs: string[]) {
         }
     }
     return obj
+}
+
+function TimerLoop(interval: number, custom?: () => boolean) {
+    return function (targetProperty: any, propertyKey: string, descriptor: PropertyDescriptor) {
+        // @ts-ignore
+        tsCore.TimerKit.REG_TASK.push(tsCore.TimerKit.getNewTask().initData(
+            null,
+            descriptor.value,
+            interval,
+            custom
+        ).setTargetClass(targetProperty))
+    }
 }
