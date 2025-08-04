@@ -30,6 +30,7 @@ function getStringArray(id: string | number, ...args: any[]): string[] {
     return tsCore.StringUtil.format(content, ...args)
 }
 
+
 /**
  * 配置定义
  *
@@ -107,7 +108,6 @@ function defaults(args: any, defs: any, croak = false, append = false) {
 function has(obj: any, prop: any) {
     return Object.prototype.hasOwnProperty.call(obj, prop)
 }
-
 
 /**
  * 修改 mixin 函数
@@ -261,6 +261,7 @@ function random(minNum: number, maxNum: number) {
     return (Math.floor(Math.random() * (maxNum - minNum)) + minNum)
 }
 
+
 /**
  * 随机数
  * @param minNum 最小值
@@ -274,7 +275,6 @@ function randomFloat(minNum: number, maxNum: number, p = NaN) {
     return temp
 }
 
-
 function gaSend(hitType: HitType, data: EventType | ExceptionType | TimingType) {
     ga("send", hitType, data)
 }
@@ -284,7 +284,7 @@ function gaEvent(data: EventType) {
 }
 
 function gaException(data: ExceptionType) {
-    gaSend("exception", data)
+    gaSend("exception", data)// 老姐我
 }
 
 function gaTiming(data: TimingType) {

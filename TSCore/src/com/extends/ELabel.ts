@@ -1,5 +1,6 @@
 import GLabel = fgui.GLabel;
-import {ActionEvent, ViewBlock} from "../block/Block"
+import {ViewBlock} from "../block/ViewBlock";
+import {ActionEvent} from "../block/ActionEvent";
 
 export class ELabel extends mixinExt(ViewBlock, ActionEvent, GLabel) {
 

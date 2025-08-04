@@ -76,7 +76,7 @@ function loadBatch(url, parallel = true, onComplete = null) {
                     window["$_crc"] = data
                 }
                 complete()
-            }, [key.split("?")[0]], (e)=> loadError(e))
+            }, [key.split("?")[0]], (e) => loadError(e))
         }
     } else loadScript(loadRes, parallel, complete.bind(this))
 
@@ -230,7 +230,7 @@ function loadContent(url, complete, args = [], error) {
             error.apply(this, args)
         }
     }
-    http.onerror = ()=> {
+    http.onerror = () => {
         error.apply(this, args)
     }
     http.send()
@@ -267,15 +267,19 @@ window.onerror = (msg, url, line, column, error) => {
 }
 
 function sendError(data) {
-    console.error("error", data)
+    console.error(`error: ${data ? JSON.stringify(data) : "null"}`)
     // 大厅 web端不用上传任何日志
     if (data) {
         if (typeof data !== "string") {
-            const formData = new FormData();
-            for (let key in data) {
-                formData.append(key, data[key]);
+            if (window.conch || window.conchMarket) {
+                data = parseJson(data)
+            } else {
+                const formData = new FormData();
+                for (let key in data) {
+                    formData.append(key, data[key]);
+                }
+                data = formData
             }
-            data = formData
         }
         let url = typeof crashUrl === "function" ? crashUrl() : crashUrl
         let http = new XMLHttpRequest();
@@ -285,6 +289,21 @@ function sendError(data) {
     }
 }
 
+function parseJson(data) {
+    if (!data) return null
+    if (typeof data === "string") return data
+    let value
+    let v
+    for (let key in data) {
+        v = data[key]
+        if (!value) {
+            value = key + "=" + v
+        } else {
+            value += "&" + key + "=" + v
+        }
+    }
+    return value
+}
 
 // ios
 

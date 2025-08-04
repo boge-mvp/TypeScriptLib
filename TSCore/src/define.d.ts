@@ -1,20 +1,3 @@
-/**
- * 动态参数 function 或 Laya.Handler
- *
- * 可使用 runFun 运行
- *
- * @see runFun
- */
-declare type ParamHandler = ((...args) => any) | Laya.Handler
-
-declare type Constructor<T = {}> = new (...args: any[]) => T
-
-/** 使用交叉类型连接多个类型 */
-declare type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never
-
-/** 获取构造函数的实例类型 */
-declare type InstanceTypeOfConstructor<T> = T extends Constructor<infer R> ? R : never
-
 declare module Laya {
 
 // @ts-ignore
@@ -109,7 +92,6 @@ declare module Laya {
 
 }
 
-
 declare module fgui {
 
     interface GLoader {
@@ -135,7 +117,6 @@ declare module fgui {
     }
 
 }
-
 
 //  **********************         扩展原生方法         *****************************
 
@@ -252,7 +233,6 @@ declare interface String {
     toInt(): number
 
 }
-
 
 declare interface Array<T> {
 

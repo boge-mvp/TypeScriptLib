@@ -1,5 +1,5 @@
-import {IMarket} from "./IMarket"
-import {ICPlatformClass} from "./ICPlatformClass"
+import {IMarket} from "./interfaces/IMarket"
+import {ICPlatformClass} from "./interfaces/ICPlatformClass"
 
 export class NativeUtils {
 

@@ -59,6 +59,8 @@ export class BaseSlotItem extends ELabel {
 
     /**
      * 刷新界面
+     *
+     * 一般用于根据当前的state更新当前的元素渲染模式
      */
     refresh() {
     }

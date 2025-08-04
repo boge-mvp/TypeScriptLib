@@ -1,3 +1,28 @@
+
+// 通用装饰器类型定义
+// type PropertyDecorator = (target: any, propertyKey: string) => PropertyDescriptor | void;
+// type ClassDecorator = <T extends Function>(constructor: T) => T | void;
+// type MethodDecorator = <T>(target: any, propertyKey: string, descriptor: TypedPropertyDescriptor<T>) => TypedPropertyDescriptor<T> | void;
+// type MethodDecorator2 = (target: any, propertyKey: string, descriptor: PropertyDescriptor) => PropertyDescriptor | void;
+//
+
+/**
+ * 动态参数 function 或 Laya.Handler
+ *
+ * 可使用 runFun 运行
+ *
+ * @see runFun
+ */
+declare type ParamHandler = ((...args) => any) | Laya.Handler
+
+declare type Constructor<T = {}> = new (...args: any[]) => T
+
+/** 使用交叉类型连接多个类型 */
+declare type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never
+
+/** 获取构造函数的实例类型 */
+declare type InstanceTypeOfConstructor<T> = T extends Constructor<infer R> ? R : never
+
 declare type InitApp = {
     /** 初始化Laya */
     laya?: {
@@ -82,7 +107,80 @@ declare type IInitEngine = {
     onFail?: () => void
 }
 
+/**
+ * 组件数据类，用于创建组件实例。
+ */
+declare type ComponentData = {
+    /**
+     * 创建key
+     */
+    key?: string
+    /**
+     * 目标类的构造函数。
+     */
+    classTarget?: { new(): any }
+    /**
+     * 是否自动初始化 默认true
+     */
+    autoInit?: boolean
+    /**
+     * 自动创建顺序 默认0 越大越后创建
+     * @type {number}
+     */
+    order?: number
+    /**
+     * 创建UI的路径。
+     */
+    createUi?: string
+    /**
+     * 是否加入bean缓存中 默认true
+     *
+     * 当设置为false后，·autoInit·设置将失效，不会自动初始化
+     */
+    isJoinBean?: boolean
+}
 
+/**
+ * 事件处理的绑定数据
+ */
+declare type ActionsData = {
+    className: string
+    fun: Function
+    action: number | string
+    group?: string
+    order?: number
+}
+
+/**
+ * 点击事件处理的绑定数据
+ */
+declare type EventData = {
+    /**
+     * 绑定注册事件 类的prototype
+     */
+    target?: any,
+    className: string
+    fun: Function
+    /**
+     * Laya.Event
+     */
+    eventName: string
+    /**
+     * this.getChild(childName)
+     */
+    childName?: string
+    /**
+     * 附带值
+     */
+    args?: any[]
+}
+
+/**
+ * 应用程序运行接口。
+ */
+declare interface IRunApplication {
+    start(): void
+}
 declare type PointType = { x?: number, y?: number }
 declare type RectangleType = { x?: number, y?: number, width?: number, height?: number }
 

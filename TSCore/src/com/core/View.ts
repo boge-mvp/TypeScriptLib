@@ -1,5 +1,7 @@
-import {ActionEvent, StringBlock, ViewBlock} from "../block/Block"
 import {IKey, IView} from "../interfaces/ICommon";
+import {StringBlock} from "../block/StringBlock";
+import {ViewBlock} from "../block/ViewBlock";
+import {ActionEvent} from "../block/ActionEvent";
 
 export class View extends mixinExt(ActionEvent, StringBlock, ViewBlock, fgui.GComponent) implements IView, IKey {
 

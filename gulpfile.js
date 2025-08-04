@@ -1,37 +1,16 @@
 'use strict'
 
-const fs = require('fs')
+const fs = require("fs")
 const zlib = require('zlib')
 const http = require('https')
 const path = require("path")
 
 const gulp = require("gulp")
-const concat = require("gulp-concat")
-const {append} = require("gulp-inject-string")
 
 const AdmZip = require('adm-zip')
 const {reserved} = require("./reserved")
-const {generate, createDirectory, clean, runStream, cleanStream, print} = require("./index")
+const {createDirectory, clean, runStream, cleanStream, print} = require("./index")
 const {SourceMapConsumer, SourceNode} = require('source-map');
-const typescript = require("typescript")
-
-// 需要添加到最前面的类
-let beforeTs = ["src/com/Factory.ts", "src/com/block/Block.ts", "src/com/core/View.ts", "src/com/core/Proxys.ts",
-    "src/com/core/BaseView.ts", "src/com/utils/ChangeValue.ts",
-    "src/com/utils/UtilKit.ts"]
-
-generate.global = ["src/Types.ts"]
-generate.tsProject = 'tsconfig.json'
-generate.beforeTs = beforeTs
-generate.libs = ["./libs/**/*", "./src/**/*.d.ts"]
-generate.project = "gameCore"
-generate.namespace = "coreLib"
-generate.saveTempPath = "./bin"
-generate.distPath = generate.minifyPath = "./bin"
-generate.saveTempTs = "lib.ts"
-// generate.settings = {typescript: typescript}
-
-const libCache = path.join(generate.distPath, "libCache.json")
 
 gulp.task("resetSource", (f) => {
 
@@ -46,73 +25,11 @@ gulp.task("resetSource", (f) => {
 })
 
 gulp.task("clean", () => {
-    return generate.clean([
+    return clean([
         ".bin/**/gameCore**.d.ts",
         ".bin/**/gameCore**.js",
         ".bin/**/gameCore**.js.map",
     ])
-})
-
-gulp.task('createTs', () => {
-    return generate.createTs(["src/**/*.ts", "!**/*.d.ts"])
-})
-
-gulp.task('createJs', () => {
-    return generate.createJs()
-})
-
-gulp.task('minifyJs', () => {
-    return generate.minifyJs()
-})
-
-gulp.task('mangleJs', () => {
-    let libs = {}
-    if (fs.existsSync(libCache)) {
-        libs = JSON.parse(fs.readFileSync(libCache, "utf8"))
-    }
-    let cacheFile = path.join(generate.distPath, "nameCache.json")
-    if (!fs.existsSync(cacheFile)) fs.writeFileSync(cacheFile, "{}", "utf8")
-    let minCaches = JSON.parse(fs.readFileSync(cacheFile, "utf8"))
-    minCaches = {}
-    let nameCaches = {...libs, ...minCaches}
-
-    return generate.mangleJs({
-        sourceMap: true,
-        nameCache: nameCaches,
-        // keep_fnames: [],
-        // keep_classnames
-        mangle: {
-            properties: {
-                // keep_quoted: true, // 如果设为 true，使用带引号的属性名称 （'o[“foo”]'） 会保留属性名称 （'foo'），以便即使以不带引号的样式 （'o.foo'） 使用，它也不会在整个脚本中被破坏
-                reserved: reserved
-            },
-            //     // keep_fnames: /Laya\.*/,
-            //     toplevel: true,
-        },
-        format: {
-            preserve_annotations: true
-        }
-
-        // toplevel: true
-    }, null, generate.distPath + "/min", "../map")
-        .on('end', function () {
-            // console.log("结束了")
-            // 当 Gulp 任务结束时, 把 nameCache 写入到文件中
-            // console.log(nameCaches)
-            fs.writeFileSync(cacheFile, JSON.stringify(nameCaches));
-        })
-})
-
-gulp.task('createDTs', () => {
-    return generate.createDTs()
-})
-
-gulp.task('dtsAppend', () => {
-    return generate.dtsAppend("src/**/*.d.ts")
-})
-
-gulp.task('removeTemp', () => {
-    return clean("bin/temp")
 })
 
 //完整构建
@@ -123,41 +40,6 @@ gulp.task('build', gulp.series("clean", () => {
         ]).pipe(gulp.dest("./bin"))
     }
 ))
-
-gulp.task('buildStream', gulp.series("clean", () => {
-    let libs = {}
-    if (fs.existsSync(libCache)) {
-        libs = JSON.parse(fs.readFileSync(libCache, "utf8"))
-    }
-    let cacheFile = generate.distPath + "/nameCache.json"
-    if (!fs.existsSync(cacheFile)) fs.writeFileSync(cacheFile, "{}", "utf8")
-    let minCaches = JSON.parse(fs.readFileSync(cacheFile, "utf8"))
-    minCaches = {}
-    let nameCaches = {...libs, ...minCaches}
-
-    return generate.createTs(["src/**/*.ts", "!**/*.d.ts"])
-        .pipe(generate.createJsStream())
-        .pipe(generate.minifyJsStream())
-        .pipe(generate.mangleJsStream({
-            sourceMap: true,
-            nameCache: nameCaches,
-            mangle: {properties: {reserved: reserved}},
-            format: {preserve_annotations: true}
-            // toplevel: true
-        }, null, generate.distPath + "/min", "../map"))
-        .pipe(runStream(function () {
-            console.log("write cache")
-            // 把 nameCache 写入到文件中
-            // console.log(nameCaches)
-            fs.writeFileSync(cacheFile, JSON.stringify(nameCaches));
-            return true
-        }))
-        .pipe(generate.createDTsStream())
-        .pipe(generate.dtsAppendStream(["src/**/*.d.ts"]))
-
-
-}, "removeTemp"))
-
 
 let downloadWebp = "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.3.0-windows-x64.zip"
 const filePath = 'webp' // 下载文件的路径
@@ -245,3 +127,8 @@ gulp.task("min-js", () => {
 
 
 gulp.task('default', gulp.series("build"))
+
+
+gulp.task("test", ()=> {
+    console.log(path.dirname("D:\\WorkSpace\\LayaBox\\TypeScriptLib\\delete.js"))
+})

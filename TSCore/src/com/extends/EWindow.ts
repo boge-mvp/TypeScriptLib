@@ -4,7 +4,9 @@ import Tween = Laya.Tween;
 import GRoot = fgui.GRoot;
 import Handler = Laya.Handler;
 import {HistoryManager} from "../manager/HistoryManager"
-import {ActionEvent, StringBlock, ViewProxy} from "../block/Block"
+import {StringBlock} from "../block/StringBlock";
+import {ViewProxy} from "../block/ViewProxy";
+import {ActionEvent} from "../block/ActionEvent";
 import {IRecord} from "../interfaces/ICommon";
 import {App} from "../App";
 import {Log} from "../Log";

@@ -1,4 +1,6 @@
-import {ActionEvent, ProxyBlock, StringBlock} from "../block/Block"
+import {StringBlock} from "../block/StringBlock";
+import {ProxyBlock} from "../block/ProxyBlock";
+import {ActionEvent} from "../block/ActionEvent";
 import {IKey, IProxy} from "../interfaces/ICommon";
 
 export class Proxys extends mixinExt(StringBlock, ProxyBlock, ActionEvent) implements IProxy, IKey {

@@ -1,7 +1,8 @@
 import GComponent = fgui.GComponent;
 import {ISkeleton} from "../interfaces/ISkeleton"
 import {Log} from "../Log";
-import {ActionEvent, BezierCurves} from "../block/Block";
+import {BezierCurves} from "../block/BezierCurves";
+import {ActionEvent} from "../block/ActionEvent";
 import {GSpineSkeleton} from "../view/GSpineSkeleton";
 import {GSkeleton} from "../view/GSkeleton";
 

@@ -1,5 +1,6 @@
-import {ActionEvent, StringBlock, ViewBlock} from "../block/Block"
-
+import {StringBlock} from "../block/StringBlock";
+import {ViewBlock} from "../block/ViewBlock";
+import {ActionEvent} from "../block/ActionEvent";
 export class EButton extends mixinExt(StringBlock, ViewBlock, ActionEvent, fgui.GButton) {
 
     protected override onConstruct() {

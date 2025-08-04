@@ -1,4 +1,4 @@
-import {AjaxRequest} from "./AjaxRequest";
+import {AjaxRequest} from "../net/AjaxRequest";
 
 export interface IHttpFilter {
 

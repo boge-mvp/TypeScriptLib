@@ -1,4 +1,4 @@
-import {IHttpFilter} from "../net/IHttpFilter"
+import {IHttpFilter} from "../interfaces/IHttpFilter"
 import {AjaxRequest} from "../net/AjaxRequest"
 import {Method} from "../interfaces/ICommon";
 import {Log} from "../Log";

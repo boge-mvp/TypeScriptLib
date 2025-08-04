@@ -2,7 +2,8 @@ import GProgressBar = fgui.GProgressBar;
 import GTweener = fgui.GTweener;
 import GTween = fgui.GTween;
 import EaseType = fgui.EaseType;
-import {ActionEvent, ViewBlock} from "../block/Block"
+import {ActionEvent} from "../block/ActionEvent";
+import {ViewBlock} from "../block/ViewBlock";
 import ToolSet = fgui.ToolSet;
 import ProgressTitleType = fgui.ProgressTitleType;
 import ObjectPropID = fgui.ObjectPropID;

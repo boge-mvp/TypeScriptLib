@@ -1,3 +1,4 @@
+
 export class BindInputKit {
 
     private component: fgui.GComponent

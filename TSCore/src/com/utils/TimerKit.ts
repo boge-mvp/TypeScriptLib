@@ -10,7 +10,7 @@ export class TimerKit {
     static REG_TASK: TaskHandler[] = []
 
     start() {
-        stop()
+        this.stop()
         Laya.timer.frameLoop(1, this, this.onUpdate)
         return this
     }
