@@ -14,10 +14,11 @@ const rename = require('gulp-rename')
 const sourcemaps = require('gulp-sourcemaps')
 const gulpTs = require("gulp-typescript")
 const through2 = require("through2").obj
-const webp = require("./webp/ToWebp")
 const {Settings} = require("gulp-typescript")
 const {MinifyOptions} = require("terser")
+const webp = require("./webp/ToWebp")
 const concatSource = require("./ConcatSource");
+const rollupRename = require("./rollup-rename-plugin");
 
 const ts = require('typescript')
 
@@ -641,8 +642,8 @@ function rollupStream(...options) {
                             opt.base = base
                             opt.path = path.join(base, fileName)
                         }
-                        const mapFile = new File(opt);
-                        result.push(mapFile);
+                        const file = new File(opt);
+                        result.push(file);
                     }
 
                 } else if (chunk.type === 'asset') {
@@ -690,66 +691,68 @@ function rollupPack(inputFile, outName, outDir, options) {
     options = defaults(options, {
         tsconfig: "tsconfig.json"
     })
-    return rollupStream(
-        {
-            input: inputFile,
-            treeshake: false,// 删除无调用代码
-            external: ["tslib"],// 排除 tslib，不将其打包进最终文件
-            output: {
-                // compact: true, // 去除多余缩进
-                format: 'iife',
-                dir: outDir,
-                name: outName,
-                extend: true,
-                sourcemap: "hidden", // rollup不处理sourcemap映射
-                globals: {
-                    tslib: "window"  // 告诉 Rollup 将 tslib 视为全局变量
+    return rollupStream({
+        input: inputFile,
+        treeshake: false,// 删除无调用代码
+        external: ["tslib"],// 排除 tslib，不将其打包进最终文件
+        output: {
+            // compact: true, // 去除多余缩进
+            format: 'iife',
+            dir: outDir,
+            name: outName,
+            extend: true,
+            sourcemap: "hidden", // rollup不处理sourcemap映射
+            globals: {
+                tslib: "window"  // 告诉 Rollup 将 tslib 视为全局变量
+            }
+        },
+        plugins: [
+            glsl({
+                include: /.*(.glsl|.vs|.fs)$/,
+                sourceMap: false,
+                compress: false
+            }),
+            typescriptRollup({
+                transformers: {
+                    before: [
+                        addMetadata()
+                    ]
+                },
+                // cacheDir: "D:/WorkSpace/.rollup.cache",
+                tsconfig: options.tsconfig
+            }),
+            outSource(path.join(outDir, `${outName}.js`)),
+            rollupTerser({
+                timings: true,
+                compress: {
+                    properties: true, //（默认值：true）-使用点表示法重写属性访问，例如foo["bar"] → foo.bar
+                },
+                format: {
+                    beautify: false, // 不进行删除空白和换行
+                    // 保留所有带引号的属性名。  如：object.call("LP_Init")
+                    // quote_keys: false,
+                },
+                mangle: {
+                    // keep_classnames: /Laya.*/,
+                    // properties: {
+                    //             keep_quoted: true, // 如果设为 true，被引号的属性名就不会被更改。
+                    //             reserved: [
+                    //                 "__decorate", "__metadata", "__param", "__awaiter"
+                    //             ]
+                    // },
+                    //         toplevel: false
                 }
-            },
-            plugins: [
-                glsl({
-                    include: /.*(.glsl|.vs|.fs)$/,
-                    sourceMap: false,
-                    compress: false
-                }),
-                typescriptRollup({
-                    transformers: {
-                        before: [
-                            addMetadata()
-                        ]
-                    },
-                    // cacheDir: "D:/WorkSpace/.rollup.cache",
-                    tsconfig: options.tsconfig
-                }),
-                outSource(path.join(outDir, `${outName}.js`)),
-                rollupTerser({
-                    timings: true,
-                    compress: {
-                        properties: true, //（默认值：true）-使用点表示法重写属性访问，例如foo["bar"] → foo.bar
-                    },
-                    format: {
-                        beautify: false, // 不进行删除空白和换行
-                        // 保留所有带引号的属性名。  如：object.call("LP_Init")
-                        // quote_keys: false,
-                    },
-                    mangle: {
-                        // keep_classnames: /Laya.*/,
-                        // properties: {
-                        //             keep_quoted: true, // 如果设为 true，被引号的属性名就不会被更改。
-                        //             reserved: [
-                        //                 "__decorate", "__metadata", "__param", "__awaiter"
-                        //             ]
-                        // },
-                        //         toplevel: false
-                    }
-                })
-            ]
-        }
-    ).on('end', () => {
-        if (fs.existsSync(inputFile)) {
-            // fs.unlinkSync(inputFile); // 构建完成后删除临时文件
-        }
-    }).pipe(gulp.dest(outDir))
+            }),
+            rollupRename({filename: outName + ".min"})
+        ]
+    })
+        .pipe(gulp.dest(outDir))
+        .on('end', () => {
+            if (fs.existsSync(inputFile)) {
+                // fs.unlinkSync(inputFile); // 构建完成后删除临时文件
+            }
+        })
+
 
 }
 
@@ -777,6 +780,7 @@ exports = {
     buildDts,
 
     rollupStream,
-    rollupPack
+    rollupPack,
+    rollupRename
 }
 module.exports = exports

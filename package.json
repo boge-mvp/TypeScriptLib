@@ -33,6 +33,7 @@
     "ConcatSource.js",
     "reserved.js",
     "types.js",
-    "monkey-path.js"
+    "monkey-path.js",
+    "rollup-rename-plugin.js"
   ]
 }
