@@ -4,7 +4,7 @@ const path = require('path')
  * 类似于 gulp-rename 的 Rollup 插件
  * 可以修改输出文件的名称、目录和扩展名
  *
- * @param {string|{dirName?:string, basename?:string, filename?:string, extname?:string}|function} renamer - 重命名规则
+ * @param {string|{dirName?:string, basename?:string, filename?:string, extname?:string}|((fileParts:any, file:any, fileName:string)=>any)} renamer - 重命名规则
  *   - string: 直接替换整个文件名
  *   - object: 指定文件路径的各个部分
  *     - dirname: 新的目录名

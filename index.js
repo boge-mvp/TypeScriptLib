@@ -4,7 +4,7 @@ const path = require('path')
 const streamNode = require("node:stream")
 const gulp = require("gulp")
 const log = require("gulplog")
-const terser = require("gulp-terser")
+const gulpTerser = require("gulp-terser")
 const inject = require("gulp-inject-string")
 const concat = require('gulp-concat')
 const del = require("del")
@@ -29,17 +29,30 @@ const {globSync} = require('glob');
 const glsl = require('rollup-plugin-glsl')
 const typescriptRollup = require('@rollup/plugin-typescript')
 const rollupTerser = require("@rollup/plugin-terser")
+const {Options} = require("@rollup/plugin-terser")
 const {SrcOptions} = require("vinyl-fs")
 
 /***************************** 公共逻辑方法 *****************************/
 
+/**
+ * 创建一个命名空间转换器，用于处理 TypeScript 中的 import = 声明，
+ * 并将简写的命名空间引用替换为完整的限定名路径。
+ *
+ * @returns 一个 Transformer 工厂函数，接受 TypeChecker 上下文并返回源文件转换函数。
+ */
 function createNamespaceTransformer() {
     return (context) => {
         return (sourceFile) => {
-            // 存储 import = 声明的映射关系
+            // 存储 import = 声明的映射关系：简写名称 -> 完整命名空间路径
             const namespaceMap = new Map();
 
-            // 第一次遍历：收集命名空间映射
+            /**
+             * 第一次遍历 AST，收集所有 import = 声明中的命名空间映射关系，
+             * 并移除这些 import 声明。
+             *
+             * @param node 当前遍历到的 AST 节点
+             * @returns {ts.Node} 转换后的节点（如果需要删除则返回 undefined）
+             */
             function visitFirstPass(node) {
                 // 处理 import xxx = yyy.zzz 声明
                 if (ts.isImportEqualsDeclaration(node) && ts.isQualifiedName(node.moduleReference)) {
@@ -52,10 +65,16 @@ function createNamespaceTransformer() {
                 return ts.visitEachChild(node, visitFirstPass, context);
             }
 
-            // 应用第一次遍历
+            // 应用第一次遍历，构建命名空间映射表并清理 import 声明
             sourceFile = ts.visitNode(sourceFile, visitFirstPass);
 
-            // 第二次遍历：替换使用简写名称的地方
+            /**
+             * 第二次遍历 AST，根据已收集的命名空间映射关系，
+             * 将使用简写名称的地方替换为完整限定名表达式。
+             *
+             * @param node 当前遍历到的 AST 节点
+             * @returns {ts.Node|ts.TypeReferenceNode} 转换后的节点
+             */
             function visitSecondPass(node) {
                 // 替换标识符为完整的命名空间路径
                 if (ts.isIdentifier(node) && namespaceMap.has(node.text)) {
@@ -80,7 +99,7 @@ function createNamespaceTransformer() {
                     }
                 }
 
-                // 处理类型引用节点
+                // 处理类型引用节点，将简写的类型名替换为完整限定名
                 if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName) && namespaceMap.has(node.typeName.text)) {
                     const fullName = namespaceMap.get(node.typeName.text);
                     return ts.factory.createTypeReferenceNode(
@@ -92,10 +111,16 @@ function createNamespaceTransformer() {
                 return ts.visitEachChild(node, visitSecondPass, context);
             }
 
+            // 应用第二次遍历，完成命名空间路径的替换
             return ts.visitNode(sourceFile, visitSecondPass);
         };
 
-        // 辅助函数：根据完整名称创建限定名表达式
+        /**
+         * 根据完整名称创建限定名表达式（如 a.b.c）。
+         *
+         * @param fullName 完整的命名空间路径字符串，以点号分隔
+         * @returns {ts.Identifier} 表达式节点，表示该限定名
+         */
         function createQualifiedNameExpression(fullName) {
             const parts = fullName.split('.');
             let result = ts.factory.createIdentifier(parts[0]);
@@ -110,21 +135,30 @@ function createNamespaceTransformer() {
     };
 }
 
+
 /**
- * @returns {ts.TransformerFactory<ts.SourceFile>}
+ * 生成一个用于添加元数据的 TypeScript AST 转换器工厂函数。
+ * 该函数会遍历 AST 中的类声明节点，如果类使用了指定装饰器（如 Component、FguiBindView、AppMain），
+ * 则为其添加 Reflect.metadata 装饰器，并调整装饰器顺序，将 Component 装饰器移到最后。
+ *
+ * @returns {ts.TransformerFactory<ts.SourceFile>} 返回一个接收转换上下文 context 的函数，该函数返回实际的 AST 转换函数。
  */
 function addMetadata() {
     const decoratorName = ["Component", "FguiBindView", "AppMain"]
     return (context) => {
         /**
-         * @param {ts.Node} node
+         * 遍历 AST 节点的访问器函数。
+         * 主要处理类声明节点，为其添加元数据装饰器并重新排序装饰器。
+         *
+         * @param {ts.Node} node 当前遍历到的 AST 节点
+         * @returns {ts.Node | ts.ClassDeclaration} 处理后的节点或原始节点
          */
         const visitor = (node) => {
             // 只处理类声明
             if (ts.isClassDeclaration(node)) {
                 const name = node.name.text
                 const decorators = ts.getDecorators(node)
-                // 查看装饰器中是否有 @Component
+                // 查看装饰器中是否有目标装饰器之一
                 const hasTargetDecorator = decorators?.some(modifier => {
                     // 获取装饰器表达式
                     const decorator = getExpression(modifier.expression)
@@ -146,7 +180,7 @@ function addMetadata() {
                             ]
                         )
                     );
-                    // 重新排列，把 Component 放到最后
+                    // 重新排列装饰器，把 Component 放到最后
                     let newModifiers = (node.modifiers || []).toSorted((a, b) => {
                         if (a.kind === b.kind && a.kind === ts.SyntaxKind.Decorator) {
                             const aName = getExpression(a.expression)
@@ -159,7 +193,7 @@ function addMetadata() {
                         }
                         return 0
                     })
-                    // 添加到 modifiers 列表中
+                    // 添加 metadata 装饰器到 modifiers 列表中
                     newModifiers = ts.canHaveDecorators(node) ? [...newModifiers, metadataDecorator] : [metadataDecorator];
                     // 返回修改后的类节点
                     return ts.factory.updateClassDeclaration(
@@ -176,11 +210,19 @@ function addMetadata() {
             return ts.visitEachChild(node, visitor, context)
         }
 
+        /**
+         * 实际执行 AST 转换的函数。
+         * 接收源文件节点，使用 visitor 遍历并返回转换后的节点。
+         *
+         * @param {ts.SourceFile} sourceFile 源文件节点
+         * @returns {ts.Node} 转换后的节点
+         */
         return (sourceFile) => {
             return ts.visitNode(sourceFile, visitor)
         }
     }
 }
+
 
 /**
  *
@@ -188,8 +230,7 @@ function addMetadata() {
  * @return IdentifierObject
  */
 function getExpression(exp) {
-    if (ts.isCallExpression(exp) &&
-        ts.isIdentifier(exp.expression)) {
+    if (ts.isCallExpression(exp) && ts.isIdentifier(exp.expression)) {
         return getExpression(exp.expression)
     }
     return exp
@@ -287,10 +328,10 @@ function mJs(files, terserOpt, mapFile) {
         stream = gulp.src(files)
     } else stream = gulp.src(files.path) // 重新获取流
     if (!terserOpt.mangle) {
-        return stream.pipe(terser(terserOpt)).pipe(rename({extname: '.min.js', dirname: ""}))
+        return stream.pipe(gulpTerser(terserOpt)).pipe(rename({extname: '.min.js', dirname: ""}))
     }
     return stream.pipe(sourcemaps.init())
-        .pipe(terser(terserOpt))
+        .pipe(gulpTerser(terserOpt))
         .pipe(rename({extname: '.min.js', dirname: ""}))
         .pipe(sourcemaps.write(mapFile ? mapFile : "."))
 }
@@ -472,9 +513,9 @@ function findFilesSync(url) {
 }
 
 /**
- *
- * @param tsConfig
- * @return {gulpTs.Project}
+ * 创建并返回一个TypeScript项目配置对象
+ * @param {string} tsConfig - TypeScript配置文件路径，默认为"tsconfig.json"
+ * @return {gulpTs.Project} 返回配置好的TypeScript项目对象
  */
 function getProject(tsConfig = "tsconfig.json") {
     return gulpTs.createProject(tsConfig, {
@@ -492,10 +533,10 @@ function getProject(tsConfig = "tsconfig.json") {
 }
 
 /**
- *
- * @param globs {string | string[]}
- * @param [opt] {SrcOptions}
- * @return {gulpTs.CompileStream}
+ * 创建一个编译流，用于处理TypeScript文件
+ * @param {string|string[]} globs - 文件匹配模式，可以是字符串或字符串数组
+ * @param [opt] {SrcOptions} - gulp.src的选项配置对象
+ * @return {gulpTs.CompileStream} 返回一个gulp流，用于后续的管道操作
  */
 function createCompileStream(globs, opt) {
     const tsProject = getProject()
@@ -503,20 +544,36 @@ function createCompileStream(globs, opt) {
 }
 
 /**
- *
- * @param v {{src:{ globs: (string | string[]), opt?: SrcOptions}, outName:string, dist:string, namespace?:string, js:{ isMinify?:boolean}, dts:{ globalDtsFile?:string[]}}}
- * @param done
+ * @typedef GlobsConfig
+ * @property {string|string[]} globs - 文件匹配模式，可以是字符串或字符串数组
+ * @property {SrcOptions} opt - gulp.src的选项配置对象
  */
-function buildLibrary(v, done) {
-    const tsResult = createCompileStream(v.src.globs, v.src.opt)
+
+/**
+ * @typedef BuildConfig
+ * @property {GlobsConfig} src - 源文件配置
+ * @property {string} outName - 输出文件的名称（不包含扩展名）
+ * @property {string} dist - 输出目录路径
+ * @property {string} [namespace] - 命名空间名称
+ * @property {{ isMinify?:boolean}} js
+ * @property {{ globalDtsFile?:string[]}} dts
+ */
+
+/**
+ * 构建库文件的主函数
+ * @param config {BuildConfig} 构建配置对象
+ * @param done - Gulp任务完成回调函数
+ */
+function buildLibrary(config, done) {
+    const tsResult = createCompileStream(config.src.globs, config.src.opt)
     const jsStream = function (done) {
-        buildJs(tsResult, v.outName, v.dist, v.js.isMinify, v.namespace)
+        buildJs(tsResult, config.outName, config.dist, config.js.isMinify, config.namespace)
             .pipe(run(function () {
                 done()
             }))
     }
     const dtsStream = function (done) {
-        buildDts(tsResult, v.outName, v.dist, v.dts.globalDtsFile, v.namespace)
+        buildDts(tsResult, config.outName, config.dist, config.dts.globalDtsFile, config.namespace)
             .pipe(run(function () {
                 done()
             }))
@@ -543,7 +600,7 @@ function buildJs(tsResult, outName, dist, isMinify = false, namespace = null) {
         .pipe(gulp.dest(dist))
         .pipe(ifelse(isMinify, [
             sourcemaps.init(),
-            terser(),
+            gulpTerser(),
             rename({extname: '.min.js', dirname: ""}),
             sourcemaps.write(".", {addComment: false}),
             gulp.dest(dist)
@@ -572,28 +629,34 @@ function buildDts(tsResult, outName, dist, globalFile = [], namespace = null) {
         .pipe(gulp.dest(dist))
 }
 
-
 /**
- * 输出文件
- * @param outPath
+ * 创建一个 Rollup 插件对象，用于将处理后的代码输出到指定文件
+ * @param {string} outName - 输出文件的名称
  */
-const outSource = function (outPath) {
+const outSource = function (outName) {
+    let cacheCode = null
     return {
         name: 'outSourceFile',
-        renderChunk(code, chunk, outputOptions) {
-            fs.writeFileSync(outPath, code, "utf8")
-            return {
-                code: code,
-                map: null // 可选项，如果需要源映射，则可以提供映射文件
+        renderChunk(code, chunk, options) {
+            cacheCode = code
+        },
+        generateBundle(options, bundle, isWrite) {
+            if (cacheCode) {
+                this.emitFile({
+                    type: "asset",
+                    fileName: outName,
+                    source: cacheCode
+                })
+                cacheCode = null
             }
         }
     };
 }
 
 /**
- *
- * @param options {rollup.RollupOptions[]}
- * @return {module:stream.internal.Readable}
+ * 创建一个 Rollup 构建流，用于处理多个构建选项并生成对应的文件流
+ * @param {...rollup.RollupOptions} options - Rollup 构建选项数组，每个选项包含输入和输出配置
+ * @returns {streamNode.Readable} 返回一个可读流，包含构建生成的文件
  */
 function rollupStream(...options) {
     const build = async (options, stream) => {
@@ -608,52 +671,24 @@ function rollupStream(...options) {
             const {output} = await bundle.generate(outputOptions);
             for (const chunk of output) {
                 let fileName = chunk.fileName;
-                let outFile = outputOptions.file
-                let dir = outputOptions.dir
-                let base
-                if (outFile) {
-                    base = path.dirname(outFile) + "/"
-                } else if (dir) {
-                    base = dir
-                }
+                const type = chunk.type
                 // 处理 chunk 类型（JS）
-                if (chunk.type === 'chunk') {
-                    fileName = chunk.preliminaryFileName
+                if (type === 'chunk') {
                     let content = chunk.code
-                    let opt = {
+                    const file = new File({
                         contents: Buffer.from(content),
                         path: fileName
-                    }
-                    if (base) {
-                        opt.base = base
-                        opt.path = path.join(base, fileName)
-                    }
-                    const file = new File(opt);
+                    });
                     result.push(file);
-
-                    // 如果有 source map
-                    if (chunk.map) {
-                        fileName = chunk.sourcemapFileName
-                        opt = {
-                            contents: Buffer.from(`\n//# sourceMappingURL=${chunk.map.toUrl()}`),
-                            path: fileName
-                        }
-                        if (base) {
-                            opt.base = base
-                            opt.path = path.join(base, fileName)
-                        }
-                        const file = new File(opt);
-                        result.push(file);
-                    }
-
-                } else if (chunk.type === 'asset') {
-                    const t = chunk
-                    // const file = new File({
-                    //     base: base,
-                    //     path: base + fileName,
-                    //     contents: Buffer.from(chunk.source),
-                    // });
-                    // result.push(file);
+                } else if (type === 'asset') {
+                    const source = chunk.source
+                    const file = new File({
+                        path: fileName,
+                        contents: Buffer.from(source),
+                    });
+                    result.push(file);
+                } else {
+                    log.warn("Unknown type : " + type)
                 }
             }
         }
@@ -678,19 +713,30 @@ function rollupStream(...options) {
 }
 
 /**
- *
- *
- * @param inputFile {string} 入口文件
- * @param outName {string} 输出文件名字
- * @param outDir {string} 输出目录
- * @param [options=null] {{tsconfig?: string}} 可选配置
+ * @typedef {Object} RollupOptions
+ * @property {string} [outDir] - 输出目录路径
+ * @property {string} [tsconfig="tsconfig.json"] - TypeScript 配置文件路径
+ * @property {boolean} [sourcemap=false] - 是否生成 sourcemap 文件
+ * @property {boolean|Options} [minify=false] - 是否压缩代码，若为对象则作为 terser 压缩配置
  */
-function rollupPack(inputFile, outName, outDir, options) {
-    const localPath = process.cwd()
-    outDir = path.resolve(localPath, outDir)
+
+/**
+ * 使用 Rollup 打包指定的输入文件，并根据配置选项生成输出文件。
+ *
+ * @param {string} inputFile - 需要打包的入口文件路径
+ * @param {string} outName - 输出模块的全局变量名（用于 IIFE 格式）
+ * @param {RollupOptions?} options - 打包配置选项
+ * @returns {NodeJS.ReadWriteStream} 返回一个 Gulp 流，用于后续处理或写入文件
+ */
+function rollupPack(inputFile, outName, options) {
     options = defaults(options, {
-        tsconfig: "tsconfig.json"
+        tsconfig: "tsconfig.json",
+        sourcemap: false,
+        minify: false
     })
+    const localPath = process.cwd()
+    const outDir = path.resolve(localPath, options.outDir || "")
+
     return rollupStream({
         input: inputFile,
         treeshake: false,// 删除无调用代码
@@ -698,10 +744,10 @@ function rollupPack(inputFile, outName, outDir, options) {
         output: {
             // compact: true, // 去除多余缩进
             format: 'iife',
-            dir: outDir,
+            file: outName + `${options.minify ? ".min" : ""}.js`,
             name: outName,
             extend: true,
-            sourcemap: "hidden", // rollup不处理sourcemap映射
+            sourcemap: options.sourcemap, // rollup不处理sourcemap映射
             globals: {
                 tslib: "window"  // 告诉 Rollup 将 tslib 视为全局变量
             }
@@ -715,14 +761,15 @@ function rollupPack(inputFile, outName, outDir, options) {
             typescriptRollup({
                 transformers: {
                     before: [
-                        addMetadata()
+                        addMetadata(),
+                        createNamespaceTransformer()
                     ]
                 },
                 // cacheDir: "D:/WorkSpace/.rollup.cache",
                 tsconfig: options.tsconfig
             }),
-            outSource(path.join(outDir, `${outName}.js`)),
-            rollupTerser({
+            options.minify && outSource(`${outName}.js`),
+            options.minify && rollupTerser(defaults(options.minify, {
                 timings: true,
                 compress: {
                     properties: true, //（默认值：true）-使用点表示法重写属性访问，例如foo["bar"] → foo.bar
@@ -742,8 +789,15 @@ function rollupPack(inputFile, outName, outDir, options) {
                     // },
                     //         toplevel: false
                 }
-            }),
-            rollupRename({filename: outName + ".min"})
+            })),
+            // options.minify && rollupRename((fileParts, file, fileName) => {
+            //     if (file.type === "asset" && file.fileName.endsWith(".js")) return
+            //     const names = fileName.split(".")
+            //     return {
+            //         basename: "",
+            //         filename: names[0] + ".min." + names.slice(1).join("."),
+            //     }
+            // })
         ]
     })
         .pipe(gulp.dest(outDir))

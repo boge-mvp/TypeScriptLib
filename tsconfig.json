@@ -34,14 +34,6 @@
       "ESNext"
     ]
   },
-  //  "references": [
-  //    {
-  //      "path": "./TSCore/tsconfig.json"
-  //    },
-  //    {
-  //      "path": "./GameLib/tsconfig.json"
-  //    }
-  //  ],
   "exclude": [
     "dist",
     "bin",
