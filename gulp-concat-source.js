@@ -106,8 +106,10 @@ module.exports = function (file, opt) {
             }
             content = content.replace(/export\s*/g, "")
         }
+
         // 去除所有的本地导入 import {A} from '../P/A'
         content = content.replace(/import\s*\{\s*.*}\s*from\s*(["'].*["'])(;?)(?:\r\n|\r|\n)?/g, "")
+
         if (content.trim().length > 0) {
             if (_path.includes("global")) {
                 golbalConcat.add(file.relative, Buffer.from(content), file.sourceMap);

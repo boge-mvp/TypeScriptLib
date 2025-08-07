@@ -30,7 +30,7 @@
     "nameCache.json",
     "version_info.txt",
     "index.js",
-    "ConcatSource.js",
+    "gulp-concat-source.js",
     "reserved.js",
     "types.js",
     "monkey-path.js",

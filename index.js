@@ -17,7 +17,7 @@ const through2 = require("through2").obj
 const {Settings} = require("gulp-typescript")
 const {MinifyOptions} = require("terser")
 const webp = require("./webp/ToWebp")
-const concatSource = require("./ConcatSource");
+const concatSource = require("./gulp-concat-source");
 const rollupRename = require("./rollup-rename-plugin");
 
 const ts = require('typescript')
@@ -92,7 +92,25 @@ function createNamespaceTransformer() {
                         // 新建实例: new Pool()
                         ts.isNewExpression(parent) && parent.expression === node ||
                         // 静态方法调用: Pool.method()
-                        ts.isPropertyAccessExpression(parent) && parent.expression === node
+                        ts.isPropertyAccessExpression(parent) && parent.expression === node ||
+                        // 泛型约束: <T extends Pool>
+                        ts.isTypeReferenceNode(parent) && parent.typeArguments?.includes(node) ||
+                        // 类型断言: obj as Pool
+                        ts.isAsExpression(parent) && parent.type === node ||
+                        // 数组类型等: Pool[]
+                        ts.isArrayTypeNode(parent) && parent.elementType === node ||
+                        // 类继承: class UI extends Pool {}
+                        ts.isHeritageClause(parent) && parent.types?.some(type => type.expression === node) ||
+                        // 类继承中的类型参数: class UI extends Pool {}
+                        ts.isExpressionWithTypeArguments(parent) && parent.expression === node ||
+                        // 交叉类型: class UI extends A & B {}
+                        ts.isIntersectionTypeNode(parent) && parent.types?.includes(node) ||
+                        // 联合类型: 虽然不常用于继承，但可能出现在类型定义中
+                        ts.isUnionTypeNode(parent) && parent.types?.includes(node) ||
+                        // 括号类型: class UI extends (Pool) {}
+                        ts.isParenthesizedTypeNode(parent) && parent.type === node ||
+                        // 索引访问类型: class UI extends Lib['BaseClass'] {}
+                        ts.isIndexedAccessTypeNode(parent) && parent.objectType === node
                     ) {
                         const fullName = namespaceMap.get(node.text);
                         return createQualifiedNameExpression(fullName);
@@ -540,7 +558,149 @@ function getProject(tsConfig = "tsconfig.json") {
  */
 function createCompileStream(globs, opt) {
     const tsProject = getProject()
-    return gulp.src(globs, opt).pipe(tsProject())
+    /** @type gulpTs.CompileStream */
+    let project
+    /**
+     * @typedef GulpTypeScriptFileInfo
+     * @property {string} fileNameNormalized
+     * @property {string} fileNameOriginal
+     * @property {string} content
+     * @property {number} kind
+     * @property {File} gulp
+     * @property {ts.SourceFile} [ts]
+     */
+    /** @type {Object.<string, GulpTypeScriptFileInfo>} */
+    let files;
+    /** @type {ts.SourceFile} */
+    let testSource
+
+    // 一般情况会进入两次 只有第二次才有依赖关系
+    function projectFileNames(onlyGulp) {
+        const fileNames = [];
+        let fileArray = files
+        if (testSource && testSource.imports !== undefined) {
+            // 分析依赖关系并对files进行排序
+            fileArray = sortFilesByDependencies(files);
+        }
+        for (const fileName in fileArray) {
+            if (!files.hasOwnProperty(fileName))
+                continue;
+            let file = files[fileName];
+            if (!testSource) testSource = file.ts
+            if (onlyGulp && !file.gulp)
+                continue;
+            fileNames.push(file.fileNameOriginal);
+        }
+        return fileNames;
+    }
+
+    /**
+     * 分析TypeScript源文件的导入依赖关系
+     * @param {ts.SourceFile} sourceFile - TypeScript源文件
+     * @param {Object.<string, GulpTypeScriptFileInfo>} allFiles - 所有文件信息映射
+     * @returns {string[]} 依赖的文件路径列表
+     */
+    function analyzeDependencies(sourceFile, allFiles) {
+        const dependencies = [];
+
+        // 获取当前文件的目录路径
+        const currentFilePath = sourceFile.fileName;
+        const currentDir = path.dirname(currentFilePath);
+
+        // 遍历所有导入的模块
+        sourceFile.imports.forEach(importDeclaration => {
+            const importPath = importDeclaration.text;
+            // 解析导入路径为绝对路径
+            let resolvedPath = "";
+            if (importPath.startsWith(".")) {
+                // 相对路径导入
+                resolvedPath = path.resolve(currentDir, importPath);
+            } else {
+                // 绝对路径导入（从项目根目录开始）
+                resolvedPath = path.resolve(process.cwd(), importPath);
+            }
+            resolvedPath = resolvedPath.toLowerCase()
+            // 查找对应的文件（尝试不同扩展名）
+            const possiblePaths = [
+                resolvedPath + ".ts",
+                resolvedPath + ".tsx"
+            ];
+            for (const possiblePath of possiblePaths) {
+                for (const fileName in allFiles) {
+                    if (!allFiles.hasOwnProperty(fileName)) continue;
+                    // 检查是否匹配
+                    if (fileName === possiblePath) {
+                        dependencies.push(fileName);
+                        break;
+                    }
+                }
+                // 如果找到了匹配项，则跳出循环
+                if (dependencies.length > 0 && dependencies[dependencies.length - 1] !== undefined) {
+                    break;
+                }
+            }
+        });
+
+        return dependencies;
+    }
+
+    /**
+     * 基于依赖关系对文件进行拓扑排序
+     * @param {Object.<string, GulpTypeScriptFileInfo>} files - 所有文件信息映射
+     * @returns {string[]} 按依赖顺序排序的文件名列表
+     */
+    function sortFilesByDependencies(files) {
+        const visited = new Set();
+        const result = [];
+
+        // 为每个文件计算依赖
+        const fileDependencies = {};
+        for (const fileName in files) {
+            if (!files.hasOwnProperty(fileName)) continue;
+
+            const file = files[fileName];
+            if (file.ts && file.ts.imports) {
+                fileDependencies[fileName] = analyzeDependencies(file.ts, files);
+            } else {
+                fileDependencies[fileName] = [];
+            }
+        }
+
+        // 深度优先搜索进行拓扑排序
+        function dfs(fileName) {
+            if (visited.has(fileName)) return;
+
+            visited.add(fileName);
+
+            // 递归处理所有依赖
+            const dependencies = fileDependencies[fileName] || [];
+            dependencies.forEach(dep => {
+                dfs(dep);
+            });
+
+            // 添加到结果中
+            result.push(fileName);
+        }
+
+        // 对所有文件执行DFS
+        for (const fileName in files) {
+            if (!files.hasOwnProperty(fileName)) continue;
+            if (!visited.has(fileName)) {
+                dfs(fileName);
+            }
+        }
+
+        const obj = {}
+        result.forEach(value => obj[value] = files[value])
+        return obj;
+    }
+
+    return gulp.src(globs, opt).pipe(function () {
+        project = tsProject()
+        files = project.project.input.current.files
+        project.project.input.current.getFileNames = projectFileNames
+        return project
+    }())
 }
 
 /**
@@ -583,7 +743,7 @@ function buildLibrary(config, done) {
 
 /**
  * 构建JavaScript文件的函数
- * @param {Object} tsResult - TypeScript编译流或是其生成需要的包含globs和opt的属性
+ * @param {Object | gulpTs.CompileStream} tsResult - TypeScript编译流或是其生成需要的包含globs和opt的属性
  * @param {string} outName - 输出文件的名称（不包含扩展名）
  * @param {string} dist - 输出目录路径
  * @param {boolean} isMinify - 是否压缩文件，默认为false
