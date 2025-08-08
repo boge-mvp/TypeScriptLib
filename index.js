@@ -659,7 +659,7 @@ function buildLibrary(config, done) {
 
 /**
  * 构建JavaScript文件的函数
- * @param {Object | gulpTs.CompileStream} tsResult - TypeScript编译流或是其生成需要的包含globs和opt的属性
+ * @param {GlobsConfig | gulpTs.CompileStream} tsResult - TypeScript编译流或是其生成需要的包含globs和opt的属性
  * @param {string} outName - 输出文件的名称（不包含扩展名）
  * @param {string} dist - 输出目录路径
  * @param {boolean} isMinify - 是否压缩文件，默认为false
@@ -685,7 +685,7 @@ function buildJs(tsResult, outName, dist, isMinify = false, namespace = null) {
 
 /**
  * 构建 TypeScript 声明文件(.d.ts)
- * @param {Object} tsResult - TypeScript编译流或是其生成需要的包含globs和opt的属性
+ * @param {GlobsConfig | gulpTs.CompileStream} tsResult - TypeScript编译流或是其生成需要的包含globs和opt的属性
  * @param {string} outName - 输出文件的名称（不包含扩展名）
  * @param {string} dist - 输出目录路径
  * @param {Array} globalFile - 需要追加的全局文件列表，默认为空数组
