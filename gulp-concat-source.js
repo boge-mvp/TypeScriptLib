@@ -99,7 +99,7 @@ module.exports = function (file, opt) {
             }
         } else {
             if (namespace) {
-                const results = content.matchAll(/export\s+(class|interface|enum|abstract)\s+(\w+)(?=\s|\{)/g)
+                const results = content.matchAll(/export\s+(class|interface|enum|abstract|var)\s+(\w+)(?=\s|\{|;)/g)
                 results.forEach(result => {
                     content += `\n${namespace}.${result[2]} = ${result[2]}\n`
                 })

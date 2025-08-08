@@ -750,6 +750,7 @@ function rollupStream(...options) {
  * @property {string} [tsconfig="tsconfig.json"] - TypeScript 配置文件路径
  * @property {boolean} [sourcemap=false] - 是否生成 sourcemap 文件
  * @property {boolean|Options} [minify=false] - 是否压缩代码，若为对象则作为 terser 压缩配置
+ * @property {rollup.InputPluginOption} [plugins=[]] - rollup 插件
  */
 
 /**
@@ -764,10 +765,61 @@ function rollupPack(inputFile, outName, options) {
     options = defaults(options, {
         tsconfig: "tsconfig.json",
         sourcemap: false,
-        minify: false
+        minify: false,
+        plugins: []
     })
     const localPath = process.cwd()
     const outDir = path.resolve(localPath, options.outDir || "")
+
+    const plugins = [
+        glsl({
+            include: /.*(.glsl|.vs|.fs)$/,
+            sourceMap: false,
+            compress: false
+        }),
+        typescriptRollup({
+            transformers: {
+                before: [
+                    addMetadata(),
+                    createNamespaceTransformer()
+                ]
+            },
+            // cacheDir: "D:/WorkSpace/.rollup.cache",
+            tsconfig: options.tsconfig
+        }),
+        options.minify && outSource(`${outName}.js`),
+        options.minify && rollupTerser(defaults(options.minify, {
+            timings: true,
+            compress: {
+                properties: true, //（默认值：true）-使用点表示法重写属性访问，例如foo["bar"] → foo.bar
+            },
+            format: {
+                beautify: false, // 不进行删除空白和换行
+                // 保留所有带引号的属性名。  如：object.call("LP_Init")
+                // quote_keys: false,
+            },
+            mangle: {
+                // keep_classnames: /Laya.*/,
+                // properties: {
+                //             keep_quoted: true, // 如果设为 true，被引号的属性名就不会被更改。
+                //             reserved: [
+                //                 "__decorate", "__metadata", "__param", "__awaiter"
+                //             ]
+                // },
+                //         toplevel: false
+            }
+        })),
+        // options.minify && rollupRename((fileParts, file, fileName) => {
+        //     if (file.type === "asset" && file.fileName.endsWith(".js")) return
+        //     const names = fileName.split(".")
+        //     return {
+        //         basename: "",
+        //         filename: names[0] + ".min." + names.slice(1).join("."),
+        //     }
+        // })
+
+        ...options.plugins
+    ]
 
     return rollupStream({
         input: inputFile,
@@ -784,53 +836,7 @@ function rollupPack(inputFile, outName, options) {
                 tslib: "window"  // 告诉 Rollup 将 tslib 视为全局变量
             }
         },
-        plugins: [
-            glsl({
-                include: /.*(.glsl|.vs|.fs)$/,
-                sourceMap: false,
-                compress: false
-            }),
-            typescriptRollup({
-                transformers: {
-                    before: [
-                        addMetadata(),
-                        createNamespaceTransformer()
-                    ]
-                },
-                // cacheDir: "D:/WorkSpace/.rollup.cache",
-                tsconfig: options.tsconfig
-            }),
-            options.minify && outSource(`${outName}.js`),
-            options.minify && rollupTerser(defaults(options.minify, {
-                timings: true,
-                compress: {
-                    properties: true, //（默认值：true）-使用点表示法重写属性访问，例如foo["bar"] → foo.bar
-                },
-                format: {
-                    beautify: false, // 不进行删除空白和换行
-                    // 保留所有带引号的属性名。  如：object.call("LP_Init")
-                    // quote_keys: false,
-                },
-                mangle: {
-                    // keep_classnames: /Laya.*/,
-                    // properties: {
-                    //             keep_quoted: true, // 如果设为 true，被引号的属性名就不会被更改。
-                    //             reserved: [
-                    //                 "__decorate", "__metadata", "__param", "__awaiter"
-                    //             ]
-                    // },
-                    //         toplevel: false
-                }
-            })),
-            // options.minify && rollupRename((fileParts, file, fileName) => {
-            //     if (file.type === "asset" && file.fileName.endsWith(".js")) return
-            //     const names = fileName.split(".")
-            //     return {
-            //         basename: "",
-            //         filename: names[0] + ".min." + names.slice(1).join("."),
-            //     }
-            // })
-        ]
+        plugins: plugins
     })
         .pipe(gulp.dest(outDir))
         .on('end', () => {

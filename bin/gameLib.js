@@ -372,6 +372,8 @@ function _FguiBindView(classTarget, url) {
 	    ActionLib["GAME_SHOW_FREE_FINISH_VIEW"] = "game_show_free_finish_view";
 	})(ActionLib || (ActionLib = {}));
 	
+	gameLib.ActionLib = ActionLib
+	
 	/** 公用信息处理 */
 	var CommonCmd;
 	(function (CommonCmd) {
@@ -526,6 +528,10 @@ function _FguiBindView(classTarget, url) {
 	Urls.URL_GAME_SCRATCHER_LOTTERY = "/game/scratcher/handle";
 	/** 获取所有优惠券 */
 	Urls.URL_GAME_ALL_COUPON = "/coupon/all";
+	
+	gameLib.CommonCmd = CommonCmd
+	
+	gameLib.Cmd = Cmd
 	
 	gameLib.HttpCode = HttpCode
 	
@@ -3557,6 +3563,8 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
+	gameLib.GameType = GameType
+	
 	gameLib.BaseGameData = BaseGameData
 	
 	/** 提示框 */
@@ -6039,6 +6047,8 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
+	gameLib.SlotItemType = SlotItemType
+	
 	gameLib.BaseSlotItem = BaseSlotItem
 	
 	class SlotModel extends GameModel {
@@ -6971,6 +6981,8 @@ function _FguiBindView(classTarget, url) {
 	        super.dispose();
 	    }
 	}
+	
+	gameLib.SlotRunState = SlotRunState
 	
 	gameLib.SlotScrollModel = SlotScrollModel
 	

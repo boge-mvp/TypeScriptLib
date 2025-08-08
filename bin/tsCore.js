@@ -2337,6 +2337,8 @@ function TimerLoop(interval, custom) {
 	 */
 	Environment.active = Environment.DEFAULT_ENV;
 	
+	tsCore.EnvType = EnvType
+	
 	tsCore.ConfigKit = ConfigKit
 	
 	tsCore.Environment = Environment
@@ -2442,6 +2444,8 @@ function TimerLoop(interval, custom) {
 	 */
 	Log.MAX_HISTORY = 1000;
 	Log.history = [];
+	
+	tsCore.LogLevel = LogLevel
 	
 	tsCore.Log = Log
 	
@@ -2664,6 +2668,8 @@ function TimerLoop(interval, custom) {
 	    Method["GET"] = "get";
 	    Method["POST"] = "post";
 	})(Method || (Method = {}));
+	
+	tsCore.Method = Method
 	
 	class Path {
 	    constructor(base, ...subpaths) {
