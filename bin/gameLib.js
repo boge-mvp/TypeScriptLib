@@ -6642,13 +6642,13 @@ function _FguiBindView(classTarget, url) {
 	        }
 	        if (this.list && this.list.numChildren > value) {
 	            let obj = this.list.getChildAt(value);
-	            if (obj instanceof GList)
+	            if (obj instanceof fgui.GList)
 	                return obj;
 	            let child = obj.asCom.getChild("n0");
-	            if (child instanceof GList)
+	            if (child instanceof fgui.GList)
 	                return child;
 	            child = obj.asCom.getChild("list");
-	            if (child instanceof GList)
+	            if (child instanceof fgui.GList)
 	                return child;
 	        }
 	        return null;
@@ -7913,7 +7913,7 @@ function _FguiBindView(classTarget, url) {
 	     */
 	    static copyTextField(textField, parent) {
 	        let tf;
-	        if (textField instanceof GRichTextField) {
+	        if (textField instanceof fgui.GRichTextField) {
 	            tf = new fgui.GRichTextField();
 	        }
 	        else {
@@ -8262,7 +8262,7 @@ function _FguiBindView(classTarget, url) {
 	        if (!start) {
 	            this.startPoint = Laya.Point.create().setTo((this.scene.width >> 1), (this.scene.height >> 1));
 	        }
-	        else if (start instanceof GObject) {
+	        else if (start instanceof fgui.GObject) {
 	            if (start.isDisposed || !start.displayObject) {
 	                this.startPoint = Laya.Point.create().setTo((this.scene.width >> 1), (this.scene.height >> 1));
 	            }
@@ -8275,7 +8275,7 @@ function _FguiBindView(classTarget, url) {
 	        }
 	        else
 	            this.startPoint = start;
-	        if (end instanceof GObject) {
+	        if (end instanceof fgui.GObject) {
 	            this.endPoint = end.localToGlobal();
 	            this.globalToLocal(this.endPoint);
 	            this.endPoint.x += end.width / 2;
@@ -8286,7 +8286,7 @@ function _FguiBindView(classTarget, url) {
 	        this.completeFun = complete;
 	        this.specialAward(num);
 	        (_a = this.startPoint) === null || _a === void 0 ? void 0 : _a.recover();
-	        if (this.sound instanceof Sound) {
+	        if (this.sound instanceof Laya.Sound) {
 	            this.sound.play();
 	        }
 	        else
@@ -8547,7 +8547,7 @@ function _FguiBindView(classTarget, url) {
 	     * @param y y坐标 默认0
 	     */
 	    static getObjectsUnderPoint(x, y = 0) {
-	        if (x instanceof Point) {
+	        if (x instanceof Laya.Point) {
 	            y = x.y;
 	            x = x.x;
 	        }
@@ -8555,7 +8555,7 @@ function _FguiBindView(classTarget, url) {
 	        let maps = [];
 	        for (let i = 0; i < len; i++) {
 	            let a = Laya.stage.getChildAt(i);
-	            if (a instanceof Sprite && a.alpha > 0 && a.visible) {
+	            if (a instanceof Laya.Sprite && a.alpha > 0 && a.visible) {
 	                if (new Laya.Rectangle(a.x, a.y, a.displayWidth, a.displayHeight).contains(x, y)) {
 	                    maps.push(a);
 	                }
@@ -8570,11 +8570,11 @@ function _FguiBindView(classTarget, url) {
 	     * @param y y坐标 默认-1
 	     */
 	    static getPixel(texture, x = -1, y = -1) {
-	        if (x instanceof Point) {
+	        if (x instanceof Laya.Point) {
 	            y = x.y;
 	            x = x.x;
 	        }
-	        if (texture instanceof Sprite) {
+	        if (texture instanceof Laya.Sprite) {
 	            if (x == -1) {
 	                x = texture.x;
 	            }

@@ -4165,7 +4165,7 @@ function TimerLoop(interval, custom) {
 	        });
 	        Object.defineProperty(fgui.PopupMenu.prototype, "__clickItem2", {
 	            value: function (itemObject) {
-	                if (!(itemObject instanceof GButton))
+	                if (!(itemObject instanceof fgui.GButton))
 	                    return;
 	                if (itemObject.grayed) {
 	                    this._list.selectedIndex = -1;
@@ -8025,7 +8025,7 @@ function TimerLoop(interval, custom) {
 	        }
 	    }
 	    show(target, dir) {
-	        if (target instanceof GButton && target.mode == fgui.ButtonMode.Check)
+	        if (target instanceof fgui.GButton && target.mode == fgui.ButtonMode.Check)
 	            this.target = target;
 	        super.show(target, dir);
 	    }

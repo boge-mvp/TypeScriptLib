@@ -114,10 +114,30 @@ function createNamespaceTransformer() {
                         ts.isIndexedAccessTypeNode(parent) && parent.objectType === node ||
                         // 函数调用参数: mixinExt(Pool, OtherClass)
                         ts.isCallExpression(parent) && parent.arguments.includes(node) ||
-                        // 属性初始化器: static SocketClass = SocketClient
+                        // 属性初始化器: static Pool = Pool
                         (ts.isPropertyDeclaration(parent) && parent.initializer === node) ||
-                        // 变量赋值: let SocketClass = SocketClient
-                        (ts.isVariableDeclaration(parent) && parent.initializer === node)
+                        // 变量赋值: let Pool = Pool
+                        (ts.isVariableDeclaration(parent) && parent.initializer === node) ||
+                        // instanceof 表达式: t instanceof Pool
+                        (ts.isBinaryExpression(parent) && parent.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword && parent.right === node) ||
+                        // typeof 表达式: typeof Pool
+                        (ts.isTypeOfExpression(parent) && parent.expression === node) ||
+                        // 等于比较表达式: value == Pool 或 value === Pool
+                        (ts.isBinaryExpression(parent) &&
+                            (parent.operatorToken.kind === ts.SyntaxKind.EqualsEqualsToken ||
+                                parent.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken ||
+                                parent.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsToken ||
+                                parent.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken) &&
+                            (parent.left === node || parent.right === node)) ||
+                        // 逗号表达式中的参数: func(arg1, Pool, arg3)
+                        (ts.isCommaListExpression(parent) && parent.elements.includes(node)) ||
+                        // 条件表达式: condition ? Pool : OtherClass
+                        (ts.isConditionalExpression(parent) &&
+                            (parent.condition === node || parent.whenTrue === node || parent.whenFalse === node)) ||
+                        // 对象字面量属性值: { prop: Pool }
+                        (ts.isPropertyAssignment(parent) && parent.initializer === node) ||
+                        // 数组字面量元素: [Pool, OtherClass]
+                        (ts.isArrayLiteralExpression(parent) && parent.elements.includes(node))
                     ) {
                         const fullName = namespaceMap.get(node.text);
                         return createQualifiedNameExpression(fullName);
