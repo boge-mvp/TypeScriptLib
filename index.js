@@ -113,8 +113,12 @@ function createNamespaceTransformer() {
                         // 索引访问类型: class UI extends Lib['BaseClass'] {}
                         ts.isIndexedAccessTypeNode(parent) && parent.objectType === node ||
                         // 函数调用参数: mixinExt(Pool, OtherClass)
-                        ts.isCallExpression(parent) && parent.arguments.includes(node)
-                ) {
+                        ts.isCallExpression(parent) && parent.arguments.includes(node) ||
+                        // 属性初始化器: static SocketClass = SocketClient
+                        (ts.isPropertyDeclaration(parent) && parent.initializer === node) ||
+                        // 变量赋值: let SocketClass = SocketClient
+                        (ts.isVariableDeclaration(parent) && parent.initializer === node)
+                    ) {
                         const fullName = namespaceMap.get(node.text);
                         return createQualifiedNameExpression(fullName);
                     }

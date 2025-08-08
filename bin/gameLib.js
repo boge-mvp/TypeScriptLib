@@ -1022,7 +1022,7 @@ function _FguiBindView(classTarget, url) {
 	        }
 	    }
 	}
-	SocketManager.SocketClass = SocketClient;
+	SocketManager.SocketClass = tsCore.SocketClient;
 	
 	gameLib.SocketManager = SocketManager
 	

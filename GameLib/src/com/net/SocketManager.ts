@@ -20,7 +20,7 @@ export class SocketManager extends ESocket {
     private receiveData = []
 
     private _client: SocketClient
-    public static SocketClass = SocketClient
+    static SocketClass = SocketClient
     /**
      * 自定义socket url
      * @example
