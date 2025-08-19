@@ -1,5 +1,6 @@
 const gulpTs = require("gulp-typescript")
-
+const log = require("gulplog")
+const chalk = require("chalk")
 const {ProjectInfo} = require("gulp-typescript/release/project")
 const utils = require("gulp-typescript/release/utils")
 const {File, FileDictionary} = require("gulp-typescript/release/input")
@@ -142,6 +143,50 @@ function sortFilesByDependencies(files) {
     // 在SCC内部根据继承关系排序
     function sortSCCByInheritance(scc) {
         if (scc.length <= 1) return scc;
+
+        // 如果 SCC 中有多个文件，说明存在循环依赖，输出警告和文件名顺序
+        if (scc.length > 1) {
+            // 获取项目根路径
+            const projectRoot = process.cwd();
+            // 构建循环依赖链条信息
+            const cycleInfo = scc.map(file => {
+                const deps = fileDependencies[file] || [];
+                const circularDeps = deps.filter(dep => scc.includes(dep));
+                return {
+                    file: file,
+                    circularDeps: circularDeps
+                };
+            });
+
+            // 尝试构建依赖链条
+            let chain = [];
+            if (cycleInfo.length > 0) {
+                chain.push(cycleInfo[0].file);
+                let current = cycleInfo[0];
+                let next = cycleInfo.find(item => current.circularDeps.includes(item.file));
+
+                // 简单构建一个依赖链条（可能不完整，但能显示循环关系）
+                while (next && !chain.includes(next.file)) {
+                    chain.push(next.file);
+                    current = next;
+                    next = cycleInfo.find(item => current.circularDeps.includes(item.file));
+                }
+
+                // 闭合循环
+                if (next) {
+                    chain.push(next.file + " (循环回)");
+                }
+            }
+
+            // 转换为相对路径
+            const relativeChain = chain.map(file => path.relative(projectRoot, file));
+            const relativeScc = scc.map(file => path.relative(projectRoot, file));
+
+            log.warn('在文件之间检测到 ' + chalk.red('循环依赖关系') + ':');
+            log.warn(chalk.cyan('文件链: ') + chalk.yellow(relativeChain.join(' -> ')));
+            log.warn(chalk.cyan('循环中的所有文件: ') + chalk.yellow(relativeScc.join(', ')));
+        }
+
 
         // 构建SCC内部的继承图
         const localInheritance = new Map();

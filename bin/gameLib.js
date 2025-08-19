@@ -5112,8 +5112,7 @@ function _FguiBindView(classTarget, url) {
 	    sendErrorLog(data) {
 	        let postUrl = Player.inst.data.getErrorUrl();
 	        if (postUrl === null || postUrl === void 0 ? void 0 : postUrl.startsWith("http"))
-	            tsCore.HTTPUtils.create()
-	                .setMethod("post")
+	            tsCore.HTTPUtils.create().setMethod("post")
 	                .setUrl(postUrl)
 	                .setData(data)
 	                .call();

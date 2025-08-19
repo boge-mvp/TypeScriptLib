@@ -44,6 +44,7 @@ const {SrcOptions} = require("vinyl-fs")
 function createNamespaceTransformer() {
     return (context) => {
         return (sourceFile) => {
+            // console.log(sourceFile.fileName)
             // 存储 import = 声明的映射关系：简写名称 -> 完整命名空间路径
             const namespaceMap = new Map();
 
@@ -80,7 +81,7 @@ function createNamespaceTransformer() {
                 // 替换标识符为完整的命名空间路径
                 if (ts.isIdentifier(node) && namespaceMap.has(node.text)) {
                     const parent = node.parent;
-
+                    if (!parent) return node
                     // 检查是否是独立的标识符使用（不是属性访问的一部分）
                     if (
                         // 变量声明类型: let a: Pool
@@ -673,22 +674,15 @@ function findFilesSync(url) {
 }
 
 /**
- * 创建并返回一个TypeScript项目配置对象
+ * 创建并返回一个TypeScript项目实例
  * @param {string} tsConfig - TypeScript配置文件路径，默认为"tsconfig.json"
- * @return {gulpTs.Project} 返回配置好的TypeScript项目对象
+ * @param {(program?: ts.Program) => ts.CustomTransformers} [customTransformers] - 自定义转换器对象，用于扩展TypeScript编译过程
+ * @returns {Object} 返回配置好的TypeScript项目实例
  */
-function getProject(tsConfig = "tsconfig.json") {
+function getProject(tsConfig = "tsconfig.json", customTransformers) {
     return gulpTs.createProject(tsConfig, {
         typescript: ts,
-        getCustomTransformers: program => ({
-            before: [
-                addMetadata(),
-                createNamespaceTransformer()
-            ],
-            afterDeclarations: [
-                createNamespaceTransformer()
-            ]
-        })
+        getCustomTransformers: customTransformers
     });
 }
 
@@ -696,10 +690,11 @@ function getProject(tsConfig = "tsconfig.json") {
  * 创建一个编译流，用于处理TypeScript文件
  * @param {string|string[]} globs - 文件匹配模式，可以是字符串或字符串数组
  * @param [opt] {SrcOptions} - gulp.src的选项配置对象
+ * @param {(program?: ts.Program) => ts.CustomTransformers} [customTransformers] - 自定义转换器对象，用于扩展TypeScript编译过程
  * @return {gulpTs.CompileStream} 返回一个gulp流，用于后续的管道操作
  */
-function createCompileStream(globs, opt) {
-    const tsProject = getProject()
+function createCompileStream(globs, opt, customTransformers) {
+    const tsProject = getProject(undefined, customTransformers)
     return gulp.src(globs, opt).pipe(function () {
         const project = tsProject()
         sortDeclaration(project)
@@ -729,7 +724,15 @@ function createCompileStream(globs, opt) {
  * @param done - Gulp任务完成回调函数
  */
 function buildLibrary(config, done) {
-    const tsResult = createCompileStream(config.src.globs, config.src.opt)
+    const tsResult = createCompileStream(config.src.globs, config.src.opt, () => ({
+        before: [
+            addMetadata(),
+            createNamespaceTransformer()
+        ],
+        afterDeclarations: [
+            createNamespaceTransformer()
+        ]
+    }))
     const jsStream = function (done) {
         buildJs(tsResult, config.outName, config.dist, config.js.isMinify, config.namespace)
             .pipe(run(function () {
@@ -742,7 +745,7 @@ function buildLibrary(config, done) {
                 done()
             }))
     }
-    gulp.parallel(
+    gulp.series(
         jsStream,
         dtsStream
     )(done)
@@ -759,7 +762,12 @@ function buildLibrary(config, done) {
  */
 function buildJs(tsResult, outName, dist, isMinify = false, namespace = null) {
     if (tsResult.globs) {
-        tsResult = createCompileStream(tsResult.globs, tsResult.opt)
+        tsResult = createCompileStream(tsResult.globs, tsResult.opt, () => ({
+            before: [
+                addMetadata(),
+                createNamespaceTransformer()
+            ]
+        }))
     }
     return tsResult
         .js
@@ -785,7 +793,11 @@ function buildJs(tsResult, outName, dist, isMinify = false, namespace = null) {
  */
 function buildDts(tsResult, outName, dist, globalFile = [], namespace = null) {
     if (tsResult.globs) {
-        tsResult = createCompileStream(tsResult.globs, tsResult.opt)
+        tsResult = createCompileStream(tsResult.globs, tsResult.opt, () => ({
+            afterDeclarations: [
+                createNamespaceTransformer()
+            ]
+        }))
     }
     return tsResult
         .dts

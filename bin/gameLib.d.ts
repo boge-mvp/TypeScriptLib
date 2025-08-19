@@ -2358,8 +2358,8 @@ declare namespace gameLib {
 	     */
 	    unexpectedExitGame(msg?: string, callback?: ParamHandler): void;
 	    get starter(): BaseStarter;
-	    get scene(): import("../core/BaseScene").BaseScene<import("../core/BaseGameData").BaseGameData>;
-	    get servlet(): import("../core/GameServlet").GameServlet<import("../core/BaseGameData").BaseGameData>;
+	    get scene(): BaseScene | undefined;
+	    get servlet(): GameServlet | undefined;
 	    /**
 	     * 上传错误日志
 	     * @param data json格式的错误数据

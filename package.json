@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npm pack && for /f %i in ('dir /b *.tgz') do npm install -g %i && del *.tgz"
+    "build": "npm pack && for /f %i in ('dir /b *.tgz') do npm install -g %i && del *.tgz",
+    "pack": "npm pack"
   },
   "repository": {
     "type": "git",
@@ -36,8 +37,6 @@
     "monkey-path.js",
     "rollup-rename-plugin.js"
   ],
-  "peerDependencies": {
-    "gulp": "5.0.1",
-    "adm-zip": "^0.5.16"
+  "devDependencies": {
   }
 }

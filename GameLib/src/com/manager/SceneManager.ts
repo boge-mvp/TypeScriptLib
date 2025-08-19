@@ -37,6 +37,9 @@ import {Cmd, CommonCmd} from "../net/Common";
 import {GameConfigKit} from "../kit/GameConfigKit";
 import {AssetsLoader} from "./AssetsLoader";
 import {StateCode} from "../utils/StateCode";
+import {BaseScene} from "../core/BaseScene";
+import {GameServlet} from "../core/GameServlet";
+import {BaseGameData} from "../core/BaseGameData";
 
 /**
  * 舞台
@@ -607,11 +610,11 @@ export class SceneManager extends EProxy {
         return this._starter
     }
 
-    get scene() {
+    get scene(): BaseScene | undefined {
         return this._starter?.baseScene
     }
 
-    get servlet() {
+    get servlet(): GameServlet | undefined {
         return this._starter?.gameServlet
     }
 
@@ -622,11 +625,11 @@ export class SceneManager extends EProxy {
      */
     sendErrorLog(data: any) {
         let postUrl = Player.inst.data.getErrorUrl()
-        if (postUrl?.startsWith("http")) HTTPUtils.create()
-            .setMethod("post")
-            .setUrl(postUrl)
-            .setData(data)
-            .call()
+        if (postUrl?.startsWith("http"))
+            HTTPUtils.create().setMethod("post")
+                .setUrl(postUrl)
+                .setData(data)
+                .call()
 
     }
 
