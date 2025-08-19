@@ -117,10 +117,7 @@ function createNamespaceTransformer() {
                                 ts.isConstructSignatureDeclaration(member) &&
                                 member.type === node)) ||
                         // 构造签名返回类型: { new(): Pool }
-                        (ts.isConstructSignatureDeclaration(parent) && parent.type === node) ||
-                        // 函数参数默认值: function test(a = Pool)
-                        (ts.isParameter(parent) && parent.initializer === node)
-
+                        (ts.isConstructSignatureDeclaration(parent) && parent.type === node)
                     ) {
                         const fullName = namespaceMap.get(node.text);
                         const qualifiedName = createQualifiedNameEntityName(fullName);
@@ -199,7 +196,9 @@ function createNamespaceTransformer() {
                         // 可选链: Pool?.method()
                         (ts.isPropertyAccessExpression(parent) && parent.expression === node && parent.questionDotToken) ||
                         // 装饰器参数: @Decorator(Pool)
-                        (ts.isDecorator(parent) && parent.expression.arguments?.includes(node))
+                        (ts.isDecorator(parent) && parent.expression.arguments?.includes(node)) ||
+                        // 函数参数默认值: function test(a = Pool)
+                        (ts.isParameter(parent) && parent.initializer === node)
 
                     ) {
                         const fullName = namespaceMap.get(node.text);
