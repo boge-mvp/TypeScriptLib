@@ -203,7 +203,7 @@ export class UtilKit {
      * @param key 用于加密的CryptoKey对象
      * @returns {{ArrayBuffer, Uint8Array<ArrayBuffer>}} 包含密文和初始化向量的对象
      */
-    static encryptAesGCM(word: string, key: CryptoKey) {
+    static async encryptAesGCM(word: string, key: CryptoKey) {
         const iv = crypto.getRandomValues(new Uint8Array(12)) // 12个uint 96位
         const encodedText = new TextEncoder().encode(word)
         const encrypted = await crypto.subtle.encrypt({
@@ -218,7 +218,7 @@ export class UtilKit {
      * 生成AES-GCM加密算法所需的密钥
      * @returns {CryptoKey} 生成的CryptoKey对象，可用于加密和解密操作
      */
-    static generateKey() {
+    static async generateKey() {
         return await crypto.subtle.generateKey({
             name: "AES-GCM",
             length: 256
@@ -232,7 +232,7 @@ export class UtilKit {
      * @param iv 初始化向量，必须与加密时使用的相同
      * @return {string} 解密后的明文字符串
      */
-    static decryptAesGCM(word: BufferSource, key: CryptoKey, iv: Uint8Array<ArrayBuffer>) {
+    static async decryptAesGCM(word: BufferSource, key: CryptoKey, iv: Uint8Array<ArrayBuffer>) {
         const decrypted = await crypto.subtle.decrypt({
                 name: "AES-GCM",
                 iv,

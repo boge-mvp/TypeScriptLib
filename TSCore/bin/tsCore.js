@@ -6594,24 +6594,28 @@ function TimerLoop(interval, custom) {
 	     * @returns {{ArrayBuffer, Uint8Array<ArrayBuffer>}} 包含密文和初始化向量的对象
 	     */
 	    static encryptAesGCM(word, key) {
-	        const iv = crypto.getRandomValues(new Uint8Array(12)); // 12个uint 96位
-	        const encodedText = new TextEncoder().encode(word);
-	        const encrypted = yield crypto.subtle.encrypt({
-	            name: "AES-GCM",
-	            iv,
-	            tagLength: 128
-	        }, key, encodedText);
-	        return { ciphertext: encrypted, iv };
+	        return __awaiter(this, void 0, void 0, function* () {
+	            const iv = crypto.getRandomValues(new Uint8Array(12)); // 12个uint 96位
+	            const encodedText = new TextEncoder().encode(word);
+	            const encrypted = yield crypto.subtle.encrypt({
+	                name: "AES-GCM",
+	                iv,
+	                tagLength: 128
+	            }, key, encodedText);
+	            return { ciphertext: encrypted, iv };
+	        });
 	    }
 	    /**
 	     * 生成AES-GCM加密算法所需的密钥
 	     * @returns {CryptoKey} 生成的CryptoKey对象，可用于加密和解密操作
 	     */
 	    static generateKey() {
-	        return yield crypto.subtle.generateKey({
-	            name: "AES-GCM",
-	            length: 256
-	        }, true, ["encrypt", "decrypt"]);
+	        return __awaiter(this, void 0, void 0, function* () {
+	            return yield crypto.subtle.generateKey({
+	                name: "AES-GCM",
+	                length: 256
+	            }, true, ["encrypt", "decrypt"]);
+	        });
 	    }
 	    /**
 	     * 使用AES-GCM算法解密密文
@@ -6621,12 +6625,14 @@ function TimerLoop(interval, custom) {
 	     * @return {string} 解密后的明文字符串
 	     */
 	    static decryptAesGCM(word, key, iv) {
-	        const decrypted = yield crypto.subtle.decrypt({
-	            name: "AES-GCM",
-	            iv,
-	            tagLength: 128
-	        }, key, word);
-	        return new TextDecoder().decode(decrypted);
+	        return __awaiter(this, void 0, void 0, function* () {
+	            const decrypted = yield crypto.subtle.decrypt({
+	                name: "AES-GCM",
+	                iv,
+	                tagLength: 128
+	            }, key, word);
+	            return new TextDecoder().decode(decrypted);
+	        });
 	    }
 	    /**
 	     * 文字长度省略

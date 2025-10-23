@@ -2532,15 +2532,15 @@ declare namespace tsCore {
 	     * @param key 用于加密的CryptoKey对象
 	     * @returns {{ArrayBuffer, Uint8Array<ArrayBuffer>}} 包含密文和初始化向量的对象
 	     */
-	    static encryptAesGCM(word: string, key: CryptoKey): {
+	    static encryptAesGCM(word: string, key: CryptoKey): Promise<{
 	        ciphertext: ArrayBuffer;
 	        iv: Uint8Array<ArrayBuffer>;
-	    };
+	    }>;
 	    /**
 	     * 生成AES-GCM加密算法所需的密钥
 	     * @returns {CryptoKey} 生成的CryptoKey对象，可用于加密和解密操作
 	     */
-	    static generateKey(): CryptoKey;
+	    static generateKey(): Promise<CryptoKey>;
 	    /**
 	     * 使用AES-GCM算法解密密文
 	     * @param word 需要解密的密文数据
@@ -2548,7 +2548,7 @@ declare namespace tsCore {
 	     * @param iv 初始化向量，必须与加密时使用的相同
 	     * @return {string} 解密后的明文字符串
 	     */
-	    static decryptAesGCM(word: BufferSource, key: CryptoKey, iv: Uint8Array<ArrayBuffer>): string;
+	    static decryptAesGCM(word: BufferSource, key: CryptoKey, iv: Uint8Array<ArrayBuffer>): Promise<string>;
 	    /**
 	     * 文字长度省略
 	     * @param value 文字内容

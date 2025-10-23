@@ -1340,8 +1340,8 @@ function _FguiBindView(classTarget, url) {
 	            }
 	            if (window.gtag) {
 	                gtag(type, action, {
-	                    eventCategory: category,
-	                    eventLabel: label
+	                    event_category: category,
+	                    event_label: label
 	                });
 	            }
 	        }
