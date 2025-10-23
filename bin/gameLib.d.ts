@@ -1022,8 +1022,9 @@ declare namespace gameLib {
 	     * @param category
 	     * @param action
 	     * @param label
+	     * @param value
 	     */
-	    static ga(type: gaType, category: string, action: string, label: string): void;
+	    static ga(type: gaType, category: string, action: string, label: string, value?: string): void;
 	}
 	declare type gaType = "pageview" | "event" | "timing" | "social" | "screenview" | "transaction" | "item" | "exception";
 	

@@ -74,8 +74,9 @@ export class AnalyticsManager {
      * @param category
      * @param action
      * @param label
+     * @param value
      */
-    static ga(type: gaType, category: string, action: string, label: string) {
+    static ga(type: gaType, category: string, action: string, label: string, value?: string) {
         this.isOpenAnalytics = ConfigKit.get("openAnalytics")
         if (Player.inst.urlParam.debug) {
             const encoder = new TextEncoder()
@@ -91,7 +92,8 @@ export class AnalyticsManager {
             if (window.gtag) {
                 gtag(type, action, {
                     event_category: category,
-                    event_label: label
+                    event_label: label,
+                    value
                 })
             }
         }

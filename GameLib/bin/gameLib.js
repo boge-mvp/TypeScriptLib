@@ -1324,8 +1324,9 @@ function _FguiBindView(classTarget, url) {
 	     * @param category
 	     * @param action
 	     * @param label
+	     * @param value
 	     */
-	    static ga(type, category, action, label) {
+	    static ga(type, category, action, label, value) {
 	        this.isOpenAnalytics = tsCore.ConfigKit.get("openAnalytics");
 	        if (Player.inst.urlParam.debug) {
 	            const encoder = new TextEncoder();
@@ -1341,7 +1342,8 @@ function _FguiBindView(classTarget, url) {
 	            if (window.gtag) {
 	                gtag(type, action, {
 	                    event_category: category,
-	                    event_label: label
+	                    event_label: label,
+	                    value
 	                });
 	            }
 	        }
