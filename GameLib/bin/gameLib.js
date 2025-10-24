@@ -1339,6 +1339,7 @@ function _FguiBindView(classTarget, url) {
 	            if (window.ga) {
 	                ga('send', type, category, action, label);
 	            }
+	            value !== null && value !== void 0 ? value : (value = label);
 	            if (window.gtag) {
 	                gtag(type, action, {
 	                    event_category: category,

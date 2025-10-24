@@ -89,6 +89,7 @@ export class AnalyticsManager {
             if (window.ga) {
                 ga('send', type, category, action, label)
             }
+            value ??= label
             if (window.gtag) {
                 gtag(type, action, {
                     event_category: category,

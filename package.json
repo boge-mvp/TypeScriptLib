@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "npm pack && for /f %i in ('dir /b *.tgz') do npm install -g %i && del *.tgz",
+    "build": "npm pack && for /f %i in ('dir /b *.tgz') do npm install -g %i",
+    "buildOnDel": "npm pack && for /f %i in ('dir /b *.tgz') do npm install -g %i && del *.tgz",
     "pack": "npm pack"
   },
   "repository": {
