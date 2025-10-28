@@ -24,11 +24,8 @@
   "files": [
     "bin",
     "assets",
-    "libs",
     "dist",
     "webp",
-    "template",
-    "nameCache.json",
     "version_info.txt",
     "index.js",
     "gulp-concat-source.js",

@@ -4,7 +4,7 @@ const fs = require("fs")
 const zlib = require('zlib')
 const http = require('https')
 const path = require("path")
-
+const log = require("gulplog")
 const gulp = require("gulp")
 
 const AdmZip = require('adm-zip')
@@ -24,20 +24,24 @@ gulp.task("resetSource", (f) => {
     f()
 })
 
-gulp.task("clean", () => {
-    return clean([
-        ".bin/**/gameCore**.d.ts",
-        ".bin/**/gameCore**.js",
-        ".bin/**/gameCore**.js.map",
-    ])
+gulp.task("clean", (done) => {
+    log.info("[clean] 无实现")
+    done()
+    // return clean([
+    //     ".bin/**/gameCore**.d.ts",
+    //     ".bin/**/gameCore**.js",
+    //     ".bin/**/gameCore**.js.map",
+    // ])
 })
 
 //完整构建
-gulp.task('build', gulp.series("clean", () => {
-        return gulp.src([
-            "./TSCore/bin/**/*",
-            "./GameLib/bin/**/*"
-        ]).pipe(gulp.dest("./bin"))
+gulp.task('build', gulp.series("clean", (done) => {
+        log.info("[build] 无实现")
+        // return gulp.src([
+        //     "./TSCore/bin/**/*",
+        //     "./GameLib/bin/**/*"
+        // ]).pipe(gulp.dest("./bin"))
+        done()
     }
 ))
 
@@ -129,6 +133,6 @@ gulp.task("min-js", () => {
 gulp.task('default', gulp.series("build"))
 
 
-gulp.task("test", ()=> {
+gulp.task("test", () => {
     console.log(path.dirname("D:\\WorkSpace\\LayaBox\\TypeScriptLib\\delete.js"))
 })
