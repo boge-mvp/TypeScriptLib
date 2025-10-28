@@ -1,6 +1,5 @@
 import Browser = Laya.Browser
 import ESocket = tsCore.ESocket;
-import SocketClient = tsCore.SocketClient;
 import StringUtil = tsCore.StringUtil;
 import Log = tsCore.Log;
 
@@ -19,8 +18,8 @@ export class SocketManager extends ESocket {
     /** 接受到的消息 */
     private receiveData = []
 
-    private _client: SocketClient
-    static SocketClass = SocketClient
+    private _client: tsCore.SocketClient
+    static SocketClass = tsCore.SocketClient
     /**
      * 自定义socket url
      * @example
@@ -61,8 +60,8 @@ export class SocketManager extends ESocket {
             token: token
         }
 
-        // SocketClient.SOCKET_CLASS_PATH = "com.casino.GameSocket"
-        SocketClient.SOCKET_CLASS_PATH = null
+        // tsCore.SocketClient.SOCKET_CLASS_PATH = "com.casino.GameSocket"
+        tsCore.SocketClient.SOCKET_CLASS_PATH = null
 
         // 初始化IM客户端库
         this._client = new SocketManager.SocketClass(obj)

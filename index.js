@@ -230,7 +230,8 @@ function createNamespaceTransformer() {
             // 应用第二次遍历，完成命名空间路径的替换
             /** @type ts.SourceFile */
             const newNode = ts.visitNode(sourceFile, visitSecondPass);
-            // newNode.text = ts.createPrinter().printFile(newNode)
+            // const text = ts.createPrinter().printFile(newNode)
+            // newNode.text = text
             return newNode
         };
 

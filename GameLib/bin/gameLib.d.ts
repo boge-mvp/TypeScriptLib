@@ -741,7 +741,7 @@ declare namespace gameLib {
 	    /** 接受到的消息 */
 	    private receiveData;
 	    private _client;
-	    static SocketClass: typeof SocketClient;
+	    static SocketClass: typeof tsCore.SocketClient;
 	    /**
 	     * 自定义socket url
 	     * @example

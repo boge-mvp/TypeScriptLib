@@ -1105,7 +1105,7 @@ function _FguiBindView(classTarget, url) {
 	            url: url,
 	            token: token
 	        };
-	        // SocketClient.SOCKET_CLASS_PATH = "com.casino.GameSocket"
+	        // tsCore.SocketClient.SOCKET_CLASS_PATH = "com.casino.GameSocket"
 	        tsCore.SocketClient.SOCKET_CLASS_PATH = null;
 	        // 初始化IM客户端库
 	        this._client = new SocketManager.SocketClass(obj);
