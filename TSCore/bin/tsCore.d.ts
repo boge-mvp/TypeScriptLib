@@ -1297,7 +1297,7 @@ declare namespace tsCore {
 	    static addHandler(target: fgui.GObject, fun: (...args: any[]) => any, interval?: number, custom?: () => boolean): void;
 	    private onUpdate;
 	}
-	declare class TaskHandler {
+	class TaskHandler {
 	    target: fgui.GObject;
 	    customConditions: () => boolean;
 	    handler: (...args: any[]) => any;
@@ -1389,7 +1389,7 @@ declare namespace tsCore {
 	    sendGroupAction(group: string, action: string | number, ...args: any[]): void;
 	}
 	
-	declare const ESkeleton_base: Constructor<BezierCurves & ActionEvent & fgui.GComponent>;
+	const ESkeleton_base: Constructor<BezierCurves & ActionEvent & fgui.GComponent>;
 	export abstract class ESkeleton extends ESkeleton_base implements ISkeleton {
 	    /** 播放动画数组的索引 */
 	    protected playGroupIndex: number;
@@ -1992,7 +1992,7 @@ declare namespace tsCore {
 	 */
 	export const Cast: typeof MathKit;
 	
-	declare const View_base: Constructor<ActionEvent & fairygui.GComponent & StringBlock & ViewBlock>;
+	const View_base: Constructor<ActionEvent & fairygui.GComponent & StringBlock & ViewBlock>;
 	export class View extends View_base implements IView, IKey {
 	    protected key: string;
 	    /**
@@ -2036,7 +2036,7 @@ declare namespace tsCore {
 	    get axes(): Vector2[];
 	    get point(): Vector2;
 	}
-	declare class Vector2 {
+	class Vector2 {
 	    private x;
 	    private y;
 	    constructor(x?: number, y?: number);
@@ -2049,7 +2049,7 @@ declare namespace tsCore {
 	    dot(v: Vector2): number;
 	}
 	
-	declare const Proxys_base: Constructor<ActionEvent & StringBlock & ProxyBlock>;
+	const Proxys_base: Constructor<ActionEvent & StringBlock & ProxyBlock>;
 	export class Proxys extends Proxys_base implements IProxy, IKey {
 	    /** 独有的名字 */
 	    protected key: string;
@@ -2065,7 +2065,7 @@ declare namespace tsCore {
 	    dispose(): void;
 	}
 	
-	declare const EButton_base: Constructor<ActionEvent & StringBlock & ViewBlock & fairygui.GButton>;
+	const EButton_base: Constructor<ActionEvent & StringBlock & ViewBlock & fairygui.GButton>;
 	export class EButton extends EButton_base {
 	    protected onConstruct(): void;
 	    protected onInit(): void;
@@ -2076,7 +2076,7 @@ declare namespace tsCore {
 	    getChild<T = fgui.GObject>(...name: string[]): T;
 	}
 	
-	declare const EComboBox_base: Constructor<ActionEvent & StringBlock & ViewBlock & fairygui.GComboBox>;
+	const EComboBox_base: Constructor<ActionEvent & StringBlock & ViewBlock & fairygui.GComboBox>;
 	export class EComboBox extends EComboBox_base {
 	    /**
 	     * 是否根据选择数据改变 icon  text
@@ -2096,7 +2096,7 @@ declare namespace tsCore {
 	    getChild<T = fgui.GObject>(...name: string[]): T;
 	}
 	
-	declare const ELabel_base: Constructor<ActionEvent & ViewBlock & fgui.GLabel>;
+	const ELabel_base: Constructor<ActionEvent & ViewBlock & fgui.GLabel>;
 	export class ELabel extends ELabel_base {
 	    protected onConstruct(): void;
 	    protected onInit(): void;
@@ -2223,7 +2223,7 @@ declare namespace tsCore {
 	    regGameAction(action: string | number, caller: any, method: Function): void;
 	}
 	
-	declare const EWindow_base: Constructor<ActionEvent & StringBlock & fairygui.Window & ViewProxy>;
+	const EWindow_base: Constructor<ActionEvent & StringBlock & fairygui.Window & ViewProxy>;
 	/**
 	 * 实现了 fgui.Window 的窗口
 	 * 默认会添加新的路由到历史中，可通过 joinRecord 处理
@@ -3412,7 +3412,7 @@ declare namespace tsCore {
 	    setCorner(value: number): void;
 	}
 	
-	declare const ProgressBar_base: Constructor<ActionEvent & ViewBlock & fgui.GProgressBar>;
+	const ProgressBar_base: Constructor<ActionEvent & ViewBlock & fgui.GProgressBar>;
 	export class ProgressBar extends ProgressBar_base {
 	    tweenValue2(value: number, duration: number, complete?: ParamHandler): fgui.GTweener;
 	    update(newValue: number): void;

@@ -92,14 +92,21 @@ module.exports = function (file, opt) {
 
         if (fileName.endsWith(".d.ts")) {
             if (namespace) {
-                const results = content.matchAll(/export\s+declare\s+(class|interface|enum|abstract|const)\s+(\w+)(?=\s|\{|:)/g)
+                const results = content.matchAll(/export\s+declare\s+(class|interface|enum|abstract|const)\s+(\w+)(?=\s|<|\{|:)/g)
                 results.forEach(result => {
                     content = content.replace(result[0], `export ${result[1]} ${result[2]}`)
                 })
+                if (/[/\\]global[/\\].*\.ts/g.test(_path)) {
+                    // 全局类
+
+                } else {
+                    // 非全局类 则都是namespace内的值 那么需要测底删除declare
+                    content = content.replaceAll(/\bdeclare\s+/g, "")
+                }
             }
         } else {
             if (namespace) {
-                let results = content.matchAll(/export\s+(class|interface|enum|abstract|var)\s+(\w+)(?=\s|\{|;)/g)
+                let results = content.matchAll(/export\s+(class|interface|enum|abstract|var)\s+(\w+)(?=\s|<|\{|;)/g)
                 results.forEach(result => {
                     content += `\n${namespace}.${result[2]} = ${result[2]}\n`
                 })

@@ -1025,7 +1025,7 @@ declare namespace gameLib {
 	     */
 	    static ga(type: gaType, category: string, action: string, label: string, value?: string): void;
 	}
-	declare type gaType = "pageview" | "event" | "timing" | "social" | "screenview" | "transaction" | "item" | "exception";
+	type gaType = "pageview" | "event" | "timing" | "social" | "screenview" | "transaction" | "item" | "exception";
 	
 	/**
 	 * 资源管理类
@@ -1203,7 +1203,7 @@ declare namespace gameLib {
 	 *
 	 * @author boge
 	 */
-	export declare class GameModel<T extends IGameData = BaseGameData> extends tsCore.EProxy implements IGameModel {
+	export class GameModel<T extends IGameData = BaseGameData> extends tsCore.EProxy implements IGameModel {
 	    /**
 	     * @deprecated
 	     */
@@ -1345,7 +1345,7 @@ declare namespace gameLib {
 	    protected set gameData(value: T);
 	}
 	
-	export declare class BaseWindow<T extends BaseGameData = BaseGameData> extends tsCore.EWindow {
+	export class BaseWindow<T extends BaseGameData = BaseGameData> extends tsCore.EWindow {
 	    /**
 	     * 是否在关闭窗口的时候  发送 ActionLib.GAME_RUN_SCENE_EVENT
 	     * @default false
@@ -1361,7 +1361,7 @@ declare namespace gameLib {
 	}
 	
 	/** 提示框 */
-	export declare class HomePrompt<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
+	export class HomePrompt<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
 	    private static _instance;
 	    static get instance(): HomePrompt<BaseGameData>;
 	    /** 当前显示面板控制器 */
@@ -1913,7 +1913,7 @@ declare namespace gameLib {
 	}
 	
 	/** 提示框 */
-	export declare class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
+	export class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
 	    protected static _instance: PromptWindow;
 	    static get inst(): PromptWindow<BaseGameData>;
 	    protected titleText?: fgui.GTextField;
@@ -2023,7 +2023,7 @@ declare namespace gameLib {
 	}
 	
 	/** 游戏主页必须继承的类 */
-	export declare class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView implements IGameScene, IGuideScene {
+	export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView implements IGameScene, IGuideScene {
 	    /** 选择房间事件 */
 	    EVENT_SELECT_ROOM: string;
 	    /** demo场试玩事件 */
@@ -2804,7 +2804,7 @@ declare namespace gameLib {
 	    playAdd(url: string, data: HttpData): void;
 	}
 	
-	export declare class BaseSkeletonWindow<T extends BaseGameData = BaseGameData> extends tsCore.SkeletonWindow {
+	export class BaseSkeletonWindow<T extends BaseGameData = BaseGameData> extends tsCore.SkeletonWindow {
 	    /**
 	     * 如果传入的 data.url 不带/符号  则自动转成 gameName/url.ends/data.url
 	     * @param data
@@ -3175,7 +3175,7 @@ declare namespace gameLib {
 	    dispose(): void;
 	}
 	
-	export declare class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends BaseView {
+	export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends BaseView {
 	    /** 线的面板 */
 	    protected linePanel: fgui.GComponent;
 	    /** 绘制线 */
@@ -3309,7 +3309,7 @@ declare namespace gameLib {
 	/**
 	 * slot游戏滚动效果类 使用了 FrameLoop + Tween
 	 */
-	export declare class SlotScrollModel<T extends BaseSlotGameData = BaseSlotGameData> extends SlotModel<T> {
+	export class SlotScrollModel<T extends BaseSlotGameData = BaseSlotGameData> extends SlotModel<T> {
 	    /** 当前滚动圈数 */
 	    private rollCount;
 	    /** 滚动到最大圈数  就可以播放开奖结果了 */
@@ -3369,7 +3369,7 @@ declare namespace gameLib {
 	/**
 	 * slot游戏滚动效果类 只使用了 Tween
 	 */
-	export declare class SlotScrollTweenModel<T extends BaseSlotGameData = BaseSlotGameData> extends SlotModel<T> {
+	export class SlotScrollTweenModel<T extends BaseSlotGameData = BaseSlotGameData> extends SlotModel<T> {
 	    protected playLottery(value: SlotLotteryData[]): void;
 	    /**
 	     * 创建list滚动动画
@@ -3389,7 +3389,7 @@ declare namespace gameLib {
 	    dispose(): void;
 	}
 	
-	declare const GoldLoader_base: Constructor<fgui.GLoader & tsCore.BezierCurves>;
+	const GoldLoader_base: Constructor<fgui.GLoader & tsCore.BezierCurves>;
 	/**
 	 * 具有贝塞尔曲线运动的loader
 	 */
@@ -3753,7 +3753,7 @@ declare namespace gameLib {
 	    createUI(): void;
 	}
 	
-	export declare class Deck<T extends Card = Card> {
+	export class Deck<T extends Card = Card> {
 	    /** 存放的卡牌 */
 	    cards: T[];
 	    /** 已经完成了动画个数 */
@@ -3815,7 +3815,7 @@ declare namespace gameLib {
 	export class CounterUtils {
 	    static create(total: number, complete: ParamHandler): Counter;
 	}
-	declare class Counter {
+	class Counter {
 	    /** 执行玩所有次数调用 */
 	    complete: ParamHandler;
 	    total: number;
@@ -4189,7 +4189,7 @@ declare namespace gameLib {
 	}
 	
 	/** 图片窗口 */
-	export declare class ImageWindow<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
+	export class ImageWindow<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
 	    private static _instance;
 	    static get inst(): ImageWindow;
 	    protected onInit(): void;
@@ -4197,7 +4197,7 @@ declare namespace gameLib {
 	}
 	
 	/** 提示框 */
-	export declare class RechargeSuccessWindow<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
+	export class RechargeSuccessWindow<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
 	    private static _instance;
 	    static get inst(): RechargeSuccessWindow<BaseGameData>;
 	    private content;
