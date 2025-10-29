@@ -84,6 +84,7 @@ function createNamespaceTransformer() {
                     if (!parent) return node
                     // 检查是否是独立的标识符使用（不是属性访问的一部分）
                     if (
+                        ts.isTypeQueryNode(parent) && parent.exprName === node ||
                         // 变量声明类型: let a: Pool
                         ts.isVariableDeclaration(parent) && parent.type === node ||
                         // 函数参数类型: function test(a: Pool)
@@ -208,8 +209,9 @@ function createNamespaceTransformer() {
                     }
                 }
 
-                // 处理类型引用节点，将简写的类型名替换为完整限定名
-                if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName) && namespaceMap.has(node.typeName.text)) {
+                // 处理类型引用节点，将简写的类型名替换为完整限定名 isTypeReferenceNode=173  isIdentifier=79
+                if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName)
+                    && namespaceMap.has(node.typeName.text)) {
                     const fullName = namespaceMap.get(node.typeName.text);
                     const qualifiedName = createQualifiedNameEntityName(fullName);
                     const typeReferenceNode = ts.factory.createTypeReferenceNode(
@@ -223,6 +225,22 @@ function createNamespaceTransformer() {
                     return typeReferenceNode;
                 }
 
+                // 处理 typeof 表达式中的命名空间引用
+                if (ts.isTypeQueryNode(node) && ts.isQualifiedName(node.exprName)) {
+                    // 检查是否是形如 typeof Path.formatUrl 的表达式
+                    const leftmost = getLeftmostIdentifier(node.exprName);
+                    if (leftmost && namespaceMap.has(leftmost.text)) {
+                        const fullName = namespaceMap.get(leftmost.text);
+                        const qualifiedName = createQualifiedNameEntityName(fullName);
+
+                        // 重构整个表达式
+                        let newExprName = replaceLeftmostInQualifiedName(node.exprName, leftmost.text, qualifiedName);
+                        const newTypeQuery = ts.factory.createTypeQueryNode(newExprName);
+                        setParentRecursive(newTypeQuery, node.parent);
+                        return newTypeQuery;
+                    }
+                }
+
                 return ts.visitEachChild(node, visitSecondPass, context);
             }
 
@@ -234,6 +252,27 @@ function createNamespaceTransformer() {
             // newNode.text = text
             return newNode
         };
+
+        // 辅助函数：获取限定名中最左边的标识符
+        function getLeftmostIdentifier(qualifiedName) {
+            if (ts.isIdentifier(qualifiedName)) {
+                return qualifiedName;
+            } else if (ts.isQualifiedName(qualifiedName)) {
+                return getLeftmostIdentifier(qualifiedName.left);
+            }
+            return null;
+        }
+
+// 辅助函数：替换限定名中最左边的标识符
+        function replaceLeftmostInQualifiedName(qualifiedName, oldName, newName) {
+            if (ts.isIdentifier(qualifiedName) && qualifiedName.text === oldName) {
+                return newName;
+            } else if (ts.isQualifiedName(qualifiedName)) {
+                const newLeft = replaceLeftmostInQualifiedName(qualifiedName.left, oldName, newName);
+                return ts.factory.createQualifiedName(newLeft, qualifiedName.right);
+            }
+            return qualifiedName;
+        }
 
         /**
          * 根据完整名称创建限定名表达式（如 a.b.c）。

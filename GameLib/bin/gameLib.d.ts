@@ -1097,7 +1097,7 @@ declare namespace gameLib {
 	     * @deprecated
 	     * @see Path.formatPath
 	     */
-	    static formatUrl: typeof Path.formatUrl;
+	    static formatUrl: typeof tsCore.Path.formatUrl;
 	    version(url: string, version: string | number): string | number;
 	    /**
 	     * 加载版本控制文件
