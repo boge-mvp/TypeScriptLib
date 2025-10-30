@@ -76,23 +76,20 @@ export class DefineConfig {
             // @ts-ignore
             Laya.SoundManager._stageOnFocus()
             // @ts-ignore
-            if (!Laya.SoundManager._blurPaused && Laya.SoundManager._musicChannel) {
-                // @ts-ignore
-                if (Laya.SoundManager._musicChannel.isStopped) Laya.SoundManager._musicChannel.resume()
+            const musicChannel: Laya.SoundChannel = Laya.SoundManager._musicChannel
+            // @ts-ignore
+            if (!Laya.SoundManager._blurPaused && musicChannel) {
+                if (musicChannel.isStopped) musicChannel.resume()
                 return
             }
             let bgMusic = Laya.SoundManager["_bgMusic"]
             // @ts-ignore
             Laya.SoundManager._blurPaused = false
-            // @ts-ignore
-            if (Laya.SoundManager._musicChannel) {
-                // @ts-ignore
-                if (Laya.SoundManager._musicChannel.isStopped) {
-                    // @ts-ignore
-                    Laya.SoundManager._musicChannel.resume()
+            if (musicChannel) {
+                if (musicChannel.isStopped) {
+                    musicChannel.resume()
                 } else {
-                    // @ts-ignore
-                    Laya.SoundManager._musicChannel.play()
+                    musicChannel.play()
                 }
             } else if (bgMusic && !Laya.SoundManager.musicMuted) {
                 // 没有正在播放的声音  并且背景音乐又存在 不是静音状态
