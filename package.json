@@ -32,6 +32,7 @@
     "index.js",
     "gulp-concat-source.js",
     "gulp-ts-sort-declaration.js",
+    "ast-dependencies-parse.js",
     "reserved.js",
     "types.js",
     "monkey-path.js",

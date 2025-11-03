@@ -2023,235 +2023,6 @@ function TimerLoop(interval, custom) {
 	
 	tsCore.DateUtils = DateUtils
 	
-	class ELoader {
-	    constructor() {
-	        /** 加载域名备用 */
-	        this.baseUrls = [];
-	        this._infoPool = [];
-	    }
-	    /**
-	     * <p>加载资源。资源加载错误时，本对象会派发 Event.ERROR 事件，事件回调参数值为加载出错的资源地址。</p>
-	     * <p>因为返回值为 LoaderManager 对象本身，所以可以使用如下语法：loaderManager.load(...).load(...);</p>
-	     * @param    url            要加载的单个资源地址或资源信息数组。比如：简单数组：["a.png","b.png"]；复杂数组[{url:"a.png",type:Loader.IMAGE,size:100,priority:1},{url:"b.json",type:Loader.JSON,size:50,priority:1}]。
-	     * @param    complete    加载结束回调。根据url类型不同分为2种情况：1. url为String类型，也就是单个资源地址，如果加载成功，则回调参数值为加载完成的资源，否则为null；2. url为数组类型，指定了一组要加载的资源，如果全部加载成功，则回调参数值为true，否则为false。
-	     * @param    progress    加载进度回调。回调参数值为当前资源的加载进度信息(0-1)。
-	     * @param    type        资源类型。比如：Loader.IMAGE。
-	     * @param    [priority=1]    加载的优先级，优先级高的优先加载。有0-4共5个优先级，0最高，4最低。
-	     * @param    [cache=true]        是否缓存加载结果。
-	     * @param    group        分组，方便对资源进行管理。
-	     * @param    [ignoreCache=false]    是否忽略缓存，强制重新加载。
-	     * @param    [useWorkerLoader=false] 是否使用worker加载（只针对IMAGE类型和ATLAS类型，并且浏览器支持的情况下生效）
-	     * @return 此 LoaderManager 对象本身。
-	     */
-	    load(url, complete, progress, type, priority = 1, cache = true, group, ignoreCache = false, useWorkerLoader = false) {
-	        if (Array.isArray(url))
-	            return this.loadAssets(url, complete, progress, type, priority, cache, group);
-	        let content = this.getRes(url);
-	        if (!ignoreCache && content) {
-	            //增加延迟回掉，防止快速回掉导致执行顺序错误
-	            Laya.systemTimer.frameOnce(1, null, function () {
-	                progress && progress.runWith(1);
-	                complete && complete.runWith(Array.isArray(content) ? [content] : content);
-	            });
-	        }
-	        else {
-	            let resInfo = this._infoPool.length ? this._infoPool.pop() : new ResInfo();
-	            resInfo.url = url;
-	            resInfo.type = type;
-	            resInfo.cache = cache;
-	            resInfo.ignoreCache = ignoreCache;
-	            resInfo.originalUrl = null;
-	            resInfo.complete = complete;
-	            resInfo.progress = progress;
-	            resInfo.priority = priority;
-	            resInfo.createCache = false;
-	            resInfo.createConstructParams = null;
-	            resInfo.createPropertyParams = null;
-	            resInfo.group = group;
-	            resInfo.useWorkerLoader = useWorkerLoader;
-	            resInfo.useIndex = 0;
-	            this._load(resInfo);
-	        }
-	    }
-	    /**
-	     * <p>根据clas类型创建一个未初始化资源的对象，随后进行异步加载，资源加载完成后，初始化对象的资源，并通过此对象派发 Event.LOADED 事件，事件回调参数值为此对象本身。套嵌资源的子资源会保留资源路径"?"后的部分。</p>
-	     * <p>如果url为数组，返回true；否则返回指定的资源类对象，可以通过侦听此对象的 Event.LOADED 事件来判断资源是否已经加载完毕。</p>
-	     * <p><b>注意：</b>cache参数只能对文件后缀为atlas的资源进行缓存控制，其他资源会忽略缓存，强制重新加载。</p>
-	     * @param	url			资源地址或者数组。如果url和clas同时指定了资源类型，优先使用url指定的资源类型。参数形如：[{url:xx,clas:xx,priority:xx,params:xx},{url:xx,clas:xx,priority:xx,params:xx}]。
-	     * @param	complete	加载结束回调。根据url类型不同分为2种情况：1. url为String类型，也就是单个资源地址，如果加载成功，则回调参数值为加载完成的资源，否则为null；2. url为数组类型，指定了一组要加载的资源，如果全部加载成功，则回调参数值为true，否则为false。
-	     * @param	progress	资源加载进度回调，回调参数值为当前资源加载的进度信息(0-1)。
-	     * @param	type	资源类型。
-	     * @param	constructParams		资源构造函数参数。
-	     * @param	propertyParams		资源属性参数。
-	     * @param	[priority=1]	加载的优先级，优先级高的优先加载。有0-4共5个优先级，0最高，4最低。
-	     * @param	[cache=true]		是否缓存加载的资源。
-	     * @return	如果url为数组，返回true；否则返回指定的资源类对象。
-	     */
-	    create(url, complete, progress, type, constructParams = null, propertyParams = null, priority = 1, cache = true) {
-	        if (Array.isArray(url))
-	            return this.loadAssets(url, complete, progress, type, priority, cache);
-	        let content = this.getRes(url);
-	        if (content) {
-	            //增加延迟回掉，防止快速回掉导致执行顺序错误
-	            Laya.systemTimer.frameOnce(1, null, function () {
-	                progress && progress.runWith(1);
-	                complete && complete.runWith(Array.isArray(content) ? [content] : content);
-	            });
-	        }
-	        else {
-	            let resInfo = this._infoPool.length ? this._infoPool.pop() : new ResInfo();
-	            resInfo.url = url;
-	            resInfo.type = type;
-	            resInfo.cache = false;
-	            resInfo.ignoreCache = true;
-	            resInfo.originalUrl = null;
-	            resInfo.createCache = cache;
-	            resInfo.createConstructParams = constructParams;
-	            resInfo.createPropertyParams = propertyParams;
-	            resInfo.group = null;
-	            resInfo.priority = priority;
-	            resInfo.useWorkerLoader = false;
-	            resInfo.complete = complete;
-	            resInfo.progress = progress;
-	            resInfo.useIndex = 0;
-	            this._load(resInfo);
-	        }
-	    }
-	    loadAssets(arr, complete, progress, type, priority, cache, group) {
-	        let itemCount = arr.length;
-	        let loadedCount = 0;
-	        let totalSize = 0;
-	        let items = [];
-	        let success = true;
-	        for (let i = 0; i < itemCount; i++) {
-	            let item = arr[i];
-	            if (typeof item === "string")
-	                item = { url: item, type: type, size: 1, priority: priority };
-	            if (!item.size)
-	                item.size = 1;
-	            item.progress = 0;
-	            totalSize += item.size;
-	            items.push(item);
-	            let progressHandler = progress ? Laya.Handler.create(null, loadProgress, [item], false) : null;
-	            let completeHandler = (complete || progress) ? Laya.Handler.create(null, loadComplete, [item]) : null;
-	            this.load(item.url, completeHandler, progressHandler, item.type, item.priority || 1, cache, item.group || group, false, item.useWorkerLoader);
-	        }
-	        function loadComplete(item, content) {
-	            loadedCount++;
-	            item.progress = 1;
-	            if (!content)
-	                success = false;
-	            if (loadedCount === itemCount) {
-	                complete === null || complete === void 0 ? void 0 : complete.runWith(success);
-	            }
-	        }
-	        function loadProgress(item, value) {
-	            if (progress) {
-	                item.progress = value;
-	                let num = 0;
-	                for (let j = 0; j < items.length; j++) {
-	                    let item1 = items[j];
-	                    num += item1.size * item1.progress;
-	                }
-	                let v = num / totalSize;
-	                progress.runWith(v);
-	            }
-	        }
-	    }
-	    _load(resInfo = null) {
-	        ELoader.loader.formatURL(resInfo);
-	        const url = StringUtil.replace(resInfo.url, "{host}", window.location.host);
-	        if (resInfo.createCache) {
-	            Laya.loader.create(url, Laya.Handler.create(this, this.onSingleComplete, [resInfo]), resInfo.progress, resInfo.type, resInfo.createConstructParams, resInfo.createPropertyParams, resInfo.priority, resInfo.cache);
-	        }
-	        else
-	            Laya.loader.load(url, Laya.Handler.create(this, this.onSingleComplete, [resInfo]), resInfo.progress, resInfo.type, resInfo.priority, resInfo.cache, resInfo.group, resInfo.ignoreCache, resInfo.useWorkerLoader);
-	    }
-	    onSingleComplete(resInfo, content) {
-	        var _a;
-	        if (!content) {
-	            if (this.baseUrls) {
-	                resInfo.useIndex++;
-	                if (resInfo.useIndex < this.baseUrls.length) {
-	                    this._load(resInfo);
-	                    return;
-	                }
-	            }
-	        }
-	        if (!content)
-	            Log.debug("load res fail : " + resInfo.url + " " + content);
-	        (_a = resInfo.complete) === null || _a === void 0 ? void 0 : _a.runWith(content);
-	        this._infoPool.push(resInfo);
-	    }
-	    /**
-	     * 获取指定资源地址的资源。
-	     * @param    url 资源地址。
-	     * @return    返回资源。
-	     */
-	    getRes(url) {
-	        let content = null;
-	        let allBaseUrl = this.baseUrls;
-	        if (ELoader.getAllBaseUrl)
-	            allBaseUrl = ELoader.getAllBaseUrl();
-	        if (url.indexOf(":") == -1 && allBaseUrl && allBaseUrl.length > 0) { // 不是完整路径走这里
-	            let tempUrl = null;
-	            for (const baseUrl of allBaseUrl) {
-	                if (url.charAt(0) != "/")
-	                    tempUrl = baseUrl + Laya.URL.customFormat(url);
-	                content = Laya.Loader.getRes(tempUrl);
-	                if (content) {
-	                    return content;
-	                }
-	            }
-	        }
-	        url = StringUtil.replace(url, "{host}", window.location.host);
-	        return Laya.Loader.getRes(url);
-	    }
-	    /**
-	     * 获取指定资源地址的资源。
-	     * @param    url 资源地址。
-	     * @return    返回资源。
-	     */
-	    clearRes(url) {
-	        let allBaseUrl = this.baseUrls;
-	        if (ELoader.getAllBaseUrl)
-	            allBaseUrl = ELoader.getAllBaseUrl();
-	        if (url.indexOf(":") == -1 && allBaseUrl && allBaseUrl.length > 0) { // 不是完整路径走这里
-	            let tempUrl = null;
-	            for (const baseUrl of allBaseUrl) {
-	                //如果不是全路径，处理url
-	                if (url.charAt(0) != "/")
-	                    tempUrl = baseUrl + Laya.URL.customFormat(url);
-	                Laya.Loader.clearRes(tempUrl);
-	            }
-	        }
-	        Laya.Loader.clearRes(url);
-	    }
-	    /** 清理当前未完成的加载，所有未加载的内容全部停止加载。*/
-	    clearUnLoaded() {
-	        Laya.loader.clearUnLoaded();
-	    }
-	    formatURL(resInfo) {
-	        if (ELoader.checkBaseUrl)
-	            this.baseUrls = ELoader.checkBaseUrl(resInfo.url);
-	        if (this.baseUrls) {
-	            let index = resInfo.useIndex;
-	            if (this.baseUrls.length <= index) {
-	                index = 0;
-	            }
-	            let basePath = this.baseUrls[index];
-	            basePath = StringUtil.replace(basePath, "{host}", window.location.host);
-	            Laya.URL.basePath = basePath;
-	        }
-	    }
-	}
-	ELoader.isWebp = false;
-	ELoader.loader = new ELoader();
-	class ResInfo {
-	}
-	
-	tsCore.ELoader = ELoader
-	
 	var EnvType;
 	(function (EnvType) {
 	    EnvType[EnvType["PROD"] = 0] = "PROD";
@@ -2494,6 +2265,235 @@ function TimerLoop(interval, custom) {
 	tsCore.LogLevel = LogLevel
 	
 	tsCore.Log = Log
+	
+	class ELoader {
+	    constructor() {
+	        /** 加载域名备用 */
+	        this.baseUrls = [];
+	        this._infoPool = [];
+	    }
+	    /**
+	     * <p>加载资源。资源加载错误时，本对象会派发 Event.ERROR 事件，事件回调参数值为加载出错的资源地址。</p>
+	     * <p>因为返回值为 LoaderManager 对象本身，所以可以使用如下语法：loaderManager.load(...).load(...);</p>
+	     * @param    url            要加载的单个资源地址或资源信息数组。比如：简单数组：["a.png","b.png"]；复杂数组[{url:"a.png",type:Loader.IMAGE,size:100,priority:1},{url:"b.json",type:Loader.JSON,size:50,priority:1}]。
+	     * @param    complete    加载结束回调。根据url类型不同分为2种情况：1. url为String类型，也就是单个资源地址，如果加载成功，则回调参数值为加载完成的资源，否则为null；2. url为数组类型，指定了一组要加载的资源，如果全部加载成功，则回调参数值为true，否则为false。
+	     * @param    progress    加载进度回调。回调参数值为当前资源的加载进度信息(0-1)。
+	     * @param    type        资源类型。比如：Loader.IMAGE。
+	     * @param    [priority=1]    加载的优先级，优先级高的优先加载。有0-4共5个优先级，0最高，4最低。
+	     * @param    [cache=true]        是否缓存加载结果。
+	     * @param    group        分组，方便对资源进行管理。
+	     * @param    [ignoreCache=false]    是否忽略缓存，强制重新加载。
+	     * @param    [useWorkerLoader=false] 是否使用worker加载（只针对IMAGE类型和ATLAS类型，并且浏览器支持的情况下生效）
+	     * @return 此 LoaderManager 对象本身。
+	     */
+	    load(url, complete, progress, type, priority = 1, cache = true, group, ignoreCache = false, useWorkerLoader = false) {
+	        if (Array.isArray(url))
+	            return this.loadAssets(url, complete, progress, type, priority, cache, group);
+	        let content = this.getRes(url);
+	        if (!ignoreCache && content) {
+	            //增加延迟回掉，防止快速回掉导致执行顺序错误
+	            Laya.systemTimer.frameOnce(1, null, function () {
+	                progress && progress.runWith(1);
+	                complete && complete.runWith(Array.isArray(content) ? [content] : content);
+	            });
+	        }
+	        else {
+	            let resInfo = this._infoPool.length ? this._infoPool.pop() : new ResInfo();
+	            resInfo.url = url;
+	            resInfo.type = type;
+	            resInfo.cache = cache;
+	            resInfo.ignoreCache = ignoreCache;
+	            resInfo.originalUrl = null;
+	            resInfo.complete = complete;
+	            resInfo.progress = progress;
+	            resInfo.priority = priority;
+	            resInfo.createCache = false;
+	            resInfo.createConstructParams = null;
+	            resInfo.createPropertyParams = null;
+	            resInfo.group = group;
+	            resInfo.useWorkerLoader = useWorkerLoader;
+	            resInfo.useIndex = 0;
+	            this._load(resInfo);
+	        }
+	    }
+	    /**
+	     * <p>根据clas类型创建一个未初始化资源的对象，随后进行异步加载，资源加载完成后，初始化对象的资源，并通过此对象派发 Event.LOADED 事件，事件回调参数值为此对象本身。套嵌资源的子资源会保留资源路径"?"后的部分。</p>
+	     * <p>如果url为数组，返回true；否则返回指定的资源类对象，可以通过侦听此对象的 Event.LOADED 事件来判断资源是否已经加载完毕。</p>
+	     * <p><b>注意：</b>cache参数只能对文件后缀为atlas的资源进行缓存控制，其他资源会忽略缓存，强制重新加载。</p>
+	     * @param	url			资源地址或者数组。如果url和clas同时指定了资源类型，优先使用url指定的资源类型。参数形如：[{url:xx,clas:xx,priority:xx,params:xx},{url:xx,clas:xx,priority:xx,params:xx}]。
+	     * @param	complete	加载结束回调。根据url类型不同分为2种情况：1. url为String类型，也就是单个资源地址，如果加载成功，则回调参数值为加载完成的资源，否则为null；2. url为数组类型，指定了一组要加载的资源，如果全部加载成功，则回调参数值为true，否则为false。
+	     * @param	progress	资源加载进度回调，回调参数值为当前资源加载的进度信息(0-1)。
+	     * @param	type	资源类型。
+	     * @param	constructParams		资源构造函数参数。
+	     * @param	propertyParams		资源属性参数。
+	     * @param	[priority=1]	加载的优先级，优先级高的优先加载。有0-4共5个优先级，0最高，4最低。
+	     * @param	[cache=true]		是否缓存加载的资源。
+	     * @return	如果url为数组，返回true；否则返回指定的资源类对象。
+	     */
+	    create(url, complete, progress, type, constructParams = null, propertyParams = null, priority = 1, cache = true) {
+	        if (Array.isArray(url))
+	            return this.loadAssets(url, complete, progress, type, priority, cache);
+	        let content = this.getRes(url);
+	        if (content) {
+	            //增加延迟回掉，防止快速回掉导致执行顺序错误
+	            Laya.systemTimer.frameOnce(1, null, function () {
+	                progress && progress.runWith(1);
+	                complete && complete.runWith(Array.isArray(content) ? [content] : content);
+	            });
+	        }
+	        else {
+	            let resInfo = this._infoPool.length ? this._infoPool.pop() : new ResInfo();
+	            resInfo.url = url;
+	            resInfo.type = type;
+	            resInfo.cache = false;
+	            resInfo.ignoreCache = true;
+	            resInfo.originalUrl = null;
+	            resInfo.createCache = cache;
+	            resInfo.createConstructParams = constructParams;
+	            resInfo.createPropertyParams = propertyParams;
+	            resInfo.group = null;
+	            resInfo.priority = priority;
+	            resInfo.useWorkerLoader = false;
+	            resInfo.complete = complete;
+	            resInfo.progress = progress;
+	            resInfo.useIndex = 0;
+	            this._load(resInfo);
+	        }
+	    }
+	    loadAssets(arr, complete, progress, type, priority, cache, group) {
+	        let itemCount = arr.length;
+	        let loadedCount = 0;
+	        let totalSize = 0;
+	        let items = [];
+	        let success = true;
+	        for (let i = 0; i < itemCount; i++) {
+	            let item = arr[i];
+	            if (typeof item === "string")
+	                item = { url: item, type: type, size: 1, priority: priority };
+	            if (!item.size)
+	                item.size = 1;
+	            item.progress = 0;
+	            totalSize += item.size;
+	            items.push(item);
+	            let progressHandler = progress ? Laya.Handler.create(null, loadProgress, [item], false) : null;
+	            let completeHandler = (complete || progress) ? Laya.Handler.create(null, loadComplete, [item]) : null;
+	            this.load(item.url, completeHandler, progressHandler, item.type, item.priority || 1, cache, item.group || group, false, item.useWorkerLoader);
+	        }
+	        function loadComplete(item, content) {
+	            loadedCount++;
+	            item.progress = 1;
+	            if (!content)
+	                success = false;
+	            if (loadedCount === itemCount) {
+	                complete === null || complete === void 0 ? void 0 : complete.runWith(success);
+	            }
+	        }
+	        function loadProgress(item, value) {
+	            if (progress) {
+	                item.progress = value;
+	                let num = 0;
+	                for (let j = 0; j < items.length; j++) {
+	                    let item1 = items[j];
+	                    num += item1.size * item1.progress;
+	                }
+	                let v = num / totalSize;
+	                progress.runWith(v);
+	            }
+	        }
+	    }
+	    _load(resInfo = null) {
+	        ELoader.loader.formatURL(resInfo);
+	        const url = StringUtil.replace(resInfo.url, "{host}", window.location.host);
+	        if (resInfo.createCache) {
+	            Laya.loader.create(url, Laya.Handler.create(this, this.onSingleComplete, [resInfo]), resInfo.progress, resInfo.type, resInfo.createConstructParams, resInfo.createPropertyParams, resInfo.priority, resInfo.cache);
+	        }
+	        else
+	            Laya.loader.load(url, Laya.Handler.create(this, this.onSingleComplete, [resInfo]), resInfo.progress, resInfo.type, resInfo.priority, resInfo.cache, resInfo.group, resInfo.ignoreCache, resInfo.useWorkerLoader);
+	    }
+	    onSingleComplete(resInfo, content) {
+	        var _a;
+	        if (!content) {
+	            if (this.baseUrls) {
+	                resInfo.useIndex++;
+	                if (resInfo.useIndex < this.baseUrls.length) {
+	                    this._load(resInfo);
+	                    return;
+	                }
+	            }
+	        }
+	        if (!content)
+	            Log.debug("load res fail : " + resInfo.url + " " + content);
+	        (_a = resInfo.complete) === null || _a === void 0 ? void 0 : _a.runWith(content);
+	        this._infoPool.push(resInfo);
+	    }
+	    /**
+	     * 获取指定资源地址的资源。
+	     * @param    url 资源地址。
+	     * @return    返回资源。
+	     */
+	    getRes(url) {
+	        let content = null;
+	        let allBaseUrl = this.baseUrls;
+	        if (ELoader.getAllBaseUrl)
+	            allBaseUrl = ELoader.getAllBaseUrl();
+	        if (url.indexOf(":") == -1 && allBaseUrl && allBaseUrl.length > 0) { // 不是完整路径走这里
+	            let tempUrl = null;
+	            for (const baseUrl of allBaseUrl) {
+	                if (url.charAt(0) != "/")
+	                    tempUrl = baseUrl + Laya.URL.customFormat(url);
+	                content = Laya.Loader.getRes(tempUrl);
+	                if (content) {
+	                    return content;
+	                }
+	            }
+	        }
+	        url = StringUtil.replace(url, "{host}", window.location.host);
+	        return Laya.Loader.getRes(url);
+	    }
+	    /**
+	     * 获取指定资源地址的资源。
+	     * @param    url 资源地址。
+	     * @return    返回资源。
+	     */
+	    clearRes(url) {
+	        let allBaseUrl = this.baseUrls;
+	        if (ELoader.getAllBaseUrl)
+	            allBaseUrl = ELoader.getAllBaseUrl();
+	        if (url.indexOf(":") == -1 && allBaseUrl && allBaseUrl.length > 0) { // 不是完整路径走这里
+	            let tempUrl = null;
+	            for (const baseUrl of allBaseUrl) {
+	                //如果不是全路径，处理url
+	                if (url.charAt(0) != "/")
+	                    tempUrl = baseUrl + Laya.URL.customFormat(url);
+	                Laya.Loader.clearRes(tempUrl);
+	            }
+	        }
+	        Laya.Loader.clearRes(url);
+	    }
+	    /** 清理当前未完成的加载，所有未加载的内容全部停止加载。*/
+	    clearUnLoaded() {
+	        Laya.loader.clearUnLoaded();
+	    }
+	    formatURL(resInfo) {
+	        if (ELoader.checkBaseUrl)
+	            this.baseUrls = ELoader.checkBaseUrl(resInfo.url);
+	        if (this.baseUrls) {
+	            let index = resInfo.useIndex;
+	            if (this.baseUrls.length <= index) {
+	                index = 0;
+	            }
+	            let basePath = this.baseUrls[index];
+	            basePath = StringUtil.replace(basePath, "{host}", window.location.host);
+	            Laya.URL.basePath = basePath;
+	        }
+	    }
+	}
+	ELoader.isWebp = false;
+	ELoader.loader = new ELoader();
+	class ResInfo {
+	}
+	
+	tsCore.ELoader = ELoader
 	
 	class BezierCurves {
 	    constructor() {
@@ -2851,236 +2851,6 @@ function TimerLoop(interval, custom) {
 	
 	tsCore.TimerKit = TimerKit
 	
-	class EventController {
-	    constructor() {
-	        /** 事件缓存的所有组 组名字->组object */
-	        this.eventGroup = new Map();
-	        /**
-	         * 缓存key -> 实例
-	         */
-	        this.cacheTarget = new Map();
-	        /**
-	         * 缓存类名 -> 实例
-	         */
-	        this.cacheClassTarget = new Map();
-	    }
-	    regActionHandler(action, handler, group) {
-	        let groupObj = this.getGroup(group);
-	        // 获取此分组下  action 的执行函数存储数组
-	        groupObj.getOrPut(action, () => []).push(handler);
-	    }
-	    /**
-	     * 分组存储对象
-	     * @param groupKey 分组key
-	     * @return
-	     */
-	    getGroup(groupKey) {
-	        if (StringUtil.isEmpty(groupKey)) {
-	            groupKey = App.DEFAULT_GROUP;
-	        }
-	        return this.eventGroup.getOrPut(groupKey, () => new Map());
-	    }
-	    regAction(action, caller, method, group, order) {
-	        const handler = new Laya.Handler(caller, method);
-	        handler.order = order;
-	        this.regActionHandler(action, handler, group);
-	    }
-	    clearView() {
-	        this.cacheTarget.clear();
-	        EventController._CLSID = 0;
-	    }
-	    clearGroup() {
-	        this.eventGroup.clear();
-	        Log.debug("clear eventGroup");
-	    }
-	    removeAllAction(...args) {
-	        for (const key of this.eventGroup.keys()) { // 获取key
-	            this.removeGroupActions.apply(this, [key, ...args]);
-	        }
-	    }
-	    removeGroup(groupKey) {
-	        Log.debug(`removeGroup ${groupKey}`);
-	        this.eventGroup.delete(groupKey);
-	    }
-	    removeGroupActions(groupKey, ...args) {
-	        let groupObj = this.getGroup(groupKey);
-	        args.forEach(value => groupObj.delete(value));
-	    }
-	    removeActionHandler(action, method, group) {
-	        if (!group) {
-	            for (let groupKey of this.eventGroup.values()) {
-	                this.removeFunction(groupKey, action, method);
-	            }
-	            return;
-	        }
-	        let groupObj = this.getGroup(group);
-	        this.removeFunction(groupObj, action, method);
-	    }
-	    removeFunction(groupObj, action, method) {
-	        let arr = groupObj.get(action);
-	        if (arr) {
-	            for (let i = 0; i < arr.length; i++) {
-	                let h = arr[i];
-	                if (h.method == method) {
-	                    arr.splice(i, 1);
-	                    i--;
-	                }
-	            }
-	            if (arr.length == 0)
-	                groupObj.delete(action);
-	        }
-	    }
-	    removeTargetAll(caller) {
-	        for (let groupObj of this.eventGroup.keys()) {
-	            this.removeTarget(this.eventGroup.get(groupObj), caller);
-	        }
-	    }
-	    removeTarget(groupObj, caller) {
-	        for (const [key, value] of groupObj.entries()) {
-	            for (let i = 0; i < value.length; i++) {
-	                let h = value[i];
-	                if (h.caller == caller) {
-	                    value.splice(i, 1);
-	                    i--;
-	                }
-	            }
-	            if (value.length == 0)
-	                groupObj.delete(key);
-	        }
-	    }
-	    sendGroupAction(group, action, ...args) {
-	        let result = this.sendActionEvent.apply(this, [group, action, ...args]);
-	        if (!result) {
-	            Log.debug("group[" + group + "], action [" + action + "] not exist! Call failure");
-	        }
-	    }
-	    sendAction(action, ...args) {
-	        let result;
-	        for (const groupName of this.eventGroup.keys()) {
-	            let tempResult = this.sendActionEvent.apply(this, [groupName, action, ...args]);
-	            if (tempResult)
-	                result = true;
-	        }
-	        if (!result)
-	            Log.debug("action [" + action + "] not exist! Call failure");
-	    }
-	    sendActionEvent(group, action, ...args) {
-	        let groupObj = this.getGroup(group);
-	        let arr = groupObj.get(action);
-	        if (arr) {
-	            arr.sort((a, b) => a.order || 100 - b.order || 100)
-	                .forEach(value => value.runWith(args));
-	            return true;
-	        }
-	        return false;
-	    }
-	    addBean(key, bean, saveClassName = true) {
-	        if (typeof key !== "string") {
-	            key = this._getClassSign(key);
-	        }
-	        if (StringUtil.isEmpty(key)) {
-	            Log.warn("cannot be empty, key = " + key);
-	            return false;
-	        }
-	        if (this.getView(key)) {
-	            Log.warn("already exist key = " + key + ", add failure!");
-	            return false;
-	        }
-	        this.cacheTarget.set(key, bean);
-	        if (saveClassName) {
-	            this.cacheClassTarget.set(bean.constructor.name, bean);
-	        }
-	        return true;
-	    }
-	    removeBean(key) {
-	        if (!key)
-	            return;
-	        if (typeof key !== "string") {
-	            key = this._getClassSign(key, false);
-	        }
-	        if (StringUtil.isEmpty(key))
-	            return;
-	        this.cacheTarget.delete(key);
-	        this.cacheClassTarget.delete(key.charAt(0).toUpperCase() + key.slice(1));
-	    }
-	    getBean(key) {
-	        var _a;
-	        if (!key)
-	            return;
-	        if (typeof key !== "string") {
-	            key = this._getClassSign(key, false);
-	        }
-	        return (_a = this.cacheTarget.get(key)) !== null && _a !== void 0 ? _a : this.cacheClassTarget.get(key);
-	    }
-	    hasBean(key) {
-	        if (typeof key !== "string") {
-	            key = this._getClassSign(key, false);
-	        }
-	        if (!key)
-	            return false;
-	        return this.cacheTarget.has(key) || this.cacheClassTarget.has(key);
-	    }
-	    addView(key, view) {
-	        if (this.addBean(key, view)) {
-	            if (typeof key !== "string") {
-	                key = this._getClassSign(key);
-	            }
-	            view.setKey(key);
-	            return true;
-	        }
-	        return false;
-	    }
-	    removeView(key) {
-	        if (!key)
-	            return;
-	        if (typeof key !== "string") {
-	            key = key.getKey();
-	        }
-	        this.removeBean(key);
-	    }
-	    getView(key) {
-	        return this.getBean(key);
-	    }
-	    addProxy(key, proxy) {
-	        if (this.addBean(key, proxy)) {
-	            if (typeof key !== "string") {
-	                key = this._getClassSign(key);
-	            }
-	            proxy.setKey(key);
-	            return true;
-	        }
-	        return false;
-	    }
-	    removeProxy(key) {
-	        if (!key)
-	            return;
-	        if (typeof key !== "string") {
-	            key = key.getKey();
-	        }
-	        this.removeBean(key);
-	    }
-	    getProxy(name) {
-	        return this.getBean(name);
-	    }
-	    getMap() {
-	        return this.cacheTarget;
-	    }
-	    /**
-	     * 返回类的唯一标识
-	     */
-	    _getClassSign(cla, create = true) {
-	        let className = cla.name || cla["__className"] || cla["_cacheId"];
-	        if (!className && create) {
-	            cla["_cacheId"] = className = `${App.DEFAULT_CACHE_HEAD}_${EventController._CLSID}`;
-	            EventController._CLSID++;
-	        }
-	        return className;
-	    }
-	}
-	EventController._CLSID = 0;
-	
-	tsCore.EventController = EventController
-	
 	class ActionEvent {
 	    regAction(action, caller, method, group, order) {
 	        App.inst.regAction(action, caller, method, group, order);
@@ -3352,196 +3122,6 @@ function TimerLoop(interval, custom) {
 	}
 	
 	tsCore.ESkeleton = ESkeleton
-	
-	class GSpineSkeleton extends ESkeleton {
-	    constructor(ver = Laya.SpineVersion.v3_8) {
-	        super();
-	        this.ver = ver;
-	    }
-	    createDisplayObject() {
-	        super.createDisplayObject();
-	        this._displayObject = new Laya.SpineSkeleton();
-	        this._displayObject["$owner"] = this;
-	        this["_touchable"] = this._displayObject.mouseEnabled = this._displayObject.mouseThrough = false;
-	        this._displayObject.on(Laya.Event.STOPPED, this, this.onPlayStopped);
-	        this._container = this._displayObject;
-	    }
-	    get asSkeleton() {
-	        return this._displayObject;
-	    }
-	    /**
-	     * 获取spine的Skeleton对象
-	     */
-	    getSkeletonNative() {
-	        // @ts-ignore
-	        return this.asSkeleton.getSkeleton();
-	    }
-	    /**
-	     * 加载json 或 skel格式的骨骼文件
-	     * @param jsonOrSkelUrl
-	     * @param handler 回调方法
-	     * @param ver
-	     */
-	    load(jsonOrSkelUrl, handler, ver) {
-	        this._complete = handler;
-	        this._aniPath = jsonOrSkelUrl;
-	        if (!this.template || (ver && this.ver != ver)) {
-	            this.template = new Laya.SpineTemplet(this.ver);
-	            this.template.on(Laya.Event.COMPLETE, this, this.onComplete);
-	            this.template.on(Laya.Event.ERROR, this, this.onError);
-	        }
-	        this.template.loadAni(jsonOrSkelUrl);
-	    }
-	    onError() {
-	        this._spineResPath = null;
-	    }
-	    onComplete(spine) {
-	        if (spine.loadResUrl != this.aniPath)
-	            return;
-	        this._spineResPath = spine.loadResUrl;
-	        const template = spine !== null && spine !== void 0 ? spine : this.template;
-	        this.asSkeleton.init(template);
-	        // 销毁已有的动画
-	        // for (let i = this.displayObject.numChildren - 1; i >= 0; i--) {
-	        //     let temp = this.displayObject.getChildAt(i)
-	        //     if (temp instanceof SpineSkeleton) {
-	        //         temp.destroy(true)
-	        //     }
-	        // }
-	        // if (this.spineSkeleton) {
-	        //     this.spineSkeleton.hitArea = this.displayObject.hitArea
-	        // }
-	        // this.spineSkeleton.mouseEnabled = this.spineSkeleton.mouseThrough = this.touchable
-	        // this.displayObject.addChild(this.spineSkeleton)
-	        runFun(this._complete, this);
-	    }
-	    set touchable(value) {
-	        // if (this.spineSkeleton) this.spineSkeleton.mouseEnabled = this.spineSkeleton.mouseThrough = this.touchable
-	        super.touchable = value;
-	    }
-	    get touchable() {
-	        return super.touchable;
-	    }
-	    /**
-	     * 通过名字显示一套皮肤
-	     * @param    name    皮肤的名字
-	     */
-	    showSkinByName(name) {
-	        this.asSkeleton.showSkinByName(name);
-	    }
-	    /**
-	     * 通过索引显示一套皮肤
-	     * @param    skinIndex    皮肤索引
-	     */
-	    showSkinByIndex(skinIndex) {
-	        this.asSkeleton.showSkinByIndex(skinIndex);
-	    }
-	    getAniIndexByName(aniName) {
-	        let animations = this.asSkeleton.templet.skeletonData.animations;
-	        let index = -1;
-	        for (let i = 0, n = animations.length; i < n; i++) {
-	            let animation = animations[i];
-	            if (animation && aniName == animation.name) {
-	                index = i;
-	                break;
-	            }
-	        }
-	        return index;
-	    }
-	    getAllAnimation() {
-	        var _a, _b;
-	        return (_b = (_a = this.getSkeletonNative()) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.animations;
-	    }
-	    getAllSkin() {
-	        var _a, _b;
-	        return (_b = (_a = this.asSkeleton.templet) === null || _a === void 0 ? void 0 : _a.skeletonData) === null || _b === void 0 ? void 0 : _b.skins;
-	    }
-	    getAnimation(aniIndex) {
-	        let animation;
-	        if (typeof aniIndex === "string") {
-	            animation = this.getAllAnimation().find(value => value.name === aniIndex);
-	        }
-	        else
-	            animation = this.getAllAnimation()[aniIndex];
-	        return animation;
-	    }
-	    /**
-	     * 获取动画时长 秒
-	     * @param aniIndex
-	     */
-	    getAnimDuration(aniIndex) {
-	        var _a;
-	        let duration = 0;
-	        if (Array.isArray(aniIndex)) {
-	            for (let i = 0; i < aniIndex.length; i++) {
-	                duration += this.getAnimDuration(aniIndex[i]);
-	            }
-	        }
-	        else
-	            duration = ((_a = this.getAnimation(aniIndex)) === null || _a === void 0 ? void 0 : _a.duration) || 0;
-	        return duration;
-	    }
-	    getAnimFrame(aniIndex) {
-	        return this.getAnimation(aniIndex).timelines.length;
-	    }
-	    get currAniIndex() {
-	        let _currAniName = this.asSkeleton["_currAniName"];
-	        if (!_currAniName)
-	            return -1;
-	        return this.getAniIndexByName(_currAniName);
-	    }
-	    set hitArea(rec) {
-	        // if (this.spineSkeleton) {
-	        //     this.spineSkeleton.hitArea = rec
-	        //     return
-	        // }
-	        this.displayObject.hitArea = rec;
-	    }
-	    on(type, thisObject, listener, args = null) {
-	        if (type == Laya.Event.STOPPED) {
-	            this.stoppedHandler.push(new Laya.Handler(thisObject, listener, args));
-	            return;
-	        }
-	        if (this.asSkeleton) {
-	            this.asSkeleton.on(type, thisObject, listener, args);
-	            return;
-	        }
-	        super.on(type, thisObject, listener, args);
-	    }
-	    off(type, thisObject, listener) {
-	        if (type == Laya.Event.STOPPED) {
-	            for (let i = this.stoppedHandler.length - 1; i > -1; i--) {
-	                const handler = this.stoppedHandler[i];
-	                if (handler.caller == thisObject && handler.method == listener) {
-	                    handler.clear();
-	                    this.stoppedHandler.splice(i, 1);
-	                }
-	            }
-	            return;
-	        }
-	        if (this.asSkeleton) {
-	            this.asSkeleton.off(type, thisObject, listener);
-	            return;
-	        }
-	        super.off(type, thisObject, listener);
-	    }
-	    offAll(type = null) {
-	        if (type == Laya.Event.STOPPED) {
-	            this.stoppedHandler.length = 0;
-	            return;
-	        }
-	        if (this.asSkeleton) {
-	            this.asSkeleton.offAll(type);
-	            return;
-	        }
-	        this.displayObject.offAll(type);
-	    }
-	    dispose() {
-	        super.dispose();
-	    }
-	}
-	
-	tsCore.GSpineSkeleton = GSpineSkeleton
 	
 	class GSkeleton extends ESkeleton {
 	    constructor(aniMode = 0) {
@@ -3965,25 +3545,22 @@ function TimerLoop(interval, custom) {
 	            // @ts-ignore
 	            Laya.SoundManager._stageOnFocus();
 	            // @ts-ignore
-	            if (!Laya.SoundManager._blurPaused && Laya.SoundManager._musicChannel) {
-	                // @ts-ignore
-	                if (Laya.SoundManager._musicChannel.isStopped)
-	                    Laya.SoundManager._musicChannel.resume();
+	            const musicChannel = Laya.SoundManager._musicChannel;
+	            // @ts-ignore
+	            if (!Laya.SoundManager._blurPaused && musicChannel) {
+	                if (musicChannel.isStopped)
+	                    musicChannel.resume();
 	                return;
 	            }
 	            let bgMusic = Laya.SoundManager["_bgMusic"];
 	            // @ts-ignore
 	            Laya.SoundManager._blurPaused = false;
-	            // @ts-ignore
-	            if (Laya.SoundManager._musicChannel) {
-	                // @ts-ignore
-	                if (Laya.SoundManager._musicChannel.isStopped) {
-	                    // @ts-ignore
-	                    Laya.SoundManager._musicChannel.resume();
+	            if (musicChannel) {
+	                if (musicChannel.isStopped) {
+	                    musicChannel.resume();
 	                }
 	                else {
-	                    // @ts-ignore
-	                    Laya.SoundManager._musicChannel.play();
+	                    musicChannel.play();
 	                }
 	            }
 	            else if (bgMusic && !Laya.SoundManager.musicMuted) {
@@ -4991,6 +4568,426 @@ function TimerLoop(interval, custom) {
 	App.initStop = false;
 	
 	tsCore.App = App
+	
+	class EventController {
+	    constructor() {
+	        /** 事件缓存的所有组 组名字->组object */
+	        this.eventGroup = new Map();
+	        /**
+	         * 缓存key -> 实例
+	         */
+	        this.cacheTarget = new Map();
+	        /**
+	         * 缓存类名 -> 实例
+	         */
+	        this.cacheClassTarget = new Map();
+	    }
+	    regActionHandler(action, handler, group) {
+	        let groupObj = this.getGroup(group);
+	        // 获取此分组下  action 的执行函数存储数组
+	        groupObj.getOrPut(action, () => []).push(handler);
+	    }
+	    /**
+	     * 分组存储对象
+	     * @param groupKey 分组key
+	     * @return
+	     */
+	    getGroup(groupKey) {
+	        if (StringUtil.isEmpty(groupKey)) {
+	            groupKey = App.DEFAULT_GROUP;
+	        }
+	        return this.eventGroup.getOrPut(groupKey, () => new Map());
+	    }
+	    regAction(action, caller, method, group, order) {
+	        const handler = new Laya.Handler(caller, method);
+	        handler.order = order;
+	        this.regActionHandler(action, handler, group);
+	    }
+	    clearView() {
+	        this.cacheTarget.clear();
+	        EventController._CLSID = 0;
+	    }
+	    clearGroup() {
+	        this.eventGroup.clear();
+	        Log.debug("clear eventGroup");
+	    }
+	    removeAllAction(...args) {
+	        for (const key of this.eventGroup.keys()) { // 获取key
+	            this.removeGroupActions.apply(this, [key, ...args]);
+	        }
+	    }
+	    removeGroup(groupKey) {
+	        Log.debug(`removeGroup ${groupKey}`);
+	        this.eventGroup.delete(groupKey);
+	    }
+	    removeGroupActions(groupKey, ...args) {
+	        let groupObj = this.getGroup(groupKey);
+	        args.forEach(value => groupObj.delete(value));
+	    }
+	    removeActionHandler(action, method, group) {
+	        if (!group) {
+	            for (let groupKey of this.eventGroup.values()) {
+	                this.removeFunction(groupKey, action, method);
+	            }
+	            return;
+	        }
+	        let groupObj = this.getGroup(group);
+	        this.removeFunction(groupObj, action, method);
+	    }
+	    removeFunction(groupObj, action, method) {
+	        let arr = groupObj.get(action);
+	        if (arr) {
+	            for (let i = 0; i < arr.length; i++) {
+	                let h = arr[i];
+	                if (h.method == method) {
+	                    arr.splice(i, 1);
+	                    i--;
+	                }
+	            }
+	            if (arr.length == 0)
+	                groupObj.delete(action);
+	        }
+	    }
+	    removeTargetAll(caller) {
+	        for (let groupObj of this.eventGroup.keys()) {
+	            this.removeTarget(this.eventGroup.get(groupObj), caller);
+	        }
+	    }
+	    removeTarget(groupObj, caller) {
+	        for (const [key, value] of groupObj.entries()) {
+	            for (let i = 0; i < value.length; i++) {
+	                let h = value[i];
+	                if (h.caller == caller) {
+	                    value.splice(i, 1);
+	                    i--;
+	                }
+	            }
+	            if (value.length == 0)
+	                groupObj.delete(key);
+	        }
+	    }
+	    sendGroupAction(group, action, ...args) {
+	        let result = this.sendActionEvent.apply(this, [group, action, ...args]);
+	        if (!result) {
+	            Log.debug("group[" + group + "], action [" + action + "] not exist! Call failure");
+	        }
+	    }
+	    sendAction(action, ...args) {
+	        let result;
+	        for (const groupName of this.eventGroup.keys()) {
+	            let tempResult = this.sendActionEvent.apply(this, [groupName, action, ...args]);
+	            if (tempResult)
+	                result = true;
+	        }
+	        if (!result)
+	            Log.debug("action [" + action + "] not exist! Call failure");
+	    }
+	    sendActionEvent(group, action, ...args) {
+	        let groupObj = this.getGroup(group);
+	        let arr = groupObj.get(action);
+	        if (arr) {
+	            arr.sort((a, b) => a.order || 100 - b.order || 100)
+	                .forEach(value => value.runWith(args));
+	            return true;
+	        }
+	        return false;
+	    }
+	    addBean(key, bean, saveClassName = true) {
+	        if (typeof key !== "string") {
+	            key = this._getClassSign(key);
+	        }
+	        if (StringUtil.isEmpty(key)) {
+	            Log.warn("cannot be empty, key = " + key);
+	            return false;
+	        }
+	        if (this.getView(key)) {
+	            Log.warn("already exist key = " + key + ", add failure!");
+	            return false;
+	        }
+	        this.cacheTarget.set(key, bean);
+	        if (saveClassName) {
+	            this.cacheClassTarget.set(bean.constructor.name, bean);
+	        }
+	        return true;
+	    }
+	    removeBean(key) {
+	        if (!key)
+	            return;
+	        if (typeof key !== "string") {
+	            key = this._getClassSign(key, false);
+	        }
+	        if (StringUtil.isEmpty(key))
+	            return;
+	        this.cacheTarget.delete(key);
+	        this.cacheClassTarget.delete(key.charAt(0).toUpperCase() + key.slice(1));
+	    }
+	    getBean(key) {
+	        var _a;
+	        if (!key)
+	            return;
+	        if (typeof key !== "string") {
+	            key = this._getClassSign(key, false);
+	        }
+	        return (_a = this.cacheTarget.get(key)) !== null && _a !== void 0 ? _a : this.cacheClassTarget.get(key);
+	    }
+	    hasBean(key) {
+	        if (typeof key !== "string") {
+	            key = this._getClassSign(key, false);
+	        }
+	        if (!key)
+	            return false;
+	        return this.cacheTarget.has(key) || this.cacheClassTarget.has(key);
+	    }
+	    addView(key, view) {
+	        if (this.addBean(key, view)) {
+	            if (typeof key !== "string") {
+	                key = this._getClassSign(key);
+	            }
+	            view.setKey(key);
+	            return true;
+	        }
+	        return false;
+	    }
+	    removeView(key) {
+	        if (!key)
+	            return;
+	        if (typeof key !== "string") {
+	            key = key.getKey();
+	        }
+	        this.removeBean(key);
+	    }
+	    getView(key) {
+	        return this.getBean(key);
+	    }
+	    addProxy(key, proxy) {
+	        if (this.addBean(key, proxy)) {
+	            if (typeof key !== "string") {
+	                key = this._getClassSign(key);
+	            }
+	            proxy.setKey(key);
+	            return true;
+	        }
+	        return false;
+	    }
+	    removeProxy(key) {
+	        if (!key)
+	            return;
+	        if (typeof key !== "string") {
+	            key = key.getKey();
+	        }
+	        this.removeBean(key);
+	    }
+	    getProxy(name) {
+	        return this.getBean(name);
+	    }
+	    getMap() {
+	        return this.cacheTarget;
+	    }
+	    /**
+	     * 返回类的唯一标识
+	     */
+	    _getClassSign(cla, create = true) {
+	        let className = cla.name || cla["__className"] || cla["_cacheId"];
+	        if (!className && create) {
+	            cla["_cacheId"] = className = `${App.DEFAULT_CACHE_HEAD}_${EventController._CLSID}`;
+	            EventController._CLSID++;
+	        }
+	        return className;
+	    }
+	}
+	EventController._CLSID = 0;
+	
+	tsCore.EventController = EventController
+	
+	class GSpineSkeleton extends ESkeleton {
+	    constructor(ver = Laya.SpineVersion.v3_8) {
+	        super();
+	        this.ver = ver;
+	    }
+	    createDisplayObject() {
+	        super.createDisplayObject();
+	        this._displayObject = new Laya.SpineSkeleton();
+	        this._displayObject["$owner"] = this;
+	        this["_touchable"] = this._displayObject.mouseEnabled = this._displayObject.mouseThrough = false;
+	        this._displayObject.on(Laya.Event.STOPPED, this, this.onPlayStopped);
+	        this._container = this._displayObject;
+	    }
+	    get asSkeleton() {
+	        return this._displayObject;
+	    }
+	    /**
+	     * 获取spine的Skeleton对象
+	     */
+	    getSkeletonNative() {
+	        // @ts-ignore
+	        return this.asSkeleton.getSkeleton();
+	    }
+	    /**
+	     * 加载json 或 skel格式的骨骼文件
+	     * @param jsonOrSkelUrl
+	     * @param handler 回调方法
+	     * @param ver
+	     */
+	    load(jsonOrSkelUrl, handler, ver) {
+	        this._complete = handler;
+	        this._aniPath = jsonOrSkelUrl;
+	        if (!this.template || (ver && this.ver != ver)) {
+	            this.template = new Laya.SpineTemplet(this.ver);
+	            this.template.on(Laya.Event.COMPLETE, this, this.onComplete);
+	            this.template.on(Laya.Event.ERROR, this, this.onError);
+	        }
+	        this.template.loadAni(jsonOrSkelUrl);
+	    }
+	    onError() {
+	        this._spineResPath = null;
+	    }
+	    onComplete(spine) {
+	        if (spine.loadResUrl != this.aniPath)
+	            return;
+	        this._spineResPath = spine.loadResUrl;
+	        const template = spine !== null && spine !== void 0 ? spine : this.template;
+	        this.asSkeleton.init(template);
+	        // 销毁已有的动画
+	        // for (let i = this.displayObject.numChildren - 1; i >= 0; i--) {
+	        //     let temp = this.displayObject.getChildAt(i)
+	        //     if (temp instanceof SpineSkeleton) {
+	        //         temp.destroy(true)
+	        //     }
+	        // }
+	        // if (this.spineSkeleton) {
+	        //     this.spineSkeleton.hitArea = this.displayObject.hitArea
+	        // }
+	        // this.spineSkeleton.mouseEnabled = this.spineSkeleton.mouseThrough = this.touchable
+	        // this.displayObject.addChild(this.spineSkeleton)
+	        runFun(this._complete, this);
+	    }
+	    set touchable(value) {
+	        // if (this.spineSkeleton) this.spineSkeleton.mouseEnabled = this.spineSkeleton.mouseThrough = this.touchable
+	        super.touchable = value;
+	    }
+	    get touchable() {
+	        return super.touchable;
+	    }
+	    /**
+	     * 通过名字显示一套皮肤
+	     * @param    name    皮肤的名字
+	     */
+	    showSkinByName(name) {
+	        this.asSkeleton.showSkinByName(name);
+	    }
+	    /**
+	     * 通过索引显示一套皮肤
+	     * @param    skinIndex    皮肤索引
+	     */
+	    showSkinByIndex(skinIndex) {
+	        this.asSkeleton.showSkinByIndex(skinIndex);
+	    }
+	    getAniIndexByName(aniName) {
+	        let animations = this.asSkeleton.templet.skeletonData.animations;
+	        let index = -1;
+	        for (let i = 0, n = animations.length; i < n; i++) {
+	            let animation = animations[i];
+	            if (animation && aniName == animation.name) {
+	                index = i;
+	                break;
+	            }
+	        }
+	        return index;
+	    }
+	    getAllAnimation() {
+	        var _a, _b;
+	        return (_b = (_a = this.getSkeletonNative()) === null || _a === void 0 ? void 0 : _a.data) === null || _b === void 0 ? void 0 : _b.animations;
+	    }
+	    getAllSkin() {
+	        var _a, _b;
+	        return (_b = (_a = this.asSkeleton.templet) === null || _a === void 0 ? void 0 : _a.skeletonData) === null || _b === void 0 ? void 0 : _b.skins;
+	    }
+	    getAnimation(aniIndex) {
+	        let animation;
+	        if (typeof aniIndex === "string") {
+	            animation = this.getAllAnimation().find(value => value.name === aniIndex);
+	        }
+	        else
+	            animation = this.getAllAnimation()[aniIndex];
+	        return animation;
+	    }
+	    /**
+	     * 获取动画时长 秒
+	     * @param aniIndex
+	     */
+	    getAnimDuration(aniIndex) {
+	        var _a;
+	        let duration = 0;
+	        if (Array.isArray(aniIndex)) {
+	            for (let i = 0; i < aniIndex.length; i++) {
+	                duration += this.getAnimDuration(aniIndex[i]);
+	            }
+	        }
+	        else
+	            duration = ((_a = this.getAnimation(aniIndex)) === null || _a === void 0 ? void 0 : _a.duration) || 0;
+	        return duration;
+	    }
+	    getAnimFrame(aniIndex) {
+	        return this.getAnimation(aniIndex).timelines.length;
+	    }
+	    get currAniIndex() {
+	        let _currAniName = this.asSkeleton["_currAniName"];
+	        if (!_currAniName)
+	            return -1;
+	        return this.getAniIndexByName(_currAniName);
+	    }
+	    set hitArea(rec) {
+	        // if (this.spineSkeleton) {
+	        //     this.spineSkeleton.hitArea = rec
+	        //     return
+	        // }
+	        this.displayObject.hitArea = rec;
+	    }
+	    on(type, thisObject, listener, args = null) {
+	        if (type == Laya.Event.STOPPED) {
+	            this.stoppedHandler.push(new Laya.Handler(thisObject, listener, args));
+	            return;
+	        }
+	        if (this.asSkeleton) {
+	            this.asSkeleton.on(type, thisObject, listener, args);
+	            return;
+	        }
+	        super.on(type, thisObject, listener, args);
+	    }
+	    off(type, thisObject, listener) {
+	        if (type == Laya.Event.STOPPED) {
+	            for (let i = this.stoppedHandler.length - 1; i > -1; i--) {
+	                const handler = this.stoppedHandler[i];
+	                if (handler.caller == thisObject && handler.method == listener) {
+	                    handler.clear();
+	                    this.stoppedHandler.splice(i, 1);
+	                }
+	            }
+	            return;
+	        }
+	        if (this.asSkeleton) {
+	            this.asSkeleton.off(type, thisObject, listener);
+	            return;
+	        }
+	        super.off(type, thisObject, listener);
+	    }
+	    offAll(type = null) {
+	        if (type == Laya.Event.STOPPED) {
+	            this.stoppedHandler.length = 0;
+	            return;
+	        }
+	        if (this.asSkeleton) {
+	            this.asSkeleton.offAll(type);
+	            return;
+	        }
+	        this.displayObject.offAll(type);
+	    }
+	    dispose() {
+	        super.dispose();
+	    }
+	}
+	
+	tsCore.GSpineSkeleton = GSpineSkeleton
 	
 	class ProxyBlock {
 	    addProxy(key, proxy) {

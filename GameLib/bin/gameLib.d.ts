@@ -782,6 +782,34 @@ declare namespace gameLib {
 	    constructor();
 	}
 	
+	export interface IGameScene {
+	    /** 销毁 */
+	    dispose(): void;
+	    /** 新一局游戏开始 */
+	    startGame(): void;
+	    /** 获取游戏逻辑类 */
+	    gameModel: IGameModel;
+	}
+	
+	export interface IGameModel {
+	    /** 获取游戏番号 */
+	    gameCode: number;
+	    /** 清理游戏资源 */
+	    clearRes(): void;
+	    /** 注入扩展 */
+	    insertExtension(): void;
+	    /** 获取游戏显示类 */
+	    gameScene: IGameScene;
+	    /** 获取游戏显示类 */
+	    gameServlet: IGameServlet;
+	    /** 销毁所有数据 */
+	    dispose(): void;
+	    /** socket推送的数据 */
+	    socketHandler(obj: any): void;
+	    /** socket事件 */
+	    initSocketEvent(): void;
+	}
+	
 	/**
 	 * 游戏请求接口
 	 * @author boge
@@ -866,34 +894,6 @@ declare namespace gameLib {
 	     * 清理收
 	     */
 	    dispose(): void;
-	}
-	
-	export interface IGameModel {
-	    /** 获取游戏番号 */
-	    gameCode: number;
-	    /** 清理游戏资源 */
-	    clearRes(): void;
-	    /** 注入扩展 */
-	    insertExtension(): void;
-	    /** 获取游戏显示类 */
-	    gameScene: IGameScene;
-	    /** 获取游戏显示类 */
-	    gameServlet: IGameServlet;
-	    /** 销毁所有数据 */
-	    dispose(): void;
-	    /** socket推送的数据 */
-	    socketHandler(obj: any): void;
-	    /** socket事件 */
-	    initSocketEvent(): void;
-	}
-	
-	export interface IGameScene {
-	    /** 销毁 */
-	    dispose(): void;
-	    /** 新一局游戏开始 */
-	    startGame(): void;
-	    /** 获取游戏逻辑类 */
-	    gameModel: IGameModel;
 	}
 	
 	export interface ILoadSoundFilter {
@@ -981,1045 +981,6 @@ declare namespace gameLib {
 	    })[]): (string | {
 	        url: string;
 	    })[];
-	}
-	
-	/**
-	 * 统计管理器
-	 * @author boge
-	 */
-	export class AnalyticsManager {
-	    /** 开启数据统计 */
-	    static isOpenAnalytics: boolean;
-	    /** 打开了一个游戏 */
-	    static openGame(): void;
-	    /** 关闭了一个游戏 */
-	    static closeGame(): void;
-	    /** 打开统计 */
-	    static openAnalysis(callback: ParamHandler): void;
-	    /**
-	     * 发送游戏事件
-	     * @param eventAction 互动类型 (默认会添加 _)
-	     * @param eventLabel 事件标签
-	     */
-	    static sendGameAnalysis(eventAction: string, eventLabel?: string): void;
-	    /**
-	     * 向Google Analytics 发送事件
-	     * @param eventAction 事件操作
-	     * @param eventLabel  事件标签
-	     */
-	    static send(eventAction: string, eventLabel?: string): void;
-	    /**
-	     * 向Google Analytics 发送用户用时
-	     * @param timingVar 用于标识要记录的变量
-	     * @param timingValue 向 Google Analytics（分析）报告的，以毫秒为单位的历时时间（例如 20）。
-	     *
-	     */
-	    static sendTiming(timingVar: string, timingValue: number): void;
-	    /**
-	     * 向 Google Analytics 发送事件
-	     * @param type
-	     * @param category
-	     * @param action
-	     * @param label
-	     * @param value
-	     */
-	    static ga(type: gaType, category: string, action: string, label: string, value?: string): void;
-	}
-	type gaType = "pageview" | "event" | "timing" | "social" | "screenview" | "transaction" | "item" | "exception";
-	
-	/**
-	 * 资源管理类
-	 */
-	export class AssetsLoader implements tsCore.IFormatPath {
-	    private static _instance;
-	    static get inst(): AssetsLoader;
-	    static readonly ma: number;
-	    /** 资源配置文件名 */
-	    static CONFIG_RES_NAME: string;
-	    /** 资源配置文件名 */
-	    static DEFAULT_INIT_RES_NAME: any;
-	    /**
-	     * 版本加载路径
-	     * @example
-	     * https://res.game.co/assetsversion.json
-	     */
-	    static VERSION_RES_URL: any;
-	    /** 下载成功 */
-	    private handler;
-	    /** 下载失败 */
-	    private errorHandler;
-	    /** 加载对象 */
-	    private loadObj;
-	    /** 是否是http  */
-	    readonly httpProtocol: boolean;
-	    private runLoads;
-	    /**
-	     * 音频排除格式
-	     */
-	    static soundFilter: ILoadSoundFilter;
-	    /**
-	     * 自定义额外加载操作
-	     * 在加载 versionXml 的时候  额外加载的
-	     * @example
-	     * AssetsLoader.customLoader = (complete: ParamHandler, errorHandler: ParamHandler) => {
-	     *      ...
-	     *     runFun(complete)
-	     * }
-	     *
-	     * AssetsLoader.customLoader = Laya.Handler.create(this, function(complete: ParamHandler, errorHandler: ParamHandler) {
-	     *  ...
-	     *  runFun(complete)
-	     *
-	     * })
-	     */
-	    customLoader: ParamHandler;
-	    /**
-	     * 自定义扩展加载资源处理
-	     *  @example
-	     * AssetsLoader.customLoaderRes = (loadRes: LoadRes[]) => {
-	     *      ...
-	     * }
-	     *
-	     * AssetsLoader.customLoaderRes = Laya.Handler.create(this, function(loadRes: LoadRes[]) {
-	     *  ...
-	     *
-	     * })
-	     */
-	    customLoaderRes: ParamHandler;
-	    /**
-	     * 加载路径格式化
-	     * @deprecated
-	     * @see Path.formatPath
-	     */
-	    static loadPathFormat: tsCore.IFormatPath[];
-	    constructor();
-	    /**
-	     * @deprecated
-	     * @see Path.formatPath
-	     */
-	    static formatUrl: typeof tsCore.Path.formatUrl;
-	    version(url: string, version: string | number): string | number;
-	    /**
-	     * 加载版本控制文件
-	     * @param complete
-	     * @param errorHandler
-	     */
-	    loadVersionXML(complete: ParamHandler, errorHandler: ParamHandler): void;
-	    private loadXMLComplete;
-	    /**
-	     * 加载主要的资源
-	     * @param handler
-	     */
-	    loadMain(handler: ParamHandler): void;
-	    /**
-	     * 加载公共资源
-	     * @param handler
-	     * @param assets
-	     */
-	    loadCommon(handler: ParamHandler, assets?: LoadRes[]): void;
-	    /**
-	     * 加载游戏代码
-	     * @param config 配置表
-	     * @param handler 加载完成
-	     * @param errorHandler 加载失败
-	     */
-	    loadJS(config: string, handler: ParamHandler, errorHandler?: ParamHandler): void;
-	    private loadJsProgress;
-	    /**
-	     * 加载游戏资源
-	     * @param obj 游戏对象
-	     * @param handler 加载完成
-	     * @param errorHandler 加载失败
-	     */
-	    loadRes(obj: ResConfig, handler: ParamHandler, errorHandler?: ParamHandler): void;
-	    /**
-	     * 处理资源
-	     * @param res
-	     * @private
-	     */
-	    private parseRes;
-	    /**
-	     * 检查分支资源更换加载
-	     * @param loadRes 整理好的 加载数据
-	     */
-	    static checkBranch(loadRes: LoadRes[]): void;
-	    private progressComplete;
-	    private loadComplete;
-	    private loadErrorHandler;
-	    /**
-	     * 将一个 loadRes数组对象  添加资源
-	     * @param res
-	     */
-	    addPackages(res: LoadRes[]): boolean;
-	    /**
-	     * 添加游戏UI资源
-	     * @param resKey 资源名字
-	     * @return 成功与否
-	     */
-	    addPackage(resKey: string): boolean;
-	    /** 设置扩展 */
-	    protected insertExt(pkgName: string, resName: string, type: any): void;
-	    protected insertExtUrl(url: string, type: any): void;
-	    /**
-	     * 资源url解析
-	     * @param xmlDocument
-	     */
-	    parseUrl(xmlDocument: XMLDocument): void;
-	    /**
-	     * 合并两个xml
-	     * @param xml 如果有重复并且值不一样  以这个对象内的值为准
-	     * @param xml2
-	     * @private
-	     */
-	    mergeXml(xml: XMLDocument, xml2: XMLDocument): XMLDocument;
-	    /**
-	     * 运行加载资源
-	     */
-	    runLoad(): void;
-	}
-	
-	export class NoticeView extends BaseView {
-	    private richText;
-	    private tempX;
-	    /** 是否在滚动 */
-	    private isRun;
-	    private gameData;
-	    constructor();
-	    protected onInit(): void;
-	    protected addedHandler(): void;
-	    showText(values: any[]): void;
-	    /** 开始滚动 */
-	    private startRun;
-	    private loopHandler;
-	    /** 更新内容 并重置位置 */
-	    private updateNoticeContent;
-	    private stopRun;
-	    /** 重置位置 */
-	    private resetMsgPosition;
-	    dispose(): void;
-	}
-	
-	/**
-	 *
-	 * @author boge
-	 */
-	export class GameModel<T extends IGameData = BaseGameData> extends tsCore.EProxy implements IGameModel {
-	    /**
-	     * @deprecated
-	     */
-	    protected _gameScene: IGameScene;
-	    /**
-	     * @deprecated
-	     */
-	    protected _gameServlet: IGameServlet;
-	    /** 游戏番号 */
-	    protected _gameCode: number;
-	    /** 原始音乐备份 */
-	    protected musicBack: any;
-	    /** 大厅model
-	     * @deprecated
-	     */
-	    private _homeModel;
-	    /** 当前屏幕方向 */
-	    gameScreenType: string;
-	    /** 任务 */
-	    protected tasks: {
-	        args: any;
-	        handler: ParamHandler;
-	    }[];
-	    /** 延迟发送获得bonus通知
-	     * @default 200 ms
-	     */
-	    protected delayGetBonus: number;
-	    /** 延迟下一轮游戏开始通知
-	     * @default 200 ms
-	     */
-	    protected delayNextRound: number;
-	    protected constructor();
-	    initModel(): void;
-	    initSocketEvent(): void;
-	    private onNotice;
-	    /** 通知资金变化 */
-	    private onMoneyChange;
-	    /** 通知信息 */
-	    private onNotification;
-	    /**
-	     * 计划任务
-	     * @param args 参数
-	     * @param handler
-	     */
-	    addTask(args: any, handler: ParamHandler): void;
-	    /**
-	     * 执行一次预计划任务
-	     */
-	    runTask(): void;
-	    /**
-	     * 注册socket 事件
-	     * @param type
-	     * @param callback
-	     */
-	    addSocketEvent(type: number, callback: ParamHandler): void;
-	    removeSocketEvent(type: number): void;
-	    clearRes(): void;
-	    /** 设置游戏音乐 */
-	    protected setupMusic(): void;
-	    /** 还原游戏音乐 */
-	    protected resetMusic(): void;
-	    /** 子类实现 */
-	    insertExtension(): void;
-	    /**
-	     * 通知开奖结束  进入结束流程
-	     *
-	     * @example
-	     *
-	     * this.sendAction(ActionLib.GAME_UPDATE_WIN_VALUE)
-	     * Player.inst.money = this.gameData.currentBalance
-	     * if (this.gameData instanceof BaseSlotGameData) {
-	     *     if (this.gameData.hasReSpin) {
-	     *         Laya.timer.once(this.delayNextRound, this, function () {
-	     *             this.sendAction(ActionLib.GAME_START)
-	     *         })
-	     *         return
-	     *     }
-	     *     if (this.gameData.isFreeModel && this.gameData.freeCount > 0) { //如果在特殊场景里面
-	     *         Laya.timer.once(this.delayNextRound, this, function () {
-	     *             this.sendAction(ActionLib.GAME_START)
-	     *         })
-	     *         return
-	     *     }
-	     *     // 开出三个免费游戏启动项目  并且服务端告诉有免费游戏
-	     *     if (this.gameData.freeBoundsCount >= 3 && this.gameData.hasFreeSpin != 0) {
-	     *         this.gameData.tempServerWinMoney = this.gameData.serverWinMoney
-	     *         // 交给scene处理
-	     *         Laya.timer.once(this.delayGetBonus, this, () => {
-	     *             this.sendAction(ActionLib.GAME_START)
-	     *         })
-	     *         return
-	     *     }
-	     *     // 如果是开大奖结束  显示总共赢的钱
-	     *     if (this.gameData.hasFreeSpin != 0) {
-	     *         this.gameData.hasFreeSpin = 0
-	     *         this.sendAction(ActionLib.GAME_SHOW_FREE_OUT_WINDOW)
-	     *         return
-	     *     }
-	     * }
-	     * this.sendAction(ActionLib.GAME_ALL_BTN_CHANGE_STATE, false)
-	     * this.sendAction(ActionLib.GAME_START)
-	     *
-	     */
-	    protected lotteryComplete(): void;
-	    /** 游戏进入后台执行 */
-	    blurGame(): void;
-	    /** 游戏进入前台执行 */
-	    focusGame(): void;
-	    get gameScene(): IGameScene;
-	    get gameServlet(): IGameServlet;
-	    /**
-	     * 已做以下处理
-	     * @example
-	     * ● 清除该类所有的定时器
-	     * ● 还原默认的声音开关配置
-	     * ● super.dispose()
-	     *
-	     */
-	    dispose(): void;
-	    set gameCode(value: number);
-	    get gameCode(): number;
-	    socketHandler(obj: any): void;
-	    /**
-	     * @deprecated
-	     */
-	    get homeModel(): IHomeModel;
-	    /**
-	     * @deprecated
-	     */
-	    set gameScene(value: IGameScene);
-	    /**
-	     * @deprecated
-	     */
-	    set gameServlet(value: IGameServlet);
-	    protected get gameData(): T;
-	    /**
-	     * @deprecated
-	     */
-	    protected set gameData(value: T);
-	}
-	
-	export class BaseWindow<T extends BaseGameData = BaseGameData> extends tsCore.EWindow {
-	    /**
-	     * 是否在关闭窗口的时候  发送 ActionLib.GAME_RUN_SCENE_EVENT
-	     * @default false
-	     */
-	    isRunSceneEvent: boolean;
-	    protected closeEventHandler(): void;
-	    protected onHide(): void;
-	    protected get gameData(): T;
-	    /**
-	     * @deprecated
-	     */
-	    protected set gameData(value: T);
-	}
-	
-	/** 提示框 */
-	export class HomePrompt<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
-	    private static _instance;
-	    static get instance(): HomePrompt<BaseGameData>;
-	    /** 当前显示面板控制器 */
-	    private controller;
-	    /** ok按钮 */
-	    private okBtn;
-	    /** 取消 */
-	    private cancelBtn;
-	    /** 显示的内容 */
-	    private message;
-	    private callback;
-	    private cancelCallback;
-	    constructor();
-	    protected onInit(): void;
-	    private cancelHandler;
-	    private okHandler;
-	    protected onShown(): void;
-	    /**
-	     * 显示提示框
-	     * @param code 0 公告提示框 1两个选择按钮提示
-	     * @param content 显示内容 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
-	     * @param callback 确定调用函数
-	     * @param cancelCallback 取消调用函数
-	     * @param obj 附带设置 (okName:'', cancelName:'')
-	     *
-	     */
-	    showTip(code: number, content: string | number | any[], callback?: Function, cancelCallback?: Function, obj?: any): void;
-	    hideRecord(): void;
-	}
-	
-	export class HtmlWindow extends fgui.Window implements tsCore.IRecord {
-	    private static _instance;
-	    static get inst(): HtmlWindow;
-	    private closeHandler;
-	    /** 页面名字 */
-	    private htmlText;
-	    private btn;
-	    private obj;
-	    private tempX;
-	    private tempY;
-	    /** 加载动画控制器 */
-	    private loadMovieClip;
-	    protected onInit(): void;
-	    protected onShown(): void;
-	    private sizeChangeHandler;
-	    /**
-	     * 新打开一个html浏览窗口
-	     * @param url 加载地址
-	     * @param full 是否全屏
-	     * @param closeHandler 此界面关闭后回调
-	     */
-	    openHtml(url: string, full?: boolean, closeHandler?: ParamHandler): void;
-	    /**
-	     * 弹出一个html浏览窗口
-	     * @param url 加载地址
-	     * @param full 是否全屏
-	     * @param closeHandler 此界面关闭后回调
-	     *
-	     */
-	    showTip(url: string, full?: boolean, closeHandler?: ParamHandler): void;
-	    private popFullIframeHandler;
-	    /** 修正宽高 */
-	    _syncInputTransform(): void;
-	    share(type: number, url: string, content: string): void;
-	    hide(): void;
-	    hideRecord(): void;
-	    showRecord(): void;
-	}
-	
-	/** 状态吗获取显示信息 */
-	export class StateCode {
-	    /**
-	     * 获取显示信息
-	     * @param data 一个object对象  如果带有message错误文字  直接使用 否则用code命令获取错误内容
-	     */
-	    static getShowMessage(data?: HttpResponse): any;
-	    /**
-	     * 显示错误信息
-	     * @param code 错误代号
-	     */
-	    static getInfo(code: number): string;
-	    /**
-	     * 此错误是后在执行范围内
-	     * @param code 执行错误代码
-	     * @param msg 提示文案或具有错误信息的object *.msg *.message
-	     */
-	    static execute(code: number, msg?: string | any): boolean;
-	    /** 游戏暂停中，返回大厅 */
-	    static showGameOff(): void;
-	}
-	
-	/** 加载界面 */
-	export class LoadingWindow extends BaseView {
-	    private static _instance;
-	    static get inst(): LoadingWindow;
-	    private headText;
-	    private loader;
-	    private mesText;
-	    /** 当前进度 */
-	    private tempValue;
-	    private dian;
-	    private controller;
-	    protected onInit(): void;
-	    /**
-	     * 显示加载页
-	     * @param index 显示的形式
-	     * @param headText 使用头文本
-	     *
-	     */
-	    show(index?: number, headText?: string): void;
-	    /**
-	     * 切换显示状态
-	     * @param index 显示的形式
-	     * @param headText 使用头文本
-	     */
-	    changeView(index?: number, headText?: string): void;
-	    private changeHandler;
-	    /**
-	     * 更新进度
-	     * @param value 当前模块进度值
-	     * @param tempCount 当前加载进度模块 1 开始
-	     * @param totalCount 总共要加载的模块数
-	     */
-	    updateMsg(value: number, tempCount?: number, totalCount?: number): void;
-	    /**
-	     * 更新进度
-	     * @param value 当前模块进度值
-	     * @param tempCount 当前加载进度模块 1 开始
-	     * @param totalCount 总共要加载的模块数
-	     */
-	    static getProgress(value: number, tempCount?: number, totalCount?: number): number;
-	    /**
-	     * 显示加载错误提示
-	     * @param value
-	     *
-	     */
-	    showError(value: string): void;
-	    private getMsg;
-	    /** 替换加载图片 */
-	    loaderUrl(url: string): void;
-	    hide(): void;
-	}
-	
-	/**
-	 * 游戏基础类
-	 * @author boge
-	 */
-	export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends tsCore.EProxy implements IGameServlet {
-	    protected _gameModel: IGameModel;
-	    protected initHandler: ParamHandler;
-	    /** 当前访问接口获得游戏状态 */
-	    protected gameStatus: number;
-	    /** 网络通信名字 */
-	    networkName: string;
-	    /**
-	     * 全局外部定义的初始化
-	     *
-	     * 在执行onUserData()前 gameStatus检查状态后执行
-	     *
-	     * 有返回表示 出现错误
-	     */
-	    static customInit: (fun: (result: CustomResult) => void) => void;
-	    /**
-	     * 全局自定义解析用户返回信息的data属性
-	     *
-	     * 在 parseInitData 方法前执行
-	     */
-	    static customParseUser: (data: any) => void;
-	    constructor();
-	    protected get gameData(): T;
-	    /**
-	     * @deprecated
-	     */
-	    protected set gameData(value: T);
-	    /**
-	     * 封装的get请求
-	     *
-	     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
-	     *
-	     * @param url 使用 Player.inst.data.getGameUrl 格式化的url
-	     * @param data
-	     * @param callback
-	     * @param error
-	     * @param timeout
-	     * @deprecated
-	     * @see getData
-	     */
-	    getURL(url: string, data: any, callback?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler): void;
-	    /**
-	     * 封装的get请求
-	     *
-	     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
-	     *
-	     * @param url 使用 Player.inst.data.getGameUrl 格式化的url
-	     * @param data
-	     * @param callback
-	     * @param error
-	     * @param timeout
-	     * @param [overtime = 0] 超时时间设置 毫秒
-	     */
-	    getData(url: string, data: any, callback?: HttpOnComplete, error?: HttpOnError, timeout?: HttpOnTimeout, overtime?: number): void;
-	    /**
-	     * post 请求
-	     *
-	     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
-	     * @param url 请求连接 使用Player.inst.data.getGameUrl()格式化的url
-	     * @param data 请求数据
-	     * @param callback 请求完成返回调用函数
-	     * @param error 错误调用函数
-	     * @param timeout 超时回调函数
-	     * @param headers (default = null) HTTP 请求的头部信息。参数形如key-value数组：key是头部的名称，不应该包括空白、冒号或换行；value是头部的值，不应该包括换行。比如["Content-Type", "application/json"]。
-	     * @param overtime
-	     * @deprecated
-	     * @see postData
-	     */
-	    post(url: string, data: any, callback?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler, headers?: string[], overtime?: number): void;
-	    /**
-	     * post 请求
-	     *
-	     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
-	     * @param url 请求连接 使用Player.inst.data.getGameUrl()格式化的url
-	     * @param data 请求数据
-	     * @param callback 请求完成返回调用函数
-	     * @param error 错误调用函数
-	     * @param timeout 超时回调函数
-	     * @param headers (default = null) HTTP 请求的头部信息。参数形如key-value数组：key是头部的名称，不应该包括空白、冒号或换行；value是头部的值，不应该包括换行。比如["Content-Type", "application/json"]。
-	     * @param [overtime = 0] 超时时间设置 毫秒
-	     */
-	    postData(url: string, data: any, callback?: HttpOnComplete, error?: HttpOnError, timeout?: HttpOnTimeout, headers?: string[], overtime?: number): void;
-	    /**
-	     *
-	     * @param handler
-	     */
-	    checkState(handler: ParamHandler): void;
-	    /**
-	     * 进入游戏失败 执行退出游戏
-	     * @param [isTip = true] 是否需要弹窗
-	     * @param message 弹窗内容
-	     * @param request
-	     */
-	    protected enterFail(isTip?: boolean, message?: string, request?: tsCore.AjaxRequest): void;
-	    init(handler: ParamHandler): void;
-	    /**
-	     * 请求初始化游戏
-	     */
-	    postInit(succeed: HttpOnComplete, error: HttpOnError): void;
-	    /** 连接该游戏的socket */
-	    protected connectSocket(): void;
-	    protected userDataErrorHandler(data: any, request: tsCore.AjaxRequest): void;
-	    /** 用户数据 */
-	    protected userDataHandler(response: HttpResponse, request: tsCore.AjaxRequest): void;
-	    nextInit(): void;
-	    /**
-	     * 用户信息初始化完成 返回false表示 出现错误
-	     */
-	    onUserData(value: (result: CustomResult) => void): void;
-	    /**
-	     * 读取奖金池数据
-	     * @param data
-	     */
-	    readJackpotData(data: HttpData): void;
-	    /**
-	     * 获取优惠券信息的函数。
-	     * @param onComplete - 请求完成后的回调函数，参数为从服务器返回的数据。
-	     * @param error - 请求发生错误时的回调函数，参数为错误信息。
-	     */
-	    getCoupon(onComplete?: ParamHandler, error?: ((data: any) => void)): void;
-	    /** 收到投注劵数据 */
-	    protected couponHandler(handler: ParamHandler, data: HttpResponse, request?: tsCore.AjaxRequest): void;
-	    initComplete(): void;
-	    /**
-	     * 解析初始化数据
-	     * @param data
-	     *
-	     */
-	    protected abstract parseInitData(data: any): any;
-	    /**
-	     * 拉取账户金额
-	     * @param callback
-	     * @param error
-	     */
-	    getUserMoney(callback: ParamHandler, error?: ParamHandler): void;
-	    /**
-	     * 检查游戏期数
-	     * @param handler
-	     *
-	     */
-	    checkGamePeriod(handler: ParamHandler): void;
-	    /**
-	     * 发送bet数据
-	     * @param url
-	     * @param data
-	     * @param callback
-	     */
-	    sendBet(url: string, data: any, callback: HttpOnComplete): void;
-	    /**
-	     * 处理发送bet请求时的错误。
-	     */
-	    protected onSendBetError(msg: any, request: tsCore.AjaxRequest): void;
-	    /**
-	     * 领取奖金池
-	     * @param id
-	     * @param handler
-	     */
-	    jackPotClaim(id: string, handler: Laya.Handler | ((remove: boolean, win: number) => void)): void;
-	    protected jackPotClaimHandler(handler: Laya.Handler | ((remove: boolean, win: number) => void), response: HttpResponse, request?: tsCore.AjaxRequest): void;
-	    /**
-	     * 显示获取的非200的结果显示弹窗
-	     * @param data 服务器返回的完整数据
-	     * @param [closeGame=true] 是否关闭游戏
-	     * @param request
-	     */
-	    protected showNotResult(data: any, closeGame?: boolean, request?: tsCore.AjaxRequest): void;
-	    get gameModel(): IGameModel;
-	    set gameModel(value: IGameModel);
-	    dispose(): void;
-	}
-	
-	export class GameConfigKit {
-	    /**
-	     * 在window上配置的属性名字
-	     * @default gameIdConfig
-	     */
-	    static CONFIG_NAME: string;
-	    /**
-	     * 场景初始化完成 自动通知加载完成并关闭加载页
-	     * @type {boolean}
-	     * @default true
-	     */
-	    static autoSendOnLoadEnd: boolean;
-	    /**
-	     * 获取游戏配置表
-	     */
-	    static gameConfig(): {
-	        [key: number]: string;
-	    };
-	    /**
-	     * 根据游戏id获取配置的游戏名 如果没有 null
-	     * @param [code=0] 不传将使用当前已经打开游戏id
-	     */
-	    static gameName(code?: number): string;
-	    /**
-	     * 获取游戏名字的标准样式
-	     * @param [code=null] 游戏id 不填将使用当前已在用得到游戏id
-	     * @param [format=null] 格式化样式，将空白替换成指定的值 不设置将用驼峰命名
-	     */
-	    static gameNameCanonical(code?: number, format?: string): string;
-	    /**
-	     * 根据游戏名获取游戏id 如果不存在返回-1
-	     * @param [name=null]
-	     */
-	    static gameCode(name?: string): number;
-	    /**
-	     * 获取游戏配置数据
-	     * @param [name=null] 游戏名字,如果不传，将获取当前打开游戏名字
-	     * @param [ignoreCase=false] 是否忽略名字大小写
-	     */
-	    static gameRes(name?: string, ignoreCase?: boolean): ResConfig;
-	}
-	
-	export class JSUtils {
-	    /**
-	     * 在处理 /开头的url 是否自动转义 成完整路径
-	     */
-	    static autoEscapeURL: boolean;
-	    /**
-	     * 刷新页面  如果有父页面  刷新父页面
-	     */
-	    static reloadAll(): void;
-	    /** 刷新 */
-	    static reload(): void;
-	    /** 进入登录界面 /login */
-	    static login(): void;
-	    /** 充值 /deposit */
-	    static deposit(): void;
-	    /** 进入刮刮卡 /jackpot */
-	    static jackpot(): void;
-	    /**
-	     * 打开指定的web页面 不关闭游戏的前提下
-	     * @param value
-	     * @deprecated
-	     * @see openPage
-	     */
-	    static openWebPageWithoutLeaveGame(value: string): void;
-	    /** 关闭游戏
-	     * @param [type = 0]  0 默认直接退出  1 退出切换到新游戏
-	     * @param [data = null]
-	     * */
-	    static gameClose(type?: number, data?: any): void;
-	    /**
-	     * 弹窗
-	     * @param msg 内容文本
-	     * @param title 标题
-	     * @param okText ok文本
-	     * @param cancelText 取消文本
-	     */
-	    static alert(msg: string, title?: string, okText?: string, cancelText?: string): void;
-	    /**
-	     * 打开一个原生页面
-	     * @param page 页面 如： "/giftPage?token=***"
-	     * login,register,userSetting,webDetail,gameDetail,editNickName,forgetMain,changePwd,home,deposit,promotion,withdraw,profile
-	     * @param [isCloseGame=true] 是否关闭游戏
-	     *
-	     * @example
-	     *
-	     * openPage("//{host}/{lang}/page") = url= //www.google.com/en/page
-	     *
-	     *
-	     */
-	    static openPage(page: string | OpenPage, isCloseGame?: boolean): void;
-	    static callMethod(methodName: string, args?: any[]): void;
-	    /** 进入游戏进度条 */
-	    static progress(value: number): void;
-	    /**
-	     * 原生应用获取顶部的刘海屏高度
-	     *
-	     */
-	    static getSafeAreaTop(): number;
-	    static getProgress: typeof JSUtils.progress;
-	    /** 通知进入游戏了 */
-	    static gameOnload(): void;
-	    /** 上传头像 */
-	    static uploadAvatar(): void;
-	    /**
-	     * @deprecated
-	     * @see JSUtils.uploadAvatar
-	     */
-	    static updateHead: typeof JSUtils.uploadAvatar;
-	    /**
-	     * @deprecated
-	     * @see JSUtils.alert
-	     */
-	    static openModal: typeof JSUtils.alert;
-	}
-	
-	/**
-	 * 游戏类型
-	 */
-	export enum GameType {
-	    /** 正常游戏 */
-	    NORMAL = 0,
-	    /** 连线游戏 */
-	    SLOT = 1,
-	    /** 连线游戏,单独的bet bet值和线数量无关 */
-	    SLOT_SINGLE_BET = 2
-	}
-	/**
-	 * 游戏数据的基类
-	 */
-	export class BaseGameData implements IGameData {
-	    /**
-	     * 服务器返回的当前本金
-	     */
-	    currentBalance: number;
-	    /** 最后盈利总额 */
-	    totalWinMoneyLast: number;
-	    /** 本轮总盈利额 */
-	    totalWinMoney: number;
-	    /** 服务器返回当前盈利额 */
-	    serverWinMoney: number;
-	    /**
-	     * 玩的次数
-	     */
-	    playCount: number;
-	    /**
-	     * 推荐
-	     */
-	    isRecommend: boolean;
-	    /**
-	     * 是否已启动特殊游戏模式
-	     */
-	    specialMode: boolean;
-	    /**
-	     * 游戏类型
-	     * @see GameType
-	     */
-	    gameType: GameType;
-	    attachedDebugData: any;
-	    /** 是否快速播放 */
-	    protected _isTurboMode: boolean;
-	    /** 缓存的下注值 */
-	    cacheAnte: any;
-	    /** 默认bet位置 */
-	    defaultBetIndex: number;
-	    /** 缓存 后端计算 当前盈利 */
-	    tempServerWinMoney: number;
-	    /** 当前玩家选择的自动bet次数 */
-	    autoBetCount: number;
-	    /** 当前玩家选择的自动bet次数 (缓存) */
-	    tempAutoBetCount: number;
-	    /** bet 额度切换值 */
-	    betMoney: any[];
-	    /** 当前bet值 */
-	    betValue: number;
-	    /** 开奖结果 */
-	    lotteryId: any[];
-	    /** 通知数据 */
-	    noticeData: any[];
-	    /**
-	     * 重置默认bet值
-	     * @default false
-	     */
-	    isResetBetValue: boolean;
-	    constructor();
-	    get isTurboMode(): boolean;
-	    set isTurboMode(value: boolean);
-	    /**
-	     * 获取 Skeleton 播放速率
-	     */
-	    getPlaybackRate(): 1 | 2;
-	    /**
-	     * 将传入参数计算加速后的值
-	     * @param value 获取转换时间
-	     * @param [rate=-1] 需要加速的速率 如果是-1将调用 getPlaybackRate 获取默认速率
-	     *
-	     * @see getPlaybackRate
-	     */
-	    convertPlaybackRate(value: number, rate?: number): number;
-	    /**
-	     * 总金额 default BaseGameData.betValue
-	     */
-	    getTotalBetMoney(): number;
-	    /**
-	     * 获取赢钱动画 的播放时长
-	     * @param level 播放时长等级 0开始
-	     */
-	    getWinMoneyAniDuration(level: number): number;
-	    /**
-	     * 是否达到 BigWin 的值
-	     * @param [isTotal=false] 是否看总金额
-	     * @param [multiple=10] 倍数
-	     * @return
-	     */
-	    isBigWin(isTotal?: boolean, multiple?: number): boolean;
-	    /**
-	     * 是否达到 MegaWin 的值
-	     * @param [isTotal=false] 是否看总金额
-	     * @param [multiple=30] 倍数
-	     * @return
-	     */
-	    isMegaWin(isTotal?: boolean, multiple?: number): boolean;
-	    /**
-	     * 是否达到 SuperWin 的值
-	     * @param [isTotal=false] 是否看总金额
-	     * @param [multiple=60] 倍数
-	     */
-	    isSuperWin(isTotal?: boolean, multiple?: number): boolean;
-	    reportError(): string;
-	}
-	
-	/** 提示框 */
-	export class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
-	    protected static _instance: PromptWindow;
-	    static get inst(): PromptWindow<BaseGameData>;
-	    protected titleText?: fgui.GTextField;
-	    protected content?: fgui.GTextField;
-	    /** 确定取消 */
-	    protected cancelBtn?: fgui.GButton;
-	    protected closeBtn?: fgui.GButton;
-	    /** 确定 */
-	    protected continueBtn?: fgui.GButton;
-	    /** 提示框的击中类型 */
-	    protected buttonController: fgui.Controller;
-	    /** 标题显示控制器 */
-	    protected titleDisplayController: fgui.Controller;
-	    /**
-	     * 关闭按钮显示控制器
-	     */
-	    protected closeButtonDisplayController: fgui.Controller;
-	    protected closeFun: ParamHandler;
-	    protected continueFun: ParamHandler;
-	    protected callback: ParamHandler;
-	    /** 缓存的提示框 */
-	    protected cacheMessage: PromptData[];
-	    constructor();
-	    protected onInit(): void;
-	    protected continueHandler(): void;
-	    protected closeHandler(): void;
-	    protected cancelHandler(): void;
-	    protected onHide(): void;
-	    /** 结束回调 */
-	    endCallHandler(): void;
-	    /** 清理缓存 */
-	    clearCache(): void;
-	    /**
-	     * 带确认按钮的提示框
-	     * @param msg 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
-	     * @param callback 确定回调方法
-	     * @param isAction 动画显示或关闭
-	     *
-	     * @see LibStr
-	     * @see ActionLib.GAME_SHOW_PROMPT_WINDOW
-	     */
-	    showTip(msg: string | number | any[] | PromptData, callback?: ParamHandler, isAction?: boolean): void;
-	    /**
-	     * 带确认 取消按钮的提示框
-	     * @param msg 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
-	     * @param options 附带设置 (okName:'', cancelName:'')
-	     * @param callback 取消回调方法
-	     * @param continueFun 确定回调方法
-	     * @param isAction 动画显示或关闭
-	     * @see LibStr
-	     * @see ActionLib.GAME_SHOW_PROMPT_CANCEL_WINDOW
-	     */
-	    showCancelTip(msg: string | number | any[], options?: IPromptData, callback?: ParamHandler, continueFun?: ParamHandler, isAction?: boolean): void;
-	    protected _showWindow(msg: string | number | any[] | PromptData, options?: IPromptData, callback?: ParamHandler, continueFun?: ParamHandler, isAction?: boolean): void;
-	    protected _show(data: PromptData): void;
-	    protected setControllers(data: PromptData): void;
-	    dispose(): void;
-	    /**
-	     * 判断是否是接口 用 prototype 是否存在判断
-	     * @param optional
-	     */
-	    isPromptData(optional: any): optional is PromptData;
-	}
-	
-	/** 文案提示 */
-	export class PromptTip extends tsCore.ELabel {
-	    private target;
-	    private downward;
-	    protected onInit(): void;
-	    static createPromptTip(): PromptTip;
-	    /**
-	     * 显示提示文本
-	     * @param comp 绑定显示按钮位置
-	     * @param downward 是否在下面
-	     */
-	    show(comp: fgui.GComponent, downward?: any): void;
-	    private showViewHandler;
-	    hide(): void;
-	    private updatePoint;
-	    dispose(): void;
-	}
-	
-	export class ActivityButton extends tsCore.EButton {
-	    private tempValue;
-	    private clickInvalid;
-	    callback: ParamHandler;
-	    private contentText;
-	    /** 当没有优惠卷使用的时候 是否自动隐藏 */
-	    isAutoHide: boolean;
-	    /** 自定义更新文字显示 */
-	    updateText: ParamHandler;
-	    protected onConstruct(): void;
-	    private stopUseActivityHandler;
-	    private useActivityHandler;
-	    private updateShow;
-	    /**
-	     * 设置角标
-	     * @param value 剩余数量
-	     */
-	    setCorner(value: number): void;
-	    private clickHandler;
-	    private addedHandler;
-	    /** 打开拖动 */
-	    openDrag(): void;
-	    private onDragEnd;
-	    private onDragStart;
 	}
 	
 	/** 游戏主页必须继承的类 */
@@ -2199,6 +1160,1062 @@ declare namespace gameLib {
 	     * @param value
 	     */
 	    protected loadFillImage(value: any): void;
+	}
+	
+	/** 加载界面 */
+	export class LoadingWindow extends BaseView {
+	    private static _instance;
+	    static get inst(): LoadingWindow;
+	    private headText;
+	    private loader;
+	    private mesText;
+	    /** 当前进度 */
+	    private tempValue;
+	    private dian;
+	    private controller;
+	    protected onInit(): void;
+	    /**
+	     * 显示加载页
+	     * @param index 显示的形式
+	     * @param headText 使用头文本
+	     *
+	     */
+	    show(index?: number, headText?: string): void;
+	    /**
+	     * 切换显示状态
+	     * @param index 显示的形式
+	     * @param headText 使用头文本
+	     */
+	    changeView(index?: number, headText?: string): void;
+	    private changeHandler;
+	    /**
+	     * 更新进度
+	     * @param value 当前模块进度值
+	     * @param tempCount 当前加载进度模块 1 开始
+	     * @param totalCount 总共要加载的模块数
+	     */
+	    updateMsg(value: number, tempCount?: number, totalCount?: number): void;
+	    /**
+	     * 更新进度
+	     * @param value 当前模块进度值
+	     * @param tempCount 当前加载进度模块 1 开始
+	     * @param totalCount 总共要加载的模块数
+	     */
+	    static getProgress(value: number, tempCount?: number, totalCount?: number): number;
+	    /**
+	     * 显示加载错误提示
+	     * @param value
+	     *
+	     */
+	    showError(value: string): void;
+	    private getMsg;
+	    /** 替换加载图片 */
+	    loaderUrl(url: string): void;
+	    hide(): void;
+	}
+	
+	export class JSUtils {
+	    /**
+	     * 在处理 /开头的url 是否自动转义 成完整路径
+	     */
+	    static autoEscapeURL: boolean;
+	    /**
+	     * 刷新页面  如果有父页面  刷新父页面
+	     */
+	    static reloadAll(): void;
+	    /** 刷新 */
+	    static reload(): void;
+	    /** 进入登录界面 /login */
+	    static login(): void;
+	    /** 充值 /deposit */
+	    static deposit(): void;
+	    /** 进入刮刮卡 /jackpot */
+	    static jackpot(): void;
+	    /**
+	     * 打开指定的web页面 不关闭游戏的前提下
+	     * @param value
+	     * @deprecated
+	     * @see openPage
+	     */
+	    static openWebPageWithoutLeaveGame(value: string): void;
+	    /** 关闭游戏
+	     * @param [type = 0]  0 默认直接退出  1 退出切换到新游戏
+	     * @param [data = null]
+	     * */
+	    static gameClose(type?: number, data?: any): void;
+	    /**
+	     * 弹窗
+	     * @param msg 内容文本
+	     * @param title 标题
+	     * @param okText ok文本
+	     * @param cancelText 取消文本
+	     */
+	    static alert(msg: string, title?: string, okText?: string, cancelText?: string): void;
+	    /**
+	     * 打开一个原生页面
+	     * @param page 页面 如： "/giftPage?token=***"
+	     * login,register,userSetting,webDetail,gameDetail,editNickName,forgetMain,changePwd,home,deposit,promotion,withdraw,profile
+	     * @param [isCloseGame=true] 是否关闭游戏
+	     *
+	     * @example
+	     *
+	     * openPage("//{host}/{lang}/page") = url= //www.google.com/en/page
+	     *
+	     *
+	     */
+	    static openPage(page: string | OpenPage, isCloseGame?: boolean): void;
+	    static callMethod(methodName: string, args?: any[]): void;
+	    /** 进入游戏进度条 */
+	    static progress(value: number): void;
+	    /**
+	     * 原生应用获取顶部的刘海屏高度
+	     *
+	     */
+	    static getSafeAreaTop(): number;
+	    static getProgress: typeof JSUtils.progress;
+	    /** 通知进入游戏了 */
+	    static gameOnload(): void;
+	    /** 上传头像 */
+	    static uploadAvatar(): void;
+	    /**
+	     * @deprecated
+	     * @see JSUtils.uploadAvatar
+	     */
+	    static updateHead: typeof JSUtils.uploadAvatar;
+	    /**
+	     * @deprecated
+	     * @see JSUtils.alert
+	     */
+	    static openModal: typeof JSUtils.alert;
+	}
+	
+	/**
+	 * 游戏数据
+	 */
+	export interface IGameData {
+	    /** 总共要投注的钱 */
+	    getTotalBetMoney(): number;
+	    /** 上报错误数据 */
+	    reportError(): any;
+	    /**
+	     * 附带调试数据
+	     */
+	    attachedDebugData: any;
+	    /** 服务器发来的当前余额 */
+	    currentBalance: number;
+	    /** 本次总共盈利 */
+	    totalWinMoney?: number;
+	    /** 后端计算   当前盈利 */
+	    serverWinMoney?: number;
+	    /** 玩的次数 计数 */
+	    playCount: number;
+	    /** 是否已经弹出过一次推荐正式场的游戏 */
+	    isRecommend?: boolean;
+	    /**
+	     * 当前是否在特殊模式
+	     * @default false
+	     */
+	    specialMode: boolean;
+	    /**
+	     * 游戏类型
+	     * @default GameType.NORMAL
+	     */
+	    gameType: GameType;
+	}
+	export interface IData {
+	    /** 国家 'ke'肯尼亚；'ug'乌干达, 'ng'尼日尼亚 */
+	    country: string;
+	    /** 语言 en zh-CN */
+	    language: string;
+	    /** 渠道平台 */
+	    channel: string;
+	    /** 用户昵称是否是第一次改名，0 是，1 不是  */
+	    isFirstNick: boolean;
+	    /** 该账号是否是第一次登录，0 是，1 不是  */
+	    isFirstLogin: boolean;
+	    /** 开奖时间戳(s) */
+	    lotteryTime: number;
+	    /** 缓存初始化开奖期数  */
+	    initPeriod: number;
+	    /** 当前开奖期数  */
+	    period: number;
+	    /** 进入房间后  当前房间总投注信息  (只有进入房间的时候才使用) */
+	    initRoomTotalItem: any[];
+	    /** 进入房间后  当前房间自己投注信息  (只有进入房间的时候才使用) */
+	    initRoomCurBet: any[];
+	    /** 初始化奖金池数据(只有进入房间的时候才使用) */
+	    jackpot: number;
+	    /** 上次发送聊天数据时间 s */
+	    oldSendChatTimer: number;
+	    /** 开奖历史 */
+	    betHistory: any[];
+	    /** 当前历史次数 */
+	    betStatic: any[];
+	    /** 获取完整的wap请求url */
+	    getWapUrl(url: string): string;
+	    /** 获取完整的game请求 带版本号  url */
+	    getGameUrl(url: string): string;
+	    /**
+	     * 获取国家编码 国家 'ke'肯尼亚；'ug'乌干达, 'ng'尼日尼亚
+	     * @param urlParam
+	     */
+	    getCountry(urlParam: UrlParam): string;
+	    /**
+	     * 获取错误上传地址
+	     */
+	    getErrorUrl(): string;
+	}
+	/**
+	 * 登录接口
+	 */
+	export interface ILogin {
+	    /** 使用Token登录 并获取用户数据 */
+	    loginToken(callback: ParamHandler): void;
+	}
+	/**
+	 * 游戏模式
+	 */
+	export interface IGuestModel {
+	    /** 游客id */
+	    guestUID: number;
+	    /** 游客模式玩次数 */
+	    guestPlayCount: number;
+	    /**
+	     * 游客初始金额
+	     */
+	    guestInitMoney: number;
+	    /** 清除数据  */
+	    clearData(): void;
+	    /**
+	     * post请求 返回数据  可以在这里对返回数据进行修改
+	     * @param url 访问网址
+	     * @param data 押注额度
+	     */
+	    playAdd(url: string, data: HttpData): void;
+	}
+	
+	/**
+	 * 游戏类型
+	 */
+	export enum GameType {
+	    /** 正常游戏 */
+	    NORMAL = 0,
+	    /** 连线游戏 */
+	    SLOT = 1,
+	    /** 连线游戏,单独的bet bet值和线数量无关 */
+	    SLOT_SINGLE_BET = 2
+	}
+	/**
+	 * 游戏数据的基类
+	 */
+	export class BaseGameData implements IGameData {
+	    /**
+	     * 服务器返回的当前本金
+	     */
+	    currentBalance: number;
+	    /** 最后盈利总额 */
+	    totalWinMoneyLast: number;
+	    /** 本轮总盈利额 */
+	    totalWinMoney: number;
+	    /** 服务器返回当前盈利额 */
+	    serverWinMoney: number;
+	    /**
+	     * 玩的次数
+	     */
+	    playCount: number;
+	    /**
+	     * 推荐
+	     */
+	    isRecommend: boolean;
+	    /**
+	     * 是否已启动特殊游戏模式
+	     */
+	    specialMode: boolean;
+	    /**
+	     * 游戏类型
+	     * @see GameType
+	     */
+	    gameType: GameType;
+	    attachedDebugData: any;
+	    /** 是否快速播放 */
+	    protected _isTurboMode: boolean;
+	    /** 缓存的下注值 */
+	    cacheAnte: any;
+	    /** 默认bet位置 */
+	    defaultBetIndex: number;
+	    /** 缓存 后端计算 当前盈利 */
+	    tempServerWinMoney: number;
+	    /** 当前玩家选择的自动bet次数 */
+	    autoBetCount: number;
+	    /** 当前玩家选择的自动bet次数 (缓存) */
+	    tempAutoBetCount: number;
+	    /** bet 额度切换值 */
+	    betMoney: any[];
+	    /** 当前bet值 */
+	    betValue: number;
+	    /** 开奖结果 */
+	    lotteryId: any[];
+	    /** 通知数据 */
+	    noticeData: any[];
+	    /**
+	     * 重置默认bet值
+	     * @default false
+	     */
+	    isResetBetValue: boolean;
+	    constructor();
+	    get isTurboMode(): boolean;
+	    set isTurboMode(value: boolean);
+	    /**
+	     * 获取 Skeleton 播放速率
+	     */
+	    getPlaybackRate(): 1 | 2;
+	    /**
+	     * 将传入参数计算加速后的值
+	     * @param value 获取转换时间
+	     * @param [rate=-1] 需要加速的速率 如果是-1将调用 getPlaybackRate 获取默认速率
+	     *
+	     * @see getPlaybackRate
+	     */
+	    convertPlaybackRate(value: number, rate?: number): number;
+	    /**
+	     * 总金额 default BaseGameData.betValue
+	     */
+	    getTotalBetMoney(): number;
+	    /**
+	     * 获取赢钱动画 的播放时长
+	     * @param level 播放时长等级 0开始
+	     */
+	    getWinMoneyAniDuration(level: number): number;
+	    /**
+	     * 是否达到 BigWin 的值
+	     * @param [isTotal=false] 是否看总金额
+	     * @param [multiple=10] 倍数
+	     * @return
+	     */
+	    isBigWin(isTotal?: boolean, multiple?: number): boolean;
+	    /**
+	     * 是否达到 MegaWin 的值
+	     * @param [isTotal=false] 是否看总金额
+	     * @param [multiple=30] 倍数
+	     * @return
+	     */
+	    isMegaWin(isTotal?: boolean, multiple?: number): boolean;
+	    /**
+	     * 是否达到 SuperWin 的值
+	     * @param [isTotal=false] 是否看总金额
+	     * @param [multiple=60] 倍数
+	     */
+	    isSuperWin(isTotal?: boolean, multiple?: number): boolean;
+	    reportError(): string;
+	}
+	
+	export class HtmlWindow extends fgui.Window implements tsCore.IRecord {
+	    private static _instance;
+	    static get inst(): HtmlWindow;
+	    private closeHandler;
+	    /** 页面名字 */
+	    private htmlText;
+	    private btn;
+	    private obj;
+	    private tempX;
+	    private tempY;
+	    /** 加载动画控制器 */
+	    private loadMovieClip;
+	    protected onInit(): void;
+	    protected onShown(): void;
+	    private sizeChangeHandler;
+	    /**
+	     * 新打开一个html浏览窗口
+	     * @param url 加载地址
+	     * @param full 是否全屏
+	     * @param closeHandler 此界面关闭后回调
+	     */
+	    openHtml(url: string, full?: boolean, closeHandler?: ParamHandler): void;
+	    /**
+	     * 弹出一个html浏览窗口
+	     * @param url 加载地址
+	     * @param full 是否全屏
+	     * @param closeHandler 此界面关闭后回调
+	     *
+	     */
+	    showTip(url: string, full?: boolean, closeHandler?: ParamHandler): void;
+	    private popFullIframeHandler;
+	    /** 修正宽高 */
+	    _syncInputTransform(): void;
+	    share(type: number, url: string, content: string): void;
+	    hide(): void;
+	    hideRecord(): void;
+	    showRecord(): void;
+	}
+	
+	export class BaseWindow<T extends BaseGameData = BaseGameData> extends tsCore.EWindow {
+	    /**
+	     * 是否在关闭窗口的时候  发送 ActionLib.GAME_RUN_SCENE_EVENT
+	     * @default false
+	     */
+	    isRunSceneEvent: boolean;
+	    protected closeEventHandler(): void;
+	    protected onHide(): void;
+	    protected get gameData(): T;
+	    /**
+	     * @deprecated
+	     */
+	    protected set gameData(value: T);
+	}
+	
+	/** 提示框 */
+	export class HomePrompt<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
+	    private static _instance;
+	    static get instance(): HomePrompt<BaseGameData>;
+	    /** 当前显示面板控制器 */
+	    private controller;
+	    /** ok按钮 */
+	    private okBtn;
+	    /** 取消 */
+	    private cancelBtn;
+	    /** 显示的内容 */
+	    private message;
+	    private callback;
+	    private cancelCallback;
+	    constructor();
+	    protected onInit(): void;
+	    private cancelHandler;
+	    private okHandler;
+	    protected onShown(): void;
+	    /**
+	     * 显示提示框
+	     * @param code 0 公告提示框 1两个选择按钮提示
+	     * @param content 显示内容 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
+	     * @param callback 确定调用函数
+	     * @param cancelCallback 取消调用函数
+	     * @param obj 附带设置 (okName:'', cancelName:'')
+	     *
+	     */
+	    showTip(code: number, content: string | number | any[], callback?: Function, cancelCallback?: Function, obj?: any): void;
+	    hideRecord(): void;
+	}
+	
+	/** 提示框 */
+	export class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
+	    protected static _instance: PromptWindow;
+	    static get inst(): PromptWindow<BaseGameData>;
+	    protected titleText?: fgui.GTextField;
+	    protected content?: fgui.GTextField;
+	    /** 确定取消 */
+	    protected cancelBtn?: fgui.GButton;
+	    protected closeBtn?: fgui.GButton;
+	    /** 确定 */
+	    protected continueBtn?: fgui.GButton;
+	    /** 提示框的击中类型 */
+	    protected buttonController: fgui.Controller;
+	    /** 标题显示控制器 */
+	    protected titleDisplayController: fgui.Controller;
+	    /**
+	     * 关闭按钮显示控制器
+	     */
+	    protected closeButtonDisplayController: fgui.Controller;
+	    protected closeFun: ParamHandler;
+	    protected continueFun: ParamHandler;
+	    protected callback: ParamHandler;
+	    /** 缓存的提示框 */
+	    protected cacheMessage: PromptData[];
+	    constructor();
+	    protected onInit(): void;
+	    protected continueHandler(): void;
+	    protected closeHandler(): void;
+	    protected cancelHandler(): void;
+	    protected onHide(): void;
+	    /** 结束回调 */
+	    endCallHandler(): void;
+	    /** 清理缓存 */
+	    clearCache(): void;
+	    /**
+	     * 带确认按钮的提示框
+	     * @param msg 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
+	     * @param callback 确定回调方法
+	     * @param isAction 动画显示或关闭
+	     *
+	     * @see LibStr
+	     * @see ActionLib.GAME_SHOW_PROMPT_WINDOW
+	     */
+	    showTip(msg: string | number | any[] | PromptData, callback?: ParamHandler, isAction?: boolean): void;
+	    /**
+	     * 带确认 取消按钮的提示框
+	     * @param msg 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
+	     * @param options 附带设置 (okName:'', cancelName:'')
+	     * @param callback 取消回调方法
+	     * @param continueFun 确定回调方法
+	     * @param isAction 动画显示或关闭
+	     * @see LibStr
+	     * @see ActionLib.GAME_SHOW_PROMPT_CANCEL_WINDOW
+	     */
+	    showCancelTip(msg: string | number | any[], options?: IPromptData, callback?: ParamHandler, continueFun?: ParamHandler, isAction?: boolean): void;
+	    protected _showWindow(msg: string | number | any[] | PromptData, options?: IPromptData, callback?: ParamHandler, continueFun?: ParamHandler, isAction?: boolean): void;
+	    protected _show(data: PromptData): void;
+	    protected setControllers(data: PromptData): void;
+	    dispose(): void;
+	    /**
+	     * 判断是否是接口 用 prototype 是否存在判断
+	     * @param optional
+	     */
+	    isPromptData(optional: any): optional is PromptData;
+	}
+	
+	/** 状态吗获取显示信息 */
+	export class StateCode {
+	    /**
+	     * 获取显示信息
+	     * @param data 一个object对象  如果带有message错误文字  直接使用 否则用code命令获取错误内容
+	     */
+	    static getShowMessage(data?: HttpResponse): any;
+	    /**
+	     * 显示错误信息
+	     * @param code 错误代号
+	     */
+	    static getInfo(code: number): string;
+	    /**
+	     * 此错误是后在执行范围内
+	     * @param code 执行错误代码
+	     * @param msg 提示文案或具有错误信息的object *.msg *.message
+	     */
+	    static execute(code: number, msg?: string | any): boolean;
+	    /** 游戏暂停中，返回大厅 */
+	    static showGameOff(): void;
+	}
+	
+	/**
+	 * 游戏基础类
+	 * @author boge
+	 */
+	export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends tsCore.EProxy implements IGameServlet {
+	    protected _gameModel: IGameModel;
+	    protected initHandler: ParamHandler;
+	    /** 当前访问接口获得游戏状态 */
+	    protected gameStatus: number;
+	    /** 网络通信名字 */
+	    networkName: string;
+	    /**
+	     * 全局外部定义的初始化
+	     *
+	     * 在执行onUserData()前 gameStatus检查状态后执行
+	     *
+	     * 有返回表示 出现错误
+	     */
+	    static customInit: (fun: (result: CustomResult) => void) => void;
+	    /**
+	     * 全局自定义解析用户返回信息的data属性
+	     *
+	     * 在 parseInitData 方法前执行
+	     */
+	    static customParseUser: (data: any) => void;
+	    constructor();
+	    protected get gameData(): T;
+	    /**
+	     * @deprecated
+	     */
+	    protected set gameData(value: T);
+	    /**
+	     * 封装的get请求
+	     *
+	     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
+	     *
+	     * @param url 使用 Player.inst.data.getGameUrl 格式化的url
+	     * @param data
+	     * @param callback
+	     * @param error
+	     * @param timeout
+	     * @deprecated
+	     * @see getData
+	     */
+	    getURL(url: string, data: any, callback?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler): void;
+	    /**
+	     * 封装的get请求
+	     *
+	     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
+	     *
+	     * @param url 使用 Player.inst.data.getGameUrl 格式化的url
+	     * @param data
+	     * @param callback
+	     * @param error
+	     * @param timeout
+	     * @param [overtime = 0] 超时时间设置 毫秒
+	     */
+	    getData(url: string, data: any, callback?: HttpOnComplete, error?: HttpOnError, timeout?: HttpOnTimeout, overtime?: number): void;
+	    /**
+	     * post 请求
+	     *
+	     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
+	     * @param url 请求连接 使用Player.inst.data.getGameUrl()格式化的url
+	     * @param data 请求数据
+	     * @param callback 请求完成返回调用函数
+	     * @param error 错误调用函数
+	     * @param timeout 超时回调函数
+	     * @param headers (default = null) HTTP 请求的头部信息。参数形如key-value数组：key是头部的名称，不应该包括空白、冒号或换行；value是头部的值，不应该包括换行。比如["Content-Type", "application/json"]。
+	     * @param overtime
+	     * @deprecated
+	     * @see postData
+	     */
+	    post(url: string, data: any, callback?: ParamHandler, error?: ParamHandler, timeout?: ParamHandler, headers?: string[], overtime?: number): void;
+	    /**
+	     * post 请求
+	     *
+	     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
+	     * @param url 请求连接 使用Player.inst.data.getGameUrl()格式化的url
+	     * @param data 请求数据
+	     * @param callback 请求完成返回调用函数
+	     * @param error 错误调用函数
+	     * @param timeout 超时回调函数
+	     * @param headers (default = null) HTTP 请求的头部信息。参数形如key-value数组：key是头部的名称，不应该包括空白、冒号或换行；value是头部的值，不应该包括换行。比如["Content-Type", "application/json"]。
+	     * @param [overtime = 0] 超时时间设置 毫秒
+	     */
+	    postData(url: string, data: any, callback?: HttpOnComplete, error?: HttpOnError, timeout?: HttpOnTimeout, headers?: string[], overtime?: number): void;
+	    /**
+	     *
+	     * @param handler
+	     */
+	    checkState(handler: ParamHandler): void;
+	    /**
+	     * 进入游戏失败 执行退出游戏
+	     * @param [isTip = true] 是否需要弹窗
+	     * @param message 弹窗内容
+	     * @param request
+	     */
+	    protected enterFail(isTip?: boolean, message?: string, request?: tsCore.AjaxRequest): void;
+	    init(handler: ParamHandler): void;
+	    /**
+	     * 请求初始化游戏
+	     */
+	    postInit(succeed: HttpOnComplete, error: HttpOnError): void;
+	    /** 连接该游戏的socket */
+	    protected connectSocket(): void;
+	    protected userDataErrorHandler(data: any, request: tsCore.AjaxRequest): void;
+	    /** 用户数据 */
+	    protected userDataHandler(response: HttpResponse, request: tsCore.AjaxRequest): void;
+	    nextInit(): void;
+	    /**
+	     * 用户信息初始化完成 返回false表示 出现错误
+	     */
+	    onUserData(value: (result: CustomResult) => void): void;
+	    /**
+	     * 读取奖金池数据
+	     * @param data
+	     */
+	    readJackpotData(data: HttpData): void;
+	    /**
+	     * 获取优惠券信息的函数。
+	     * @param onComplete - 请求完成后的回调函数，参数为从服务器返回的数据。
+	     * @param error - 请求发生错误时的回调函数，参数为错误信息。
+	     */
+	    getCoupon(onComplete?: ParamHandler, error?: ((data: any) => void)): void;
+	    /** 收到投注劵数据 */
+	    protected couponHandler(handler: ParamHandler, data: HttpResponse, request?: tsCore.AjaxRequest): void;
+	    initComplete(): void;
+	    /**
+	     * 解析初始化数据
+	     * @param data
+	     *
+	     */
+	    protected abstract parseInitData(data: any): any;
+	    /**
+	     * 拉取账户金额
+	     * @param callback
+	     * @param error
+	     */
+	    getUserMoney(callback: ParamHandler, error?: ParamHandler): void;
+	    /**
+	     * 检查游戏期数
+	     * @param handler
+	     *
+	     */
+	    checkGamePeriod(handler: ParamHandler): void;
+	    /**
+	     * 发送bet数据
+	     * @param url
+	     * @param data
+	     * @param callback
+	     */
+	    sendBet(url: string, data: any, callback: HttpOnComplete): void;
+	    /**
+	     * 处理发送bet请求时的错误。
+	     */
+	    protected onSendBetError(msg: any, request: tsCore.AjaxRequest): void;
+	    /**
+	     * 领取奖金池
+	     * @param id
+	     * @param handler
+	     */
+	    jackPotClaim(id: string, handler: Laya.Handler | ((remove: boolean, win: number) => void)): void;
+	    protected jackPotClaimHandler(handler: Laya.Handler | ((remove: boolean, win: number) => void), response: HttpResponse, request?: tsCore.AjaxRequest): void;
+	    /**
+	     * 显示获取的非200的结果显示弹窗
+	     * @param data 服务器返回的完整数据
+	     * @param [closeGame=true] 是否关闭游戏
+	     * @param request
+	     */
+	    protected showNotResult(data: any, closeGame?: boolean, request?: tsCore.AjaxRequest): void;
+	    get gameModel(): IGameModel;
+	    set gameModel(value: IGameModel);
+	    dispose(): void;
+	}
+	
+	export class NoticeView extends BaseView {
+	    private richText;
+	    private tempX;
+	    /** 是否在滚动 */
+	    private isRun;
+	    private gameData;
+	    constructor();
+	    protected onInit(): void;
+	    protected addedHandler(): void;
+	    showText(values: any[]): void;
+	    /** 开始滚动 */
+	    private startRun;
+	    private loopHandler;
+	    /** 更新内容 并重置位置 */
+	    private updateNoticeContent;
+	    private stopRun;
+	    /** 重置位置 */
+	    private resetMsgPosition;
+	    dispose(): void;
+	}
+	
+	export class GameConfigKit {
+	    /**
+	     * 在window上配置的属性名字
+	     * @default gameIdConfig
+	     */
+	    static CONFIG_NAME: string;
+	    /**
+	     * 场景初始化完成 自动通知加载完成并关闭加载页
+	     * @type {boolean}
+	     * @default true
+	     */
+	    static autoSendOnLoadEnd: boolean;
+	    /**
+	     * 获取游戏配置表
+	     */
+	    static gameConfig(): {
+	        [key: number]: string;
+	    };
+	    /**
+	     * 根据游戏id获取配置的游戏名 如果没有 null
+	     * @param [code=0] 不传将使用当前已经打开游戏id
+	     */
+	    static gameName(code?: number): string;
+	    /**
+	     * 获取游戏名字的标准样式
+	     * @param [code=null] 游戏id 不填将使用当前已在用得到游戏id
+	     * @param [format=null] 格式化样式，将空白替换成指定的值 不设置将用驼峰命名
+	     */
+	    static gameNameCanonical(code?: number, format?: string): string;
+	    /**
+	     * 根据游戏名获取游戏id 如果不存在返回-1
+	     * @param [name=null]
+	     */
+	    static gameCode(name?: string): number;
+	    /**
+	     * 获取游戏配置数据
+	     * @param [name=null] 游戏名字,如果不传，将获取当前打开游戏名字
+	     * @param [ignoreCase=false] 是否忽略名字大小写
+	     */
+	    static gameRes(name?: string, ignoreCase?: boolean): ResConfig;
+	}
+	
+	/**
+	 * 资源管理类
+	 */
+	export class AssetsLoader implements tsCore.IFormatPath {
+	    private static _instance;
+	    static get inst(): AssetsLoader;
+	    static readonly ma: number;
+	    /** 资源配置文件名 */
+	    static CONFIG_RES_NAME: string;
+	    /** 资源配置文件名 */
+	    static DEFAULT_INIT_RES_NAME: any;
+	    /**
+	     * 版本加载路径
+	     * @example
+	     * https://res.game.co/assetsversion.json
+	     */
+	    static VERSION_RES_URL: any;
+	    /** 下载成功 */
+	    private handler;
+	    /** 下载失败 */
+	    private errorHandler;
+	    /** 加载对象 */
+	    private loadObj;
+	    /** 是否是http  */
+	    readonly httpProtocol: boolean;
+	    private runLoads;
+	    /**
+	     * 音频排除格式
+	     */
+	    static soundFilter: ILoadSoundFilter;
+	    /**
+	     * 自定义额外加载操作
+	     * 在加载 versionXml 的时候  额外加载的
+	     * @example
+	     * AssetsLoader.customLoader = (complete: ParamHandler, errorHandler: ParamHandler) => {
+	     *      ...
+	     *     runFun(complete)
+	     * }
+	     *
+	     * AssetsLoader.customLoader = Laya.Handler.create(this, function(complete: ParamHandler, errorHandler: ParamHandler) {
+	     *  ...
+	     *  runFun(complete)
+	     *
+	     * })
+	     */
+	    customLoader: ParamHandler;
+	    /**
+	     * 自定义扩展加载资源处理
+	     *  @example
+	     * AssetsLoader.customLoaderRes = (loadRes: LoadRes[]) => {
+	     *      ...
+	     * }
+	     *
+	     * AssetsLoader.customLoaderRes = Laya.Handler.create(this, function(loadRes: LoadRes[]) {
+	     *  ...
+	     *
+	     * })
+	     */
+	    customLoaderRes: ParamHandler;
+	    /**
+	     * 加载路径格式化
+	     * @deprecated
+	     * @see Path.formatPath
+	     */
+	    static loadPathFormat: tsCore.IFormatPath[];
+	    constructor();
+	    /**
+	     * @deprecated
+	     * @see Path.formatPath
+	     */
+	    static formatUrl: typeof tsCore.Path.formatUrl;
+	    version(url: string, version: string | number): string | number;
+	    /**
+	     * 加载版本控制文件
+	     * @param complete
+	     * @param errorHandler
+	     */
+	    loadVersionXML(complete: ParamHandler, errorHandler: ParamHandler): void;
+	    private loadXMLComplete;
+	    /**
+	     * 加载主要的资源
+	     * @param handler
+	     */
+	    loadMain(handler: ParamHandler): void;
+	    /**
+	     * 加载公共资源
+	     * @param handler
+	     * @param assets
+	     */
+	    loadCommon(handler: ParamHandler, assets?: LoadRes[]): void;
+	    /**
+	     * 加载游戏代码
+	     * @param config 配置表
+	     * @param handler 加载完成
+	     * @param errorHandler 加载失败
+	     */
+	    loadJS(config: string, handler: ParamHandler, errorHandler?: ParamHandler): void;
+	    private loadJsProgress;
+	    /**
+	     * 加载游戏资源
+	     * @param obj 游戏对象
+	     * @param handler 加载完成
+	     * @param errorHandler 加载失败
+	     */
+	    loadRes(obj: ResConfig, handler: ParamHandler, errorHandler?: ParamHandler): void;
+	    /**
+	     * 处理资源
+	     * @param res
+	     * @private
+	     */
+	    private parseRes;
+	    /**
+	     * 检查分支资源更换加载
+	     * @param loadRes 整理好的 加载数据
+	     */
+	    static checkBranch(loadRes: LoadRes[]): void;
+	    private progressComplete;
+	    private loadComplete;
+	    private loadErrorHandler;
+	    /**
+	     * 将一个 loadRes数组对象  添加资源
+	     * @param res
+	     */
+	    addPackages(res: LoadRes[]): boolean;
+	    /**
+	     * 添加游戏UI资源
+	     * @param resKey 资源名字
+	     * @return 成功与否
+	     */
+	    addPackage(resKey: string): boolean;
+	    /** 设置扩展 */
+	    protected insertExt(pkgName: string, resName: string, type: any): void;
+	    protected insertExtUrl(url: string, type: any): void;
+	    /**
+	     * 资源url解析
+	     * @param xmlDocument
+	     */
+	    parseUrl(xmlDocument: XMLDocument): void;
+	    /**
+	     * 合并两个xml
+	     * @param xml 如果有重复并且值不一样  以这个对象内的值为准
+	     * @param xml2
+	     * @private
+	     */
+	    mergeXml(xml: XMLDocument, xml2: XMLDocument): XMLDocument;
+	    /**
+	     * 运行加载资源
+	     */
+	    runLoad(): void;
+	}
+	
+	/**
+	 *
+	 * @author boge
+	 */
+	export class GameModel<T extends IGameData = BaseGameData> extends tsCore.EProxy implements IGameModel {
+	    /**
+	     * @deprecated
+	     */
+	    protected _gameScene: IGameScene;
+	    /**
+	     * @deprecated
+	     */
+	    protected _gameServlet: IGameServlet;
+	    /** 游戏番号 */
+	    protected _gameCode: number;
+	    /** 原始音乐备份 */
+	    protected musicBack: any;
+	    /** 大厅model
+	     * @deprecated
+	     */
+	    private _homeModel;
+	    /** 当前屏幕方向 */
+	    gameScreenType: string;
+	    /** 任务 */
+	    protected tasks: {
+	        args: any;
+	        handler: ParamHandler;
+	    }[];
+	    /** 延迟发送获得bonus通知
+	     * @default 200 ms
+	     */
+	    protected delayGetBonus: number;
+	    /** 延迟下一轮游戏开始通知
+	     * @default 200 ms
+	     */
+	    protected delayNextRound: number;
+	    protected constructor();
+	    initModel(): void;
+	    initSocketEvent(): void;
+	    private onNotice;
+	    /** 通知资金变化 */
+	    private onMoneyChange;
+	    /** 通知信息 */
+	    private onNotification;
+	    /**
+	     * 计划任务
+	     * @param args 参数
+	     * @param handler
+	     */
+	    addTask(args: any, handler: ParamHandler): void;
+	    /**
+	     * 执行一次预计划任务
+	     */
+	    runTask(): void;
+	    /**
+	     * 注册socket 事件
+	     * @param type
+	     * @param callback
+	     */
+	    addSocketEvent(type: number, callback: ParamHandler): void;
+	    removeSocketEvent(type: number): void;
+	    clearRes(): void;
+	    /** 设置游戏音乐 */
+	    protected setupMusic(): void;
+	    /** 还原游戏音乐 */
+	    protected resetMusic(): void;
+	    /** 子类实现 */
+	    insertExtension(): void;
+	    /**
+	     * 通知开奖结束  进入结束流程
+	     *
+	     * @example
+	     *
+	     * this.sendAction(ActionLib.GAME_UPDATE_WIN_VALUE)
+	     * Player.inst.money = this.gameData.currentBalance
+	     * if (this.gameData instanceof BaseSlotGameData) {
+	     *     if (this.gameData.hasReSpin) {
+	     *         Laya.timer.once(this.delayNextRound, this, function () {
+	     *             this.sendAction(ActionLib.GAME_START)
+	     *         })
+	     *         return
+	     *     }
+	     *     if (this.gameData.isFreeModel && this.gameData.freeCount > 0) { //如果在特殊场景里面
+	     *         Laya.timer.once(this.delayNextRound, this, function () {
+	     *             this.sendAction(ActionLib.GAME_START)
+	     *         })
+	     *         return
+	     *     }
+	     *     // 开出三个免费游戏启动项目  并且服务端告诉有免费游戏
+	     *     if (this.gameData.freeBoundsCount >= 3 && this.gameData.hasFreeSpin != 0) {
+	     *         this.gameData.tempServerWinMoney = this.gameData.serverWinMoney
+	     *         // 交给scene处理
+	     *         Laya.timer.once(this.delayGetBonus, this, () => {
+	     *             this.sendAction(ActionLib.GAME_START)
+	     *         })
+	     *         return
+	     *     }
+	     *     // 如果是开大奖结束  显示总共赢的钱
+	     *     if (this.gameData.hasFreeSpin != 0) {
+	     *         this.gameData.hasFreeSpin = 0
+	     *         this.sendAction(ActionLib.GAME_SHOW_FREE_OUT_WINDOW)
+	     *         return
+	     *     }
+	     * }
+	     * this.sendAction(ActionLib.GAME_ALL_BTN_CHANGE_STATE, false)
+	     * this.sendAction(ActionLib.GAME_START)
+	     *
+	     */
+	    protected lotteryComplete(): void;
+	    /** 游戏进入后台执行 */
+	    blurGame(): void;
+	    /** 游戏进入前台执行 */
+	    focusGame(): void;
+	    get gameScene(): IGameScene;
+	    get gameServlet(): IGameServlet;
+	    /**
+	     * 已做以下处理
+	     * @example
+	     * ● 清除该类所有的定时器
+	     * ● 还原默认的声音开关配置
+	     * ● super.dispose()
+	     *
+	     */
+	    dispose(): void;
+	    set gameCode(value: number);
+	    get gameCode(): number;
+	    socketHandler(obj: any): void;
+	    /**
+	     * @deprecated
+	     */
+	    get homeModel(): IHomeModel;
+	    /**
+	     * @deprecated
+	     */
+	    set gameScene(value: IGameScene);
+	    /**
+	     * @deprecated
+	     */
+	    set gameServlet(value: IGameServlet);
+	    protected get gameData(): T;
+	    /**
+	     * @deprecated
+	     */
+	    protected set gameData(value: T);
 	}
 	
 	export class BaseStarter extends tsCore.EProxy {
@@ -2402,6 +2419,93 @@ declare namespace gameLib {
 	     */
 	    static JavaSendOpen(json: ExecuteData): void;
 	    private static open;
+	}
+	
+	/**
+	 * url 参数
+	 */
+	export class UrlParam {
+	    private _amount;
+	    private _inviteCode;
+	    private openGame;
+	    /** 国家 'ke'肯尼亚；'ug'乌干达, 'ng'尼日尼亚 */
+	    private _country;
+	    /** 语言 en zh-CN */
+	    private _language;
+	    /** 渠道平台 */
+	    channel: string;
+	    /** 0:ai  1:people 2:friend */
+	    private _playWith;
+	    private _roomId;
+	    /** 1 守门员  2 踢球 */
+	    private _role;
+	    /** 是否是赠送金 0 没有 1 有 */
+	    private _isGift;
+	    /** 是否是debug模式 */
+	    debug: boolean;
+	    /**
+	     * 图片清晰度
+	     *  0 高清
+	     *  1 压缩
+	     *  2 webp
+	     */
+	    imageQuality: number;
+	    constructor(defaults?: {
+	        country?: string;
+	        language?: string;
+	        channel?: string;
+	        debug?: boolean;
+	    });
+	    parseData(json: ExecuteData): void;
+	    /**
+	     * 该函数用于从给定的json对象中通过一系列键名路径获取对应的值，并将这个值转化为布尔类型后传递给回调函数进行处理。
+	     * 具体转化逻辑为：若获取到的值存在且不等于"false"或"0"（忽略大小写），则将其转换为true并传入回调函数；否则转换为false。
+	     *
+	     * @param json - 需要从中查询数据的json对象
+	     * @param fun - 处理查询结果的回调函数，接受一个布尔值作为参数
+	     * @param keys - 用于定位json对象内目标值的一系列键名组成的数组
+	     */
+	    getQueryBoolean(json: any | null, fun: (value: boolean) => void, ...keys: string[]): void;
+	    /**
+	     * 执行参数设置 如果存在将调用fun 如果不存在或是空 将不会调用fun
+	     * @param json
+	     * @param fun
+	     * @param keys
+	     */
+	    getQuery(json: any | null, fun: (value: string) => void, ...keys: string[]): void;
+	    /**
+	     * 获取指定的key的布尔值 空值、false、0 都将返回false
+	     * @param json
+	     * @param keys
+	     */
+	    getValueBoolean(json: any | null, ...keys: string[]): boolean;
+	    /**
+	     * 获取url上的参数key=value
+	     * @param json
+	     * @param keys
+	     */
+	    getValue(json: any | null, ...keys: string[]): string | undefined;
+	    get amount(): string;
+	    get inviteCode(): string;
+	    /**
+	     * 是否是直接指定页面
+	     * @return
+	     */
+	    isJumpPage(): boolean;
+	    /**
+	     * 清理跳转记录
+	     */
+	    clearJumpPage(): void;
+	    get country(): string;
+	    get language(): string;
+	    get playWith(): string;
+	    set playWith(value: string);
+	    set roomId(value: string);
+	    get roomId(): string;
+	    get role(): number;
+	    set role(value: number);
+	    get isGift(): number;
+	    set isGift(value: number);
 	}
 	
 	/** 用户数据 */
@@ -2613,195 +2717,91 @@ declare namespace gameLib {
 	}
 	
 	/**
-	 * url 参数
+	 * 统计管理器
+	 * @author boge
 	 */
-	export class UrlParam {
-	    private _amount;
-	    private _inviteCode;
-	    private openGame;
-	    /** 国家 'ke'肯尼亚；'ug'乌干达, 'ng'尼日尼亚 */
-	    private _country;
-	    /** 语言 en zh-CN */
-	    private _language;
-	    /** 渠道平台 */
-	    channel: string;
-	    /** 0:ai  1:people 2:friend */
-	    private _playWith;
-	    private _roomId;
-	    /** 1 守门员  2 踢球 */
-	    private _role;
-	    /** 是否是赠送金 0 没有 1 有 */
-	    private _isGift;
-	    /** 是否是debug模式 */
-	    debug: boolean;
+	export class AnalyticsManager {
+	    /** 开启数据统计 */
+	    static isOpenAnalytics: boolean;
+	    /** 打开了一个游戏 */
+	    static openGame(): void;
+	    /** 关闭了一个游戏 */
+	    static closeGame(): void;
+	    /** 打开统计 */
+	    static openAnalysis(callback: ParamHandler): void;
 	    /**
-	     * 图片清晰度
-	     *  0 高清
-	     *  1 压缩
-	     *  2 webp
+	     * 发送游戏事件
+	     * @param eventAction 互动类型 (默认会添加 _)
+	     * @param eventLabel 事件标签
 	     */
-	    imageQuality: number;
-	    constructor(defaults?: {
-	        country?: string;
-	        language?: string;
-	        channel?: string;
-	        debug?: boolean;
-	    });
-	    parseData(json: ExecuteData): void;
+	    static sendGameAnalysis(eventAction: string, eventLabel?: string): void;
 	    /**
-	     * 该函数用于从给定的json对象中通过一系列键名路径获取对应的值，并将这个值转化为布尔类型后传递给回调函数进行处理。
-	     * 具体转化逻辑为：若获取到的值存在且不等于"false"或"0"（忽略大小写），则将其转换为true并传入回调函数；否则转换为false。
+	     * 向Google Analytics 发送事件
+	     * @param eventAction 事件操作
+	     * @param eventLabel  事件标签
+	     */
+	    static send(eventAction: string, eventLabel?: string): void;
+	    /**
+	     * 向Google Analytics 发送用户用时
+	     * @param timingVar 用于标识要记录的变量
+	     * @param timingValue 向 Google Analytics（分析）报告的，以毫秒为单位的历时时间（例如 20）。
 	     *
-	     * @param json - 需要从中查询数据的json对象
-	     * @param fun - 处理查询结果的回调函数，接受一个布尔值作为参数
-	     * @param keys - 用于定位json对象内目标值的一系列键名组成的数组
 	     */
-	    getQueryBoolean(json: any | null, fun: (value: boolean) => void, ...keys: string[]): void;
+	    static sendTiming(timingVar: string, timingValue: number): void;
 	    /**
-	     * 执行参数设置 如果存在将调用fun 如果不存在或是空 将不会调用fun
-	     * @param json
-	     * @param fun
-	     * @param keys
+	     * 向 Google Analytics 发送事件
+	     * @param type
+	     * @param category
+	     * @param action
+	     * @param label
+	     * @param value
 	     */
-	    getQuery(json: any | null, fun: (value: string) => void, ...keys: string[]): void;
+	    static ga(type: gaType, category: string, action: string, label: string, value?: string): void;
+	}
+	type gaType = "pageview" | "event" | "timing" | "social" | "screenview" | "transaction" | "item" | "exception";
+	
+	/** 文案提示 */
+	export class PromptTip extends tsCore.ELabel {
+	    private target;
+	    private downward;
+	    protected onInit(): void;
+	    static createPromptTip(): PromptTip;
 	    /**
-	     * 获取指定的key的布尔值 空值、false、0 都将返回false
-	     * @param json
-	     * @param keys
+	     * 显示提示文本
+	     * @param comp 绑定显示按钮位置
+	     * @param downward 是否在下面
 	     */
-	    getValueBoolean(json: any | null, ...keys: string[]): boolean;
-	    /**
-	     * 获取url上的参数key=value
-	     * @param json
-	     * @param keys
-	     */
-	    getValue(json: any | null, ...keys: string[]): string | undefined;
-	    get amount(): string;
-	    get inviteCode(): string;
-	    /**
-	     * 是否是直接指定页面
-	     * @return
-	     */
-	    isJumpPage(): boolean;
-	    /**
-	     * 清理跳转记录
-	     */
-	    clearJumpPage(): void;
-	    get country(): string;
-	    get language(): string;
-	    get playWith(): string;
-	    set playWith(value: string);
-	    set roomId(value: string);
-	    get roomId(): string;
-	    get role(): number;
-	    set role(value: number);
-	    get isGift(): number;
-	    set isGift(value: number);
+	    show(comp: fgui.GComponent, downward?: any): void;
+	    private showViewHandler;
+	    hide(): void;
+	    private updatePoint;
+	    dispose(): void;
 	}
 	
-	/**
-	 * 游戏数据
-	 */
-	export interface IGameData {
-	    /** 总共要投注的钱 */
-	    getTotalBetMoney(): number;
-	    /** 上报错误数据 */
-	    reportError(): any;
+	export class ActivityButton extends tsCore.EButton {
+	    private tempValue;
+	    private clickInvalid;
+	    callback: ParamHandler;
+	    private contentText;
+	    /** 当没有优惠卷使用的时候 是否自动隐藏 */
+	    isAutoHide: boolean;
+	    /** 自定义更新文字显示 */
+	    updateText: ParamHandler;
+	    protected onConstruct(): void;
+	    private stopUseActivityHandler;
+	    private useActivityHandler;
+	    private updateShow;
 	    /**
-	     * 附带调试数据
+	     * 设置角标
+	     * @param value 剩余数量
 	     */
-	    attachedDebugData: any;
-	    /** 服务器发来的当前余额 */
-	    currentBalance: number;
-	    /** 本次总共盈利 */
-	    totalWinMoney?: number;
-	    /** 后端计算   当前盈利 */
-	    serverWinMoney?: number;
-	    /** 玩的次数 计数 */
-	    playCount: number;
-	    /** 是否已经弹出过一次推荐正式场的游戏 */
-	    isRecommend?: boolean;
-	    /**
-	     * 当前是否在特殊模式
-	     * @default false
-	     */
-	    specialMode: boolean;
-	    /**
-	     * 游戏类型
-	     * @default GameType.NORMAL
-	     */
-	    gameType: GameType;
-	}
-	export interface IData {
-	    /** 国家 'ke'肯尼亚；'ug'乌干达, 'ng'尼日尼亚 */
-	    country: string;
-	    /** 语言 en zh-CN */
-	    language: string;
-	    /** 渠道平台 */
-	    channel: string;
-	    /** 用户昵称是否是第一次改名，0 是，1 不是  */
-	    isFirstNick: boolean;
-	    /** 该账号是否是第一次登录，0 是，1 不是  */
-	    isFirstLogin: boolean;
-	    /** 开奖时间戳(s) */
-	    lotteryTime: number;
-	    /** 缓存初始化开奖期数  */
-	    initPeriod: number;
-	    /** 当前开奖期数  */
-	    period: number;
-	    /** 进入房间后  当前房间总投注信息  (只有进入房间的时候才使用) */
-	    initRoomTotalItem: any[];
-	    /** 进入房间后  当前房间自己投注信息  (只有进入房间的时候才使用) */
-	    initRoomCurBet: any[];
-	    /** 初始化奖金池数据(只有进入房间的时候才使用) */
-	    jackpot: number;
-	    /** 上次发送聊天数据时间 s */
-	    oldSendChatTimer: number;
-	    /** 开奖历史 */
-	    betHistory: any[];
-	    /** 当前历史次数 */
-	    betStatic: any[];
-	    /** 获取完整的wap请求url */
-	    getWapUrl(url: string): string;
-	    /** 获取完整的game请求 带版本号  url */
-	    getGameUrl(url: string): string;
-	    /**
-	     * 获取国家编码 国家 'ke'肯尼亚；'ug'乌干达, 'ng'尼日尼亚
-	     * @param urlParam
-	     */
-	    getCountry(urlParam: UrlParam): string;
-	    /**
-	     * 获取错误上传地址
-	     */
-	    getErrorUrl(): string;
-	}
-	/**
-	 * 登录接口
-	 */
-	export interface ILogin {
-	    /** 使用Token登录 并获取用户数据 */
-	    loginToken(callback: ParamHandler): void;
-	}
-	/**
-	 * 游戏模式
-	 */
-	export interface IGuestModel {
-	    /** 游客id */
-	    guestUID: number;
-	    /** 游客模式玩次数 */
-	    guestPlayCount: number;
-	    /**
-	     * 游客初始金额
-	     */
-	    guestInitMoney: number;
-	    /** 清除数据  */
-	    clearData(): void;
-	    /**
-	     * post请求 返回数据  可以在这里对返回数据进行修改
-	     * @param url 访问网址
-	     * @param data 押注额度
-	     */
-	    playAdd(url: string, data: HttpData): void;
+	    setCorner(value: number): void;
+	    private clickHandler;
+	    private addedHandler;
+	    /** 打开拖动 */
+	    openDrag(): void;
+	    private onDragEnd;
+	    private onDragStart;
 	}
 	
 	export class BaseSkeletonWindow<T extends BaseGameData = BaseGameData> extends tsCore.SkeletonWindow {

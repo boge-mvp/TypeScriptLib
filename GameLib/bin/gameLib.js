@@ -1268,95 +1268,2230 @@ function _FguiBindView(classTarget, url) {
 	
 	gameLib.ResUtils = ResUtils
 	
-	/**
-	 * 统计管理器
-	 * @author boge
-	 */
-	class AnalyticsManager {
-	    /** 打开了一个游戏 */
-	    static openGame() {
+	/** 游戏主页必须继承的类 */
+	class BaseScene extends BaseView {
+	    constructor() {
+	        super();
+	        /** 选择房间事件 */
+	        this.EVENT_SELECT_ROOM = "selectRoom";
+	        /** demo场试玩事件 */
+	        this.EVENT_DEMO_TIP = "demoTip";
+	        /** 引导事件 */
+	        this.EVENT_GUIDE = "guide";
+	        /** 优惠券事件 */
+	        this.EVENT_COUPON = "coupon";
+	        /** bonus事件 */
+	        this.EVENT_BONUS = "bonus";
+	        /** 启动事件 */
+	        this.startupEvent = [];
+	        /** 是否在执行运行事件 */
+	        this.isRunEvent = false;
+	        this.autoSetupRelation = true;
 	    }
-	    /** 关闭了一个游戏 */
-	    static closeGame() {
-	    }
-	    /** 打开统计 */
-	    static openAnalysis(callback) {
-	        runFun(callback);
+	    get gameData() {
+	        return Player.inst.gameData;
 	    }
 	    /**
-	     * 发送游戏事件
-	     * @param eventAction 互动类型 (默认会添加 _)
-	     * @param eventLabel 事件标签
+	     * @deprecated
 	     */
-	    static sendGameAnalysis(eventAction, eventLabel) {
+	    set gameData(value) {
+	        tsCore.Log.debug(value);
+	    }
+	    onInit() {
+	        super.onInit();
+	        this.jackpotBtn = this.getChild("jackpot");
+	        this.regGameAction(ActionLib.GAME_RECONNECTION_NET, this, this.reconnectionNet);
+	        this.regGameAction(ActionLib.GAME_UPDATE_MONEY, this, this.updateMoney);
+	        this.regGameAction(ActionLib.GAME_RESET_BET, this, this.resetBet);
+	        this.regGameAction(ActionLib.GAME_START, this, this.startGame);
+	        this.regGameAction(ActionLib.GAME_DISPOSE, this, this.dispose);
+	        this.regGameAction(ActionLib.GAME_USE_ACTIVITY_END, this, this.updateTotalCoupons);
+	        this.regGameAction(ActionLib.GAME_STOP_USE_ACTIVITY, this, this.updateTotalCoupons);
+	        this.regGameAction(ActionLib.GAME_BET_CHANGE, this, this.betChangeHandler);
+	        this.regGameAction(ActionLib.GAME_UPDATE_ROOM_ID_CHANGE, this, this.updateRoomIdChange);
+	        this.regGameAction(ActionLib.GAME_RUN_SCENE_EVENT, this, this.runEvent);
+	    }
+	    /**
+	     * 房间号变更
+	     * @param value 房间号
+	     */
+	    updateRoomIdChange(value) {
+	        this.gameModel.gameCode = value;
+	    }
+	    /**
+	     * 显示提示文本
+	     * @param comp 绑定显示按钮位置
+	     * @param downward 是否在下面
+	     */
+	    showPromptActivity(comp, downward) {
 	        var _a;
-	        // 获取当前的游戏配置
-	        let gameName = (_a = GameConfigKit.gameNameCanonical(null, "_")) === null || _a === void 0 ? void 0 : _a.toLowerCase();
-	        if (gameName) {
-	            eventLabel !== null && eventLabel !== void 0 ? eventLabel : (eventLabel = Player.inst.isGuest ? "demo" : "cash");
-	            AnalyticsManager.send(gameName + "_" + eventAction, eventLabel);
+	        if (!comp)
+	            return;
+	        (_a = this.promptTip) !== null && _a !== void 0 ? _a : (this.promptTip = PromptTip.createPromptTip());
+	        this.promptTip.show(comp, downward);
+	    }
+	    /** 押注变化 */
+	    betChangeHandler() {
+	        let betValue = Player.inst.gameData.getTotalBetMoney();
+	        // 清理正在使用的优惠券
+	        let useObj = Player.inst.getUseCoupon();
+	        if (useObj) {
+	            // 如果是抵用券 并且投注额和最小投注额一样
+	            if (useObj.type == 1 && useObj.bet_limit == useObj.faceValue) {
+	            }
+	            else if (betValue < useObj.bet_limit) {
+	                useObj.isUse = false;
+	                this.sendAction(ActionLib.GAME_STOP_USE_ACTIVITY);
+	            }
+	            return;
+	        }
+	        let arr = Player.inst.getCouponGame(Player.inst.gameId);
+	        for (let i = 0; i < arr.length; i++) {
+	            useObj = arr[i];
+	            if (useObj.type == 1) { // 判断是否有可以使用的抵用券
+	                if (useObj.bet_limit == useObj.faceValue || useObj.bet_limit <= betValue) { // 满足最低投注额
+	                    this.sendAction(ActionLib.GAME_PROMPT_CAN_USE_ACTIVITY);
+	                    break;
+	                }
+	            }
+	            else if (useObj.type == 2) {
+	                this.sendAction(ActionLib.GAME_PROMPT_CAN_USE_ACTIVITY);
+	                break;
+	            }
+	        }
+	    }
+	    /**
+	     * 初始化活动卷
+	     * @param component 获取活动按钮的父组件
+	     * @param isOpenDrag 是否开启拖动(默认true)
+	     * @param isAutoHide 当没有优惠卷使用的时候 是否自动隐藏(默认true)
+	     */
+	    initActivityMenu(component, isOpenDrag = true, isAutoHide = true) {
+	        var _a, _b;
+	        this.activityBtn = component.getChild("coupons");
+	        (_a = this.activityBtn) !== null && _a !== void 0 ? _a : (this.activityBtn = component.getChild("activityBtn"));
+	        (_b = this.activityBtn) !== null && _b !== void 0 ? _b : (this.activityBtn = component.getChild("couponsBtn"));
+	        if (this.activityBtn) {
+	            this.activityBtn.isAutoHide = isAutoHide;
+	            if (isOpenDrag)
+	                this.activityBtn.openDrag();
+	            this.activityBtn.callback = new Laya.Handler(this, this.activityHandler);
+	            this.updateTotalCoupons();
+	        }
+	    }
+	    /** 更新中优惠券数量 */
+	    updateTotalCoupons() {
+	        if (this.activityBtn) {
+	            let coupons = Player.inst.getCouponGame(Player.inst.gameId);
+	            let totalMoney = 0;
+	            for (let i = 0; i < coupons.length; i++) {
+	                let activityBtnElement = coupons[i];
+	                totalMoney += activityBtnElement.faceValue * activityBtnElement.num;
+	            }
+	            this.activityBtn.setCorner(totalMoney);
+	        }
+	    }
+	    activityHandler() {
+	        if (this.activityBtn) {
+	            let point = this.activityBtn.localToGlobal();
+	            fgui.GRoot.inst.globalToLocal(point.x, point.y, point);
+	            point.x = point.x + this.activityBtn.displayObject.pivotX;
+	            point.y = point.y + this.activityBtn.displayObject.pivotY;
+	            this.sendAction(ActionLib.GAME_ACTIVITY_WINDOW_SHOW, new Laya.Point(point.x, point.y));
+	        }
+	    }
+	    /** 发送投注劵使用结束 */
+	    sendBetCouponEnd() {
+	        // 如果使用的是投注劵
+	        let useObj = Player.inst.getUseCoupon();
+	        if (useObj && useObj.type == 2) {
+	            useObj.isUse = false;
+	            this.sendAction(ActionLib.GAME_USE_ACTIVITY_END);
+	        }
+	    }
+	    /**
+	     * 舞台显示
+	     */
+	    addedHandler() {
+	        super.addedHandler();
+	        tsCore.HistoryManager.addHistory(null, this);
+	        this.updateRoomIdChange(Player.inst.gameId);
+	        // 因为有旋转屏幕  为了获取正确的宽高  延迟执行添加舞台
+	        Laya.timer.callLater(this, this.regEvent);
+	    }
+	    drawGuideRect(guideView, index) {
+	    }
+	    clickGuide(guideView, index) {
+	    }
+	    guideEnd(guideView) {
+	        this.runEvent();
+	    }
+	    /** 注册进入事件 */
+	    regEvent() {
+	        this.isRunEvent = true;
+	        // 启动房间选择
+	        this.regStartupEvent(this.eventSelectRoom.bind(this), -1, this.EVENT_SELECT_ROOM);
+	        // demo试玩提示
+	        this.regStartupEvent(this.eventGuestTip.bind(this), -1, this.EVENT_DEMO_TIP);
+	        // 显示引导页
+	        this.regStartupEvent(this.eventGuideTip.bind(this), 0, this.EVENT_GUIDE);
+	        // 判断是否有可以使用的优惠券 // demo 场不弹
+	        if (!Player.inst.isGuest)
+	            this.regStartupEvent(this.eventCouponTip.bind(this), 0, this.EVENT_COUPON);
+	        // 判断时候有可以使用的bonus
+	        this.regStartupEvent(this.eventBonusTip.bind(this), 0, this.EVENT_BONUS);
+	        this.runEventStart();
+	    }
+	    /**
+	     * 注册启动事件
+	     * @param handler 执行的方法
+	     * @param weight 权重 越大越后执行  默认0
+	     * @param name 事件名字 默认 null
+	     */
+	    regStartupEvent(handler, weight = 0, name = null) {
+	        for (let i = 0; i < this.startupEvent.length; i++) {
+	            let regs = this.startupEvent[i];
+	            if (regs.weight > weight) { // 传入的值比当前值小
+	                this.regStartupEventIndex(i, handler, weight, name);
+	                return;
+	            }
+	        }
+	        tsCore.Log.debug("regStartupEvent -> name = " + name);
+	        this.startupEvent.push({ handler: handler, weight: weight, name: name });
+	    }
+	    /**
+	     * 在指定位置插入一个事件
+	     * @param index 位置
+	     * @param handler 方法
+	     * @param weight 权重 默认0
+	     * @param name 事件名字 默认 null
+	     */
+	    regStartupEventIndex(index, handler, weight = 0, name = null) {
+	        tsCore.Log.debug("regStartupEventIndex -> name = " + name);
+	        this.startupEvent.splice(index, 0, { handler: handler, weight: weight, name: name });
+	    }
+	    /**
+	     * 注册或更新执行函数
+	     * @param name 事件名字
+	     * @param handler
+	     */
+	    regOrUpdateStartupEvent(name, handler) {
+	        const h = this.startupEvent.find(value => value.name == name);
+	        if (h == null)
+	            this.regStartupEvent(handler, 0, name);
+	        else
+	            h.handler = handler;
+	    }
+	    /**
+	     * 更新执行函数
+	     * @param name 事件名字
+	     * @param handler
+	     */
+	    updateStartupEvent(name, handler) {
+	        const h = this.startupEvent.find(value => value.name == name);
+	        if (h != null)
+	            h.handler = handler;
+	    }
+	    /**
+	     * 根据事件名字 获取事件的执行位置
+	     * @param name 事件名字
+	     */
+	    getStartupEventIndex(name) {
+	        return this.startupEvent.findIndex(value => value.name == name);
+	    }
+	    /**
+	     * 删除指定位置的启动事件
+	     * @param index 位置
+	     */
+	    removeStartupEventIndex(index) {
+	        this.startupEvent.splice(index, 1);
+	    }
+	    /**
+	     * 删除指定名字的启动事件
+	     * @param name 事件名字
+	     */
+	    removeStartupEventName(name) {
+	        const index = this.startupEvent.findIndex(value => value.name == name);
+	        if (index > -1) {
+	            this.startupEvent.splice(index, 1);
+	            tsCore.Log.debug("Unload Startup event -> name = " + name);
+	        }
+	    }
+	    /**
+	     * 执行事件列表
+	     */
+	    runEvent() {
+	        if (this.startupEvent.length > 0) {
+	            let event = this.startupEvent.shift();
+	            tsCore.Log.debug("execute event = " + event.name);
+	            runFun(event.handler);
 	        }
 	        else {
-	            tsCore.Log.warn("sendGameAnalysis : gameId=" + Player.inst.gameId + " not exist");
+	            this.runEventEnd();
+	        }
+	    }
+	    /** 开始运行事件前 */
+	    runEventStart() {
+	        this.runEvent();
+	    }
+	    /** 运行事件结束 */
+	    runEventEnd() {
+	        tsCore.Log.debug("runEventEnd");
+	        if (this.isRunEvent) {
+	            this.startGame();
+	        }
+	        this.isRunEvent = false;
+	    }
+	    /**
+	     * 重新连接网络 同步数据
+	     * @param callback 同步完成调用
+	     * @param count 剩余重复次数
+	     */
+	    reconnectionNet(callback, count = 3) {
+	        if (Player.inst.isGuest || !Player.inst.token || count <= 0) {
+	            tsCore.HistoryManager.pauseHistory = false;
+	            fgui.GRoot.inst.closeModalWait();
+	            runFun(callback);
+	            return;
+	        }
+	        fgui.GRoot.inst.showModalWait(getString(LibStr.WAITING));
+	        tsCore.HistoryManager.pauseHistory = true;
+	        // 同步用户金额
+	        PromptWindow.inst.clearCache();
+	        this.gameModel.gameServlet.getUserMoney((obj) => {
+	            if (obj.code == HttpCode.OK) {
+	                let data = obj.data;
+	                Player.inst.money = data.balance;
+	                this.sendAction(ActionLib.GAME_UPDATE_MONEY);
+	                tsCore.HistoryManager.pauseHistory = false;
+	                fgui.GRoot.inst.closeModalWait();
+	                runFun(callback);
+	            }
+	            else {
+	                count--;
+	                Laya.timer.once(1000, this, this.reconnectionNet, [callback, count]);
+	            }
+	        }, () => {
+	            count--;
+	            Laya.timer.once(1000, this, this.reconnectionNet, [callback, count]);
+	        });
+	    }
+	    /** 新游戏开始  这里可以处理一些逻辑 */
+	    newGameStartLogic(handler) {
+	        let gameData = Player.inst.gameData;
+	        if (BaseScene.inviteRealMoneyNeed()) {
+	            gameData.isRecommend = true;
+	            this.showInviteRealMoney(handler);
+	            return;
+	        }
+	        // let playTip: string = LocalStorage.getItem("playTip")
+	        // if (!Render.isConchApp && Player.inst.webPlayCount == CommonCmd.WEB_MAX_PLAY_COUNT && StringUtil.isEmpty(playTip)) {
+	        //     LocalStorage.setItem("playTip", "Y")
+	        //     // new DownloadWindow().showTip(handler)
+	        //     return
+	        // }
+	        runFun(handler);
+	    }
+	    /**
+	     * 显示邀请进入cash场
+	     * @param handler 回调
+	     */
+	    showInviteRealMoney(handler) {
+	        let obj = { okName: "Ok" };
+	        if (Player.inst.token) {
+	            WaitResult.inst.show();
+	            this.gameModel.gameServlet.postData(Player.inst.data.getWapUrl(Urls.URL_USER_ACCOUNT_ASSET), { token: Player.inst.token }, (data, request) => {
+	                WaitResult.inst.hide();
+	                if (data.code == HttpCode.OK && data.data) {
+	                    if (data.data.balance == 0) {
+	                        obj.okName = getString(LibStr.DEPOSIT_PLAY);
+	                    }
+	                }
+	                PromptWindow.inst.showCancelTip(LibStr.SHOW_INVITE_REAL_MONEY, obj, handler, () => {
+	                    if (obj.okName == getString(LibStr.DEPOSIT_PLAY)) {
+	                        JSUtils.gameClose(1);
+	                        JSUtils.deposit();
+	                    }
+	                    else {
+	                        JSUtils.gameClose(1);
+	                    }
+	                });
+	            }, () => {
+	                WaitResult.inst.hide();
+	                PromptWindow.inst.showCancelTip(LibStr.SHOW_INVITE_REAL_MONEY, obj, handler, () => {
+	                    JSUtils.gameClose(1);
+	                });
+	            });
+	            return;
+	        }
+	        else {
+	            obj.okName = getString(LibStr.LOGIN_PLAY);
+	        }
+	        PromptWindow.inst.showCancelTip(LibStr.SHOW_INVITE_REAL_MONEY, obj, handler, () => {
+	            if (obj.okName == getString(LibStr.LOGIN_PLAY)) {
+	                JSUtils.login();
+	            }
+	            else {
+	                this.backHandler();
+	            }
+	        });
+	    }
+	    /**
+	     * 新一轮游戏的开始
+	     */
+	    startGame() {
+	        // 当前没有在使用的优惠卷  并且界面还在优惠卷模式下
+	        let useObj;
+	        if ((useObj = Player.inst.getUseCoupon()) != null) {
+	            if (useObj.num <= 0) {
+	                Player.inst.removeCoupon(useObj);
+	                this.sendAction(ActionLib.GAME_USE_ACTIVITY_END);
+	            }
 	        }
 	    }
 	    /**
-	     * 向Google Analytics 发送事件
-	     * @param eventAction 事件操作
-	     * @param eventLabel  事件标签
+	     * 更新金额
+	     * ```
+	     * 未实现
+	     * ```
 	     */
-	    static send(eventAction, eventLabel = "") {
-	        AnalyticsManager.ga("event", "game" + (tsCore.Environment.active == tsCore.EnvType.DEV ? "_dev" : ""), eventAction, eventLabel);
+	    updateMoney() {
+	    }
+	    hideRecord() {
+	        SceneManager.inst.backHandler();
+	        super.hideRecord();
+	    }
+	    get gameModel() {
+	        var _a;
+	        (_a = this._gameModel) !== null && _a !== void 0 ? _a : (this._gameModel = SceneManager.inst.starter.gameModel);
+	        return this._gameModel;
+	    }
+	    set gameModel(value) {
+	        this._gameModel = value;
 	    }
 	    /**
-	     * 向Google Analytics 发送用户用时
-	     * @param timingVar 用于标识要记录的变量
-	     * @param timingValue 向 Google Analytics（分析）报告的，以毫秒为单位的历时时间（例如 20）。
-	     *
+	     * 押注还原(用于押注失败,退还所有的押注)
+	     * ```
+	     * ● 未做处理
+	     * ```
 	     */
-	    static sendTiming(timingVar, timingValue) {
-	        this.isOpenAnalytics = tsCore.ConfigKit.get("openAnalytics");
-	        if (Laya.Browser.onLayaRuntime && this.isOpenAnalytics)
-	            AppManager.enterInvite({ eventName: timingVar, eventValue: timingValue }, AppManager.nullFun);
+	    resetBet() {
+	    }
+	    dispose() {
+	        tsCore.Log.debug("game dispose");
+	        Player.inst.stopAllCoupon();
+	        if (this.guideSprite)
+	            this.guideSprite.dispose();
+	        if (this.promptTip)
+	            this.promptTip.dispose();
+	        super.dispose();
+	    }
+	    backHandler() {
+	        if (this.parent)
+	            AppRecordManager.backGame();
+	    }
+	    // *********************        Event         **********************************
+	    eventSelectRoom() {
+	        this.sendAction(ActionLib.GAME_SHOW_ROOM_SELECT);
 	    }
 	    /**
-	     * 向 Google Analytics 发送事件
-	     * @param type
-	     * @param category
-	     * @param action
-	     * @param label
+	     * demo场弹窗
+	     */
+	    eventGuestTip() {
+	        // let value: string = LocalStorage.getItem(Player.inst.gameId + "_demo")
+	        // if (Player.inst.isGuest && !value) {
+	        if (Player.inst.isGuest && !Player.inst.urlParam.debug) {
+	            PromptWindow.inst.showTip({ msg: LibStr.PROMPT_GUEST, obj: { cancelName: getString(LibStr.OK) }, callback: this.runEvent.bind(this) });
+	            // LocalStorage.setItem(Player.inst.gameId + "_demo", "1")
+	        }
+	        else {
+	            this.runEvent();
+	        }
+	    }
+	    eventCouponTip() {
+	        let giftOpenTimerStr = Laya.LocalStorage.getItem("giftOpenTimer" + Player.inst.gameId);
+	        let giftOpenTimer;
+	        if (tsCore.StringUtil.isEmpty(giftOpenTimerStr)) {
+	            giftOpenTimerStr = "0";
+	        }
+	        giftOpenTimer = parseFloat(giftOpenTimerStr);
+	        if (!tsCore.DateUtils.isSameDay(giftOpenTimer, Laya.Browser.now())) {
+	            let coupon = Player.inst.getCouponGame(Player.inst.gameId);
+	            if (coupon.length > 0) {
+	                this.activityHandler();
+	                Laya.LocalStorage.setItem("giftOpenTimer" + Player.inst.gameId, Laya.Browser.now() + "");
+	            }
+	            else {
+	                this.runEvent();
+	            }
+	        }
+	        else {
+	            this.runEvent();
+	        }
+	    }
+	    eventBonusTip() {
+	        if (Player.inst.jackpotData.length > 0 && this.jackpotBtn) {
+	            this.jackpotBtn.jackpotBtn.displayObject.event(Laya.Event.CLICK);
+	        }
+	        else {
+	            this.runEvent();
+	        }
+	    }
+	    /** 引导事件执行 */
+	    eventGuideTip() {
+	        let value = Laya.LocalStorage.getItem("GameGuide_" + Player.inst.gameId);
+	        if (!value) {
+	            let result = this.showGuide();
+	            if (result) {
+	                Laya.LocalStorage.setItem("GameGuide_" + Player.inst.gameId, "true");
+	            }
+	            else {
+	                this.runEvent();
+	            }
+	        }
+	        else {
+	            this.runEvent();
+	        }
+	    }
+	    /** 显示引导页 默认不显示引导页 */
+	    showGuide() {
+	        let obj = GameConfigKit.gameRes();
+	        if (obj.guide) { // 如果存在引导页配置  默认使用全屏展示
+	            this.loadFillImage(obj.guide);
+	            return true;
+	        }
+	        return false;
+	    }
+	    /**
+	     * 加载全屏图片
 	     * @param value
 	     */
-	    static ga(type, category, action, label, value) {
-	        this.isOpenAnalytics = tsCore.ConfigKit.get("openAnalytics");
-	        if (Player.inst.urlParam.debug) {
-	            const encoder = new TextEncoder();
-	            const categoryLen = encoder.encode(category).length;
-	            const actionLen = encoder.encode(action).length;
-	            const labelLen = encoder.encode(label).length;
-	            tsCore.Log.debug(`category=${categoryLen} action=${actionLen} label=${labelLen}`);
-	        }
-	        if (this.isOpenAnalytics && !Laya.Browser.onLayaRuntime) {
-	            if (window.ga) {
-	                ga('send', type, category, action, label);
+	    loadFillImage(value) {
+	        let urls = value instanceof Array ? value : [value];
+	        let index = 0;
+	        this.guideSprite = new fgui.GLoader();
+	        this.guideSprite.setSize(fgui.GRoot.inst.width, fgui.GRoot.inst.height);
+	        this.guideSprite.fill = fgui.LoaderFillType.ScaleFree;
+	        this.guideSprite.onClick(this, () => {
+	            index++;
+	            if (index >= urls.length) {
+	                this.guideSprite.dispose();
+	                this.guideSprite = null;
+	                this.runEvent();
 	            }
-	            value !== null && value !== void 0 ? value : (value = label);
-	            if (window.gtag) {
-	                gtag(type, action, {
-	                    event_category: category,
-	                    event_label: label,
-	                    value
-	                });
+	            else {
+	                this.guideSprite.url = urls[index];
 	            }
-	        }
-	        if (this.isOpenAnalytics && Laya.Browser.onLayaRuntime)
-	            AppManager.enterFeedback({ eventName: action, eventValue: label }, AppManager.nullFun);
+	        });
+	        this.guideSprite.url = urls[index];
+	        fgui.GRoot.inst.addChild(this.guideSprite);
 	    }
 	}
-	/** 开启数据统计 */
-	AnalyticsManager.isOpenAnalytics = true;
+	/**
+	 * 邀请玩现金场 的基本需求
+	 * @returns {boolean}
+	 */
+	BaseScene.inviteRealMoneyNeed = () => {
+	    var _a, _b;
+	    let gameData = Player.inst.gameData;
+	    let winLimit = ((_a = gameData === null || gameData === void 0 ? void 0 : gameData.getTotalBetMoney()) !== null && _a !== void 0 ? _a : 0) * 3;
+	    return Player.inst.isGuest && Player.inst.guestModel.guestPlayCount >= CommonCmd.GUEST_MAX_PLAY_COUNT && (gameData != null && !gameData.isRecommend && winLimit <= ((_b = gameData === null || gameData === void 0 ? void 0 : gameData.totalWinMoney) !== null && _b !== void 0 ? _b : 100));
+	};
 	
-	gameLib.AnalyticsManager = AnalyticsManager
+	gameLib.BaseScene = BaseScene
+	
+	/** 加载界面 */
+	class LoadingWindow extends BaseView {
+	    constructor() {
+	        super(...arguments);
+	        /** 当前进度 */
+	        this.tempValue = 0;
+	    }
+	    static get inst() {
+	        var _a;
+	        (_a = this._instance) !== null && _a !== void 0 ? _a : (this._instance = fgui.UIPackage.createObjectFromURL("//init/LoadingWindow", LoadingWindow));
+	        return this._instance;
+	    }
+	    onInit() {
+	        this.controller = this.getController("c1");
+	        this.loader = this.getChild("n0").asLoader;
+	        this.mesText = this.getChild("n1").asTextField;
+	        // this.visible = false
+	    }
+	    /**
+	     * 显示加载页
+	     * @param index 显示的形式
+	     * @param headText 使用头文本
+	     *
+	     */
+	    show(index = 0, headText) {
+	        tsCore.HistoryManager.pauseHistory = true;
+	        this.changeView(index, headText);
+	        this.setSize(fgui.GRoot.inst.width, fgui.GRoot.inst.height);
+	        fgui.GRoot.inst.addChild(this);
+	    }
+	    /**
+	     * 切换显示状态
+	     * @param index 显示的形式
+	     * @param headText 使用头文本
+	     */
+	    changeView(index = 0, headText) {
+	        headText !== null && headText !== void 0 ? headText : (headText = getString(LibStr.LOADING).split(".").join(""));
+	        this.headText = headText;
+	        this.controller.selectedIndex = index;
+	        this.mesText.text = "";
+	        //		loaderUrl("init_atlas_evpb2.jpg")
+	        Laya.timer.clear(this, this.changeHandler);
+	        Laya.timer.loop(500, this, this.changeHandler);
+	    }
+	    changeHandler() {
+	        this.mesText.text = this.getMsg() + this.tempValue + "%";
+	        this.dian++;
+	        if (this.dian > 3) {
+	            this.dian = 0;
+	        }
+	    }
+	    /**
+	     * 更新进度
+	     * @param value 当前模块进度值
+	     * @param tempCount 当前加载进度模块 1 开始
+	     * @param totalCount 总共要加载的模块数
+	     */
+	    updateMsg(value, tempCount = 1, totalCount = 1) {
+	        //			trace("LoadingWindow.updateMsg(vlaue)", value+"%")
+	        this.tempValue = LoadingWindow.getProgress(value, tempCount, totalCount);
+	        JSUtils.getProgress(this.tempValue);
+	        this.mesText.text = this.getMsg() + this.tempValue.toFixed(2) + "%";
+	    }
+	    /**
+	     * 更新进度
+	     * @param value 当前模块进度值
+	     * @param tempCount 当前加载进度模块 1 开始
+	     * @param totalCount 总共要加载的模块数
+	     */
+	    static getProgress(value, tempCount = 1, totalCount = 1) {
+	        // 先算出每一份 占用的百分比份量
+	        let pieces = 100 / totalCount;
+	        // 得出当前加载所占百分比的数量
+	        let pro = value / 100 * pieces;
+	        return pieces * (tempCount - 1) + pro;
+	    }
+	    /**
+	     * 显示加载错误提示
+	     * @param value
+	     *
+	     */
+	    showError(value) {
+	        Laya.timer.clear(this, this.changeHandler);
+	        this.mesText.text = value;
+	    }
+	    getMsg() {
+	        let str = this.headText;
+	        for (let i = 0; i < 3; i++) {
+	            if (i < this.dian) {
+	                str += ".";
+	            }
+	            else {
+	                str += " ";
+	            }
+	        }
+	        return str;
+	    }
+	    /** 替换加载图片 */
+	    loaderUrl(url) {
+	        this.loader.url = url;
+	    }
+	    hide() {
+	        tsCore.HistoryManager.pauseHistory = false;
+	        Laya.timer.clear(this, this.changeHandler);
+	        this.removeFromParent();
+	    }
+	}
+	
+	gameLib.LoadingWindow = LoadingWindow
+	
+	class JSUtils {
+	    /**
+	     * 刷新页面  如果有父页面  刷新父页面
+	     */
+	    static reloadAll() {
+	        if (Laya.Browser.window.parent) {
+	            Laya.Browser.window.parent.location.reload();
+	        }
+	        else {
+	            Laya.Browser.window.location.reload();
+	        }
+	    }
+	    /** 刷新 */
+	    static reload() {
+	        Laya.Browser.window.location.reload();
+	    }
+	    /** 进入登录界面 /login */
+	    static login() {
+	        JSUtils.openPage("/login");
+	    }
+	    /** 充值 /deposit */
+	    static deposit() {
+	        JSUtils.openPage("/deposit");
+	    }
+	    /** 进入刮刮卡 /jackpot */
+	    static jackpot() {
+	        JSUtils.openPage("/jackpot");
+	    }
+	    /**
+	     * 打开指定的web页面 不关闭游戏的前提下
+	     * @param value
+	     * @deprecated
+	     * @see openPage
+	     */
+	    static openWebPageWithoutLeaveGame(value) {
+	        JSUtils.openPage(value, false);
+	    }
+	    /** 关闭游戏
+	     * @param [type = 0]  0 默认直接退出  1 退出切换到新游戏
+	     * @param [data = null]
+	     * */
+	    static gameClose(type = 0, data = null) {
+	        var _a, _b, _c, _d, _e;
+	        tsCore.Log.debug(`gameClose->${type} ${data}`);
+	        SceneManager.inst.initComplete = false;
+	        SceneManager.inst.isLoaderResComplete = false;
+	        AppManager.callIOS("gameClose", {
+	            type: type,
+	            data: data
+	        }) ? SceneManager.inst.closeGame() : ((_b = (_a = Laya.Browser.window.APP) === null || _a === void 0 ? void 0 : _a.gameClose) === null || _b === void 0 ? void 0 : _b.call(_a, type, data))
+	            || ((_e = (_d = (_c = Laya.Browser.window.parent) === null || _c === void 0 ? void 0 : _c.GameToHall) === null || _d === void 0 ? void 0 : _d.gameClose) === null || _e === void 0 ? void 0 : _e.call(_d, type, data))
+	            // 如果不是加速器 并且不是在非https下  那么直接返回大厅
+	            || (!Laya.Browser.onLayaRuntime && window.location.protocol == "https:") && (window.location.href = `//${window.location.host}`);
+	        AppManager.showWeb({ javascript: `window.GameToHall.gameClose(${type}, ${data})` });
+	        SceneManager.inst.closeGame();
+	    }
+	    /**
+	     * 弹窗
+	     * @param msg 内容文本
+	     * @param title 标题
+	     * @param okText ok文本
+	     * @param cancelText 取消文本
+	     */
+	    static alert(msg, title = "", okText = "", cancelText = "") {
+	        var _a, _b, _c, _d, _e, _f, _g, _h;
+	        tsCore.Log.debug(`alert-> msg:${msg}, title=${title}, okText=${okText}, cancelText=${cancelText}`);
+	        if (AppManager.callIOS("alert", { msg: msg, title: title, ensureTv: okText, cancelTv: cancelText }))
+	            return;
+	        ((_b = (_a = Laya.Browser.window.APP) === null || _a === void 0 ? void 0 : _a.alert) === null || _b === void 0 ? void 0 : _b.call(_a, msg, title, okText, cancelText)) ||
+	            ((_e = (_d = (_c = Laya.Browser.window.parent) === null || _c === void 0 ? void 0 : _c.GameToHall) === null || _d === void 0 ? void 0 : _d.alert) === null || _e === void 0 ? void 0 : _e.call(_d, msg)) ||
+	            ((_h = (_g = (_f = Laya.Browser.window.parent) === null || _f === void 0 ? void 0 : _f.GameToHall) === null || _g === void 0 ? void 0 : _g.openModal) === null || _h === void 0 ? void 0 : _h.call(_g, msg));
+	        AppManager.showWeb({ javascript: `window.GameToHall.alert && window.GameToHall.alert('${msg}')` });
+	        AppManager.showWeb({ javascript: `window.GameToHall.openModal && window.GameToHall.openModal('${msg}')` });
+	    }
+	    /**
+	     * 打开一个原生页面
+	     * @param page 页面 如： "/giftPage?token=***"
+	     * login,register,userSetting,webDetail,gameDetail,editNickName,forgetMain,changePwd,home,deposit,promotion,withdraw,profile
+	     * @param [isCloseGame=true] 是否关闭游戏
+	     *
+	     * @example
+	     *
+	     * openPage("//{host}/{lang}/page") = url= //www.google.com/en/page
+	     *
+	     *
+	     */
+	    static openPage(page, isCloseGame = true) {
+	        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+	        tsCore.Log.debug(`openPage-> page:${page}, isCloseGame=${isCloseGame}`);
+	        if (typeof page === "string") {
+	            page = { page: page, isCloseGame: isCloseGame };
+	        }
+	        (_a = page.type) !== null && _a !== void 0 ? _a : (page.type = 0);
+	        // 双斜杠开头  默认添加协议头
+	        if (page.page.startsWith("//"))
+	            page.page = window.location.protocol + page.page;
+	        else if (JSUtils.autoEscapeURL && page.page.startsWith("/"))
+	            page.page = `${window.location.protocol}//{host}/{lang}` + page.page;
+	        // 替换域名和 语言
+	        page.page = page.page.replace(/{host}/g, window.location.host)
+	            .replace(/\/{lang}/g, Player.inst.urlParam.language ? "/" + Player.inst.urlParam.language : "");
+	        if (AppManager.callIOS("openPage", page))
+	            return;
+	        (_c = (_b = Laya.Browser.window.APP) === null || _b === void 0 ? void 0 : _b.openPage) === null || _c === void 0 ? void 0 : _c.call(_b, page, isCloseGame);
+	        (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.openPage) === null || _f === void 0 ? void 0 : _f.call(_e, page.page, isCloseGame);
+	        if (isCloseGame) {
+	            (_j = (_h = (_g = Laya.Browser.window.parent) === null || _g === void 0 ? void 0 : _g.GameToHall) === null || _h === void 0 ? void 0 : _h.comeWebPage) === null || _j === void 0 ? void 0 : _j.call(_h, page.page);
+	            AppManager.showWeb({ javascript: `window.GameToHall.openPage && window.GameToHall.openPage('${page.page}')` });
+	            AppManager.showWeb({ javascript: `window.GameToHall.comeWebPage && window.GameToHall.comeWebPage('${page.page}')` });
+	            SceneManager.inst.closeGame();
+	        }
+	        else {
+	            (_m = (_l = (_k = Laya.Browser.window.parent) === null || _k === void 0 ? void 0 : _k.GameToHall) === null || _l === void 0 ? void 0 : _l.openWebPageWithoutLeaveGame) === null || _m === void 0 ? void 0 : _m.call(_l, page.page);
+	            AppManager.showWeb({ javascript: `window.GameToHall.openWebPageWithoutLeaveGame('${page.page}')` });
+	        }
+	    }
+	    static callMethod(methodName, args) {
+	        var _a, _b, _c, _d, _e;
+	        tsCore.Log.debug(`callMethod-> methodName:${methodName}, args=${args}`);
+	        if (AppManager.callIOS(methodName, args))
+	            return;
+	        (_b = (_a = Laya.Browser.window.APP) === null || _a === void 0 ? void 0 : _a[methodName]) === null || _b === void 0 ? void 0 : _b.call(null, ...args);
+	        (_e = (_d = (_c = Laya.Browser.window.parent) === null || _c === void 0 ? void 0 : _c.GameToHall) === null || _d === void 0 ? void 0 : _d[methodName]) === null || _e === void 0 ? void 0 : _e.call(null, ...args);
+	    }
+	    /** 进入游戏进度条 */
+	    static progress(value) {
+	        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
+	        tsCore.Log.debug(`progress->${value}`);
+	        if (AppManager.callIOS("progress", { value: value }, false))
+	            return;
+	        (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.progress) === null || _c === void 0 ? void 0 : _c.call(_b, value);
+	        (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.getProgress) === null || _f === void 0 ? void 0 : _f.call(_e, value);
+	        (_h = (_g = Laya.Browser.window.APP) === null || _g === void 0 ? void 0 : _g.progress) === null || _h === void 0 ? void 0 : _h.call(_g, value);
+	        (_k = (_j = Laya.Browser.window.loadingView) === null || _j === void 0 ? void 0 : _j.executionJavascript) === null || _k === void 0 ? void 0 : _k.call(_j, "window.GameToHall.getProgress(" + value + ")");
+	        (_m = (_l = Laya.Browser.window.loadingView) === null || _l === void 0 ? void 0 : _l.loading) === null || _m === void 0 ? void 0 : _m.call(_l, value);
+	        AppManager.executionJavascript("window.GameToHall.progress && window.GameToHall.progress", value);
+	        AppManager.executionJavascript("window.GameToHall.getProgress && window.GameToHall.getProgress", value);
+	    }
+	    /**
+	     * 原生应用获取顶部的刘海屏高度
+	     *
+	     */
+	    static getSafeAreaTop() {
+	        var _a, _b, _c;
+	        if (AppManager.callIOS("getSafeAreaTop"))
+	            return 0;
+	        return (_c = (_b = (_a = Laya.Browser.window.APP) === null || _a === void 0 ? void 0 : _a.getSafeAreaTop) === null || _b === void 0 ? void 0 : _b.call(_a)) !== null && _c !== void 0 ? _c : 0;
+	    }
+	    /** 通知进入游戏了 */
+	    static gameOnload() {
+	        var _a, _b, _c, _d, _e, _f, _g;
+	        tsCore.Log.debug("gameOnload->");
+	        if (AppManager.callIOS("gameOnload"))
+	            return;
+	        (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.gameOnload) === null || _c === void 0 ? void 0 : _c.call(_b);
+	        (_e = (_d = Laya.Browser.window.APP) === null || _d === void 0 ? void 0 : _d.gameOnload) === null || _e === void 0 ? void 0 : _e.call(_d);
+	        (_g = (_f = Laya.Browser.window.conchMarket) === null || _f === void 0 ? void 0 : _f.gameOnload) === null || _g === void 0 ? void 0 : _g.call(_f);
+	        AppManager.executionJavascript("window.GameToHall.gameOnload", null);
+	    }
+	    /** 上传头像 */
+	    static uploadAvatar() {
+	        var _a, _b, _c, _d, _e, _f;
+	        tsCore.Log.debug("uploadAvatar->");
+	        if (AppManager.callIOS("uploadAvatar"))
+	            return;
+	        (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.uploadAvatar) === null || _c === void 0 ? void 0 : _c.call(_b);
+	        (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.openReviseAvatarNickNameDrawer) === null || _f === void 0 ? void 0 : _f.call(_e);
+	        AppManager.showWeb({ javascript: "window.GameToHall.uploadAvatar && window.GameToHall.uploadAvatar()" });
+	        AppManager.showWeb({ javascript: "window.GameToHall.openReviseAvatarNickNameDrawer && window.GameToHall.openReviseAvatarNickNameDrawer()" });
+	    }
+	}
+	/**
+	 * 在处理 /开头的url 是否自动转义 成完整路径
+	 */
+	JSUtils.autoEscapeURL = true;
+	JSUtils.getProgress = JSUtils.progress;
+	/**
+	 * @deprecated
+	 * @see JSUtils.uploadAvatar
+	 */
+	JSUtils.updateHead = JSUtils.uploadAvatar;
+	/**
+	 * @deprecated
+	 * @see JSUtils.alert
+	 */
+	JSUtils.openModal = JSUtils.alert;
+	
+	gameLib.JSUtils = JSUtils
+	
+	/**
+	 * 游戏类型
+	 */
+	var GameType;
+	(function (GameType) {
+	    /** 正常游戏 */
+	    GameType[GameType["NORMAL"] = 0] = "NORMAL";
+	    /** 连线游戏 */
+	    GameType[GameType["SLOT"] = 1] = "SLOT";
+	    /** 连线游戏,单独的bet bet值和线数量无关 */
+	    GameType[GameType["SLOT_SINGLE_BET"] = 2] = "SLOT_SINGLE_BET";
+	})(GameType || (GameType = {}));
+	/**
+	 * 游戏数据的基类
+	 */
+	class BaseGameData {
+	    constructor() {
+	        /**
+	         * 服务器返回的当前本金
+	         */
+	        this.currentBalance = 0;
+	        /** 最后盈利总额 */
+	        this.totalWinMoneyLast = 0;
+	        /** 本轮总盈利额 */
+	        this.totalWinMoney = 0;
+	        /** 服务器返回当前盈利额 */
+	        this.serverWinMoney = 0;
+	        /**
+	         * 玩的次数
+	         */
+	        this.playCount = 0;
+	        /**
+	         * 推荐
+	         */
+	        this.isRecommend = false;
+	        /**
+	         * 是否已启动特殊游戏模式
+	         */
+	        this.specialMode = false;
+	        /**
+	         * 游戏类型
+	         * @see GameType
+	         */
+	        this.gameType = GameType.NORMAL;
+	        /** 是否快速播放 */
+	        this._isTurboMode = false;
+	        /** 默认bet位置 */
+	        this.defaultBetIndex = 0;
+	        /** 缓存 后端计算 当前盈利 */
+	        this.tempServerWinMoney = 0;
+	        /** 当前玩家选择的自动bet次数 */
+	        this.autoBetCount = 0;
+	        /** 当前玩家选择的自动bet次数 (缓存) */
+	        this.tempAutoBetCount = 0;
+	        /** bet 额度切换值 */
+	        this.betMoney = [];
+	        /** 当前bet值 */
+	        this.betValue = 0;
+	        /** 通知数据 */
+	        this.noticeData = [];
+	        /**
+	         * 重置默认bet值
+	         * @default false
+	         */
+	        this.isResetBetValue = false;
+	        const key = Player.inst.gameId + "_isTurboMode";
+	        this._isTurboMode = Laya.LocalStorage.getItem(key) != null;
+	    }
+	    get isTurboMode() {
+	        return this._isTurboMode;
+	    }
+	    set isTurboMode(value) {
+	        this._isTurboMode = value;
+	        const key = Player.inst.gameId + "_isTurboMode";
+	        if (value) {
+	            Laya.LocalStorage.setItem(key, "1");
+	        }
+	        else {
+	            Laya.LocalStorage.removeItem(key);
+	        }
+	    }
+	    /**
+	     * 获取 Skeleton 播放速率
+	     */
+	    getPlaybackRate() {
+	        return this.isTurboMode ? 2 : 1;
+	    }
+	    /**
+	     * 将传入参数计算加速后的值
+	     * @param value 获取转换时间
+	     * @param [rate=-1] 需要加速的速率 如果是-1将调用 getPlaybackRate 获取默认速率
+	     *
+	     * @see getPlaybackRate
+	     */
+	    convertPlaybackRate(value, rate = -1) {
+	        if (!this.isTurboMode)
+	            return value;
+	        if (rate == -1)
+	            rate = this.getPlaybackRate();
+	        return Math.floor(value / rate);
+	    }
+	    /**
+	     * 总金额 default BaseGameData.betValue
+	     */
+	    getTotalBetMoney() {
+	        return this.betValue;
+	    }
+	    /**
+	     * 获取赢钱动画 的播放时长
+	     * @param level 播放时长等级 0开始
+	     */
+	    getWinMoneyAniDuration(level) {
+	        return this.convertPlaybackRate(1000) * (level + 1);
+	    }
+	    /**
+	     * 是否达到 BigWin 的值
+	     * @param [isTotal=false] 是否看总金额
+	     * @param [multiple=10] 倍数
+	     * @return
+	     */
+	    isBigWin(isTotal = false, multiple = 10) {
+	        return (isTotal ? this.totalWinMoney : this.serverWinMoney) > this.getTotalBetMoney() * multiple;
+	    }
+	    /**
+	     * 是否达到 MegaWin 的值
+	     * @param [isTotal=false] 是否看总金额
+	     * @param [multiple=30] 倍数
+	     * @return
+	     */
+	    isMegaWin(isTotal = false, multiple = 30) {
+	        return (isTotal ? this.totalWinMoney : this.serverWinMoney) > this.getTotalBetMoney() * multiple;
+	    }
+	    /**
+	     * 是否达到 SuperWin 的值
+	     * @param [isTotal=false] 是否看总金额
+	     * @param [multiple=60] 倍数
+	     */
+	    isSuperWin(isTotal = false, multiple = 60) {
+	        return (isTotal ? this.totalWinMoney : this.serverWinMoney) > this.getTotalBetMoney() * multiple;
+	    }
+	    reportError() {
+	        return JSON.stringify(this);
+	    }
+	}
+	
+	gameLib.GameType = GameType
+	
+	gameLib.BaseGameData = BaseGameData
+	
+	class HtmlWindow extends fgui.Window {
+	    constructor() {
+	        super(...arguments);
+	        this.obj = {
+	            "aboutus.html": "About us",
+	            "fair_payment.html": "FAQs",
+	            "common_problems.html": "Fair payouts",
+	            "user_agreement.html": "GameData Agreement",
+	            "privacy.html": "Privacy Policy",
+	            "a": ""
+	        };
+	    }
+	    static get inst() {
+	        var _a;
+	        (_a = this._instance) !== null && _a !== void 0 ? _a : (this._instance = new HtmlWindow);
+	        return this._instance;
+	    }
+	    onInit() {
+	        this.modal = true;
+	        this.contentPane = fgui.UIPackage.createObject("common", "HtmlWindow").asCom;
+	        this.contentPane.addRelation(fgui.GRoot.inst, fgui.RelationType.Size);
+	        this.loadMovieClip = this.contentPane.getController("c1");
+	        this.btn = this.contentPane.getChild("n1").asButton;
+	        this.htmlText = this.contentPane.getChild("n5").asTextField;
+	        this.contentPane.setSize(fgui.GRoot.inst.width, fgui.GRoot.inst.height);
+	        this.btn.onClick(this, this.hide);
+	    }
+	    onShown() {
+	        fgui.GRoot.inst.displayObject.stage.on(Laya.Event.RESIZE, this, this.sizeChangeHandler);
+	        this.sizeChangeHandler();
+	        super.onShown();
+	    }
+	    sizeChangeHandler() {
+	        this._syncInputTransform();
+	    }
+	    /**
+	     * 新打开一个html浏览窗口
+	     * @param url 加载地址
+	     * @param full 是否全屏
+	     * @param closeHandler 此界面关闭后回调
+	     */
+	    openHtml(url, full = false, closeHandler) {
+	        this.closeHandler = closeHandler;
+	        tsCore.HistoryManager.addHistory(null, this);
+	        this.show();
+	        tsCore.App.inst.sendAction(ActionLib.GAME_UPDATE_DEFAULT_SCREEN);
+	        this.loadMovieClip.selectedIndex = 0;
+	        // 是否要使用  默认的  url
+	        let isHtmlUrl = !url.startsWith("http");
+	        if (!Laya.Render.isConchApp) {
+	            if (isHtmlUrl) {
+	                Player.inst.windowOpen(Laya.Browser.window.htmlUrl + url);
+	            }
+	            else {
+	                Player.inst.windowOpen(url);
+	            }
+	            this.hide();
+	        }
+	        else {
+	            let title = this.obj["a"];
+	            if (this.obj[url]) {
+	                title = this.obj[url];
+	            }
+	            let jsonObject = {
+	                webTitle: title,
+	                webHeadVisibility: !full,
+	                x: 0,
+	                y: 0,
+	                width: -1,
+	                height: -1
+	            };
+	            if (isHtmlUrl) {
+	                jsonObject.webUrl = Laya.Browser.window.htmlUrl + url;
+	            }
+	            else {
+	                jsonObject.webUrl = url;
+	            }
+	            AppManager.showWeb(jsonObject);
+	        }
+	    }
+	    /**
+	     * 弹出一个html浏览窗口
+	     * @param url 加载地址
+	     * @param full 是否全屏
+	     * @param closeHandler 此界面关闭后回调
+	     *
+	     */
+	    showTip(url, full = false, closeHandler) {
+	        this.closeHandler = closeHandler;
+	        tsCore.HistoryManager.addHistory(null, this);
+	        this.show();
+	        tsCore.App.inst.sendAction(ActionLib.GAME_UPDATE_DEFAULT_SCREEN);
+	        this.loadMovieClip.selectedIndex = 0;
+	        // 是否要使用  默认的  url
+	        let isHtmlUrl = !url.startsWith("http");
+	        if (!Laya.Render.isConchApp) {
+	            this.btn.visible = this.htmlText.visible = !full;
+	            let webElement = Laya.Browser.getElementById("webId");
+	            if (!webElement) {
+	                webElement = Laya.Browser.createElement("div");
+	                webElement.id = "webId";
+	                webElement.style.position = "absolute";
+	                webElement.style.left = "0px";
+	                webElement.style.top = "0px";
+	                webElement.style.width = "100%";
+	                webElement.style.height = "100%";
+	                webElement.style.Zindex = 110000;
+	                // 创建一个 iframe 节点
+	                let elementFrame = Laya.Browser.createElement("iframe");
+	                elementFrame.id = "frameBox";
+	                elementFrame.name = "frameBox";
+	                elementFrame.src = '';
+	                elementFrame.marginwidth = "0px";
+	                elementFrame.marginheight = "0px";
+	                elementFrame.overflow = "hidden";
+	                elementFrame.scrolling = "auto";
+	                elementFrame.frameborder = "no";
+	                elementFrame.border = "0px";
+	                elementFrame.style.position = "absolute";
+	                elementFrame.style.Zindex = 100009;
+	                elementFrame.style.border = "0px";
+	                elementFrame.style.width = "100%";
+	                elementFrame.style.height = "100%";
+	                elementFrame.style.display = "none";
+	                Laya.Browser.document.body.appendChild(webElement);
+	                //			    Log.debug(Laya.stage.width, Render.canvas.width, Render._mainCanvas.width)
+	                webElement.appendChild(elementFrame);
+	            }
+	            let loadEnd = () => {
+	                this.loadMovieClip.selectedIndex = 1;
+	                tsCore.Log.debug("loadComplete");
+	            };
+	            Laya.Browser.window.regIFrame(loadEnd);
+	            if (isHtmlUrl) {
+	                this.popFullIframeHandler(Laya.Browser.window.htmlUrl + url, true);
+	            }
+	            else {
+	                this.popFullIframeHandler(url, true);
+	            }
+	            if (!full) {
+	                let tempH = (this.btn.y + this.btn.height + this.btn.y);
+	                webElement.style.height = ((fgui.GRoot.inst.height - tempH) * this.tempY) + "px";
+	                webElement.style.top = (tempH * this.tempY) + "px";
+	            }
+	        }
+	        else {
+	            let title = this.obj["a"];
+	            if (this.obj[url]) {
+	                title = this.obj[url];
+	            }
+	            let jsonObject = {
+	                webTitle: title,
+	                webHeadVisibility: !full,
+	                x: 0,
+	                y: 0,
+	                width: -1,
+	                height: -1
+	            };
+	            if (isHtmlUrl) {
+	                jsonObject.webUrl = Laya.Browser.window.htmlUrl + url;
+	            }
+	            else {
+	                jsonObject.webUrl = url;
+	            }
+	            AppManager.showWeb(jsonObject);
+	        }
+	    }
+	    // 弹出全屏显示的浏览窗口
+	    popFullIframeHandler(url, isVisible) {
+	        let ifm = Laya.Browser.getElementById("frameBox");
+	        if (isVisible && ifm) {
+	            this._syncInputTransform();
+	            ifm.src = url;
+	            ifm.style.display = "block";
+	        }
+	    }
+	    /** 修正宽高 */
+	    _syncInputTransform() {
+	        let frameBox = Laya.Browser.getElementById("webId");
+	        if (!frameBox)
+	            return;
+	        let style = frameBox.style;
+	        let transform = Laya.Utils.getTransformRelativeToWindow(this.displayObject, 0, 0);
+	        this.tempX = transform.x;
+	        this.tempY = transform.y;
+	        style.left = transform.tx + "px";
+	        style.width = fgui.GRoot.inst.width * transform.x + "px";
+	    }
+	    share(type, url, content) {
+	        // HomePrompt.instance.showTip(1, CommonCmd.DOWNLOAD_MSG,
+	        //     function () {
+	        //         UtilsTool.downloadURL(Player.DOWNLOAD_APK_URL)
+	        //     }, null, {okName: 'Continue', cancelName: 'Cancel'})
+	        //			Intent intent = new Intent()
+	        //			intent.setAction(GameAction.SHARE)
+	        //			intent.putExtra("type", type)
+	        //			intent.putExtra("url", url)
+	        //			intent.putExtra("content", content)
+	        //			getContext().sendBroadcast(intent)
+	    }
+	    hide() {
+	        if (this.parent)
+	            AppRecordManager.backHistory();
+	    }
+	    hideRecord() {
+	        fgui.GRoot.inst.displayObject.stage.off(Laya.Event.RESIZE, this, this.sizeChangeHandler);
+	        if (!Laya.Render.isConchApp) {
+	            Laya.Browser.removeElement(Laya.Browser.getElementById("webId"));
+	        }
+	        else {
+	            AppManager.closeHtml();
+	        }
+	        if (Player.inst.gameId == CommonCmd.GAME_SPORTS)
+	            Player.inst.gameId = CommonCmd.GAME_HOME;
+	        super.hide();
+	        if (SceneManager.inst.starter)
+	            SceneManager.inst.starter.updateScreenOrientation();
+	        runFun(this.closeHandler);
+	    }
+	    showRecord() {
+	    }
+	}
+	
+	gameLib.HtmlWindow = HtmlWindow
+	
+	class BaseWindow extends tsCore.EWindow {
+	    constructor() {
+	        super(...arguments);
+	        /**
+	         * 是否在关闭窗口的时候  发送 ActionLib.GAME_RUN_SCENE_EVENT
+	         * @default false
+	         */
+	        this.isRunSceneEvent = false;
+	    }
+	    closeEventHandler() {
+	        if (this.parent) {
+	            if (this.joinRecord) {
+	                AppRecordManager.backHistory();
+	            }
+	            else {
+	                this.hideRecord();
+	            }
+	        }
+	    }
+	    onHide() {
+	        if (this.isRunSceneEvent)
+	            this.sendAction(ActionLib.GAME_RUN_SCENE_EVENT);
+	        super.onHide();
+	    }
+	    get gameData() {
+	        return Player.inst.gameData;
+	    }
+	    /**
+	     * @deprecated
+	     */
+	    set gameData(value) {
+	        tsCore.Log.debug(value);
+	    }
+	}
+	
+	gameLib.BaseWindow = BaseWindow
+	
+	/** 提示框 */
+	class HomePrompt extends BaseWindow {
+	    static get instance() {
+	        var _a;
+	        (_a = this._instance) !== null && _a !== void 0 ? _a : (this._instance = new HomePrompt);
+	        return this._instance;
+	    }
+	    constructor() {
+	        super();
+	        this.modal = true;
+	        this.isAction = false;
+	    }
+	    onInit() {
+	        this.contentPane = fgui.UIPackage.createObjectFromURL("//init/HomePrompt").asCom;
+	        this.controller = this.contentPane.getController("c1");
+	        this.okBtn = this.contentPane.getChild("n15").asButton;
+	        this.cancelBtn = this.contentPane.getChild("n16").asButton;
+	        this.message = this.contentPane.getChild("message").asTextField;
+	        this.cancelBtn.onClick(this, this.cancelHandler);
+	        this.okBtn.onClick(this, this.okHandler);
+	        super.onInit();
+	    }
+	    cancelHandler() {
+	        if (this.parent)
+	            AppRecordManager.backHistory();
+	        if (this.cancelCallback)
+	            this.cancelCallback();
+	        this.cancelCallback = null;
+	    }
+	    okHandler() {
+	        if (this.parent)
+	            AppRecordManager.backHistory();
+	        if (this.callback)
+	            this.callback();
+	        this.callback = null;
+	    }
+	    onShown() {
+	        //			AppRecordManager.addHistory(null, this)
+	    }
+	    /**
+	     * 显示提示框
+	     * @param code 0 公告提示框 1两个选择按钮提示
+	     * @param content 显示内容 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
+	     * @param callback 确定调用函数
+	     * @param cancelCallback 取消调用函数
+	     * @param obj 附带设置 (okName:'', cancelName:'')
+	     *
+	     */
+	    showTip(code, content, callback = null, cancelCallback = null, obj = null) {
+	        this.offClick(this, AppRecordManager.backHistory);
+	        this.callback = callback;
+	        this.cancelCallback = cancelCallback;
+	        if (Array.isArray(content)) {
+	            content = getString.apply(null, content);
+	        }
+	        else {
+	            content = getString(content);
+	        }
+	        this.show();
+	        this.center();
+	        this.controller.selectedIndex = code;
+	        if (obj === null || obj === void 0 ? void 0 : obj.okName) {
+	            this.okBtn.text = obj.okName;
+	        }
+	        else {
+	            if (code == 0) {
+	                this.okBtn.text = getString(LibStr.OK);
+	            }
+	            else if (code == 1) {
+	                this.okBtn.text = getString(LibStr.RESEND);
+	            }
+	        }
+	        if (obj === null || obj === void 0 ? void 0 : obj.cancelName) {
+	            this.cancelBtn.text = obj.cancelName;
+	        }
+	        else {
+	            this.cancelBtn.text = getString(LibStr.CANCEL);
+	        }
+	        this.message.text = content;
+	    }
+	    hideRecord() {
+	        this.hide();
+	    }
+	}
+	
+	gameLib.HomePrompt = HomePrompt
+	
+	/** 提示框 */
+	class PromptWindow extends BaseWindow {
+	    static get inst() {
+	        var _a;
+	        (_a = PromptWindow._instance) !== null && _a !== void 0 ? _a : (PromptWindow._instance = new PromptWindow());
+	        return PromptWindow._instance;
+	    }
+	    constructor() {
+	        var _a;
+	        super();
+	        /** 缓存的提示框 */
+	        this.cacheMessage = [];
+	        this.modal = true;
+	        (_a = PromptWindow._instance) !== null && _a !== void 0 ? _a : (PromptWindow._instance = this);
+	        this.regAction(ActionLib.GAME_SHOW_PROMPT_CANCEL_WINDOW, this, this.showCancelTip);
+	        this.regAction(ActionLib.GAME_SHOW_PROMPT_WINDOW, this, this.showTip);
+	        this.regAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, this, this._showWindow);
+	    }
+	    onInit() {
+	        var _a, _b, _c, _d, _e, _f, _g, _h;
+	        this.contentPane = fgui.UIPackage.createObjectFromURL("//common/PromptWindow").asCom;
+	        super.onInit();
+	        this.content = (_a = this.getChild("content")) === null || _a === void 0 ? void 0 : _a.asTextField;
+	        this.titleText = (_b = this.getChild("titleText")) === null || _b === void 0 ? void 0 : _b.asTextField;
+	        this.continueBtn = (_c = this.getChild("continue")) === null || _c === void 0 ? void 0 : _c.asButton;
+	        this.cancelBtn = (_d = this.getChild("cancel")) === null || _d === void 0 ? void 0 : _d.asButton;
+	        this.closeBtn = (_e = this.getChild("close")) === null || _e === void 0 ? void 0 : _e.asButton;
+	        // this.cancelBtn.getTextField().bold = true
+	        // this.continueBtn.getTextField().bold = true
+	        this.buttonController = this.getController("c1");
+	        this.titleDisplayController = this.getController("c2");
+	        this.closeButtonDisplayController = this.getController("c3");
+	        (_f = this.closeBtn) === null || _f === void 0 ? void 0 : _f.onClick(this, this.closeHandler);
+	        (_g = this.cancelBtn) === null || _g === void 0 ? void 0 : _g.onClick(this, this.cancelHandler);
+	        (_h = this.continueBtn) === null || _h === void 0 ? void 0 : _h.onClick(this, this.continueHandler);
+	    }
+	    continueHandler() {
+	        this.callback = null;
+	        this.closeFun = null;
+	        if (this.parent)
+	            AppRecordManager.backHistory();
+	    }
+	    closeHandler() {
+	        this.continueFun = null;
+	        this.callback = null;
+	        if (this.parent)
+	            AppRecordManager.backHistory();
+	    }
+	    cancelHandler() {
+	        this.closeFun = null;
+	        this.continueFun = null;
+	        if (this.parent)
+	            AppRecordManager.backHistory();
+	    }
+	    onHide() {
+	        super.onHide();
+	        Laya.timer.callLater(this, this.endCallHandler);
+	    }
+	    /** 结束回调 */
+	    endCallHandler() {
+	        runFun(this.continueFun);
+	        runFun(this.callback);
+	        runFun(this.closeFun);
+	        this.callback = this.continueFun = this.closeFun = null;
+	        if (this.cacheMessage.length > 0) {
+	            let arr = this.cacheMessage.shift();
+	            this._showWindow(arr.msg, arr.obj, arr.callback, arr.continue, arr.isAction);
+	        }
+	    }
+	    /** 清理缓存 */
+	    clearCache() {
+	        this.cacheMessage.splice(0, this.cacheMessage.length);
+	        if (this.parent)
+	            this.hideImmediately();
+	    }
+	    /**
+	     * 带确认按钮的提示框
+	     * @param msg 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
+	     * @param callback 确定回调方法
+	     * @param isAction 动画显示或关闭
+	     *
+	     * @see LibStr
+	     * @see ActionLib.GAME_SHOW_PROMPT_WINDOW
+	     */
+	    showTip(msg, callback, isAction = true) {
+	        if (!this.isPromptData(msg))
+	            msg = {
+	                msg: msg,
+	                callback: callback,
+	                obj: { cancelName: getString(LibStr.OK) },
+	                isAction: isAction
+	            };
+	        this._show(msg);
+	    }
+	    /**
+	     * 带确认 取消按钮的提示框
+	     * @param msg 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
+	     * @param options 附带设置 (okName:'', cancelName:'')
+	     * @param callback 取消回调方法
+	     * @param continueFun 确定回调方法
+	     * @param isAction 动画显示或关闭
+	     * @see LibStr
+	     * @see ActionLib.GAME_SHOW_PROMPT_CANCEL_WINDOW
+	     */
+	    showCancelTip(msg, options, callback, continueFun, isAction = true) {
+	        this._show({ msg: msg, obj: options, callback: callback, continue: continueFun, isAction: isAction });
+	    }
+	    _showWindow(msg, options, callback, continueFun, isAction = true) {
+	        if (!this.isPromptData(msg))
+	            msg = {
+	                msg: msg,
+	                obj: options,
+	                callback: callback,
+	                continue: continueFun,
+	                isAction: isAction
+	            };
+	        this._show(msg);
+	    }
+	    _show(data) {
+	        var _a, _b;
+	        let msg = data.msg;
+	        if (Array.isArray(msg)) {
+	            msg = getString.apply(null, msg);
+	        }
+	        else {
+	            msg = getString(msg);
+	        }
+	        if (this.parent) {
+	            this.cacheMessage.push(data);
+	            return;
+	        }
+	        // if (msg === CommonCmd.RECHARGE) {
+	        //     AnalyticsManager.sendGameAnalysis("NoBalance_Pop")
+	        // }
+	        let obj = data.obj;
+	        obj !== null && obj !== void 0 ? obj : (obj = { okName: getString(LibStr.CONTINUE), cancelName: getString(LibStr.CANCEL) });
+	        (_a = obj.okName) !== null && _a !== void 0 ? _a : (obj.okName = getString(LibStr.CONTINUE));
+	        (_b = obj.cancelName) !== null && _b !== void 0 ? _b : (obj.cancelName = getString(LibStr.CANCEL));
+	        this.isAction = data.isAction || true;
+	        this.show();
+	        if (this.continueBtn)
+	            this.continueBtn.text = obj.okName;
+	        if (this.cancelBtn)
+	            this.cancelBtn.text = obj.cancelName;
+	        this.setControllers(data);
+	        this.content.text = msg;
+	        if (this.titleText)
+	            this.titleText.text = data.title || "";
+	        this.callback = data.callback;
+	        this.continueFun = data.continue;
+	        this.closeFun = data.close;
+	    }
+	    setControllers(data) {
+	        if (this.buttonController)
+	            this.buttonController.selectedIndex = data.continue ? 1 : 0;
+	        if (this.titleDisplayController)
+	            this.titleDisplayController.selectedIndex = data.title ? 1 : 0;
+	        if (this.closeButtonDisplayController)
+	            this.closeButtonDisplayController.selectedIndex = data.close ? 1 : 0;
+	    }
+	    dispose() {
+	        this.clearCache();
+	        Laya.timer.clearAll(this);
+	        PromptWindow._instance = null;
+	        super.dispose();
+	    }
+	    /**
+	     * 判断是否是接口 用 prototype 是否存在判断
+	     * @param optional
+	     */
+	    isPromptData(optional) {
+	        return typeof optional === "object" && ("msg" in optional);
+	    }
+	}
+	
+	gameLib.PromptWindow = PromptWindow
+	
+	/** 状态吗获取显示信息 */
+	class StateCode {
+	    /**
+	     * 获取显示信息
+	     * @param data 一个object对象  如果带有message错误文字  直接使用 否则用code命令获取错误内容
+	     */
+	    static getShowMessage(data) {
+	        var _a, _b;
+	        if (!data)
+	            return getString(LibStr.NET_ERROR);
+	        if (((_a = data.message) === null || _a === void 0 ? void 0 : _a.length) > 0) {
+	            return data.message;
+	        }
+	        else if (((_b = data.msg) === null || _b === void 0 ? void 0 : _b.length) > 0) {
+	            return data.msg;
+	        }
+	        return this.getInfo(data.code);
+	    }
+	    /**
+	     * 显示错误信息
+	     * @param code 错误代号
+	     */
+	    static getInfo(code) {
+	        let content;
+	        switch (code) {
+	            case HttpCode.LOGIN_INVALIDITY: // 未登陆，请先登陆
+	                content = getString(LibStr.FIRST_LOG);
+	                break;
+	            case HttpCode.GAME_INSUFFICIENT_BALANCE: // 资金不足
+	                content = getString(LibStr.RECHARGE);
+	                break;
+	            case HttpCode.GAME_CANNOT_BET: // 当前游戏状态不属于投注状态
+	                content = getString(LibStr.CANNOT_BET);
+	                break;
+	            case HttpCode.GAME_OFF: // 游戏暂停中
+	                content = getString(LibStr.GAME_OFF);
+	                break;
+	            case HttpCode.GAME_BET_FAIL: // 投注失败
+	                content = getString(LibStr.BET_FAIL);
+	                break;
+	            default:
+	                content = getString(LibStr.NET_ERROR) + ". code:" + code;
+	                break;
+	        }
+	        return content;
+	    }
+	    /**
+	     * 此错误是后在执行范围内
+	     * @param code 执行错误代码
+	     * @param msg 提示文案或具有错误信息的object *.msg *.message
+	     */
+	    static execute(code, msg = null) {
+	        switch (code) {
+	            case HttpCode.OK:
+	                return false;
+	            case HttpCode.LOGIN_INVALIDITY: // 请登录
+	                tsCore.Log.debug("StateCode.execute() " + HttpCode.LOGIN_INVALIDITY);
+	                if (Player.inst.urlParam.isJumpPage()) {
+	                    JSUtils.login();
+	                    return true;
+	                }
+	                fgui.GRoot.inst.closeModalWait();
+	                LoadingWindow.inst.hide();
+	                HtmlWindow.inst.hide();
+	                if (typeof msg === "object")
+	                    msg = this.getShowMessage(msg);
+	                msg = msg ? msg : getString(LibStr.FIRST_LOG);
+	                if (fgui.UIPackage.getByName("gameCommon"))
+	                    WaitResult.inst.hide();
+	                HomePrompt.instance.showTip(0, msg, function () {
+	                    if (Player.inst.gameId == -1) {
+	                        Laya.LocalStorage.removeItem("token");
+	                        Laya.LocalStorage.removeItem("userData");
+	                        Player.inst.token = null;
+	                        if (Player.inst.urlParam.isJumpPage()) {
+	                            Player.inst.urlParam.clearJumpPage();
+	                            //								SceneManager.inst.enterGame()
+	                            //								return
+	                        }
+	                        SceneManager.inst.showHomeScene();
+	                    }
+	                    else {
+	                        SceneManager.inst.logout();
+	                    }
+	                }, null, { cancelName: getString(LibStr.OK) });
+	                return true;
+	            case HttpCode.GAME_PAUSE: // 游戏暂停中
+	                tsCore.Log.debug("StateCode.execute() 8003");
+	                this.showGameOff();
+	                return true;
+	            default:
+	                if (typeof msg !== "string")
+	                    msg = StateCode.getShowMessage(msg);
+	                msg = msg ? msg : getString(LibStr.NET_ERROR);
+	                PromptWindow.inst.showTip(msg);
+	                return true;
+	        }
+	    }
+	    /** 游戏暂停中，返回大厅 */
+	    static showGameOff() {
+	        JSUtils.alert(getString(LibStr.GAME_OFF));
+	        JSUtils.gameClose();
+	    }
+	}
+	
+	gameLib.StateCode = StateCode
+	
+	/**
+	 * 游戏基础类
+	 * @author boge
+	 */
+	class GameServlet extends tsCore.EProxy {
+	    constructor() {
+	        super();
+	        this.regGameAction(ActionLib.GAME_CHECK_STATE, this, this.checkState);
+	        this.regGameAction(ActionLib.GAME_INIT_SERVLET, this, this.init);
+	        this.regGameAction(ActionLib.GAME_CONNECT_SOCKET, this, this.connectSocket);
+	        this.regGameAction(ActionLib.GAME_DISPOSE, this, this.dispose);
+	    }
+	    get gameData() {
+	        return Player.inst.gameData;
+	    }
+	    /**
+	     * @deprecated
+	     */
+	    set gameData(value) {
+	        tsCore.Log.debug(value);
+	    }
+	    /**
+	     * 封装的get请求
+	     *
+	     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
+	     *
+	     * @param url 使用 Player.inst.data.getGameUrl 格式化的url
+	     * @param data
+	     * @param callback
+	     * @param error
+	     * @param timeout
+	     * @deprecated
+	     * @see getData
+	     */
+	    getURL(url, data, callback, error, timeout) {
+	        this.getData(url, data, callback, error, timeout);
+	    }
+	    /**
+	     * 封装的get请求
+	     *
+	     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
+	     *
+	     * @param url 使用 Player.inst.data.getGameUrl 格式化的url
+	     * @param data
+	     * @param callback
+	     * @param error
+	     * @param timeout
+	     * @param [overtime = 0] 超时时间设置 毫秒
+	     */
+	    getData(url, data, callback, error, timeout, overtime = 0) {
+	        tsCore.HTTPUtils.create()
+	            .setUrl(Player.inst.data.getGameUrl(url))
+	            .setData(data)
+	            .setOvertime(overtime)
+	            .onComplete((data, request) => {
+	            var _a;
+	            if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode))
+	                runFun(callback, data, request);
+	        })
+	            .onError((data, request) => {
+	            var _a;
+	            if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode))
+	                runFun(error, data, request);
+	        })
+	            .onTimeout((request) => {
+	            var _a;
+	            if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode)) {
+	                if (timeout)
+	                    runFun(timeout, request);
+	                else if (error)
+	                    runFun(error, null, request);
+	            }
+	        }).call();
+	    }
+	    /**
+	     * post 请求
+	     *
+	     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
+	     * @param url 请求连接 使用Player.inst.data.getGameUrl()格式化的url
+	     * @param data 请求数据
+	     * @param callback 请求完成返回调用函数
+	     * @param error 错误调用函数
+	     * @param timeout 超时回调函数
+	     * @param headers (default = null) HTTP 请求的头部信息。参数形如key-value数组：key是头部的名称，不应该包括空白、冒号或换行；value是头部的值，不应该包括换行。比如["Content-Type", "application/json"]。
+	     * @param overtime
+	     * @deprecated
+	     * @see postData
+	     */
+	    post(url, data, callback, error, timeout, headers, overtime = 0) {
+	        this.postData(url, data, callback, error, timeout, headers, overtime);
+	    }
+	    /**
+	     * post 请求
+	     *
+	     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
+	     * @param url 请求连接 使用Player.inst.data.getGameUrl()格式化的url
+	     * @param data 请求数据
+	     * @param callback 请求完成返回调用函数
+	     * @param error 错误调用函数
+	     * @param timeout 超时回调函数
+	     * @param headers (default = null) HTTP 请求的头部信息。参数形如key-value数组：key是头部的名称，不应该包括空白、冒号或换行；value是头部的值，不应该包括换行。比如["Content-Type", "application/json"]。
+	     * @param [overtime = 0] 超时时间设置 毫秒
+	     */
+	    postData(url, data, callback, error, timeout, headers, overtime = 0) {
+	        tsCore.HTTPUtils.create()
+	            .setMethod(tsCore.Method.POST)
+	            .setUrl(Player.inst.data.getGameUrl(url))
+	            .setData(data)
+	            .setOvertime(overtime)
+	            .setHeaders(headers)
+	            .onComplete((data, request) => {
+	            var _a;
+	            if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode)) {
+	                if (Player.inst.isGuest && (data === null || data === void 0 ? void 0 : data.code) == HttpCode.OK) {
+	                    Player.inst.guestModel.playAdd(url, data.data);
+	                }
+	                if (!data)
+	                    runFun(error, "data is null", request);
+	                else
+	                    runFun(callback, data, request);
+	            }
+	        })
+	            .onError((data, request) => {
+	            var _a;
+	            if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode))
+	                runFun(error, data, request);
+	        })
+	            .onTimeout((request) => {
+	            var _a;
+	            if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode)) {
+	                if (timeout)
+	                    runFun(timeout, request);
+	                else if (error)
+	                    runFun(error, null, request);
+	            }
+	        }).call();
+	    }
+	    /**
+	     *
+	     * @param handler
+	     */
+	    checkState(handler) {
+	        runFun(handler);
+	    }
+	    /**
+	     * 进入游戏失败 执行退出游戏
+	     * @param [isTip = true] 是否需要弹窗
+	     * @param message 弹窗内容
+	     * @param request
+	     */
+	    enterFail(isTip = true, message, request) {
+	        Player.inst.gameId = CommonCmd.GAME_HOME;
+	        fgui.GRoot.inst.closeModalWait();
+	        LoadingWindow.inst.hide();
+	        JSUtils.alert(message ? message : getString(LibStr.GAME_OFF));
+	        JSUtils.gameClose();
+	        if (isTip)
+	            tsCore.MessageTip.showTip(message ? message : LibStr.GAME_OFF);
+	        this.sendAction(ActionLib.GAME_UPDATE_DEFAULT_SCREEN);
+	    }
+	    init(handler) {
+	        this.initHandler = handler;
+	        if (Player.inst.isGuest) {
+	            Player.inst.status = 1;
+	            // 初始化完成
+	            runFun(handler);
+	            return;
+	        }
+	        this.postInit(this.userDataHandler.bind(this), this.userDataErrorHandler.bind(this));
+	    }
+	    /**
+	     * 请求初始化游戏
+	     */
+	    postInit(succeed, error) {
+	        let obj = {};
+	        obj.token = Player.inst.token;
+	        obj.game_id = Player.inst.gameId;
+	        obj.is_gift = Player.inst.urlParam.isGift;
+	        this.postData(`/game/${this.networkName}/init`, obj, succeed, error);
+	    }
+	    /** 连接该游戏的socket */
+	    connectSocket() {
+	        // 链接服务器socket
+	        SocketManager.inst.connect(Player.inst.gameId, Player.inst.token, Player.inst.userId);
+	    }
+	    userDataErrorHandler(data, request) {
+	        this.enterFail(true, getString(LibStr.NET_ERROR), request);
+	    }
+	    /** 用户数据 */
+	    userDataHandler(response, request) {
+	        var _a;
+	        //			trace("MainPanel.userDataHandlerr(data) 服务器拿到游戏房间数据")
+	        if (response.code != HttpCode.OK) {
+	            this.enterFail(true, StateCode.getShowMessage(response), request);
+	            return;
+	        }
+	        const data = response.data;
+	        this.gameStatus = data.game_status;
+	        // 处理自定义解析
+	        (_a = GameServlet.customParseUser) === null || _a === void 0 ? void 0 : _a.call(this, data);
+	        this.parseInitData(data);
+	        Player.inst.status = data.status ? data.status : 1; //1=>投注中，2=>计算中，3=>开奖
+	        Player.inst.data.lotteryTime = data.lottery_time; //开奖时间戳(s)
+	        let period = data.period; //当前期数
+	        Player.inst.data.initRoomTotalItem = data.bet_total_item; //当前房间总投注金额
+	        Player.inst.data.initRoomCurBet = data.cur_bet_total; //当前房间自己投注金额
+	        Player.inst.data.betHistory = data.bet_history; //当前房间历史记录
+	        Player.inst.data.betStatic = data.bet_statis; //当前历史次数
+	        Player.inst.data.initPeriod = data.last_period;
+	        // 奖金池数据
+	        this.readJackpotData(data);
+	        // 单机游戏进入   处理
+	        if (SceneManager.inst.isAloneGame()) {
+	            period = 1;
+	            Player.inst.data.jackpot = data.jackpot;
+	        }
+	        Player.inst.data.period = period;
+	        if (this.gameStatus == 1) {
+	            if (GameServlet.customInit) {
+	                GameServlet.customInit.call(this, (result) => {
+	                    if (result.succeed) {
+	                        this.nextInit();
+	                    }
+	                    else
+	                        this.enterFail(true, result.msg, request);
+	                });
+	            }
+	            else
+	                this.nextInit();
+	        }
+	        else {
+	            this.enterFail(true, null, request);
+	        }
+	    }
+	    nextInit() {
+	        this.onUserData.call(this, (result) => {
+	            if (result.succeed) {
+	                this.getCoupon(this.initComplete.bind(this));
+	            }
+	            else {
+	                this.enterFail(true, result.msg);
+	            }
+	        });
+	    }
+	    /**
+	     * 用户信息初始化完成 返回false表示 出现错误
+	     */
+	    onUserData(value) {
+	        value({ succeed: true });
+	    }
+	    /**
+	     * 读取奖金池数据
+	     * @param data
+	     */
+	    readJackpotData(data) {
+	        if (data.user_really_bet || data.user_really_bet == 0)
+	            Player.inst.userReallyBet = data.user_really_bet;
+	        if (data.get_ticket_inc_bet)
+	            Player.inst.getTicketIncBet = data.get_ticket_inc_bet;
+	        if (data.game_pool || data.game_pool == 0)
+	            Player.inst.gamePool = tsCore.MathKit.toFixed(data.game_pool);
+	        if (data.scratcher_tickets)
+	            Player.inst.jackpotData = data.scratcher_tickets;
+	        this.sendAction(ActionLib.GAME_UPDATE_JACKPOT_POOL);
+	    }
+	    /**
+	     * 获取优惠券信息的函数。
+	     * @param onComplete - 请求完成后的回调函数，参数为从服务器返回的数据。
+	     * @param error - 请求发生错误时的回调函数，参数为错误信息。
+	     */
+	    getCoupon(onComplete, error) {
+	        this.getData(Urls.URL_GAME_ALL_COUPON + "?" + Player.inst.getRequestToken(), null, Laya.Handler.create(this, this.couponHandler, [onComplete]), error !== null && error !== void 0 ? error : this.userDataErrorHandler.bind(this));
+	    }
+	    /** 收到投注劵数据 */
+	    couponHandler(handler, data, request) {
+	        if (data.code != HttpCode.OK) {
+	            this.enterFail(true, StateCode.getShowMessage(data), request);
+	            return;
+	        }
+	        Player.inst.addCoupons(data.data);
+	        runFun(handler);
+	    }
+	    initComplete() {
+	        runFun(this.initHandler);
+	    }
+	    /**
+	     * 拉取账户金额
+	     * @param callback
+	     * @param error
+	     */
+	    getUserMoney(callback, error) {
+	        let obj = { token: Player.inst.token };
+	        tsCore.HTTPUtils.create()
+	            .setMethod("post")
+	            .setUrl(Player.inst.data.getWapUrl(Urls.URL_USER_ACCOUNT_ASSET))
+	            .setData(obj)
+	            .onComplete((data) => {
+	            if ((data === null || data === void 0 ? void 0 : data.code) == HttpCode.OK) {
+	                runFun(callback, data);
+	            }
+	            else {
+	                runFun(error, "data is null");
+	            }
+	        }).onError(error).call();
+	    }
+	    /**
+	     * 检查游戏期数
+	     * @param handler
+	     *
+	     */
+	    checkGamePeriod(handler) {
+	        runFun(handler, true);
+	        // let obj: any = {}
+	        // obj.token = Player.inst.token
+	        // obj.roomId = Player.inst.gameId
+	        // this.post("/game/status", obj, (data: any) => {
+	        //     if (data.code != HttpCode.OK) {
+	        //         this.enterFail(true, StateCode.getShowMessage(data))
+	        //         return
+	        //     }
+	        //     data = data.data
+	        //     this.gameStatus = data.status
+	        //     this.modifyCheckState(data)
+	        //     let period: number = data.period;//当前期数
+	        //     if (SceneManager.inst.isAloneGame()) {
+	        //         period = 1
+	        //     }
+	        //     if (this.gameStatus == 1) {
+	        //         if (period == Player.inst.data.period) {
+	        //             handler.runWith(true)
+	        //             return
+	        //         } else if (period - 1 == Player.inst.data.period && Player.inst.status < 3) {
+	        //             handler.runWith(true)
+	        //             return
+	        //         }
+	        //     }
+	        //     Log.info("GameServlet.checkStateHandler(data)gameStatus=" + this.gameStatus + ", period=" + period + ", " + Player.inst.data.period)
+	        //     handler.runWith(false)
+	        // }, () => {
+	        //     handler.runWith(false)
+	        // })
+	    }
+	    /**
+	     * 发送bet数据
+	     * @param url
+	     * @param data
+	     * @param callback
+	     */
+	    sendBet(url, data, callback) {
+	        this.postData(url, data, (data, request) => {
+	            if (data.code == HttpCode.OK) {
+	                Player.inst.gameData.playCount++;
+	                Player.inst.playCount++;
+	                if (Player.inst.isGuest)
+	                    Player.inst.guestModel.guestPlayCount++;
+	            }
+	            runFun(callback, data, request);
+	        }, this.onSendBetError.bind(this));
+	    }
+	    /**
+	     * 处理发送bet请求时的错误。
+	     */
+	    onSendBetError(msg, request) {
+	        WaitResult.inst.hide();
+	        SceneManager.inst.gameErrorExit(LibStr.NET_ERROR);
+	    }
+	    // /**
+	    //  * 当请求不通过的时候  发出提示信息并重置bet
+	    //  * @param data
+	    //  * @param isWindow
+	    //  */
+	    // betFail(data?: HttpResponse, isWindow = false) {
+	    //     if (isWindow) PromptWindow.inst.showTip(StateCode.getShowMessage(data))
+	    //     else MessageTip.showTip(StateCode.getShowMessage(data))
+	    //     this.sendAction(ActionLib.GAME_STOP_SLOT_LIST_RUN_ANI)
+	    //     this.sendAction(ActionLib.GAME_RESET_BET)
+	    // }
+	    /**
+	     * 领取奖金池
+	     * @param id
+	     * @param handler
+	     */
+	    jackPotClaim(id, handler) {
+	        let obj = {};
+	        obj.token = Player.inst.token;
+	        obj.game_id = Player.inst.gameId;
+	        obj.id = id;
+	        this.postData(Urls.URL_GAME_SCRATCHER_LOTTERY, obj, Laya.Handler.create(this, this.jackPotClaimHandler, [handler]), () => {
+	            runFun(handler, false);
+	        });
+	    }
+	    jackPotClaimHandler(handler, response, request) {
+	        if (response.code != HttpCode.OK) {
+	            WaitResult.inst.hide();
+	            // this.showNotResult(response.data, false, request)
+	            StateCode.execute(response.code, response);
+	            runFun(handler, false);
+	            return;
+	        }
+	        const data = response.data;
+	        let balance = data.balance; //余额
+	        let win = data.win; //赢的钱
+	        this.readJackpotData(data);
+	        Player.inst.money = balance;
+	        runFun(handler, true, win);
+	    }
+	    /**
+	     * 显示获取的非200的结果显示弹窗
+	     * @param data 服务器返回的完整数据
+	     * @param [closeGame=true] 是否关闭游戏
+	     * @param request
+	     */
+	    showNotResult(data, closeGame = true, request) {
+	        let str = StateCode.getShowMessage(data);
+	        if (tsCore.StringUtil.isEmpty(str)) {
+	            str = getString(LibStr.NET_ERROR);
+	        }
+	        if (closeGame) {
+	            JSUtils.alert(str);
+	            JSUtils.gameClose();
+	        }
+	        else {
+	            PromptWindow.inst.showTip(str);
+	        }
+	    }
+	    get gameModel() {
+	        var _a;
+	        (_a = this._gameModel) !== null && _a !== void 0 ? _a : (this._gameModel = SceneManager.inst.starter.gameModel);
+	        return this._gameModel;
+	    }
+	    set gameModel(value) {
+	        this._gameModel = value;
+	    }
+	    dispose() {
+	        super.dispose();
+	    }
+	}
+	
+	gameLib.GameServlet = GameServlet
+	
+	class NoticeView extends BaseView {
+	    constructor() {
+	        super();
+	        this.tempX = 0;
+	        /** 是否在滚动 */
+	        this.isRun = false;
+	        this.addView(NoticeView, this);
+	        this.gameData = Player.inst.gameData;
+	    }
+	    onInit() {
+	        super.onInit();
+	        this.richText = this.getChild("n1").asCom.getChild("n1").asRichTextField;
+	        this.tempX = this.richText.x;
+	    }
+	    addedHandler() {
+	        super.addedHandler();
+	        if (this.gameData.noticeData.length > 0) {
+	            this.startRun();
+	        }
+	        else {
+	            this.visible = false;
+	        }
+	    }
+	    showText(values) {
+	        this.gameData.noticeData = this.gameData.noticeData.concat(values);
+	        this.startRun();
+	    }
+	    /** 开始滚动 */
+	    startRun() {
+	        if (!this.isRun && this.gameData.noticeData && this.gameData.noticeData.length > 0) {
+	            this.isRun = true;
+	            this.updateNoticeContent();
+	            Laya.timer.frameLoop(1, this, this.loopHandler);
+	            this.visible = true;
+	        }
+	    }
+	    loopHandler() {
+	        this.richText.x -= 1;
+	        if (this.richText.x < -this.richText.div.contextWidth + 5) {
+	            if (this.gameData.noticeData.length > 0) {
+	                this.updateNoticeContent();
+	            }
+	            else {
+	                this.stopRun();
+	            }
+	        }
+	    }
+	    /** 更新内容 并重置位置 */
+	    updateNoticeContent() {
+	        this.resetMsgPosition();
+	        let msg;
+	        if (this.gameData.noticeData.length > 1) {
+	            msg = this.gameData.noticeData.shift();
+	        }
+	        else {
+	            msg = this.gameData.noticeData[0];
+	        }
+	        this.richText.text = getString(LibStr.WIN_NOTICE, msg.mobile, msg.win, GameConfigKit.gameName());
+	    }
+	    stopRun() {
+	        this.resetMsgPosition();
+	        Laya.timer.clearAll(this);
+	        this.visible = false;
+	        this.isRun = false;
+	    }
+	    /** 重置位置 */
+	    resetMsgPosition() {
+	        this.richText.x = this.tempX + this.richText.width + 5;
+	    }
+	    dispose() {
+	        Laya.timer.clearAll(this);
+	        super.dispose();
+	    }
+	}
+	
+	gameLib.NoticeView = NoticeView
+	
+	class GameConfigKit {
+	    /**
+	     * 获取游戏配置表
+	     */
+	    static gameConfig() {
+	        return tsCore.ConfigKit.get(GameConfigKit.CONFIG_NAME);
+	    }
+	    /**
+	     * 根据游戏id获取配置的游戏名 如果没有 null
+	     * @param [code=0] 不传将使用当前已经打开游戏id
+	     */
+	    static gameName(code = null) {
+	        code !== null && code !== void 0 ? code : (code = Player.inst.gameId);
+	        if (code <= 0)
+	            return null;
+	        const config = GameConfigKit.gameConfig();
+	        return config ? config[code] : null;
+	    }
+	    /**
+	     * 获取游戏名字的标准样式
+	     * @param [code=null] 游戏id 不填将使用当前已在用得到游戏id
+	     * @param [format=null] 格式化样式，将空白替换成指定的值 不设置将用驼峰命名
+	     */
+	    static gameNameCanonical(code = null, format = null) {
+	        let name = GameConfigKit.gameName(code);
+	        if (name) {
+	            if (format != null) {
+	                name = name.replace(/\s+/g, format);
+	            }
+	            else {
+	                const names = name.split(/\s+/g);
+	                if (names.length > 1) {
+	                    name = "";
+	                    for (const name1 of names) {
+	                        name += name1.charAt(0).toUpperCase() + name1.substring(1).toLowerCase();
+	                    }
+	                }
+	            }
+	        }
+	        return name ? name : null;
+	    }
+	    /**
+	     * 根据游戏名获取游戏id 如果不存在返回-1
+	     * @param [name=null]
+	     */
+	    static gameCode(name = null) {
+	        name !== null && name !== void 0 ? name : (name = Player.inst.gameName);
+	        name !== null && name !== void 0 ? name : (name = GameConfigKit.gameNameCanonical());
+	        const config = GameConfigKit.gameConfig();
+	        if (name && config) {
+	            for (const key in config) {
+	                if (tsCore.StringUtil.trimAll(config[key]) == name) {
+	                    return parseInt(key);
+	                }
+	            }
+	        }
+	        return -1;
+	    }
+	    /**
+	     * 获取游戏配置数据
+	     * @param [name=null] 游戏名字,如果不传，将获取当前打开游戏名字
+	     * @param [ignoreCase=false] 是否忽略名字大小写
+	     */
+	    static gameRes(name = null, ignoreCase = false) {
+	        name !== null && name !== void 0 ? name : (name = Player.inst.gameName);
+	        name !== null && name !== void 0 ? name : (name = GameConfigKit.gameNameCanonical());
+	        //todo 过渡的一个资源获取版本  后面要删除掉
+	        // @ts-ignore
+	        const table = window.ConfigureTable;
+	        if (table) {
+	            const eqName = ignoreCase ? name.toLowerCase() : name;
+	            for (const tableKey in table) {
+	                const findName = ignoreCase ? tableKey.toLowerCase() : tableKey;
+	                if (findName == eqName) {
+	                    return table[tableKey];
+	                }
+	            }
+	        }
+	        return name ? ignoreCase ? window[name] || window[name.toLowerCase()] : window[name] : null;
+	    }
+	}
+	/**
+	 * 在window上配置的属性名字
+	 * @default gameIdConfig
+	 */
+	GameConfigKit.CONFIG_NAME = "gameIdConfig";
+	/**
+	 * 场景初始化完成 自动通知加载完成并关闭加载页
+	 * @type {boolean}
+	 * @default true
+	 */
+	GameConfigKit.autoSendOnLoadEnd = true;
+	
+	gameLib.GameConfigKit = GameConfigKit
 	
 	/**
 	 * 资源管理类
@@ -1919,83 +4054,6 @@ function _FguiBindView(classTarget, url) {
 	
 	gameLib.AssetsLoader = AssetsLoader
 	
-	class NoticeView extends BaseView {
-	    constructor() {
-	        super();
-	        this.tempX = 0;
-	        /** 是否在滚动 */
-	        this.isRun = false;
-	        this.addView(NoticeView, this);
-	        this.gameData = Player.inst.gameData;
-	    }
-	    onInit() {
-	        super.onInit();
-	        this.richText = this.getChild("n1").asCom.getChild("n1").asRichTextField;
-	        this.tempX = this.richText.x;
-	    }
-	    addedHandler() {
-	        super.addedHandler();
-	        if (this.gameData.noticeData.length > 0) {
-	            this.startRun();
-	        }
-	        else {
-	            this.visible = false;
-	        }
-	    }
-	    showText(values) {
-	        this.gameData.noticeData = this.gameData.noticeData.concat(values);
-	        this.startRun();
-	    }
-	    /** 开始滚动 */
-	    startRun() {
-	        if (!this.isRun && this.gameData.noticeData && this.gameData.noticeData.length > 0) {
-	            this.isRun = true;
-	            this.updateNoticeContent();
-	            Laya.timer.frameLoop(1, this, this.loopHandler);
-	            this.visible = true;
-	        }
-	    }
-	    loopHandler() {
-	        this.richText.x -= 1;
-	        if (this.richText.x < -this.richText.div.contextWidth + 5) {
-	            if (this.gameData.noticeData.length > 0) {
-	                this.updateNoticeContent();
-	            }
-	            else {
-	                this.stopRun();
-	            }
-	        }
-	    }
-	    /** 更新内容 并重置位置 */
-	    updateNoticeContent() {
-	        this.resetMsgPosition();
-	        let msg;
-	        if (this.gameData.noticeData.length > 1) {
-	            msg = this.gameData.noticeData.shift();
-	        }
-	        else {
-	            msg = this.gameData.noticeData[0];
-	        }
-	        this.richText.text = getString(LibStr.WIN_NOTICE, msg.mobile, msg.win, GameConfigKit.gameName());
-	    }
-	    stopRun() {
-	        this.resetMsgPosition();
-	        Laya.timer.clearAll(this);
-	        this.visible = false;
-	        this.isRun = false;
-	    }
-	    /** 重置位置 */
-	    resetMsgPosition() {
-	        this.richText.x = this.tempX + this.richText.width + 5;
-	    }
-	    dispose() {
-	        Laya.timer.clearAll(this);
-	        super.dispose();
-	    }
-	}
-	
-	gameLib.NoticeView = NoticeView
-	
 	/**
 	 *
 	 * @author boge
@@ -2275,2412 +4333,6 @@ function _FguiBindView(classTarget, url) {
 	}
 	
 	gameLib.GameModel = GameModel
-	
-	class BaseWindow extends tsCore.EWindow {
-	    constructor() {
-	        super(...arguments);
-	        /**
-	         * 是否在关闭窗口的时候  发送 ActionLib.GAME_RUN_SCENE_EVENT
-	         * @default false
-	         */
-	        this.isRunSceneEvent = false;
-	    }
-	    closeEventHandler() {
-	        if (this.parent) {
-	            if (this.joinRecord) {
-	                AppRecordManager.backHistory();
-	            }
-	            else {
-	                this.hideRecord();
-	            }
-	        }
-	    }
-	    onHide() {
-	        if (this.isRunSceneEvent)
-	            this.sendAction(ActionLib.GAME_RUN_SCENE_EVENT);
-	        super.onHide();
-	    }
-	    get gameData() {
-	        return Player.inst.gameData;
-	    }
-	    /**
-	     * @deprecated
-	     */
-	    set gameData(value) {
-	        tsCore.Log.debug(value);
-	    }
-	}
-	
-	gameLib.BaseWindow = BaseWindow
-	
-	/** 提示框 */
-	class HomePrompt extends BaseWindow {
-	    static get instance() {
-	        var _a;
-	        (_a = this._instance) !== null && _a !== void 0 ? _a : (this._instance = new HomePrompt);
-	        return this._instance;
-	    }
-	    constructor() {
-	        super();
-	        this.modal = true;
-	        this.isAction = false;
-	    }
-	    onInit() {
-	        this.contentPane = fgui.UIPackage.createObjectFromURL("//init/HomePrompt").asCom;
-	        this.controller = this.contentPane.getController("c1");
-	        this.okBtn = this.contentPane.getChild("n15").asButton;
-	        this.cancelBtn = this.contentPane.getChild("n16").asButton;
-	        this.message = this.contentPane.getChild("message").asTextField;
-	        this.cancelBtn.onClick(this, this.cancelHandler);
-	        this.okBtn.onClick(this, this.okHandler);
-	        super.onInit();
-	    }
-	    cancelHandler() {
-	        if (this.parent)
-	            AppRecordManager.backHistory();
-	        if (this.cancelCallback)
-	            this.cancelCallback();
-	        this.cancelCallback = null;
-	    }
-	    okHandler() {
-	        if (this.parent)
-	            AppRecordManager.backHistory();
-	        if (this.callback)
-	            this.callback();
-	        this.callback = null;
-	    }
-	    onShown() {
-	        //			AppRecordManager.addHistory(null, this)
-	    }
-	    /**
-	     * 显示提示框
-	     * @param code 0 公告提示框 1两个选择按钮提示
-	     * @param content 显示内容 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
-	     * @param callback 确定调用函数
-	     * @param cancelCallback 取消调用函数
-	     * @param obj 附带设置 (okName:'', cancelName:'')
-	     *
-	     */
-	    showTip(code, content, callback = null, cancelCallback = null, obj = null) {
-	        this.offClick(this, AppRecordManager.backHistory);
-	        this.callback = callback;
-	        this.cancelCallback = cancelCallback;
-	        if (Array.isArray(content)) {
-	            content = getString.apply(null, content);
-	        }
-	        else {
-	            content = getString(content);
-	        }
-	        this.show();
-	        this.center();
-	        this.controller.selectedIndex = code;
-	        if (obj === null || obj === void 0 ? void 0 : obj.okName) {
-	            this.okBtn.text = obj.okName;
-	        }
-	        else {
-	            if (code == 0) {
-	                this.okBtn.text = getString(LibStr.OK);
-	            }
-	            else if (code == 1) {
-	                this.okBtn.text = getString(LibStr.RESEND);
-	            }
-	        }
-	        if (obj === null || obj === void 0 ? void 0 : obj.cancelName) {
-	            this.cancelBtn.text = obj.cancelName;
-	        }
-	        else {
-	            this.cancelBtn.text = getString(LibStr.CANCEL);
-	        }
-	        this.message.text = content;
-	    }
-	    hideRecord() {
-	        this.hide();
-	    }
-	}
-	
-	gameLib.HomePrompt = HomePrompt
-	
-	class HtmlWindow extends fgui.Window {
-	    constructor() {
-	        super(...arguments);
-	        this.obj = {
-	            "aboutus.html": "About us",
-	            "fair_payment.html": "FAQs",
-	            "common_problems.html": "Fair payouts",
-	            "user_agreement.html": "GameData Agreement",
-	            "privacy.html": "Privacy Policy",
-	            "a": ""
-	        };
-	    }
-	    static get inst() {
-	        var _a;
-	        (_a = this._instance) !== null && _a !== void 0 ? _a : (this._instance = new HtmlWindow);
-	        return this._instance;
-	    }
-	    onInit() {
-	        this.modal = true;
-	        this.contentPane = fgui.UIPackage.createObject("common", "HtmlWindow").asCom;
-	        this.contentPane.addRelation(fgui.GRoot.inst, fgui.RelationType.Size);
-	        this.loadMovieClip = this.contentPane.getController("c1");
-	        this.btn = this.contentPane.getChild("n1").asButton;
-	        this.htmlText = this.contentPane.getChild("n5").asTextField;
-	        this.contentPane.setSize(fgui.GRoot.inst.width, fgui.GRoot.inst.height);
-	        this.btn.onClick(this, this.hide);
-	    }
-	    onShown() {
-	        fgui.GRoot.inst.displayObject.stage.on(Laya.Event.RESIZE, this, this.sizeChangeHandler);
-	        this.sizeChangeHandler();
-	        super.onShown();
-	    }
-	    sizeChangeHandler() {
-	        this._syncInputTransform();
-	    }
-	    /**
-	     * 新打开一个html浏览窗口
-	     * @param url 加载地址
-	     * @param full 是否全屏
-	     * @param closeHandler 此界面关闭后回调
-	     */
-	    openHtml(url, full = false, closeHandler) {
-	        this.closeHandler = closeHandler;
-	        tsCore.HistoryManager.addHistory(null, this);
-	        this.show();
-	        tsCore.App.inst.sendAction(ActionLib.GAME_UPDATE_DEFAULT_SCREEN);
-	        this.loadMovieClip.selectedIndex = 0;
-	        // 是否要使用  默认的  url
-	        let isHtmlUrl = !url.startsWith("http");
-	        if (!Laya.Render.isConchApp) {
-	            if (isHtmlUrl) {
-	                Player.inst.windowOpen(Laya.Browser.window.htmlUrl + url);
-	            }
-	            else {
-	                Player.inst.windowOpen(url);
-	            }
-	            this.hide();
-	        }
-	        else {
-	            let title = this.obj["a"];
-	            if (this.obj[url]) {
-	                title = this.obj[url];
-	            }
-	            let jsonObject = {
-	                webTitle: title,
-	                webHeadVisibility: !full,
-	                x: 0,
-	                y: 0,
-	                width: -1,
-	                height: -1
-	            };
-	            if (isHtmlUrl) {
-	                jsonObject.webUrl = Laya.Browser.window.htmlUrl + url;
-	            }
-	            else {
-	                jsonObject.webUrl = url;
-	            }
-	            AppManager.showWeb(jsonObject);
-	        }
-	    }
-	    /**
-	     * 弹出一个html浏览窗口
-	     * @param url 加载地址
-	     * @param full 是否全屏
-	     * @param closeHandler 此界面关闭后回调
-	     *
-	     */
-	    showTip(url, full = false, closeHandler) {
-	        this.closeHandler = closeHandler;
-	        tsCore.HistoryManager.addHistory(null, this);
-	        this.show();
-	        tsCore.App.inst.sendAction(ActionLib.GAME_UPDATE_DEFAULT_SCREEN);
-	        this.loadMovieClip.selectedIndex = 0;
-	        // 是否要使用  默认的  url
-	        let isHtmlUrl = !url.startsWith("http");
-	        if (!Laya.Render.isConchApp) {
-	            this.btn.visible = this.htmlText.visible = !full;
-	            let webElement = Laya.Browser.getElementById("webId");
-	            if (!webElement) {
-	                webElement = Laya.Browser.createElement("div");
-	                webElement.id = "webId";
-	                webElement.style.position = "absolute";
-	                webElement.style.left = "0px";
-	                webElement.style.top = "0px";
-	                webElement.style.width = "100%";
-	                webElement.style.height = "100%";
-	                webElement.style.Zindex = 110000;
-	                // 创建一个 iframe 节点
-	                let elementFrame = Laya.Browser.createElement("iframe");
-	                elementFrame.id = "frameBox";
-	                elementFrame.name = "frameBox";
-	                elementFrame.src = '';
-	                elementFrame.marginwidth = "0px";
-	                elementFrame.marginheight = "0px";
-	                elementFrame.overflow = "hidden";
-	                elementFrame.scrolling = "auto";
-	                elementFrame.frameborder = "no";
-	                elementFrame.border = "0px";
-	                elementFrame.style.position = "absolute";
-	                elementFrame.style.Zindex = 100009;
-	                elementFrame.style.border = "0px";
-	                elementFrame.style.width = "100%";
-	                elementFrame.style.height = "100%";
-	                elementFrame.style.display = "none";
-	                Laya.Browser.document.body.appendChild(webElement);
-	                //			    Log.debug(Laya.stage.width, Render.canvas.width, Render._mainCanvas.width)
-	                webElement.appendChild(elementFrame);
-	            }
-	            let loadEnd = () => {
-	                this.loadMovieClip.selectedIndex = 1;
-	                tsCore.Log.debug("loadComplete");
-	            };
-	            Laya.Browser.window.regIFrame(loadEnd);
-	            if (isHtmlUrl) {
-	                this.popFullIframeHandler(Laya.Browser.window.htmlUrl + url, true);
-	            }
-	            else {
-	                this.popFullIframeHandler(url, true);
-	            }
-	            if (!full) {
-	                let tempH = (this.btn.y + this.btn.height + this.btn.y);
-	                webElement.style.height = ((fgui.GRoot.inst.height - tempH) * this.tempY) + "px";
-	                webElement.style.top = (tempH * this.tempY) + "px";
-	            }
-	        }
-	        else {
-	            let title = this.obj["a"];
-	            if (this.obj[url]) {
-	                title = this.obj[url];
-	            }
-	            let jsonObject = {
-	                webTitle: title,
-	                webHeadVisibility: !full,
-	                x: 0,
-	                y: 0,
-	                width: -1,
-	                height: -1
-	            };
-	            if (isHtmlUrl) {
-	                jsonObject.webUrl = Laya.Browser.window.htmlUrl + url;
-	            }
-	            else {
-	                jsonObject.webUrl = url;
-	            }
-	            AppManager.showWeb(jsonObject);
-	        }
-	    }
-	    // 弹出全屏显示的浏览窗口
-	    popFullIframeHandler(url, isVisible) {
-	        let ifm = Laya.Browser.getElementById("frameBox");
-	        if (isVisible && ifm) {
-	            this._syncInputTransform();
-	            ifm.src = url;
-	            ifm.style.display = "block";
-	        }
-	    }
-	    /** 修正宽高 */
-	    _syncInputTransform() {
-	        let frameBox = Laya.Browser.getElementById("webId");
-	        if (!frameBox)
-	            return;
-	        let style = frameBox.style;
-	        let transform = Laya.Utils.getTransformRelativeToWindow(this.displayObject, 0, 0);
-	        this.tempX = transform.x;
-	        this.tempY = transform.y;
-	        style.left = transform.tx + "px";
-	        style.width = fgui.GRoot.inst.width * transform.x + "px";
-	    }
-	    share(type, url, content) {
-	        // HomePrompt.instance.showTip(1, CommonCmd.DOWNLOAD_MSG,
-	        //     function () {
-	        //         UtilsTool.downloadURL(Player.DOWNLOAD_APK_URL)
-	        //     }, null, {okName: 'Continue', cancelName: 'Cancel'})
-	        //			Intent intent = new Intent()
-	        //			intent.setAction(GameAction.SHARE)
-	        //			intent.putExtra("type", type)
-	        //			intent.putExtra("url", url)
-	        //			intent.putExtra("content", content)
-	        //			getContext().sendBroadcast(intent)
-	    }
-	    hide() {
-	        if (this.parent)
-	            AppRecordManager.backHistory();
-	    }
-	    hideRecord() {
-	        fgui.GRoot.inst.displayObject.stage.off(Laya.Event.RESIZE, this, this.sizeChangeHandler);
-	        if (!Laya.Render.isConchApp) {
-	            Laya.Browser.removeElement(Laya.Browser.getElementById("webId"));
-	        }
-	        else {
-	            AppManager.closeHtml();
-	        }
-	        if (Player.inst.gameId == CommonCmd.GAME_SPORTS)
-	            Player.inst.gameId = CommonCmd.GAME_HOME;
-	        super.hide();
-	        if (SceneManager.inst.starter)
-	            SceneManager.inst.starter.updateScreenOrientation();
-	        runFun(this.closeHandler);
-	    }
-	    showRecord() {
-	    }
-	}
-	
-	gameLib.HtmlWindow = HtmlWindow
-	
-	/** 状态吗获取显示信息 */
-	class StateCode {
-	    /**
-	     * 获取显示信息
-	     * @param data 一个object对象  如果带有message错误文字  直接使用 否则用code命令获取错误内容
-	     */
-	    static getShowMessage(data) {
-	        var _a, _b;
-	        if (!data)
-	            return getString(LibStr.NET_ERROR);
-	        if (((_a = data.message) === null || _a === void 0 ? void 0 : _a.length) > 0) {
-	            return data.message;
-	        }
-	        else if (((_b = data.msg) === null || _b === void 0 ? void 0 : _b.length) > 0) {
-	            return data.msg;
-	        }
-	        return this.getInfo(data.code);
-	    }
-	    /**
-	     * 显示错误信息
-	     * @param code 错误代号
-	     */
-	    static getInfo(code) {
-	        let content;
-	        switch (code) {
-	            case HttpCode.LOGIN_INVALIDITY: // 未登陆，请先登陆
-	                content = getString(LibStr.FIRST_LOG);
-	                break;
-	            case HttpCode.GAME_INSUFFICIENT_BALANCE: // 资金不足
-	                content = getString(LibStr.RECHARGE);
-	                break;
-	            case HttpCode.GAME_CANNOT_BET: // 当前游戏状态不属于投注状态
-	                content = getString(LibStr.CANNOT_BET);
-	                break;
-	            case HttpCode.GAME_OFF: // 游戏暂停中
-	                content = getString(LibStr.GAME_OFF);
-	                break;
-	            case HttpCode.GAME_BET_FAIL: // 投注失败
-	                content = getString(LibStr.BET_FAIL);
-	                break;
-	            default:
-	                content = getString(LibStr.NET_ERROR) + ". code:" + code;
-	                break;
-	        }
-	        return content;
-	    }
-	    /**
-	     * 此错误是后在执行范围内
-	     * @param code 执行错误代码
-	     * @param msg 提示文案或具有错误信息的object *.msg *.message
-	     */
-	    static execute(code, msg = null) {
-	        switch (code) {
-	            case HttpCode.OK:
-	                return false;
-	            case HttpCode.LOGIN_INVALIDITY: // 请登录
-	                tsCore.Log.debug("StateCode.execute() " + HttpCode.LOGIN_INVALIDITY);
-	                if (Player.inst.urlParam.isJumpPage()) {
-	                    JSUtils.login();
-	                    return true;
-	                }
-	                fgui.GRoot.inst.closeModalWait();
-	                LoadingWindow.inst.hide();
-	                HtmlWindow.inst.hide();
-	                if (typeof msg === "object")
-	                    msg = this.getShowMessage(msg);
-	                msg = msg ? msg : getString(LibStr.FIRST_LOG);
-	                if (fgui.UIPackage.getByName("gameCommon"))
-	                    WaitResult.inst.hide();
-	                HomePrompt.instance.showTip(0, msg, function () {
-	                    if (Player.inst.gameId == -1) {
-	                        Laya.LocalStorage.removeItem("token");
-	                        Laya.LocalStorage.removeItem("userData");
-	                        Player.inst.token = null;
-	                        if (Player.inst.urlParam.isJumpPage()) {
-	                            Player.inst.urlParam.clearJumpPage();
-	                            //								SceneManager.inst.enterGame()
-	                            //								return
-	                        }
-	                        SceneManager.inst.showHomeScene();
-	                    }
-	                    else {
-	                        SceneManager.inst.logout();
-	                    }
-	                }, null, { cancelName: getString(LibStr.OK) });
-	                return true;
-	            case HttpCode.GAME_PAUSE: // 游戏暂停中
-	                tsCore.Log.debug("StateCode.execute() 8003");
-	                this.showGameOff();
-	                return true;
-	            default:
-	                if (typeof msg !== "string")
-	                    msg = StateCode.getShowMessage(msg);
-	                msg = msg ? msg : getString(LibStr.NET_ERROR);
-	                PromptWindow.inst.showTip(msg);
-	                return true;
-	        }
-	    }
-	    /** 游戏暂停中，返回大厅 */
-	    static showGameOff() {
-	        JSUtils.alert(getString(LibStr.GAME_OFF));
-	        JSUtils.gameClose();
-	    }
-	}
-	
-	gameLib.StateCode = StateCode
-	
-	/** 加载界面 */
-	class LoadingWindow extends BaseView {
-	    constructor() {
-	        super(...arguments);
-	        /** 当前进度 */
-	        this.tempValue = 0;
-	    }
-	    static get inst() {
-	        var _a;
-	        (_a = this._instance) !== null && _a !== void 0 ? _a : (this._instance = fgui.UIPackage.createObjectFromURL("//init/LoadingWindow", LoadingWindow));
-	        return this._instance;
-	    }
-	    onInit() {
-	        this.controller = this.getController("c1");
-	        this.loader = this.getChild("n0").asLoader;
-	        this.mesText = this.getChild("n1").asTextField;
-	        // this.visible = false
-	    }
-	    /**
-	     * 显示加载页
-	     * @param index 显示的形式
-	     * @param headText 使用头文本
-	     *
-	     */
-	    show(index = 0, headText) {
-	        tsCore.HistoryManager.pauseHistory = true;
-	        this.changeView(index, headText);
-	        this.setSize(fgui.GRoot.inst.width, fgui.GRoot.inst.height);
-	        fgui.GRoot.inst.addChild(this);
-	    }
-	    /**
-	     * 切换显示状态
-	     * @param index 显示的形式
-	     * @param headText 使用头文本
-	     */
-	    changeView(index = 0, headText) {
-	        headText !== null && headText !== void 0 ? headText : (headText = getString(LibStr.LOADING).split(".").join(""));
-	        this.headText = headText;
-	        this.controller.selectedIndex = index;
-	        this.mesText.text = "";
-	        //		loaderUrl("init_atlas_evpb2.jpg")
-	        Laya.timer.clear(this, this.changeHandler);
-	        Laya.timer.loop(500, this, this.changeHandler);
-	    }
-	    changeHandler() {
-	        this.mesText.text = this.getMsg() + this.tempValue + "%";
-	        this.dian++;
-	        if (this.dian > 3) {
-	            this.dian = 0;
-	        }
-	    }
-	    /**
-	     * 更新进度
-	     * @param value 当前模块进度值
-	     * @param tempCount 当前加载进度模块 1 开始
-	     * @param totalCount 总共要加载的模块数
-	     */
-	    updateMsg(value, tempCount = 1, totalCount = 1) {
-	        //			trace("LoadingWindow.updateMsg(vlaue)", value+"%")
-	        this.tempValue = LoadingWindow.getProgress(value, tempCount, totalCount);
-	        JSUtils.getProgress(this.tempValue);
-	        this.mesText.text = this.getMsg() + this.tempValue.toFixed(2) + "%";
-	    }
-	    /**
-	     * 更新进度
-	     * @param value 当前模块进度值
-	     * @param tempCount 当前加载进度模块 1 开始
-	     * @param totalCount 总共要加载的模块数
-	     */
-	    static getProgress(value, tempCount = 1, totalCount = 1) {
-	        // 先算出每一份 占用的百分比份量
-	        let pieces = 100 / totalCount;
-	        // 得出当前加载所占百分比的数量
-	        let pro = value / 100 * pieces;
-	        return pieces * (tempCount - 1) + pro;
-	    }
-	    /**
-	     * 显示加载错误提示
-	     * @param value
-	     *
-	     */
-	    showError(value) {
-	        Laya.timer.clear(this, this.changeHandler);
-	        this.mesText.text = value;
-	    }
-	    getMsg() {
-	        let str = this.headText;
-	        for (let i = 0; i < 3; i++) {
-	            if (i < this.dian) {
-	                str += ".";
-	            }
-	            else {
-	                str += " ";
-	            }
-	        }
-	        return str;
-	    }
-	    /** 替换加载图片 */
-	    loaderUrl(url) {
-	        this.loader.url = url;
-	    }
-	    hide() {
-	        tsCore.HistoryManager.pauseHistory = false;
-	        Laya.timer.clear(this, this.changeHandler);
-	        this.removeFromParent();
-	    }
-	}
-	
-	gameLib.LoadingWindow = LoadingWindow
-	
-	/**
-	 * 游戏基础类
-	 * @author boge
-	 */
-	class GameServlet extends tsCore.EProxy {
-	    constructor() {
-	        super();
-	        this.regGameAction(ActionLib.GAME_CHECK_STATE, this, this.checkState);
-	        this.regGameAction(ActionLib.GAME_INIT_SERVLET, this, this.init);
-	        this.regGameAction(ActionLib.GAME_CONNECT_SOCKET, this, this.connectSocket);
-	        this.regGameAction(ActionLib.GAME_DISPOSE, this, this.dispose);
-	    }
-	    get gameData() {
-	        return Player.inst.gameData;
-	    }
-	    /**
-	     * @deprecated
-	     */
-	    set gameData(value) {
-	        tsCore.Log.debug(value);
-	    }
-	    /**
-	     * 封装的get请求
-	     *
-	     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
-	     *
-	     * @param url 使用 Player.inst.data.getGameUrl 格式化的url
-	     * @param data
-	     * @param callback
-	     * @param error
-	     * @param timeout
-	     * @deprecated
-	     * @see getData
-	     */
-	    getURL(url, data, callback, error, timeout) {
-	        this.getData(url, data, callback, error, timeout);
-	    }
-	    /**
-	     * 封装的get请求
-	     *
-	     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
-	     *
-	     * @param url 使用 Player.inst.data.getGameUrl 格式化的url
-	     * @param data
-	     * @param callback
-	     * @param error
-	     * @param timeout
-	     * @param [overtime = 0] 超时时间设置 毫秒
-	     */
-	    getData(url, data, callback, error, timeout, overtime = 0) {
-	        tsCore.HTTPUtils.create()
-	            .setUrl(Player.inst.data.getGameUrl(url))
-	            .setData(data)
-	            .setOvertime(overtime)
-	            .onComplete((data, request) => {
-	            var _a;
-	            if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode))
-	                runFun(callback, data, request);
-	        })
-	            .onError((data, request) => {
-	            var _a;
-	            if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode))
-	                runFun(error, data, request);
-	        })
-	            .onTimeout((request) => {
-	            var _a;
-	            if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode)) {
-	                if (timeout)
-	                    runFun(timeout, request);
-	                else if (error)
-	                    runFun(error, null, request);
-	            }
-	        }).call();
-	    }
-	    /**
-	     * post 请求
-	     *
-	     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
-	     * @param url 请求连接 使用Player.inst.data.getGameUrl()格式化的url
-	     * @param data 请求数据
-	     * @param callback 请求完成返回调用函数
-	     * @param error 错误调用函数
-	     * @param timeout 超时回调函数
-	     * @param headers (default = null) HTTP 请求的头部信息。参数形如key-value数组：key是头部的名称，不应该包括空白、冒号或换行；value是头部的值，不应该包括换行。比如["Content-Type", "application/json"]。
-	     * @param overtime
-	     * @deprecated
-	     * @see postData
-	     */
-	    post(url, data, callback, error, timeout, headers, overtime = 0) {
-	        this.postData(url, data, callback, error, timeout, headers, overtime);
-	    }
-	    /**
-	     * post 请求
-	     *
-	     * 所有的返回结果，都会执行id判断 Player.inst.gameId == this.gameModel?.gameCode
-	     * @param url 请求连接 使用Player.inst.data.getGameUrl()格式化的url
-	     * @param data 请求数据
-	     * @param callback 请求完成返回调用函数
-	     * @param error 错误调用函数
-	     * @param timeout 超时回调函数
-	     * @param headers (default = null) HTTP 请求的头部信息。参数形如key-value数组：key是头部的名称，不应该包括空白、冒号或换行；value是头部的值，不应该包括换行。比如["Content-Type", "application/json"]。
-	     * @param [overtime = 0] 超时时间设置 毫秒
-	     */
-	    postData(url, data, callback, error, timeout, headers, overtime = 0) {
-	        tsCore.HTTPUtils.create()
-	            .setMethod(tsCore.Method.POST)
-	            .setUrl(Player.inst.data.getGameUrl(url))
-	            .setData(data)
-	            .setOvertime(overtime)
-	            .setHeaders(headers)
-	            .onComplete((data, request) => {
-	            var _a;
-	            if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode)) {
-	                if (Player.inst.isGuest && (data === null || data === void 0 ? void 0 : data.code) == HttpCode.OK) {
-	                    Player.inst.guestModel.playAdd(url, data.data);
-	                }
-	                if (!data)
-	                    runFun(error, "data is null", request);
-	                else
-	                    runFun(callback, data, request);
-	            }
-	        })
-	            .onError((data, request) => {
-	            var _a;
-	            if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode))
-	                runFun(error, data, request);
-	        })
-	            .onTimeout((request) => {
-	            var _a;
-	            if (Player.inst.gameId == ((_a = this.gameModel) === null || _a === void 0 ? void 0 : _a.gameCode)) {
-	                if (timeout)
-	                    runFun(timeout, request);
-	                else if (error)
-	                    runFun(error, null, request);
-	            }
-	        }).call();
-	    }
-	    /**
-	     *
-	     * @param handler
-	     */
-	    checkState(handler) {
-	        runFun(handler);
-	    }
-	    /**
-	     * 进入游戏失败 执行退出游戏
-	     * @param [isTip = true] 是否需要弹窗
-	     * @param message 弹窗内容
-	     * @param request
-	     */
-	    enterFail(isTip = true, message, request) {
-	        Player.inst.gameId = CommonCmd.GAME_HOME;
-	        fgui.GRoot.inst.closeModalWait();
-	        LoadingWindow.inst.hide();
-	        JSUtils.alert(message ? message : getString(LibStr.GAME_OFF));
-	        JSUtils.gameClose();
-	        if (isTip)
-	            tsCore.MessageTip.showTip(message ? message : LibStr.GAME_OFF);
-	        this.sendAction(ActionLib.GAME_UPDATE_DEFAULT_SCREEN);
-	    }
-	    init(handler) {
-	        this.initHandler = handler;
-	        if (Player.inst.isGuest) {
-	            Player.inst.status = 1;
-	            // 初始化完成
-	            runFun(handler);
-	            return;
-	        }
-	        this.postInit(this.userDataHandler.bind(this), this.userDataErrorHandler.bind(this));
-	    }
-	    /**
-	     * 请求初始化游戏
-	     */
-	    postInit(succeed, error) {
-	        let obj = {};
-	        obj.token = Player.inst.token;
-	        obj.game_id = Player.inst.gameId;
-	        obj.is_gift = Player.inst.urlParam.isGift;
-	        this.postData(`/game/${this.networkName}/init`, obj, succeed, error);
-	    }
-	    /** 连接该游戏的socket */
-	    connectSocket() {
-	        // 链接服务器socket
-	        SocketManager.inst.connect(Player.inst.gameId, Player.inst.token, Player.inst.userId);
-	    }
-	    userDataErrorHandler(data, request) {
-	        this.enterFail(true, getString(LibStr.NET_ERROR), request);
-	    }
-	    /** 用户数据 */
-	    userDataHandler(response, request) {
-	        var _a;
-	        //			trace("MainPanel.userDataHandlerr(data) 服务器拿到游戏房间数据")
-	        if (response.code != HttpCode.OK) {
-	            this.enterFail(true, StateCode.getShowMessage(response), request);
-	            return;
-	        }
-	        const data = response.data;
-	        this.gameStatus = data.game_status;
-	        // 处理自定义解析
-	        (_a = GameServlet.customParseUser) === null || _a === void 0 ? void 0 : _a.call(this, data);
-	        this.parseInitData(data);
-	        Player.inst.status = data.status ? data.status : 1; //1=>投注中，2=>计算中，3=>开奖
-	        Player.inst.data.lotteryTime = data.lottery_time; //开奖时间戳(s)
-	        let period = data.period; //当前期数
-	        Player.inst.data.initRoomTotalItem = data.bet_total_item; //当前房间总投注金额
-	        Player.inst.data.initRoomCurBet = data.cur_bet_total; //当前房间自己投注金额
-	        Player.inst.data.betHistory = data.bet_history; //当前房间历史记录
-	        Player.inst.data.betStatic = data.bet_statis; //当前历史次数
-	        Player.inst.data.initPeriod = data.last_period;
-	        // 奖金池数据
-	        this.readJackpotData(data);
-	        // 单机游戏进入   处理
-	        if (SceneManager.inst.isAloneGame()) {
-	            period = 1;
-	            Player.inst.data.jackpot = data.jackpot;
-	        }
-	        Player.inst.data.period = period;
-	        if (this.gameStatus == 1) {
-	            if (GameServlet.customInit) {
-	                GameServlet.customInit.call(this, (result) => {
-	                    if (result.succeed) {
-	                        this.nextInit();
-	                    }
-	                    else
-	                        this.enterFail(true, result.msg, request);
-	                });
-	            }
-	            else
-	                this.nextInit();
-	        }
-	        else {
-	            this.enterFail(true, null, request);
-	        }
-	    }
-	    nextInit() {
-	        this.onUserData.call(this, (result) => {
-	            if (result.succeed) {
-	                this.getCoupon(this.initComplete.bind(this));
-	            }
-	            else {
-	                this.enterFail(true, result.msg);
-	            }
-	        });
-	    }
-	    /**
-	     * 用户信息初始化完成 返回false表示 出现错误
-	     */
-	    onUserData(value) {
-	        value({ succeed: true });
-	    }
-	    /**
-	     * 读取奖金池数据
-	     * @param data
-	     */
-	    readJackpotData(data) {
-	        if (data.user_really_bet || data.user_really_bet == 0)
-	            Player.inst.userReallyBet = data.user_really_bet;
-	        if (data.get_ticket_inc_bet)
-	            Player.inst.getTicketIncBet = data.get_ticket_inc_bet;
-	        if (data.game_pool || data.game_pool == 0)
-	            Player.inst.gamePool = tsCore.MathKit.toFixed(data.game_pool);
-	        if (data.scratcher_tickets)
-	            Player.inst.jackpotData = data.scratcher_tickets;
-	        this.sendAction(ActionLib.GAME_UPDATE_JACKPOT_POOL);
-	    }
-	    /**
-	     * 获取优惠券信息的函数。
-	     * @param onComplete - 请求完成后的回调函数，参数为从服务器返回的数据。
-	     * @param error - 请求发生错误时的回调函数，参数为错误信息。
-	     */
-	    getCoupon(onComplete, error) {
-	        this.getData(Urls.URL_GAME_ALL_COUPON + "?" + Player.inst.getRequestToken(), null, Laya.Handler.create(this, this.couponHandler, [onComplete]), error !== null && error !== void 0 ? error : this.userDataErrorHandler.bind(this));
-	    }
-	    /** 收到投注劵数据 */
-	    couponHandler(handler, data, request) {
-	        if (data.code != HttpCode.OK) {
-	            this.enterFail(true, StateCode.getShowMessage(data), request);
-	            return;
-	        }
-	        Player.inst.addCoupons(data.data);
-	        runFun(handler);
-	    }
-	    initComplete() {
-	        runFun(this.initHandler);
-	    }
-	    /**
-	     * 拉取账户金额
-	     * @param callback
-	     * @param error
-	     */
-	    getUserMoney(callback, error) {
-	        let obj = { token: Player.inst.token };
-	        tsCore.HTTPUtils.create()
-	            .setMethod("post")
-	            .setUrl(Player.inst.data.getWapUrl(Urls.URL_USER_ACCOUNT_ASSET))
-	            .setData(obj)
-	            .onComplete((data) => {
-	            if ((data === null || data === void 0 ? void 0 : data.code) == HttpCode.OK) {
-	                runFun(callback, data);
-	            }
-	            else {
-	                runFun(error, "data is null");
-	            }
-	        }).onError(error).call();
-	    }
-	    /**
-	     * 检查游戏期数
-	     * @param handler
-	     *
-	     */
-	    checkGamePeriod(handler) {
-	        runFun(handler, true);
-	        // let obj: any = {}
-	        // obj.token = Player.inst.token
-	        // obj.roomId = Player.inst.gameId
-	        // this.post("/game/status", obj, (data: any) => {
-	        //     if (data.code != HttpCode.OK) {
-	        //         this.enterFail(true, StateCode.getShowMessage(data))
-	        //         return
-	        //     }
-	        //     data = data.data
-	        //     this.gameStatus = data.status
-	        //     this.modifyCheckState(data)
-	        //     let period: number = data.period;//当前期数
-	        //     if (SceneManager.inst.isAloneGame()) {
-	        //         period = 1
-	        //     }
-	        //     if (this.gameStatus == 1) {
-	        //         if (period == Player.inst.data.period) {
-	        //             handler.runWith(true)
-	        //             return
-	        //         } else if (period - 1 == Player.inst.data.period && Player.inst.status < 3) {
-	        //             handler.runWith(true)
-	        //             return
-	        //         }
-	        //     }
-	        //     Log.info("GameServlet.checkStateHandler(data)gameStatus=" + this.gameStatus + ", period=" + period + ", " + Player.inst.data.period)
-	        //     handler.runWith(false)
-	        // }, () => {
-	        //     handler.runWith(false)
-	        // })
-	    }
-	    /**
-	     * 发送bet数据
-	     * @param url
-	     * @param data
-	     * @param callback
-	     */
-	    sendBet(url, data, callback) {
-	        this.postData(url, data, (data, request) => {
-	            if (data.code == HttpCode.OK) {
-	                Player.inst.gameData.playCount++;
-	                Player.inst.playCount++;
-	                if (Player.inst.isGuest)
-	                    Player.inst.guestModel.guestPlayCount++;
-	            }
-	            runFun(callback, data, request);
-	        }, this.onSendBetError.bind(this));
-	    }
-	    /**
-	     * 处理发送bet请求时的错误。
-	     */
-	    onSendBetError(msg, request) {
-	        WaitResult.inst.hide();
-	        SceneManager.inst.gameErrorExit(LibStr.NET_ERROR);
-	    }
-	    // /**
-	    //  * 当请求不通过的时候  发出提示信息并重置bet
-	    //  * @param data
-	    //  * @param isWindow
-	    //  */
-	    // betFail(data?: HttpResponse, isWindow = false) {
-	    //     if (isWindow) PromptWindow.inst.showTip(StateCode.getShowMessage(data))
-	    //     else MessageTip.showTip(StateCode.getShowMessage(data))
-	    //     this.sendAction(ActionLib.GAME_STOP_SLOT_LIST_RUN_ANI)
-	    //     this.sendAction(ActionLib.GAME_RESET_BET)
-	    // }
-	    /**
-	     * 领取奖金池
-	     * @param id
-	     * @param handler
-	     */
-	    jackPotClaim(id, handler) {
-	        let obj = {};
-	        obj.token = Player.inst.token;
-	        obj.game_id = Player.inst.gameId;
-	        obj.id = id;
-	        this.postData(Urls.URL_GAME_SCRATCHER_LOTTERY, obj, Laya.Handler.create(this, this.jackPotClaimHandler, [handler]), () => {
-	            runFun(handler, false);
-	        });
-	    }
-	    jackPotClaimHandler(handler, response, request) {
-	        if (response.code != HttpCode.OK) {
-	            WaitResult.inst.hide();
-	            // this.showNotResult(response.data, false, request)
-	            StateCode.execute(response.code, response);
-	            runFun(handler, false);
-	            return;
-	        }
-	        const data = response.data;
-	        let balance = data.balance; //余额
-	        let win = data.win; //赢的钱
-	        this.readJackpotData(data);
-	        Player.inst.money = balance;
-	        runFun(handler, true, win);
-	    }
-	    /**
-	     * 显示获取的非200的结果显示弹窗
-	     * @param data 服务器返回的完整数据
-	     * @param [closeGame=true] 是否关闭游戏
-	     * @param request
-	     */
-	    showNotResult(data, closeGame = true, request) {
-	        let str = StateCode.getShowMessage(data);
-	        if (tsCore.StringUtil.isEmpty(str)) {
-	            str = getString(LibStr.NET_ERROR);
-	        }
-	        if (closeGame) {
-	            JSUtils.alert(str);
-	            JSUtils.gameClose();
-	        }
-	        else {
-	            PromptWindow.inst.showTip(str);
-	        }
-	    }
-	    get gameModel() {
-	        var _a;
-	        (_a = this._gameModel) !== null && _a !== void 0 ? _a : (this._gameModel = SceneManager.inst.starter.gameModel);
-	        return this._gameModel;
-	    }
-	    set gameModel(value) {
-	        this._gameModel = value;
-	    }
-	    dispose() {
-	        super.dispose();
-	    }
-	}
-	
-	gameLib.GameServlet = GameServlet
-	
-	class GameConfigKit {
-	    /**
-	     * 获取游戏配置表
-	     */
-	    static gameConfig() {
-	        return tsCore.ConfigKit.get(GameConfigKit.CONFIG_NAME);
-	    }
-	    /**
-	     * 根据游戏id获取配置的游戏名 如果没有 null
-	     * @param [code=0] 不传将使用当前已经打开游戏id
-	     */
-	    static gameName(code = null) {
-	        code !== null && code !== void 0 ? code : (code = Player.inst.gameId);
-	        if (code <= 0)
-	            return null;
-	        const config = GameConfigKit.gameConfig();
-	        return config ? config[code] : null;
-	    }
-	    /**
-	     * 获取游戏名字的标准样式
-	     * @param [code=null] 游戏id 不填将使用当前已在用得到游戏id
-	     * @param [format=null] 格式化样式，将空白替换成指定的值 不设置将用驼峰命名
-	     */
-	    static gameNameCanonical(code = null, format = null) {
-	        let name = GameConfigKit.gameName(code);
-	        if (name) {
-	            if (format != null) {
-	                name = name.replace(/\s+/g, format);
-	            }
-	            else {
-	                const names = name.split(/\s+/g);
-	                if (names.length > 1) {
-	                    name = "";
-	                    for (const name1 of names) {
-	                        name += name1.charAt(0).toUpperCase() + name1.substring(1).toLowerCase();
-	                    }
-	                }
-	            }
-	        }
-	        return name ? name : null;
-	    }
-	    /**
-	     * 根据游戏名获取游戏id 如果不存在返回-1
-	     * @param [name=null]
-	     */
-	    static gameCode(name = null) {
-	        name !== null && name !== void 0 ? name : (name = Player.inst.gameName);
-	        name !== null && name !== void 0 ? name : (name = GameConfigKit.gameNameCanonical());
-	        const config = GameConfigKit.gameConfig();
-	        if (name && config) {
-	            for (const key in config) {
-	                if (tsCore.StringUtil.trimAll(config[key]) == name) {
-	                    return parseInt(key);
-	                }
-	            }
-	        }
-	        return -1;
-	    }
-	    /**
-	     * 获取游戏配置数据
-	     * @param [name=null] 游戏名字,如果不传，将获取当前打开游戏名字
-	     * @param [ignoreCase=false] 是否忽略名字大小写
-	     */
-	    static gameRes(name = null, ignoreCase = false) {
-	        name !== null && name !== void 0 ? name : (name = Player.inst.gameName);
-	        name !== null && name !== void 0 ? name : (name = GameConfigKit.gameNameCanonical());
-	        //todo 过渡的一个资源获取版本  后面要删除掉
-	        // @ts-ignore
-	        const table = window.ConfigureTable;
-	        if (table) {
-	            const eqName = ignoreCase ? name.toLowerCase() : name;
-	            for (const tableKey in table) {
-	                const findName = ignoreCase ? tableKey.toLowerCase() : tableKey;
-	                if (findName == eqName) {
-	                    return table[tableKey];
-	                }
-	            }
-	        }
-	        return name ? ignoreCase ? window[name] || window[name.toLowerCase()] : window[name] : null;
-	    }
-	}
-	/**
-	 * 在window上配置的属性名字
-	 * @default gameIdConfig
-	 */
-	GameConfigKit.CONFIG_NAME = "gameIdConfig";
-	/**
-	 * 场景初始化完成 自动通知加载完成并关闭加载页
-	 * @type {boolean}
-	 * @default true
-	 */
-	GameConfigKit.autoSendOnLoadEnd = true;
-	
-	gameLib.GameConfigKit = GameConfigKit
-	
-	class JSUtils {
-	    /**
-	     * 刷新页面  如果有父页面  刷新父页面
-	     */
-	    static reloadAll() {
-	        if (Laya.Browser.window.parent) {
-	            Laya.Browser.window.parent.location.reload();
-	        }
-	        else {
-	            Laya.Browser.window.location.reload();
-	        }
-	    }
-	    /** 刷新 */
-	    static reload() {
-	        Laya.Browser.window.location.reload();
-	    }
-	    /** 进入登录界面 /login */
-	    static login() {
-	        JSUtils.openPage("/login");
-	    }
-	    /** 充值 /deposit */
-	    static deposit() {
-	        JSUtils.openPage("/deposit");
-	    }
-	    /** 进入刮刮卡 /jackpot */
-	    static jackpot() {
-	        JSUtils.openPage("/jackpot");
-	    }
-	    /**
-	     * 打开指定的web页面 不关闭游戏的前提下
-	     * @param value
-	     * @deprecated
-	     * @see openPage
-	     */
-	    static openWebPageWithoutLeaveGame(value) {
-	        JSUtils.openPage(value, false);
-	    }
-	    /** 关闭游戏
-	     * @param [type = 0]  0 默认直接退出  1 退出切换到新游戏
-	     * @param [data = null]
-	     * */
-	    static gameClose(type = 0, data = null) {
-	        var _a, _b, _c, _d, _e;
-	        tsCore.Log.debug(`gameClose->${type} ${data}`);
-	        SceneManager.inst.initComplete = false;
-	        SceneManager.inst.isLoaderResComplete = false;
-	        AppManager.callIOS("gameClose", {
-	            type: type,
-	            data: data
-	        }) ? SceneManager.inst.closeGame() : ((_b = (_a = Laya.Browser.window.APP) === null || _a === void 0 ? void 0 : _a.gameClose) === null || _b === void 0 ? void 0 : _b.call(_a, type, data))
-	            || ((_e = (_d = (_c = Laya.Browser.window.parent) === null || _c === void 0 ? void 0 : _c.GameToHall) === null || _d === void 0 ? void 0 : _d.gameClose) === null || _e === void 0 ? void 0 : _e.call(_d, type, data))
-	            // 如果不是加速器 并且不是在非https下  那么直接返回大厅
-	            || (!Laya.Browser.onLayaRuntime && window.location.protocol == "https:") && (window.location.href = `//${window.location.host}`);
-	        AppManager.showWeb({ javascript: `window.GameToHall.gameClose(${type}, ${data})` });
-	        SceneManager.inst.closeGame();
-	    }
-	    /**
-	     * 弹窗
-	     * @param msg 内容文本
-	     * @param title 标题
-	     * @param okText ok文本
-	     * @param cancelText 取消文本
-	     */
-	    static alert(msg, title = "", okText = "", cancelText = "") {
-	        var _a, _b, _c, _d, _e, _f, _g, _h;
-	        tsCore.Log.debug(`alert-> msg:${msg}, title=${title}, okText=${okText}, cancelText=${cancelText}`);
-	        if (AppManager.callIOS("alert", { msg: msg, title: title, ensureTv: okText, cancelTv: cancelText }))
-	            return;
-	        ((_b = (_a = Laya.Browser.window.APP) === null || _a === void 0 ? void 0 : _a.alert) === null || _b === void 0 ? void 0 : _b.call(_a, msg, title, okText, cancelText)) ||
-	            ((_e = (_d = (_c = Laya.Browser.window.parent) === null || _c === void 0 ? void 0 : _c.GameToHall) === null || _d === void 0 ? void 0 : _d.alert) === null || _e === void 0 ? void 0 : _e.call(_d, msg)) ||
-	            ((_h = (_g = (_f = Laya.Browser.window.parent) === null || _f === void 0 ? void 0 : _f.GameToHall) === null || _g === void 0 ? void 0 : _g.openModal) === null || _h === void 0 ? void 0 : _h.call(_g, msg));
-	        AppManager.showWeb({ javascript: `window.GameToHall.alert && window.GameToHall.alert('${msg}')` });
-	        AppManager.showWeb({ javascript: `window.GameToHall.openModal && window.GameToHall.openModal('${msg}')` });
-	    }
-	    /**
-	     * 打开一个原生页面
-	     * @param page 页面 如： "/giftPage?token=***"
-	     * login,register,userSetting,webDetail,gameDetail,editNickName,forgetMain,changePwd,home,deposit,promotion,withdraw,profile
-	     * @param [isCloseGame=true] 是否关闭游戏
-	     *
-	     * @example
-	     *
-	     * openPage("//{host}/{lang}/page") = url= //www.google.com/en/page
-	     *
-	     *
-	     */
-	    static openPage(page, isCloseGame = true) {
-	        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
-	        tsCore.Log.debug(`openPage-> page:${page}, isCloseGame=${isCloseGame}`);
-	        if (typeof page === "string") {
-	            page = { page: page, isCloseGame: isCloseGame };
-	        }
-	        (_a = page.type) !== null && _a !== void 0 ? _a : (page.type = 0);
-	        // 双斜杠开头  默认添加协议头
-	        if (page.page.startsWith("//"))
-	            page.page = window.location.protocol + page.page;
-	        else if (JSUtils.autoEscapeURL && page.page.startsWith("/"))
-	            page.page = `${window.location.protocol}//{host}/{lang}` + page.page;
-	        // 替换域名和 语言
-	        page.page = page.page.replace(/{host}/g, window.location.host)
-	            .replace(/\/{lang}/g, Player.inst.urlParam.language ? "/" + Player.inst.urlParam.language : "");
-	        if (AppManager.callIOS("openPage", page))
-	            return;
-	        (_c = (_b = Laya.Browser.window.APP) === null || _b === void 0 ? void 0 : _b.openPage) === null || _c === void 0 ? void 0 : _c.call(_b, page, isCloseGame);
-	        (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.openPage) === null || _f === void 0 ? void 0 : _f.call(_e, page.page, isCloseGame);
-	        if (isCloseGame) {
-	            (_j = (_h = (_g = Laya.Browser.window.parent) === null || _g === void 0 ? void 0 : _g.GameToHall) === null || _h === void 0 ? void 0 : _h.comeWebPage) === null || _j === void 0 ? void 0 : _j.call(_h, page.page);
-	            AppManager.showWeb({ javascript: `window.GameToHall.openPage && window.GameToHall.openPage('${page.page}')` });
-	            AppManager.showWeb({ javascript: `window.GameToHall.comeWebPage && window.GameToHall.comeWebPage('${page.page}')` });
-	            SceneManager.inst.closeGame();
-	        }
-	        else {
-	            (_m = (_l = (_k = Laya.Browser.window.parent) === null || _k === void 0 ? void 0 : _k.GameToHall) === null || _l === void 0 ? void 0 : _l.openWebPageWithoutLeaveGame) === null || _m === void 0 ? void 0 : _m.call(_l, page.page);
-	            AppManager.showWeb({ javascript: `window.GameToHall.openWebPageWithoutLeaveGame('${page.page}')` });
-	        }
-	    }
-	    static callMethod(methodName, args) {
-	        var _a, _b, _c, _d, _e;
-	        tsCore.Log.debug(`callMethod-> methodName:${methodName}, args=${args}`);
-	        if (AppManager.callIOS(methodName, args))
-	            return;
-	        (_b = (_a = Laya.Browser.window.APP) === null || _a === void 0 ? void 0 : _a[methodName]) === null || _b === void 0 ? void 0 : _b.call(null, ...args);
-	        (_e = (_d = (_c = Laya.Browser.window.parent) === null || _c === void 0 ? void 0 : _c.GameToHall) === null || _d === void 0 ? void 0 : _d[methodName]) === null || _e === void 0 ? void 0 : _e.call(null, ...args);
-	    }
-	    /** 进入游戏进度条 */
-	    static progress(value) {
-	        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
-	        tsCore.Log.debug(`progress->${value}`);
-	        if (AppManager.callIOS("progress", { value: value }, false))
-	            return;
-	        (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.progress) === null || _c === void 0 ? void 0 : _c.call(_b, value);
-	        (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.getProgress) === null || _f === void 0 ? void 0 : _f.call(_e, value);
-	        (_h = (_g = Laya.Browser.window.APP) === null || _g === void 0 ? void 0 : _g.progress) === null || _h === void 0 ? void 0 : _h.call(_g, value);
-	        (_k = (_j = Laya.Browser.window.loadingView) === null || _j === void 0 ? void 0 : _j.executionJavascript) === null || _k === void 0 ? void 0 : _k.call(_j, "window.GameToHall.getProgress(" + value + ")");
-	        (_m = (_l = Laya.Browser.window.loadingView) === null || _l === void 0 ? void 0 : _l.loading) === null || _m === void 0 ? void 0 : _m.call(_l, value);
-	        AppManager.executionJavascript("window.GameToHall.progress && window.GameToHall.progress", value);
-	        AppManager.executionJavascript("window.GameToHall.getProgress && window.GameToHall.getProgress", value);
-	    }
-	    /**
-	     * 原生应用获取顶部的刘海屏高度
-	     *
-	     */
-	    static getSafeAreaTop() {
-	        var _a, _b, _c;
-	        if (AppManager.callIOS("getSafeAreaTop"))
-	            return 0;
-	        return (_c = (_b = (_a = Laya.Browser.window.APP) === null || _a === void 0 ? void 0 : _a.getSafeAreaTop) === null || _b === void 0 ? void 0 : _b.call(_a)) !== null && _c !== void 0 ? _c : 0;
-	    }
-	    /** 通知进入游戏了 */
-	    static gameOnload() {
-	        var _a, _b, _c, _d, _e, _f, _g;
-	        tsCore.Log.debug("gameOnload->");
-	        if (AppManager.callIOS("gameOnload"))
-	            return;
-	        (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.gameOnload) === null || _c === void 0 ? void 0 : _c.call(_b);
-	        (_e = (_d = Laya.Browser.window.APP) === null || _d === void 0 ? void 0 : _d.gameOnload) === null || _e === void 0 ? void 0 : _e.call(_d);
-	        (_g = (_f = Laya.Browser.window.conchMarket) === null || _f === void 0 ? void 0 : _f.gameOnload) === null || _g === void 0 ? void 0 : _g.call(_f);
-	        AppManager.executionJavascript("window.GameToHall.gameOnload", null);
-	    }
-	    /** 上传头像 */
-	    static uploadAvatar() {
-	        var _a, _b, _c, _d, _e, _f;
-	        tsCore.Log.debug("uploadAvatar->");
-	        if (AppManager.callIOS("uploadAvatar"))
-	            return;
-	        (_c = (_b = (_a = Laya.Browser.window.parent) === null || _a === void 0 ? void 0 : _a.GameToHall) === null || _b === void 0 ? void 0 : _b.uploadAvatar) === null || _c === void 0 ? void 0 : _c.call(_b);
-	        (_f = (_e = (_d = Laya.Browser.window.parent) === null || _d === void 0 ? void 0 : _d.GameToHall) === null || _e === void 0 ? void 0 : _e.openReviseAvatarNickNameDrawer) === null || _f === void 0 ? void 0 : _f.call(_e);
-	        AppManager.showWeb({ javascript: "window.GameToHall.uploadAvatar && window.GameToHall.uploadAvatar()" });
-	        AppManager.showWeb({ javascript: "window.GameToHall.openReviseAvatarNickNameDrawer && window.GameToHall.openReviseAvatarNickNameDrawer()" });
-	    }
-	}
-	/**
-	 * 在处理 /开头的url 是否自动转义 成完整路径
-	 */
-	JSUtils.autoEscapeURL = true;
-	JSUtils.getProgress = JSUtils.progress;
-	/**
-	 * @deprecated
-	 * @see JSUtils.uploadAvatar
-	 */
-	JSUtils.updateHead = JSUtils.uploadAvatar;
-	/**
-	 * @deprecated
-	 * @see JSUtils.alert
-	 */
-	JSUtils.openModal = JSUtils.alert;
-	
-	gameLib.JSUtils = JSUtils
-	
-	/**
-	 * 游戏类型
-	 */
-	var GameType;
-	(function (GameType) {
-	    /** 正常游戏 */
-	    GameType[GameType["NORMAL"] = 0] = "NORMAL";
-	    /** 连线游戏 */
-	    GameType[GameType["SLOT"] = 1] = "SLOT";
-	    /** 连线游戏,单独的bet bet值和线数量无关 */
-	    GameType[GameType["SLOT_SINGLE_BET"] = 2] = "SLOT_SINGLE_BET";
-	})(GameType || (GameType = {}));
-	/**
-	 * 游戏数据的基类
-	 */
-	class BaseGameData {
-	    constructor() {
-	        /**
-	         * 服务器返回的当前本金
-	         */
-	        this.currentBalance = 0;
-	        /** 最后盈利总额 */
-	        this.totalWinMoneyLast = 0;
-	        /** 本轮总盈利额 */
-	        this.totalWinMoney = 0;
-	        /** 服务器返回当前盈利额 */
-	        this.serverWinMoney = 0;
-	        /**
-	         * 玩的次数
-	         */
-	        this.playCount = 0;
-	        /**
-	         * 推荐
-	         */
-	        this.isRecommend = false;
-	        /**
-	         * 是否已启动特殊游戏模式
-	         */
-	        this.specialMode = false;
-	        /**
-	         * 游戏类型
-	         * @see GameType
-	         */
-	        this.gameType = GameType.NORMAL;
-	        /** 是否快速播放 */
-	        this._isTurboMode = false;
-	        /** 默认bet位置 */
-	        this.defaultBetIndex = 0;
-	        /** 缓存 后端计算 当前盈利 */
-	        this.tempServerWinMoney = 0;
-	        /** 当前玩家选择的自动bet次数 */
-	        this.autoBetCount = 0;
-	        /** 当前玩家选择的自动bet次数 (缓存) */
-	        this.tempAutoBetCount = 0;
-	        /** bet 额度切换值 */
-	        this.betMoney = [];
-	        /** 当前bet值 */
-	        this.betValue = 0;
-	        /** 通知数据 */
-	        this.noticeData = [];
-	        /**
-	         * 重置默认bet值
-	         * @default false
-	         */
-	        this.isResetBetValue = false;
-	        const key = Player.inst.gameId + "_isTurboMode";
-	        this._isTurboMode = Laya.LocalStorage.getItem(key) != null;
-	    }
-	    get isTurboMode() {
-	        return this._isTurboMode;
-	    }
-	    set isTurboMode(value) {
-	        this._isTurboMode = value;
-	        const key = Player.inst.gameId + "_isTurboMode";
-	        if (value) {
-	            Laya.LocalStorage.setItem(key, "1");
-	        }
-	        else {
-	            Laya.LocalStorage.removeItem(key);
-	        }
-	    }
-	    /**
-	     * 获取 Skeleton 播放速率
-	     */
-	    getPlaybackRate() {
-	        return this.isTurboMode ? 2 : 1;
-	    }
-	    /**
-	     * 将传入参数计算加速后的值
-	     * @param value 获取转换时间
-	     * @param [rate=-1] 需要加速的速率 如果是-1将调用 getPlaybackRate 获取默认速率
-	     *
-	     * @see getPlaybackRate
-	     */
-	    convertPlaybackRate(value, rate = -1) {
-	        if (!this.isTurboMode)
-	            return value;
-	        if (rate == -1)
-	            rate = this.getPlaybackRate();
-	        return Math.floor(value / rate);
-	    }
-	    /**
-	     * 总金额 default BaseGameData.betValue
-	     */
-	    getTotalBetMoney() {
-	        return this.betValue;
-	    }
-	    /**
-	     * 获取赢钱动画 的播放时长
-	     * @param level 播放时长等级 0开始
-	     */
-	    getWinMoneyAniDuration(level) {
-	        return this.convertPlaybackRate(1000) * (level + 1);
-	    }
-	    /**
-	     * 是否达到 BigWin 的值
-	     * @param [isTotal=false] 是否看总金额
-	     * @param [multiple=10] 倍数
-	     * @return
-	     */
-	    isBigWin(isTotal = false, multiple = 10) {
-	        return (isTotal ? this.totalWinMoney : this.serverWinMoney) > this.getTotalBetMoney() * multiple;
-	    }
-	    /**
-	     * 是否达到 MegaWin 的值
-	     * @param [isTotal=false] 是否看总金额
-	     * @param [multiple=30] 倍数
-	     * @return
-	     */
-	    isMegaWin(isTotal = false, multiple = 30) {
-	        return (isTotal ? this.totalWinMoney : this.serverWinMoney) > this.getTotalBetMoney() * multiple;
-	    }
-	    /**
-	     * 是否达到 SuperWin 的值
-	     * @param [isTotal=false] 是否看总金额
-	     * @param [multiple=60] 倍数
-	     */
-	    isSuperWin(isTotal = false, multiple = 60) {
-	        return (isTotal ? this.totalWinMoney : this.serverWinMoney) > this.getTotalBetMoney() * multiple;
-	    }
-	    reportError() {
-	        return JSON.stringify(this);
-	    }
-	}
-	
-	gameLib.GameType = GameType
-	
-	gameLib.BaseGameData = BaseGameData
-	
-	/** 提示框 */
-	class PromptWindow extends BaseWindow {
-	    static get inst() {
-	        var _a;
-	        (_a = PromptWindow._instance) !== null && _a !== void 0 ? _a : (PromptWindow._instance = new PromptWindow());
-	        return PromptWindow._instance;
-	    }
-	    constructor() {
-	        var _a;
-	        super();
-	        /** 缓存的提示框 */
-	        this.cacheMessage = [];
-	        this.modal = true;
-	        (_a = PromptWindow._instance) !== null && _a !== void 0 ? _a : (PromptWindow._instance = this);
-	        this.regAction(ActionLib.GAME_SHOW_PROMPT_CANCEL_WINDOW, this, this.showCancelTip);
-	        this.regAction(ActionLib.GAME_SHOW_PROMPT_WINDOW, this, this.showTip);
-	        this.regAction(ActionLib.GAME_SHOW_PROMPT_NORMAL_WINDOW, this, this._showWindow);
-	    }
-	    onInit() {
-	        var _a, _b, _c, _d, _e, _f, _g, _h;
-	        this.contentPane = fgui.UIPackage.createObjectFromURL("//common/PromptWindow").asCom;
-	        super.onInit();
-	        this.content = (_a = this.getChild("content")) === null || _a === void 0 ? void 0 : _a.asTextField;
-	        this.titleText = (_b = this.getChild("titleText")) === null || _b === void 0 ? void 0 : _b.asTextField;
-	        this.continueBtn = (_c = this.getChild("continue")) === null || _c === void 0 ? void 0 : _c.asButton;
-	        this.cancelBtn = (_d = this.getChild("cancel")) === null || _d === void 0 ? void 0 : _d.asButton;
-	        this.closeBtn = (_e = this.getChild("close")) === null || _e === void 0 ? void 0 : _e.asButton;
-	        // this.cancelBtn.getTextField().bold = true
-	        // this.continueBtn.getTextField().bold = true
-	        this.buttonController = this.getController("c1");
-	        this.titleDisplayController = this.getController("c2");
-	        this.closeButtonDisplayController = this.getController("c3");
-	        (_f = this.closeBtn) === null || _f === void 0 ? void 0 : _f.onClick(this, this.closeHandler);
-	        (_g = this.cancelBtn) === null || _g === void 0 ? void 0 : _g.onClick(this, this.cancelHandler);
-	        (_h = this.continueBtn) === null || _h === void 0 ? void 0 : _h.onClick(this, this.continueHandler);
-	    }
-	    continueHandler() {
-	        this.callback = null;
-	        this.closeFun = null;
-	        if (this.parent)
-	            AppRecordManager.backHistory();
-	    }
-	    closeHandler() {
-	        this.continueFun = null;
-	        this.callback = null;
-	        if (this.parent)
-	            AppRecordManager.backHistory();
-	    }
-	    cancelHandler() {
-	        this.closeFun = null;
-	        this.continueFun = null;
-	        if (this.parent)
-	            AppRecordManager.backHistory();
-	    }
-	    onHide() {
-	        super.onHide();
-	        Laya.timer.callLater(this, this.endCallHandler);
-	    }
-	    /** 结束回调 */
-	    endCallHandler() {
-	        runFun(this.continueFun);
-	        runFun(this.callback);
-	        runFun(this.closeFun);
-	        this.callback = this.continueFun = this.closeFun = null;
-	        if (this.cacheMessage.length > 0) {
-	            let arr = this.cacheMessage.shift();
-	            this._showWindow(arr.msg, arr.obj, arr.callback, arr.continue, arr.isAction);
-	        }
-	    }
-	    /** 清理缓存 */
-	    clearCache() {
-	        this.cacheMessage.splice(0, this.cacheMessage.length);
-	        if (this.parent)
-	            this.hideImmediately();
-	    }
-	    /**
-	     * 带确认按钮的提示框
-	     * @param msg 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
-	     * @param callback 确定回调方法
-	     * @param isAction 动画显示或关闭
-	     *
-	     * @see LibStr
-	     * @see ActionLib.GAME_SHOW_PROMPT_WINDOW
-	     */
-	    showTip(msg, callback, isAction = true) {
-	        if (!this.isPromptData(msg))
-	            msg = {
-	                msg: msg,
-	                callback: callback,
-	                obj: { cancelName: getString(LibStr.OK) },
-	                isAction: isAction
-	            };
-	        this._show(msg);
-	    }
-	    /**
-	     * 带确认 取消按钮的提示框
-	     * @param msg 显示提示 参数多个类型:string-直接显示文本 、int-从语言包里面操作文本、array-带替换内容 [int|string, ...string]
-	     * @param options 附带设置 (okName:'', cancelName:'')
-	     * @param callback 取消回调方法
-	     * @param continueFun 确定回调方法
-	     * @param isAction 动画显示或关闭
-	     * @see LibStr
-	     * @see ActionLib.GAME_SHOW_PROMPT_CANCEL_WINDOW
-	     */
-	    showCancelTip(msg, options, callback, continueFun, isAction = true) {
-	        this._show({ msg: msg, obj: options, callback: callback, continue: continueFun, isAction: isAction });
-	    }
-	    _showWindow(msg, options, callback, continueFun, isAction = true) {
-	        if (!this.isPromptData(msg))
-	            msg = {
-	                msg: msg,
-	                obj: options,
-	                callback: callback,
-	                continue: continueFun,
-	                isAction: isAction
-	            };
-	        this._show(msg);
-	    }
-	    _show(data) {
-	        var _a, _b;
-	        let msg = data.msg;
-	        if (Array.isArray(msg)) {
-	            msg = getString.apply(null, msg);
-	        }
-	        else {
-	            msg = getString(msg);
-	        }
-	        if (this.parent) {
-	            this.cacheMessage.push(data);
-	            return;
-	        }
-	        // if (msg === CommonCmd.RECHARGE) {
-	        //     AnalyticsManager.sendGameAnalysis("NoBalance_Pop")
-	        // }
-	        let obj = data.obj;
-	        obj !== null && obj !== void 0 ? obj : (obj = { okName: getString(LibStr.CONTINUE), cancelName: getString(LibStr.CANCEL) });
-	        (_a = obj.okName) !== null && _a !== void 0 ? _a : (obj.okName = getString(LibStr.CONTINUE));
-	        (_b = obj.cancelName) !== null && _b !== void 0 ? _b : (obj.cancelName = getString(LibStr.CANCEL));
-	        this.isAction = data.isAction || true;
-	        this.show();
-	        if (this.continueBtn)
-	            this.continueBtn.text = obj.okName;
-	        if (this.cancelBtn)
-	            this.cancelBtn.text = obj.cancelName;
-	        this.setControllers(data);
-	        this.content.text = msg;
-	        if (this.titleText)
-	            this.titleText.text = data.title || "";
-	        this.callback = data.callback;
-	        this.continueFun = data.continue;
-	        this.closeFun = data.close;
-	    }
-	    setControllers(data) {
-	        if (this.buttonController)
-	            this.buttonController.selectedIndex = data.continue ? 1 : 0;
-	        if (this.titleDisplayController)
-	            this.titleDisplayController.selectedIndex = data.title ? 1 : 0;
-	        if (this.closeButtonDisplayController)
-	            this.closeButtonDisplayController.selectedIndex = data.close ? 1 : 0;
-	    }
-	    dispose() {
-	        this.clearCache();
-	        Laya.timer.clearAll(this);
-	        PromptWindow._instance = null;
-	        super.dispose();
-	    }
-	    /**
-	     * 判断是否是接口 用 prototype 是否存在判断
-	     * @param optional
-	     */
-	    isPromptData(optional) {
-	        return typeof optional === "object" && ("msg" in optional);
-	    }
-	}
-	
-	gameLib.PromptWindow = PromptWindow
-	
-	/** 文案提示 */
-	class PromptTip extends tsCore.ELabel {
-	    onInit() {
-	        super.onInit();
-	        this.touchable = false;
-	        this.text = getString(LibStr.CASH_GIFTS_AVAILABLE);
-	    }
-	    static createPromptTip() {
-	        return fgui.UIPackage.createObjectFromURL("//gameCommon/PromptTip", PromptTip);
-	    }
-	    /**
-	     * 显示提示文本
-	     * @param comp 绑定显示按钮位置
-	     * @param downward 是否在下面
-	     */
-	    show(comp, downward = null) {
-	        if (parent)
-	            return;
-	        this.target = comp;
-	        this.downward = downward;
-	        //        this.getController("c1").selectedIndex = downward ? 1 : 0
-	        // 延迟到下次刷新显示
-	        Laya.timer.callLater(this, this.showViewHandler);
-	    }
-	    showViewHandler() {
-	        var _a;
-	        let starter = SceneManager.inst.starter;
-	        if (starter) {
-	            (_a = starter.baseScene) === null || _a === void 0 ? void 0 : _a.addChild(this);
-	            this.updatePoint();
-	            Laya.timer.clearAll(this);
-	            Laya.timer.once(3000, this, this.hide);
-	        }
-	    }
-	    hide() {
-	        this.removeFromParent();
-	    }
-	    updatePoint() {
-	        let pos;
-	        let sizeW = 0, sizeH = 0;
-	        let maxWidth;
-	        let maxHeight;
-	        if (SceneManager.inst.starter && SceneManager.inst.starter.baseScene) {
-	            maxWidth = SceneManager.inst.starter.baseScene.width;
-	            maxHeight = SceneManager.inst.starter.baseScene.height;
-	        }
-	        else {
-	            maxWidth = fgui.GRoot.inst.width;
-	            maxHeight = fgui.GRoot.inst.height;
-	        }
-	        if (this.target) {
-	            pos = this.target.localToGlobal();
-	            sizeW = this.target.width;
-	            sizeH = this.target.height;
-	            this.parent.globalToLocal(pos.x, pos.y, pos);
-	        }
-	        else {
-	            pos = this.globalToLocal(Laya.stage.mouseX, Laya.stage.mouseY);
-	        }
-	        let xx, yy;
-	        xx = pos.x;
-	        // 判断是否超出边界
-	        let overstepBorder = xx + (sizeW / 2) + this.width > maxWidth;
-	        if (overstepBorder) {
-	            xx = xx + (sizeW / 2) - this.width;
-	        }
-	        else {
-	            xx = xx + (sizeW / 2);
-	        }
-	        yy = pos.y + sizeH;
-	        if ((!this.downward && yy + sizeH + this.height > maxHeight) || this.downward == false) {
-	            // 在目标的上面
-	            yy = pos.y - this.height - 1;
-	            if (yy < 0) {
-	                yy = 0;
-	                xx += sizeW / 2;
-	            }
-	            if (overstepBorder) {
-	                this.getController("c1").selectedIndex = 0;
-	            }
-	            else {
-	                this.getController("c1").selectedIndex = 2;
-	            }
-	        }
-	        else {
-	            // 在目标的下面
-	            if (overstepBorder) {
-	                this.getController("c1").selectedIndex = 1;
-	            }
-	            else {
-	                this.getController("c1").selectedIndex = 3;
-	            }
-	        }
-	        this.x = xx;
-	        this.y = yy;
-	    }
-	    dispose() {
-	        Laya.timer.clearAll(this);
-	        super.dispose();
-	    }
-	}
-	
-	gameLib.PromptTip = PromptTip
-	
-	class ActivityButton extends tsCore.EButton {
-	    constructor() {
-	        super(...arguments);
-	        this.tempValue = 0;
-	        /** 当没有优惠卷使用的时候 是否自动隐藏 */
-	        this.isAutoHide = true;
-	    }
-	    onConstruct() {
-	        super.onConstruct();
-	        this.draggable = false;
-	        if (this.getChild("n10")) {
-	            this.contentText = this.getChild("n10").asTextField;
-	        }
-	        else {
-	            this.contentText = this._titleObject.asTextField;
-	        }
-	        this.on(Laya.Event.ADDED, this, this.addedHandler);
-	        this.onClick(this, this.clickHandler);
-	        this.regGameAction(ActionLib.GAME_UPDATE_USE_ACTIVITY_CHANGE, this, this.updateShow);
-	        this.regGameAction(ActionLib.GAME_USE_ACTIVITY, this, this.useActivityHandler);
-	        this.regGameAction(ActionLib.GAME_USE_ACTIVITY_END, this, this.stopUseActivityHandler);
-	        this.regGameAction(ActionLib.GAME_STOP_USE_ACTIVITY, this, this.stopUseActivityHandler);
-	    }
-	    stopUseActivityHandler() {
-	        this.getController("c1").selectedIndex = 0;
-	    }
-	    useActivityHandler() {
-	        let useActivity = Player.inst.getUseCoupon();
-	        if (useActivity) {
-	            this.sendAction(ActionLib.GAME_UPDATE_USE_ACTIVITY_CHANGE);
-	            this.getController("c1").selectedIndex = 1;
-	        }
-	    }
-	    updateShow() {
-	        let useActivity = Player.inst.getUseCoupon();
-	        if (this.updateText) {
-	            runFun(this.updateText, useActivity);
-	            return;
-	        }
-	        if (useActivity) {
-	            this.text = Player.inst.getCurrencyUnit() + " " + useActivity.faceValue;
-	        }
-	        else {
-	            this.text = "";
-	        }
-	    }
-	    /**
-	     * 设置角标
-	     * @param value 剩余数量
-	     */
-	    setCorner(value) {
-	        this.tempValue = value;
-	        if (value > 0) {
-	            this.contentText.text = getString(LibStr.USE_IN_GIFT, value);
-	        }
-	        else {
-	            this.contentText.text = getString(LibStr.NOT_GIFT);
-	        }
-	        if (this.isAutoHide)
-	            this.visible = value > 0;
-	    }
-	    clickHandler() {
-	        if (!this.clickInvalid) {
-	            runFun(this.callback);
-	            // 判断是否是今天第一次打开  如果是 弹出帮助文档
-	            let giftOpenTimerStr = Laya.LocalStorage.getItem("action_help" + Player.inst.gameId);
-	            let giftOpenTimer;
-	            giftOpenTimerStr !== null && giftOpenTimerStr !== void 0 ? giftOpenTimerStr : (giftOpenTimerStr = "0");
-	            giftOpenTimer = parseFloat(giftOpenTimerStr);
-	            if (!tsCore.DateUtils.isSameDay(giftOpenTimer, Laya.Browser.now())) {
-	                this.sendAction(ActionLib.GAME_ACTIVITY_HELP_WINDOW_SHOW);
-	                Laya.LocalStorage.setItem("action_help" + Player.inst.gameId, Laya.Browser.now() + "");
-	            }
-	        }
-	        this.clickInvalid = false;
-	    }
-	    addedHandler() {
-	    }
-	    /** 打开拖动 */
-	    openDrag() {
-	        this.draggable = true;
-	        this.off(fgui.Events.DRAG_START, this, this.onDragStart);
-	        this.off(fgui.Events.DRAG_END, this, this.onDragEnd);
-	        this.on(fgui.Events.DRAG_START, this, this.onDragStart);
-	        this.on(fgui.Events.DRAG_END, this, this.onDragEnd);
-	        let arr = Laya.LocalStorage.getJSON("activity_" + Player.inst.gameId);
-	        if (arr) {
-	            this.setXY(arr[0], arr[1]);
-	        }
-	        this.onDragEnd();
-	        this.clickInvalid = false;
-	    }
-	    onDragEnd() {
-	        this.clickInvalid = true;
-	        let tempX = this.x;
-	        let tempY = this.y;
-	        if (this.x > (this.parent.width >> 1)) {
-	            tempX = this.parent.width - this.x - this.width;
-	            if (this.y > (this.parent.height >> 1)) {
-	                tempX = this.parent.width - this.x - this.width;
-	                tempY = this.parent.height - this.y - this.height;
-	                if (tempX < tempY) {
-	                    tempX = this.parent.width - this.width;
-	                    tempY = this.y;
-	                }
-	                else {
-	                    tempY = this.parent.height - this.height;
-	                    tempX = this.x;
-	                }
-	            }
-	            else {
-	                if (this.y < this.parent.width - this.x - this.width) {
-	                    tempY = 0;
-	                    tempX = this.x;
-	                }
-	                else {
-	                    tempY = this.y;
-	                    tempX = this.parent.width - this.width;
-	                }
-	            }
-	        }
-	        else {
-	            if (this.y > (this.parent.height >> 1)) {
-	                if (this.x < this.parent.height - this.y - this.height) {
-	                    tempX = 0;
-	                    tempY = this.y;
-	                }
-	                else {
-	                    tempX = this.x;
-	                    tempY = this.parent.height - this.height;
-	                }
-	            }
-	            else {
-	                if (this.x < this.y) {
-	                    tempX = 0;
-	                    tempY = this.y;
-	                }
-	                else {
-	                    tempY = 0;
-	                    tempX = this.x;
-	                }
-	            }
-	        }
-	        Laya.Tween.to(this, { x: tempX, y: tempY }, 300);
-	        Laya.LocalStorage.setJSON("activity_" + Player.inst.gameId, [tempX, tempY]);
-	    }
-	    onDragStart() {
-	        if (SceneManager.inst.starter.baseScene.promptTip)
-	            SceneManager.inst.starter.baseScene.promptTip.hide();
-	    }
-	}
-	
-	gameLib.ActivityButton = ActivityButton
-	
-	/** 游戏主页必须继承的类 */
-	class BaseScene extends BaseView {
-	    constructor() {
-	        super();
-	        /** 选择房间事件 */
-	        this.EVENT_SELECT_ROOM = "selectRoom";
-	        /** demo场试玩事件 */
-	        this.EVENT_DEMO_TIP = "demoTip";
-	        /** 引导事件 */
-	        this.EVENT_GUIDE = "guide";
-	        /** 优惠券事件 */
-	        this.EVENT_COUPON = "coupon";
-	        /** bonus事件 */
-	        this.EVENT_BONUS = "bonus";
-	        /** 启动事件 */
-	        this.startupEvent = [];
-	        /** 是否在执行运行事件 */
-	        this.isRunEvent = false;
-	        this.autoSetupRelation = true;
-	    }
-	    get gameData() {
-	        return Player.inst.gameData;
-	    }
-	    /**
-	     * @deprecated
-	     */
-	    set gameData(value) {
-	        tsCore.Log.debug(value);
-	    }
-	    onInit() {
-	        super.onInit();
-	        this.jackpotBtn = this.getChild("jackpot");
-	        this.regGameAction(ActionLib.GAME_RECONNECTION_NET, this, this.reconnectionNet);
-	        this.regGameAction(ActionLib.GAME_UPDATE_MONEY, this, this.updateMoney);
-	        this.regGameAction(ActionLib.GAME_RESET_BET, this, this.resetBet);
-	        this.regGameAction(ActionLib.GAME_START, this, this.startGame);
-	        this.regGameAction(ActionLib.GAME_DISPOSE, this, this.dispose);
-	        this.regGameAction(ActionLib.GAME_USE_ACTIVITY_END, this, this.updateTotalCoupons);
-	        this.regGameAction(ActionLib.GAME_STOP_USE_ACTIVITY, this, this.updateTotalCoupons);
-	        this.regGameAction(ActionLib.GAME_BET_CHANGE, this, this.betChangeHandler);
-	        this.regGameAction(ActionLib.GAME_UPDATE_ROOM_ID_CHANGE, this, this.updateRoomIdChange);
-	        this.regGameAction(ActionLib.GAME_RUN_SCENE_EVENT, this, this.runEvent);
-	    }
-	    /**
-	     * 房间号变更
-	     * @param value 房间号
-	     */
-	    updateRoomIdChange(value) {
-	        this.gameModel.gameCode = value;
-	    }
-	    /**
-	     * 显示提示文本
-	     * @param comp 绑定显示按钮位置
-	     * @param downward 是否在下面
-	     */
-	    showPromptActivity(comp, downward) {
-	        var _a;
-	        if (!comp)
-	            return;
-	        (_a = this.promptTip) !== null && _a !== void 0 ? _a : (this.promptTip = PromptTip.createPromptTip());
-	        this.promptTip.show(comp, downward);
-	    }
-	    /** 押注变化 */
-	    betChangeHandler() {
-	        let betValue = Player.inst.gameData.getTotalBetMoney();
-	        // 清理正在使用的优惠券
-	        let useObj = Player.inst.getUseCoupon();
-	        if (useObj) {
-	            // 如果是抵用券 并且投注额和最小投注额一样
-	            if (useObj.type == 1 && useObj.bet_limit == useObj.faceValue) {
-	            }
-	            else if (betValue < useObj.bet_limit) {
-	                useObj.isUse = false;
-	                this.sendAction(ActionLib.GAME_STOP_USE_ACTIVITY);
-	            }
-	            return;
-	        }
-	        let arr = Player.inst.getCouponGame(Player.inst.gameId);
-	        for (let i = 0; i < arr.length; i++) {
-	            useObj = arr[i];
-	            if (useObj.type == 1) { // 判断是否有可以使用的抵用券
-	                if (useObj.bet_limit == useObj.faceValue || useObj.bet_limit <= betValue) { // 满足最低投注额
-	                    this.sendAction(ActionLib.GAME_PROMPT_CAN_USE_ACTIVITY);
-	                    break;
-	                }
-	            }
-	            else if (useObj.type == 2) {
-	                this.sendAction(ActionLib.GAME_PROMPT_CAN_USE_ACTIVITY);
-	                break;
-	            }
-	        }
-	    }
-	    /**
-	     * 初始化活动卷
-	     * @param component 获取活动按钮的父组件
-	     * @param isOpenDrag 是否开启拖动(默认true)
-	     * @param isAutoHide 当没有优惠卷使用的时候 是否自动隐藏(默认true)
-	     */
-	    initActivityMenu(component, isOpenDrag = true, isAutoHide = true) {
-	        var _a, _b;
-	        this.activityBtn = component.getChild("coupons");
-	        (_a = this.activityBtn) !== null && _a !== void 0 ? _a : (this.activityBtn = component.getChild("activityBtn"));
-	        (_b = this.activityBtn) !== null && _b !== void 0 ? _b : (this.activityBtn = component.getChild("couponsBtn"));
-	        if (this.activityBtn) {
-	            this.activityBtn.isAutoHide = isAutoHide;
-	            if (isOpenDrag)
-	                this.activityBtn.openDrag();
-	            this.activityBtn.callback = new Laya.Handler(this, this.activityHandler);
-	            this.updateTotalCoupons();
-	        }
-	    }
-	    /** 更新中优惠券数量 */
-	    updateTotalCoupons() {
-	        if (this.activityBtn) {
-	            let coupons = Player.inst.getCouponGame(Player.inst.gameId);
-	            let totalMoney = 0;
-	            for (let i = 0; i < coupons.length; i++) {
-	                let activityBtnElement = coupons[i];
-	                totalMoney += activityBtnElement.faceValue * activityBtnElement.num;
-	            }
-	            this.activityBtn.setCorner(totalMoney);
-	        }
-	    }
-	    activityHandler() {
-	        if (this.activityBtn) {
-	            let point = this.activityBtn.localToGlobal();
-	            fgui.GRoot.inst.globalToLocal(point.x, point.y, point);
-	            point.x = point.x + this.activityBtn.displayObject.pivotX;
-	            point.y = point.y + this.activityBtn.displayObject.pivotY;
-	            this.sendAction(ActionLib.GAME_ACTIVITY_WINDOW_SHOW, new Laya.Point(point.x, point.y));
-	        }
-	    }
-	    /** 发送投注劵使用结束 */
-	    sendBetCouponEnd() {
-	        // 如果使用的是投注劵
-	        let useObj = Player.inst.getUseCoupon();
-	        if (useObj && useObj.type == 2) {
-	            useObj.isUse = false;
-	            this.sendAction(ActionLib.GAME_USE_ACTIVITY_END);
-	        }
-	    }
-	    /**
-	     * 舞台显示
-	     */
-	    addedHandler() {
-	        super.addedHandler();
-	        tsCore.HistoryManager.addHistory(null, this);
-	        this.updateRoomIdChange(Player.inst.gameId);
-	        // 因为有旋转屏幕  为了获取正确的宽高  延迟执行添加舞台
-	        Laya.timer.callLater(this, this.regEvent);
-	    }
-	    drawGuideRect(guideView, index) {
-	    }
-	    clickGuide(guideView, index) {
-	    }
-	    guideEnd(guideView) {
-	        this.runEvent();
-	    }
-	    /** 注册进入事件 */
-	    regEvent() {
-	        this.isRunEvent = true;
-	        // 启动房间选择
-	        this.regStartupEvent(this.eventSelectRoom.bind(this), -1, this.EVENT_SELECT_ROOM);
-	        // demo试玩提示
-	        this.regStartupEvent(this.eventGuestTip.bind(this), -1, this.EVENT_DEMO_TIP);
-	        // 显示引导页
-	        this.regStartupEvent(this.eventGuideTip.bind(this), 0, this.EVENT_GUIDE);
-	        // 判断是否有可以使用的优惠券 // demo 场不弹
-	        if (!Player.inst.isGuest)
-	            this.regStartupEvent(this.eventCouponTip.bind(this), 0, this.EVENT_COUPON);
-	        // 判断时候有可以使用的bonus
-	        this.regStartupEvent(this.eventBonusTip.bind(this), 0, this.EVENT_BONUS);
-	        this.runEventStart();
-	    }
-	    /**
-	     * 注册启动事件
-	     * @param handler 执行的方法
-	     * @param weight 权重 越大越后执行  默认0
-	     * @param name 事件名字 默认 null
-	     */
-	    regStartupEvent(handler, weight = 0, name = null) {
-	        for (let i = 0; i < this.startupEvent.length; i++) {
-	            let regs = this.startupEvent[i];
-	            if (regs.weight > weight) { // 传入的值比当前值小
-	                this.regStartupEventIndex(i, handler, weight, name);
-	                return;
-	            }
-	        }
-	        tsCore.Log.debug("regStartupEvent -> name = " + name);
-	        this.startupEvent.push({ handler: handler, weight: weight, name: name });
-	    }
-	    /**
-	     * 在指定位置插入一个事件
-	     * @param index 位置
-	     * @param handler 方法
-	     * @param weight 权重 默认0
-	     * @param name 事件名字 默认 null
-	     */
-	    regStartupEventIndex(index, handler, weight = 0, name = null) {
-	        tsCore.Log.debug("regStartupEventIndex -> name = " + name);
-	        this.startupEvent.splice(index, 0, { handler: handler, weight: weight, name: name });
-	    }
-	    /**
-	     * 注册或更新执行函数
-	     * @param name 事件名字
-	     * @param handler
-	     */
-	    regOrUpdateStartupEvent(name, handler) {
-	        const h = this.startupEvent.find(value => value.name == name);
-	        if (h == null)
-	            this.regStartupEvent(handler, 0, name);
-	        else
-	            h.handler = handler;
-	    }
-	    /**
-	     * 更新执行函数
-	     * @param name 事件名字
-	     * @param handler
-	     */
-	    updateStartupEvent(name, handler) {
-	        const h = this.startupEvent.find(value => value.name == name);
-	        if (h != null)
-	            h.handler = handler;
-	    }
-	    /**
-	     * 根据事件名字 获取事件的执行位置
-	     * @param name 事件名字
-	     */
-	    getStartupEventIndex(name) {
-	        return this.startupEvent.findIndex(value => value.name == name);
-	    }
-	    /**
-	     * 删除指定位置的启动事件
-	     * @param index 位置
-	     */
-	    removeStartupEventIndex(index) {
-	        this.startupEvent.splice(index, 1);
-	    }
-	    /**
-	     * 删除指定名字的启动事件
-	     * @param name 事件名字
-	     */
-	    removeStartupEventName(name) {
-	        const index = this.startupEvent.findIndex(value => value.name == name);
-	        if (index > -1) {
-	            this.startupEvent.splice(index, 1);
-	            tsCore.Log.debug("Unload Startup event -> name = " + name);
-	        }
-	    }
-	    /**
-	     * 执行事件列表
-	     */
-	    runEvent() {
-	        if (this.startupEvent.length > 0) {
-	            let event = this.startupEvent.shift();
-	            tsCore.Log.debug("execute event = " + event.name);
-	            runFun(event.handler);
-	        }
-	        else {
-	            this.runEventEnd();
-	        }
-	    }
-	    /** 开始运行事件前 */
-	    runEventStart() {
-	        this.runEvent();
-	    }
-	    /** 运行事件结束 */
-	    runEventEnd() {
-	        tsCore.Log.debug("runEventEnd");
-	        if (this.isRunEvent) {
-	            this.startGame();
-	        }
-	        this.isRunEvent = false;
-	    }
-	    /**
-	     * 重新连接网络 同步数据
-	     * @param callback 同步完成调用
-	     * @param count 剩余重复次数
-	     */
-	    reconnectionNet(callback, count = 3) {
-	        if (Player.inst.isGuest || !Player.inst.token || count <= 0) {
-	            tsCore.HistoryManager.pauseHistory = false;
-	            fgui.GRoot.inst.closeModalWait();
-	            runFun(callback);
-	            return;
-	        }
-	        fgui.GRoot.inst.showModalWait(getString(LibStr.WAITING));
-	        tsCore.HistoryManager.pauseHistory = true;
-	        // 同步用户金额
-	        PromptWindow.inst.clearCache();
-	        this.gameModel.gameServlet.getUserMoney((obj) => {
-	            if (obj.code == HttpCode.OK) {
-	                let data = obj.data;
-	                Player.inst.money = data.balance;
-	                this.sendAction(ActionLib.GAME_UPDATE_MONEY);
-	                tsCore.HistoryManager.pauseHistory = false;
-	                fgui.GRoot.inst.closeModalWait();
-	                runFun(callback);
-	            }
-	            else {
-	                count--;
-	                Laya.timer.once(1000, this, this.reconnectionNet, [callback, count]);
-	            }
-	        }, () => {
-	            count--;
-	            Laya.timer.once(1000, this, this.reconnectionNet, [callback, count]);
-	        });
-	    }
-	    /** 新游戏开始  这里可以处理一些逻辑 */
-	    newGameStartLogic(handler) {
-	        let gameData = Player.inst.gameData;
-	        if (BaseScene.inviteRealMoneyNeed()) {
-	            gameData.isRecommend = true;
-	            this.showInviteRealMoney(handler);
-	            return;
-	        }
-	        // let playTip: string = LocalStorage.getItem("playTip")
-	        // if (!Render.isConchApp && Player.inst.webPlayCount == CommonCmd.WEB_MAX_PLAY_COUNT && StringUtil.isEmpty(playTip)) {
-	        //     LocalStorage.setItem("playTip", "Y")
-	        //     // new DownloadWindow().showTip(handler)
-	        //     return
-	        // }
-	        runFun(handler);
-	    }
-	    /**
-	     * 显示邀请进入cash场
-	     * @param handler 回调
-	     */
-	    showInviteRealMoney(handler) {
-	        let obj = { okName: "Ok" };
-	        if (Player.inst.token) {
-	            WaitResult.inst.show();
-	            this.gameModel.gameServlet.postData(Player.inst.data.getWapUrl(Urls.URL_USER_ACCOUNT_ASSET), { token: Player.inst.token }, (data, request) => {
-	                WaitResult.inst.hide();
-	                if (data.code == HttpCode.OK && data.data) {
-	                    if (data.data.balance == 0) {
-	                        obj.okName = getString(LibStr.DEPOSIT_PLAY);
-	                    }
-	                }
-	                PromptWindow.inst.showCancelTip(LibStr.SHOW_INVITE_REAL_MONEY, obj, handler, () => {
-	                    if (obj.okName == getString(LibStr.DEPOSIT_PLAY)) {
-	                        JSUtils.gameClose(1);
-	                        JSUtils.deposit();
-	                    }
-	                    else {
-	                        JSUtils.gameClose(1);
-	                    }
-	                });
-	            }, () => {
-	                WaitResult.inst.hide();
-	                PromptWindow.inst.showCancelTip(LibStr.SHOW_INVITE_REAL_MONEY, obj, handler, () => {
-	                    JSUtils.gameClose(1);
-	                });
-	            });
-	            return;
-	        }
-	        else {
-	            obj.okName = getString(LibStr.LOGIN_PLAY);
-	        }
-	        PromptWindow.inst.showCancelTip(LibStr.SHOW_INVITE_REAL_MONEY, obj, handler, () => {
-	            if (obj.okName == getString(LibStr.LOGIN_PLAY)) {
-	                JSUtils.login();
-	            }
-	            else {
-	                this.backHandler();
-	            }
-	        });
-	    }
-	    /**
-	     * 新一轮游戏的开始
-	     */
-	    startGame() {
-	        // 当前没有在使用的优惠卷  并且界面还在优惠卷模式下
-	        let useObj;
-	        if ((useObj = Player.inst.getUseCoupon()) != null) {
-	            if (useObj.num <= 0) {
-	                Player.inst.removeCoupon(useObj);
-	                this.sendAction(ActionLib.GAME_USE_ACTIVITY_END);
-	            }
-	        }
-	    }
-	    /**
-	     * 更新金额
-	     * ```
-	     * 未实现
-	     * ```
-	     */
-	    updateMoney() {
-	    }
-	    hideRecord() {
-	        SceneManager.inst.backHandler();
-	        super.hideRecord();
-	    }
-	    get gameModel() {
-	        var _a;
-	        (_a = this._gameModel) !== null && _a !== void 0 ? _a : (this._gameModel = SceneManager.inst.starter.gameModel);
-	        return this._gameModel;
-	    }
-	    set gameModel(value) {
-	        this._gameModel = value;
-	    }
-	    /**
-	     * 押注还原(用于押注失败,退还所有的押注)
-	     * ```
-	     * ● 未做处理
-	     * ```
-	     */
-	    resetBet() {
-	    }
-	    dispose() {
-	        tsCore.Log.debug("game dispose");
-	        Player.inst.stopAllCoupon();
-	        if (this.guideSprite)
-	            this.guideSprite.dispose();
-	        if (this.promptTip)
-	            this.promptTip.dispose();
-	        super.dispose();
-	    }
-	    backHandler() {
-	        if (this.parent)
-	            AppRecordManager.backGame();
-	    }
-	    // *********************        Event         **********************************
-	    eventSelectRoom() {
-	        this.sendAction(ActionLib.GAME_SHOW_ROOM_SELECT);
-	    }
-	    /**
-	     * demo场弹窗
-	     */
-	    eventGuestTip() {
-	        // let value: string = LocalStorage.getItem(Player.inst.gameId + "_demo")
-	        // if (Player.inst.isGuest && !value) {
-	        if (Player.inst.isGuest && !Player.inst.urlParam.debug) {
-	            PromptWindow.inst.showTip({ msg: LibStr.PROMPT_GUEST, obj: { cancelName: getString(LibStr.OK) }, callback: this.runEvent.bind(this) });
-	            // LocalStorage.setItem(Player.inst.gameId + "_demo", "1")
-	        }
-	        else {
-	            this.runEvent();
-	        }
-	    }
-	    eventCouponTip() {
-	        let giftOpenTimerStr = Laya.LocalStorage.getItem("giftOpenTimer" + Player.inst.gameId);
-	        let giftOpenTimer;
-	        if (tsCore.StringUtil.isEmpty(giftOpenTimerStr)) {
-	            giftOpenTimerStr = "0";
-	        }
-	        giftOpenTimer = parseFloat(giftOpenTimerStr);
-	        if (!tsCore.DateUtils.isSameDay(giftOpenTimer, Laya.Browser.now())) {
-	            let coupon = Player.inst.getCouponGame(Player.inst.gameId);
-	            if (coupon.length > 0) {
-	                this.activityHandler();
-	                Laya.LocalStorage.setItem("giftOpenTimer" + Player.inst.gameId, Laya.Browser.now() + "");
-	            }
-	            else {
-	                this.runEvent();
-	            }
-	        }
-	        else {
-	            this.runEvent();
-	        }
-	    }
-	    eventBonusTip() {
-	        if (Player.inst.jackpotData.length > 0 && this.jackpotBtn) {
-	            this.jackpotBtn.jackpotBtn.displayObject.event(Laya.Event.CLICK);
-	        }
-	        else {
-	            this.runEvent();
-	        }
-	    }
-	    /** 引导事件执行 */
-	    eventGuideTip() {
-	        let value = Laya.LocalStorage.getItem("GameGuide_" + Player.inst.gameId);
-	        if (!value) {
-	            let result = this.showGuide();
-	            if (result) {
-	                Laya.LocalStorage.setItem("GameGuide_" + Player.inst.gameId, "true");
-	            }
-	            else {
-	                this.runEvent();
-	            }
-	        }
-	        else {
-	            this.runEvent();
-	        }
-	    }
-	    /** 显示引导页 默认不显示引导页 */
-	    showGuide() {
-	        let obj = GameConfigKit.gameRes();
-	        if (obj.guide) { // 如果存在引导页配置  默认使用全屏展示
-	            this.loadFillImage(obj.guide);
-	            return true;
-	        }
-	        return false;
-	    }
-	    /**
-	     * 加载全屏图片
-	     * @param value
-	     */
-	    loadFillImage(value) {
-	        let urls = value instanceof Array ? value : [value];
-	        let index = 0;
-	        this.guideSprite = new fgui.GLoader();
-	        this.guideSprite.setSize(fgui.GRoot.inst.width, fgui.GRoot.inst.height);
-	        this.guideSprite.fill = fgui.LoaderFillType.ScaleFree;
-	        this.guideSprite.onClick(this, () => {
-	            index++;
-	            if (index >= urls.length) {
-	                this.guideSprite.dispose();
-	                this.guideSprite = null;
-	                this.runEvent();
-	            }
-	            else {
-	                this.guideSprite.url = urls[index];
-	            }
-	        });
-	        this.guideSprite.url = urls[index];
-	        fgui.GRoot.inst.addChild(this.guideSprite);
-	    }
-	}
-	/**
-	 * 邀请玩现金场 的基本需求
-	 * @returns {boolean}
-	 */
-	BaseScene.inviteRealMoneyNeed = () => {
-	    var _a, _b;
-	    let gameData = Player.inst.gameData;
-	    let winLimit = ((_a = gameData === null || gameData === void 0 ? void 0 : gameData.getTotalBetMoney()) !== null && _a !== void 0 ? _a : 0) * 3;
-	    return Player.inst.isGuest && Player.inst.guestModel.guestPlayCount >= CommonCmd.GUEST_MAX_PLAY_COUNT && (gameData != null && !gameData.isRecommend && winLimit <= ((_b = gameData === null || gameData === void 0 ? void 0 : gameData.totalWinMoney) !== null && _b !== void 0 ? _b : 100));
-	};
-	
-	gameLib.BaseScene = BaseScene
 	
 	class BaseStarter extends tsCore.EProxy {
 	    constructor() {
@@ -5455,6 +5107,199 @@ function _FguiBindView(classTarget, url) {
 	
 	gameLib.AppRecordManager = AppRecordManager
 	
+	/**
+	 * url 参数
+	 */
+	class UrlParam {
+	    constructor(defaults) {
+	        /** 0:ai  1:people 2:friend */
+	        this._playWith = "1";
+	        /** 是否是赠送金 0 没有 1 有 */
+	        this._isGift = 0;
+	        /** 是否是debug模式 */
+	        this.debug = false;
+	        /**
+	         * 图片清晰度
+	         *  0 高清
+	         *  1 压缩
+	         *  2 webp
+	         */
+	        this.imageQuality = 1;
+	        this._country = defaults === null || defaults === void 0 ? void 0 : defaults.country;
+	        this._language = defaults === null || defaults === void 0 ? void 0 : defaults.language;
+	        this.channel = defaults === null || defaults === void 0 ? void 0 : defaults.channel;
+	        this.debug = !!(defaults === null || defaults === void 0 ? void 0 : defaults.debug);
+	        this.parseData(null);
+	        if (!Laya.Render.isConchApp) {
+	            let url = window.location.href;
+	            let newUrl = url.split("?")[0];
+	            let clearCache = Laya.Utils.getQueryString("clearCache");
+	            if (clearCache) {
+	                let request = tsCore.UtilKit.getRequest();
+	                delete request["clearCache"];
+	                localStorage.clear();
+	                let param = "?";
+	                let index = 0;
+	                for (let key in request) {
+	                    if (index == 0) {
+	                        param += key + "=" + request[key];
+	                    }
+	                    else {
+	                        param += "&" + key + "=" + request[key];
+	                    }
+	                    index++;
+	                }
+	                tsCore.Log.debug(`clear cache reload ${newUrl + param}`);
+	                window.location.replace(newUrl + param);
+	            }
+	            //        if (Browser.window.location.protocol != "http:" && !Render.isConchApp)
+	            //            Browser.window.history.pushState(null, null, newUrl)
+	        }
+	    }
+	    parseData(json) {
+	        Player.inst.parseParam = json;
+	        // 获取链接附带参数
+	        let isweb = this.getValue(json, "isweb");
+	        isweb !== null && isweb !== void 0 ? isweb : (isweb = Laya.Render.isConchApp ? "false" : "true");
+	        Player.inst.isWeb = (isweb != "false");
+	        this.getQuery(json, v => Player.inst.token = v, "token");
+	        this.getQuery(json, v => this.channel = v, "channel");
+	        this.getQuery(json, v => this._country = v, "country");
+	        this.getQuery(json, v => this._language = v, "language", "lang");
+	        this.getQuery(json, v => this._playWith = v, "playWith");
+	        this.getQuery(json, v => this._roomId = v, "roomId");
+	        this.getQuery(json, v => this.imageQuality = v.toInt(), "imgQ", "imageQuality");
+	        this.getQuery(json, v => this._role = v.toInt(), "role");
+	        this.getQuery(json, v => this._amount = v, "amount");
+	        this.getQuery(json, v => this._inviteCode = v, "invite_code");
+	        this.getQuery(json, v => Player.inst.isGuest = v.toBoolean(), "isGuest", "guest", "demo");
+	        this.getQuery(json, v => SceneManager.inst.isCall = v.toBoolean(), "isCall", "call");
+	        this.getQueryBoolean(json, v => this.debug = v, "debug");
+	        this.getQueryBoolean(json, v => this._isGift = v ? 1 : 0, "isGift", "gift");
+	        this.getQueryBoolean(json, v => Laya.SoundManager.musicMuted = v, "musicMuted");
+	        this.getQueryBoolean(json, v => Laya.SoundManager.soundMuted = v, "soundMuted");
+	        // 游戏id
+	        this.getQuery(json, v => this.openGame = v, "openGame", "gameId");
+	        const tempGameName = this.getValue(json, "gameName");
+	        // 游戏名字
+	        if (this.openGame || tempGameName) {
+	            const gameId = Laya.Utils.parseInt(this.openGame);
+	            Player.inst.gameId = gameId;
+	            Player.inst.gameName = tempGameName;
+	            AppRecordManager.executeJson = { type: 2, data: gameId, openGame: gameId, gameName: tempGameName };
+	        }
+	    }
+	    /**
+	     * 该函数用于从给定的json对象中通过一系列键名路径获取对应的值，并将这个值转化为布尔类型后传递给回调函数进行处理。
+	     * 具体转化逻辑为：若获取到的值存在且不等于"false"或"0"（忽略大小写），则将其转换为true并传入回调函数；否则转换为false。
+	     *
+	     * @param json - 需要从中查询数据的json对象
+	     * @param fun - 处理查询结果的回调函数，接受一个布尔值作为参数
+	     * @param keys - 用于定位json对象内目标值的一系列键名组成的数组
+	     */
+	    getQueryBoolean(json, fun, ...keys) {
+	        const value = this.getValue(json, ...keys);
+	        // 判断获取的值是否存在且不等同于"false"或"0"
+	        if (value) {
+	            fun(!value.equalsAnyIgnore("false", "0"));
+	        }
+	        else
+	            fun(false);
+	    }
+	    /**
+	     * 执行参数设置 如果存在将调用fun 如果不存在或是空 将不会调用fun
+	     * @param json
+	     * @param fun
+	     * @param keys
+	     */
+	    getQuery(json, fun, ...keys) {
+	        const value = this.getValue(json, ...keys);
+	        if (value) {
+	            fun(value);
+	        }
+	    }
+	    /**
+	     * 获取指定的key的布尔值 空值、false、0 都将返回false
+	     * @param json
+	     * @param keys
+	     */
+	    getValueBoolean(json, ...keys) {
+	        const value = this.getValue(json, ...keys);
+	        return !(!value || value.equalsAnyIgnore("false", "0"));
+	    }
+	    /**
+	     * 获取url上的参数key=value
+	     * @param json
+	     * @param keys
+	     */
+	    getValue(json, ...keys) {
+	        let value = undefined;
+	        for (const key of keys) {
+	            if (json && key in json) {
+	                value = json[key] + "";
+	                break;
+	            }
+	            else {
+	                value = Laya.Utils.getQueryString(key);
+	                if (value)
+	                    break;
+	            }
+	        }
+	        return value;
+	    }
+	    get amount() {
+	        return this._amount;
+	    }
+	    get inviteCode() {
+	        return this._inviteCode;
+	    }
+	    /**
+	     * 是否是直接指定页面
+	     * @return
+	     */
+	    isJumpPage() {
+	        return AppRecordManager.executeJson != null;
+	    }
+	    /**
+	     * 清理跳转记录
+	     */
+	    clearJumpPage() {
+	        this.openGame = null;
+	    }
+	    get country() {
+	        return this._country;
+	    }
+	    get language() {
+	        return this._language;
+	    }
+	    get playWith() {
+	        return this._playWith;
+	    }
+	    set playWith(value) {
+	        this._playWith = value;
+	    }
+	    set roomId(value) {
+	        this._roomId = value;
+	    }
+	    get roomId() {
+	        return this._roomId;
+	    }
+	    get role() {
+	        return this._role;
+	    }
+	    set role(value) {
+	        this._role = value;
+	    }
+	    get isGift() {
+	        return this._isGift;
+	    }
+	    set isGift(value) {
+	        this._isGift = value;
+	    }
+	}
+	
+	gameLib.UrlParam = UrlParam
+	
 	/** 用户数据 */
 	class Player {
 	    constructor() {
@@ -5755,197 +5600,352 @@ function _FguiBindView(classTarget, url) {
 	gameLib.Player = Player
 	
 	/**
-	 * url 参数
+	 * 统计管理器
+	 * @author boge
 	 */
-	class UrlParam {
-	    constructor(defaults) {
-	        /** 0:ai  1:people 2:friend */
-	        this._playWith = "1";
-	        /** 是否是赠送金 0 没有 1 有 */
-	        this._isGift = 0;
-	        /** 是否是debug模式 */
-	        this.debug = false;
-	        /**
-	         * 图片清晰度
-	         *  0 高清
-	         *  1 压缩
-	         *  2 webp
-	         */
-	        this.imageQuality = 1;
-	        this._country = defaults === null || defaults === void 0 ? void 0 : defaults.country;
-	        this._language = defaults === null || defaults === void 0 ? void 0 : defaults.language;
-	        this.channel = defaults === null || defaults === void 0 ? void 0 : defaults.channel;
-	        this.debug = !!(defaults === null || defaults === void 0 ? void 0 : defaults.debug);
-	        this.parseData(null);
-	        if (!Laya.Render.isConchApp) {
-	            let url = window.location.href;
-	            let newUrl = url.split("?")[0];
-	            let clearCache = Laya.Utils.getQueryString("clearCache");
-	            if (clearCache) {
-	                let request = tsCore.UtilKit.getRequest();
-	                delete request["clearCache"];
-	                localStorage.clear();
-	                let param = "?";
-	                let index = 0;
-	                for (let key in request) {
-	                    if (index == 0) {
-	                        param += key + "=" + request[key];
-	                    }
-	                    else {
-	                        param += "&" + key + "=" + request[key];
-	                    }
-	                    index++;
-	                }
-	                tsCore.Log.debug(`clear cache reload ${newUrl + param}`);
-	                window.location.replace(newUrl + param);
-	            }
-	            //        if (Browser.window.location.protocol != "http:" && !Render.isConchApp)
-	            //            Browser.window.history.pushState(null, null, newUrl)
-	        }
+	class AnalyticsManager {
+	    /** 打开了一个游戏 */
+	    static openGame() {
 	    }
-	    parseData(json) {
-	        Player.inst.parseParam = json;
-	        // 获取链接附带参数
-	        let isweb = this.getValue(json, "isweb");
-	        isweb !== null && isweb !== void 0 ? isweb : (isweb = Laya.Render.isConchApp ? "false" : "true");
-	        Player.inst.isWeb = (isweb != "false");
-	        this.getQuery(json, v => Player.inst.token = v, "token");
-	        this.getQuery(json, v => this.channel = v, "channel");
-	        this.getQuery(json, v => this._country = v, "country");
-	        this.getQuery(json, v => this._language = v, "language", "lang");
-	        this.getQuery(json, v => this._playWith = v, "playWith");
-	        this.getQuery(json, v => this._roomId = v, "roomId");
-	        this.getQuery(json, v => this.imageQuality = v.toInt(), "imgQ", "imageQuality");
-	        this.getQuery(json, v => this._role = v.toInt(), "role");
-	        this.getQuery(json, v => this._amount = v, "amount");
-	        this.getQuery(json, v => this._inviteCode = v, "invite_code");
-	        this.getQuery(json, v => Player.inst.isGuest = v.toBoolean(), "isGuest", "guest", "demo");
-	        this.getQuery(json, v => SceneManager.inst.isCall = v.toBoolean(), "isCall", "call");
-	        this.getQueryBoolean(json, v => this.debug = v, "debug");
-	        this.getQueryBoolean(json, v => this._isGift = v ? 1 : 0, "isGift", "gift");
-	        this.getQueryBoolean(json, v => Laya.SoundManager.musicMuted = v, "musicMuted");
-	        this.getQueryBoolean(json, v => Laya.SoundManager.soundMuted = v, "soundMuted");
-	        // 游戏id
-	        this.getQuery(json, v => this.openGame = v, "openGame", "gameId");
-	        const tempGameName = this.getValue(json, "gameName");
-	        // 游戏名字
-	        if (this.openGame || tempGameName) {
-	            const gameId = Laya.Utils.parseInt(this.openGame);
-	            Player.inst.gameId = gameId;
-	            Player.inst.gameName = tempGameName;
-	            AppRecordManager.executeJson = { type: 2, data: gameId, openGame: gameId, gameName: tempGameName };
+	    /** 关闭了一个游戏 */
+	    static closeGame() {
+	    }
+	    /** 打开统计 */
+	    static openAnalysis(callback) {
+	        runFun(callback);
+	    }
+	    /**
+	     * 发送游戏事件
+	     * @param eventAction 互动类型 (默认会添加 _)
+	     * @param eventLabel 事件标签
+	     */
+	    static sendGameAnalysis(eventAction, eventLabel) {
+	        var _a;
+	        // 获取当前的游戏配置
+	        let gameName = (_a = GameConfigKit.gameNameCanonical(null, "_")) === null || _a === void 0 ? void 0 : _a.toLowerCase();
+	        if (gameName) {
+	            eventLabel !== null && eventLabel !== void 0 ? eventLabel : (eventLabel = Player.inst.isGuest ? "demo" : "cash");
+	            AnalyticsManager.send(gameName + "_" + eventAction, eventLabel);
+	        }
+	        else {
+	            tsCore.Log.warn("sendGameAnalysis : gameId=" + Player.inst.gameId + " not exist");
 	        }
 	    }
 	    /**
-	     * 该函数用于从给定的json对象中通过一系列键名路径获取对应的值，并将这个值转化为布尔类型后传递给回调函数进行处理。
-	     * 具体转化逻辑为：若获取到的值存在且不等于"false"或"0"（忽略大小写），则将其转换为true并传入回调函数；否则转换为false。
+	     * 向Google Analytics 发送事件
+	     * @param eventAction 事件操作
+	     * @param eventLabel  事件标签
+	     */
+	    static send(eventAction, eventLabel = "") {
+	        AnalyticsManager.ga("event", "game" + (tsCore.Environment.active == tsCore.EnvType.DEV ? "_dev" : ""), eventAction, eventLabel);
+	    }
+	    /**
+	     * 向Google Analytics 发送用户用时
+	     * @param timingVar 用于标识要记录的变量
+	     * @param timingValue 向 Google Analytics（分析）报告的，以毫秒为单位的历时时间（例如 20）。
 	     *
-	     * @param json - 需要从中查询数据的json对象
-	     * @param fun - 处理查询结果的回调函数，接受一个布尔值作为参数
-	     * @param keys - 用于定位json对象内目标值的一系列键名组成的数组
 	     */
-	    getQueryBoolean(json, fun, ...keys) {
-	        const value = this.getValue(json, ...keys);
-	        // 判断获取的值是否存在且不等同于"false"或"0"
-	        if (value) {
-	            fun(!value.equalsAnyIgnore("false", "0"));
+	    static sendTiming(timingVar, timingValue) {
+	        this.isOpenAnalytics = tsCore.ConfigKit.get("openAnalytics");
+	        if (Laya.Browser.onLayaRuntime && this.isOpenAnalytics)
+	            AppManager.enterInvite({ eventName: timingVar, eventValue: timingValue }, AppManager.nullFun);
+	    }
+	    /**
+	     * 向 Google Analytics 发送事件
+	     * @param type
+	     * @param category
+	     * @param action
+	     * @param label
+	     * @param value
+	     */
+	    static ga(type, category, action, label, value) {
+	        this.isOpenAnalytics = tsCore.ConfigKit.get("openAnalytics");
+	        if (Player.inst.urlParam.debug) {
+	            const encoder = new TextEncoder();
+	            const categoryLen = encoder.encode(category).length;
+	            const actionLen = encoder.encode(action).length;
+	            const labelLen = encoder.encode(label).length;
+	            tsCore.Log.debug(`category=${categoryLen} action=${actionLen} label=${labelLen}`);
 	        }
-	        else
-	            fun(false);
+	        if (this.isOpenAnalytics && !Laya.Browser.onLayaRuntime) {
+	            if (window.ga) {
+	                ga('send', type, category, action, label);
+	            }
+	            value !== null && value !== void 0 ? value : (value = label);
+	            if (window.gtag) {
+	                gtag(type, action, {
+	                    event_category: category,
+	                    event_label: label,
+	                    value
+	                });
+	            }
+	        }
+	        if (this.isOpenAnalytics && Laya.Browser.onLayaRuntime)
+	            AppManager.enterFeedback({ eventName: action, eventValue: label }, AppManager.nullFun);
+	    }
+	}
+	/** 开启数据统计 */
+	AnalyticsManager.isOpenAnalytics = true;
+	
+	gameLib.AnalyticsManager = AnalyticsManager
+	
+	/** 文案提示 */
+	class PromptTip extends tsCore.ELabel {
+	    onInit() {
+	        super.onInit();
+	        this.touchable = false;
+	        this.text = getString(LibStr.CASH_GIFTS_AVAILABLE);
+	    }
+	    static createPromptTip() {
+	        return fgui.UIPackage.createObjectFromURL("//gameCommon/PromptTip", PromptTip);
 	    }
 	    /**
-	     * 执行参数设置 如果存在将调用fun 如果不存在或是空 将不会调用fun
-	     * @param json
-	     * @param fun
-	     * @param keys
+	     * 显示提示文本
+	     * @param comp 绑定显示按钮位置
+	     * @param downward 是否在下面
 	     */
-	    getQuery(json, fun, ...keys) {
-	        const value = this.getValue(json, ...keys);
-	        if (value) {
-	            fun(value);
+	    show(comp, downward = null) {
+	        if (parent)
+	            return;
+	        this.target = comp;
+	        this.downward = downward;
+	        //        this.getController("c1").selectedIndex = downward ? 1 : 0
+	        // 延迟到下次刷新显示
+	        Laya.timer.callLater(this, this.showViewHandler);
+	    }
+	    showViewHandler() {
+	        var _a;
+	        let starter = SceneManager.inst.starter;
+	        if (starter) {
+	            (_a = starter.baseScene) === null || _a === void 0 ? void 0 : _a.addChild(this);
+	            this.updatePoint();
+	            Laya.timer.clearAll(this);
+	            Laya.timer.once(3000, this, this.hide);
 	        }
 	    }
-	    /**
-	     * 获取指定的key的布尔值 空值、false、0 都将返回false
-	     * @param json
-	     * @param keys
-	     */
-	    getValueBoolean(json, ...keys) {
-	        const value = this.getValue(json, ...keys);
-	        return !(!value || value.equalsAnyIgnore("false", "0"));
+	    hide() {
+	        this.removeFromParent();
 	    }
-	    /**
-	     * 获取url上的参数key=value
-	     * @param json
-	     * @param keys
-	     */
-	    getValue(json, ...keys) {
-	        let value = undefined;
-	        for (const key of keys) {
-	            if (json && key in json) {
-	                value = json[key] + "";
-	                break;
+	    updatePoint() {
+	        let pos;
+	        let sizeW = 0, sizeH = 0;
+	        let maxWidth;
+	        let maxHeight;
+	        if (SceneManager.inst.starter && SceneManager.inst.starter.baseScene) {
+	            maxWidth = SceneManager.inst.starter.baseScene.width;
+	            maxHeight = SceneManager.inst.starter.baseScene.height;
+	        }
+	        else {
+	            maxWidth = fgui.GRoot.inst.width;
+	            maxHeight = fgui.GRoot.inst.height;
+	        }
+	        if (this.target) {
+	            pos = this.target.localToGlobal();
+	            sizeW = this.target.width;
+	            sizeH = this.target.height;
+	            this.parent.globalToLocal(pos.x, pos.y, pos);
+	        }
+	        else {
+	            pos = this.globalToLocal(Laya.stage.mouseX, Laya.stage.mouseY);
+	        }
+	        let xx, yy;
+	        xx = pos.x;
+	        // 判断是否超出边界
+	        let overstepBorder = xx + (sizeW / 2) + this.width > maxWidth;
+	        if (overstepBorder) {
+	            xx = xx + (sizeW / 2) - this.width;
+	        }
+	        else {
+	            xx = xx + (sizeW / 2);
+	        }
+	        yy = pos.y + sizeH;
+	        if ((!this.downward && yy + sizeH + this.height > maxHeight) || this.downward == false) {
+	            // 在目标的上面
+	            yy = pos.y - this.height - 1;
+	            if (yy < 0) {
+	                yy = 0;
+	                xx += sizeW / 2;
+	            }
+	            if (overstepBorder) {
+	                this.getController("c1").selectedIndex = 0;
 	            }
 	            else {
-	                value = Laya.Utils.getQueryString(key);
-	                if (value)
-	                    break;
+	                this.getController("c1").selectedIndex = 2;
 	            }
 	        }
-	        return value;
+	        else {
+	            // 在目标的下面
+	            if (overstepBorder) {
+	                this.getController("c1").selectedIndex = 1;
+	            }
+	            else {
+	                this.getController("c1").selectedIndex = 3;
+	            }
+	        }
+	        this.x = xx;
+	        this.y = yy;
 	    }
-	    get amount() {
-	        return this._amount;
-	    }
-	    get inviteCode() {
-	        return this._inviteCode;
-	    }
-	    /**
-	     * 是否是直接指定页面
-	     * @return
-	     */
-	    isJumpPage() {
-	        return AppRecordManager.executeJson != null;
-	    }
-	    /**
-	     * 清理跳转记录
-	     */
-	    clearJumpPage() {
-	        this.openGame = null;
-	    }
-	    get country() {
-	        return this._country;
-	    }
-	    get language() {
-	        return this._language;
-	    }
-	    get playWith() {
-	        return this._playWith;
-	    }
-	    set playWith(value) {
-	        this._playWith = value;
-	    }
-	    set roomId(value) {
-	        this._roomId = value;
-	    }
-	    get roomId() {
-	        return this._roomId;
-	    }
-	    get role() {
-	        return this._role;
-	    }
-	    set role(value) {
-	        this._role = value;
-	    }
-	    get isGift() {
-	        return this._isGift;
-	    }
-	    set isGift(value) {
-	        this._isGift = value;
+	    dispose() {
+	        Laya.timer.clearAll(this);
+	        super.dispose();
 	    }
 	}
 	
-	gameLib.UrlParam = UrlParam
+	gameLib.PromptTip = PromptTip
+	
+	class ActivityButton extends tsCore.EButton {
+	    constructor() {
+	        super(...arguments);
+	        this.tempValue = 0;
+	        /** 当没有优惠卷使用的时候 是否自动隐藏 */
+	        this.isAutoHide = true;
+	    }
+	    onConstruct() {
+	        super.onConstruct();
+	        this.draggable = false;
+	        if (this.getChild("n10")) {
+	            this.contentText = this.getChild("n10").asTextField;
+	        }
+	        else {
+	            this.contentText = this._titleObject.asTextField;
+	        }
+	        this.on(Laya.Event.ADDED, this, this.addedHandler);
+	        this.onClick(this, this.clickHandler);
+	        this.regGameAction(ActionLib.GAME_UPDATE_USE_ACTIVITY_CHANGE, this, this.updateShow);
+	        this.regGameAction(ActionLib.GAME_USE_ACTIVITY, this, this.useActivityHandler);
+	        this.regGameAction(ActionLib.GAME_USE_ACTIVITY_END, this, this.stopUseActivityHandler);
+	        this.regGameAction(ActionLib.GAME_STOP_USE_ACTIVITY, this, this.stopUseActivityHandler);
+	    }
+	    stopUseActivityHandler() {
+	        this.getController("c1").selectedIndex = 0;
+	    }
+	    useActivityHandler() {
+	        let useActivity = Player.inst.getUseCoupon();
+	        if (useActivity) {
+	            this.sendAction(ActionLib.GAME_UPDATE_USE_ACTIVITY_CHANGE);
+	            this.getController("c1").selectedIndex = 1;
+	        }
+	    }
+	    updateShow() {
+	        let useActivity = Player.inst.getUseCoupon();
+	        if (this.updateText) {
+	            runFun(this.updateText, useActivity);
+	            return;
+	        }
+	        if (useActivity) {
+	            this.text = Player.inst.getCurrencyUnit() + " " + useActivity.faceValue;
+	        }
+	        else {
+	            this.text = "";
+	        }
+	    }
+	    /**
+	     * 设置角标
+	     * @param value 剩余数量
+	     */
+	    setCorner(value) {
+	        this.tempValue = value;
+	        if (value > 0) {
+	            this.contentText.text = getString(LibStr.USE_IN_GIFT, value);
+	        }
+	        else {
+	            this.contentText.text = getString(LibStr.NOT_GIFT);
+	        }
+	        if (this.isAutoHide)
+	            this.visible = value > 0;
+	    }
+	    clickHandler() {
+	        if (!this.clickInvalid) {
+	            runFun(this.callback);
+	            // 判断是否是今天第一次打开  如果是 弹出帮助文档
+	            let giftOpenTimerStr = Laya.LocalStorage.getItem("action_help" + Player.inst.gameId);
+	            let giftOpenTimer;
+	            giftOpenTimerStr !== null && giftOpenTimerStr !== void 0 ? giftOpenTimerStr : (giftOpenTimerStr = "0");
+	            giftOpenTimer = parseFloat(giftOpenTimerStr);
+	            if (!tsCore.DateUtils.isSameDay(giftOpenTimer, Laya.Browser.now())) {
+	                this.sendAction(ActionLib.GAME_ACTIVITY_HELP_WINDOW_SHOW);
+	                Laya.LocalStorage.setItem("action_help" + Player.inst.gameId, Laya.Browser.now() + "");
+	            }
+	        }
+	        this.clickInvalid = false;
+	    }
+	    addedHandler() {
+	    }
+	    /** 打开拖动 */
+	    openDrag() {
+	        this.draggable = true;
+	        this.off(fgui.Events.DRAG_START, this, this.onDragStart);
+	        this.off(fgui.Events.DRAG_END, this, this.onDragEnd);
+	        this.on(fgui.Events.DRAG_START, this, this.onDragStart);
+	        this.on(fgui.Events.DRAG_END, this, this.onDragEnd);
+	        let arr = Laya.LocalStorage.getJSON("activity_" + Player.inst.gameId);
+	        if (arr) {
+	            this.setXY(arr[0], arr[1]);
+	        }
+	        this.onDragEnd();
+	        this.clickInvalid = false;
+	    }
+	    onDragEnd() {
+	        this.clickInvalid = true;
+	        let tempX = this.x;
+	        let tempY = this.y;
+	        if (this.x > (this.parent.width >> 1)) {
+	            tempX = this.parent.width - this.x - this.width;
+	            if (this.y > (this.parent.height >> 1)) {
+	                tempX = this.parent.width - this.x - this.width;
+	                tempY = this.parent.height - this.y - this.height;
+	                if (tempX < tempY) {
+	                    tempX = this.parent.width - this.width;
+	                    tempY = this.y;
+	                }
+	                else {
+	                    tempY = this.parent.height - this.height;
+	                    tempX = this.x;
+	                }
+	            }
+	            else {
+	                if (this.y < this.parent.width - this.x - this.width) {
+	                    tempY = 0;
+	                    tempX = this.x;
+	                }
+	                else {
+	                    tempY = this.y;
+	                    tempX = this.parent.width - this.width;
+	                }
+	            }
+	        }
+	        else {
+	            if (this.y > (this.parent.height >> 1)) {
+	                if (this.x < this.parent.height - this.y - this.height) {
+	                    tempX = 0;
+	                    tempY = this.y;
+	                }
+	                else {
+	                    tempX = this.x;
+	                    tempY = this.parent.height - this.height;
+	                }
+	            }
+	            else {
+	                if (this.x < this.y) {
+	                    tempX = 0;
+	                    tempY = this.y;
+	                }
+	                else {
+	                    tempY = 0;
+	                    tempX = this.x;
+	                }
+	            }
+	        }
+	        Laya.Tween.to(this, { x: tempX, y: tempY }, 300);
+	        Laya.LocalStorage.setJSON("activity_" + Player.inst.gameId, [tempX, tempY]);
+	    }
+	    onDragStart() {
+	        if (SceneManager.inst.starter.baseScene.promptTip)
+	            SceneManager.inst.starter.baseScene.promptTip.hide();
+	    }
+	}
+	
+	gameLib.ActivityButton = ActivityButton
 	
 	class BaseSkeletonWindow extends tsCore.SkeletonWindow {
 	    /**

@@ -853,66 +853,6 @@ declare namespace tsCore {
 	    };
 	}
 	
-	export class ELoader {
-	    /** 加载域名备用 */
-	    baseUrls: string[];
-	    private _infoPool;
-	    static isWebp: boolean;
-	    static loader: ELoader;
-	    /** 检查baseUrl 如果需要设置baseUrls 可以在这里处理  例如： checkBaseUrl = function(url?:string):string[] {} */
-	    static checkBaseUrl: (url?: string) => string[];
-	    /** 获取所有的baseUrl 主要在多路径环境下，用来获取资源或者清理资源  例如： getAllBaseUrl = function():string[] {} */
-	    static getAllBaseUrl: () => string[];
-	    /**
-	     * <p>加载资源。资源加载错误时，本对象会派发 Event.ERROR 事件，事件回调参数值为加载出错的资源地址。</p>
-	     * <p>因为返回值为 LoaderManager 对象本身，所以可以使用如下语法：loaderManager.load(...).load(...);</p>
-	     * @param    url            要加载的单个资源地址或资源信息数组。比如：简单数组：["a.png","b.png"]；复杂数组[{url:"a.png",type:Loader.IMAGE,size:100,priority:1},{url:"b.json",type:Loader.JSON,size:50,priority:1}]。
-	     * @param    complete    加载结束回调。根据url类型不同分为2种情况：1. url为String类型，也就是单个资源地址，如果加载成功，则回调参数值为加载完成的资源，否则为null；2. url为数组类型，指定了一组要加载的资源，如果全部加载成功，则回调参数值为true，否则为false。
-	     * @param    progress    加载进度回调。回调参数值为当前资源的加载进度信息(0-1)。
-	     * @param    type        资源类型。比如：Loader.IMAGE。
-	     * @param    [priority=1]    加载的优先级，优先级高的优先加载。有0-4共5个优先级，0最高，4最低。
-	     * @param    [cache=true]        是否缓存加载结果。
-	     * @param    group        分组，方便对资源进行管理。
-	     * @param    [ignoreCache=false]    是否忽略缓存，强制重新加载。
-	     * @param    [useWorkerLoader=false] 是否使用worker加载（只针对IMAGE类型和ATLAS类型，并且浏览器支持的情况下生效）
-	     * @return 此 LoaderManager 对象本身。
-	     */
-	    load(url: string | (string | LoadRes)[], complete?: Laya.Handler, progress?: Laya.Handler, type?: string, priority?: number, cache?: boolean, group?: string, ignoreCache?: boolean, useWorkerLoader?: boolean): void;
-	    /**
-	     * <p>根据clas类型创建一个未初始化资源的对象，随后进行异步加载，资源加载完成后，初始化对象的资源，并通过此对象派发 Event.LOADED 事件，事件回调参数值为此对象本身。套嵌资源的子资源会保留资源路径"?"后的部分。</p>
-	     * <p>如果url为数组，返回true；否则返回指定的资源类对象，可以通过侦听此对象的 Event.LOADED 事件来判断资源是否已经加载完毕。</p>
-	     * <p><b>注意：</b>cache参数只能对文件后缀为atlas的资源进行缓存控制，其他资源会忽略缓存，强制重新加载。</p>
-	     * @param	url			资源地址或者数组。如果url和clas同时指定了资源类型，优先使用url指定的资源类型。参数形如：[{url:xx,clas:xx,priority:xx,params:xx},{url:xx,clas:xx,priority:xx,params:xx}]。
-	     * @param	complete	加载结束回调。根据url类型不同分为2种情况：1. url为String类型，也就是单个资源地址，如果加载成功，则回调参数值为加载完成的资源，否则为null；2. url为数组类型，指定了一组要加载的资源，如果全部加载成功，则回调参数值为true，否则为false。
-	     * @param	progress	资源加载进度回调，回调参数值为当前资源加载的进度信息(0-1)。
-	     * @param	type	资源类型。
-	     * @param	constructParams		资源构造函数参数。
-	     * @param	propertyParams		资源属性参数。
-	     * @param	[priority=1]	加载的优先级，优先级高的优先加载。有0-4共5个优先级，0最高，4最低。
-	     * @param	[cache=true]		是否缓存加载的资源。
-	     * @return	如果url为数组，返回true；否则返回指定的资源类对象。
-	     */
-	    create(url: string | (string | LoadRes)[], complete?: Laya.Handler, progress?: Laya.Handler, type?: string, constructParams?: any, propertyParams?: any, priority?: number, cache?: boolean): void;
-	    private loadAssets;
-	    private _load;
-	    private onSingleComplete;
-	    /**
-	     * 获取指定资源地址的资源。
-	     * @param    url 资源地址。
-	     * @return    返回资源。
-	     */
-	    getRes(url: string): any;
-	    /**
-	     * 获取指定资源地址的资源。
-	     * @param    url 资源地址。
-	     * @return    返回资源。
-	     */
-	    clearRes(url: string): void;
-	    /** 清理当前未完成的加载，所有未加载的内容全部停止加载。*/
-	    clearUnLoaded(): void;
-	    private formatURL;
-	}
-	
 	export enum EnvType {
 	    PROD = 0,
 	    DEV = 1,
@@ -1037,6 +977,66 @@ declare namespace tsCore {
 	     * @param value
 	     */
 	    static fatal(...value: any[]): void;
+	}
+	
+	export class ELoader {
+	    /** 加载域名备用 */
+	    baseUrls: string[];
+	    private _infoPool;
+	    static isWebp: boolean;
+	    static loader: ELoader;
+	    /** 检查baseUrl 如果需要设置baseUrls 可以在这里处理  例如： checkBaseUrl = function(url?:string):string[] {} */
+	    static checkBaseUrl: (url?: string) => string[];
+	    /** 获取所有的baseUrl 主要在多路径环境下，用来获取资源或者清理资源  例如： getAllBaseUrl = function():string[] {} */
+	    static getAllBaseUrl: () => string[];
+	    /**
+	     * <p>加载资源。资源加载错误时，本对象会派发 Event.ERROR 事件，事件回调参数值为加载出错的资源地址。</p>
+	     * <p>因为返回值为 LoaderManager 对象本身，所以可以使用如下语法：loaderManager.load(...).load(...);</p>
+	     * @param    url            要加载的单个资源地址或资源信息数组。比如：简单数组：["a.png","b.png"]；复杂数组[{url:"a.png",type:Loader.IMAGE,size:100,priority:1},{url:"b.json",type:Loader.JSON,size:50,priority:1}]。
+	     * @param    complete    加载结束回调。根据url类型不同分为2种情况：1. url为String类型，也就是单个资源地址，如果加载成功，则回调参数值为加载完成的资源，否则为null；2. url为数组类型，指定了一组要加载的资源，如果全部加载成功，则回调参数值为true，否则为false。
+	     * @param    progress    加载进度回调。回调参数值为当前资源的加载进度信息(0-1)。
+	     * @param    type        资源类型。比如：Loader.IMAGE。
+	     * @param    [priority=1]    加载的优先级，优先级高的优先加载。有0-4共5个优先级，0最高，4最低。
+	     * @param    [cache=true]        是否缓存加载结果。
+	     * @param    group        分组，方便对资源进行管理。
+	     * @param    [ignoreCache=false]    是否忽略缓存，强制重新加载。
+	     * @param    [useWorkerLoader=false] 是否使用worker加载（只针对IMAGE类型和ATLAS类型，并且浏览器支持的情况下生效）
+	     * @return 此 LoaderManager 对象本身。
+	     */
+	    load(url: string | (string | LoadRes)[], complete?: Laya.Handler, progress?: Laya.Handler, type?: string, priority?: number, cache?: boolean, group?: string, ignoreCache?: boolean, useWorkerLoader?: boolean): void;
+	    /**
+	     * <p>根据clas类型创建一个未初始化资源的对象，随后进行异步加载，资源加载完成后，初始化对象的资源，并通过此对象派发 Event.LOADED 事件，事件回调参数值为此对象本身。套嵌资源的子资源会保留资源路径"?"后的部分。</p>
+	     * <p>如果url为数组，返回true；否则返回指定的资源类对象，可以通过侦听此对象的 Event.LOADED 事件来判断资源是否已经加载完毕。</p>
+	     * <p><b>注意：</b>cache参数只能对文件后缀为atlas的资源进行缓存控制，其他资源会忽略缓存，强制重新加载。</p>
+	     * @param	url			资源地址或者数组。如果url和clas同时指定了资源类型，优先使用url指定的资源类型。参数形如：[{url:xx,clas:xx,priority:xx,params:xx},{url:xx,clas:xx,priority:xx,params:xx}]。
+	     * @param	complete	加载结束回调。根据url类型不同分为2种情况：1. url为String类型，也就是单个资源地址，如果加载成功，则回调参数值为加载完成的资源，否则为null；2. url为数组类型，指定了一组要加载的资源，如果全部加载成功，则回调参数值为true，否则为false。
+	     * @param	progress	资源加载进度回调，回调参数值为当前资源加载的进度信息(0-1)。
+	     * @param	type	资源类型。
+	     * @param	constructParams		资源构造函数参数。
+	     * @param	propertyParams		资源属性参数。
+	     * @param	[priority=1]	加载的优先级，优先级高的优先加载。有0-4共5个优先级，0最高，4最低。
+	     * @param	[cache=true]		是否缓存加载的资源。
+	     * @return	如果url为数组，返回true；否则返回指定的资源类对象。
+	     */
+	    create(url: string | (string | LoadRes)[], complete?: Laya.Handler, progress?: Laya.Handler, type?: string, constructParams?: any, propertyParams?: any, priority?: number, cache?: boolean): void;
+	    private loadAssets;
+	    private _load;
+	    private onSingleComplete;
+	    /**
+	     * 获取指定资源地址的资源。
+	     * @param    url 资源地址。
+	     * @return    返回资源。
+	     */
+	    getRes(url: string): any;
+	    /**
+	     * 获取指定资源地址的资源。
+	     * @param    url 资源地址。
+	     * @return    返回资源。
+	     */
+	    clearRes(url: string): void;
+	    /** 清理当前未完成的加载，所有未加载的内容全部停止加载。*/
+	    clearUnLoaded(): void;
+	    private formatURL;
 	}
 	
 	export class BezierCurves {
@@ -1305,71 +1305,6 @@ declare namespace tsCore {
 	    setTargetClass(targetClassProperty: any): this;
 	}
 	
-	export class EventController implements IController {
-	    /** 事件缓存的所有组 组名字->组object */
-	    private eventGroup;
-	    /**
-	     * 缓存key -> 实例
-	     */
-	    private cacheTarget;
-	    /**
-	     * 缓存类名 -> 实例
-	     */
-	    private cacheClassTarget;
-	    private static _CLSID;
-	    regActionHandler(action: string | number, handler: Laya.Handler, group?: string): void;
-	    /**
-	     * 分组存储对象
-	     * @param groupKey 分组key
-	     * @return
-	     */
-	    getGroup(groupKey: string): Map<string | number, Laya.Handler[]>;
-	    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void;
-	    clearView(): void;
-	    clearGroup(): void;
-	    removeAllAction(...args: string[]): void;
-	    removeGroup(groupKey: string): void;
-	    removeGroupActions(groupKey: string, ...args: any[]): void;
-	    removeActionHandler(action: string | number, method: Function, group?: string): void;
-	    removeFunction(groupObj: Map<string | number, Laya.Handler[]>, action: string | number, method: Function): void;
-	    removeTargetAll(caller: any): void;
-	    removeTarget(groupObj: Map<string | number, Laya.Handler[]>, caller: any): void;
-	    sendGroupAction(group: string, action: string | number, ...args: any[]): void;
-	    sendAction(action: string | number, ...args: any[]): void;
-	    sendActionEvent(group: string, action: string | number, ...args: any[]): boolean;
-	    addBean<T>(key: string | {
-	        new (): T;
-	    }, bean: T, saveClassName?: boolean): boolean;
-	    removeBean<T extends {
-	        new (...args: any[]): any;
-	    }>(key: string | T): void;
-	    getBean<T>(key: string | {
-	        new (): T;
-	    }): T;
-	    hasBean<T>(key: string | {
-	        new (): T;
-	    }): boolean;
-	    addView<T extends IView & IKey>(key: string | {
-	        new (): T;
-	    }, view: T): boolean;
-	    removeView<T extends IView & IKey>(key: string | T): void;
-	    getView<T>(key: string | {
-	        new (): T;
-	    }): T;
-	    addProxy<T extends IProxy & IKey>(key: string | {
-	        new (): T;
-	    }, proxy: T): boolean;
-	    removeProxy<T extends IProxy & IKey>(key: string | T): void;
-	    getProxy<T>(name: string | {
-	        new (): T;
-	    }): T;
-	    getMap(): Map<string, any>;
-	    /**
-	     * 返回类的唯一标识
-	     */
-	    private _getClassSign;
-	}
-	
 	export class ActionEvent implements IAction {
 	    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void;
 	    regActionHandler(action: string | number, handler: Laya.Handler, group?: string): void;
@@ -1454,55 +1389,6 @@ declare namespace tsCore {
 	    abstract getAnimFrame(aniIndex: number | string): number;
 	    abstract getAnimation(aniIndex: number | string): AnimationContent | spine.Animation;
 	    abstract get currAniIndex(): number;
-	}
-	
-	export class GSpineSkeleton extends ESkeleton {
-	    ver: Laya.SpineVersion;
-	    template: Laya.SpineTemplet;
-	    constructor(ver?: Laya.SpineVersion);
-	    protected createDisplayObject(): void;
-	    get asSkeleton(): Laya.SpineSkeleton;
-	    /**
-	     * 获取spine的Skeleton对象
-	     */
-	    getSkeletonNative(): spine.Skeleton;
-	    /**
-	     * 加载json 或 skel格式的骨骼文件
-	     * @param jsonOrSkelUrl
-	     * @param handler 回调方法
-	     * @param ver
-	     */
-	    load(jsonOrSkelUrl: string, handler: ParamHandler, ver?: Laya.SpineVersion): void;
-	    private onError;
-	    private onComplete;
-	    set touchable(value: boolean);
-	    get touchable(): boolean;
-	    /**
-	     * 通过名字显示一套皮肤
-	     * @param    name    皮肤的名字
-	     */
-	    showSkinByName(name: string): void;
-	    /**
-	     * 通过索引显示一套皮肤
-	     * @param    skinIndex    皮肤索引
-	     */
-	    showSkinByIndex(skinIndex: number): void;
-	    getAniIndexByName(aniName: string): number;
-	    getAllAnimation(): spine.Animation[];
-	    getAllSkin(): spine.Skin[];
-	    getAnimation(aniIndex: number | string): spine.Animation;
-	    /**
-	     * 获取动画时长 秒
-	     * @param aniIndex
-	     */
-	    getAnimDuration(aniIndex: number | string | (number | string)[]): number;
-	    getAnimFrame(aniIndex: number | string): number;
-	    get currAniIndex(): number;
-	    set hitArea(rec: Laya.Rectangle);
-	    on(type: string, thisObject: any, listener: Function, args?: any[]): void;
-	    off(type: string, thisObject: any, listener: Function): void;
-	    offAll(type?: string): void;
-	    dispose(): void;
 	}
 	
 	export class GSkeleton extends ESkeleton {
@@ -1768,6 +1654,120 @@ declare namespace tsCore {
 	     */
 	    getEqualRatioRatio(w?: number, h?: number): Laya.Point;
 	    getStackTrace(): string;
+	}
+	
+	export class EventController implements IController {
+	    /** 事件缓存的所有组 组名字->组object */
+	    private eventGroup;
+	    /**
+	     * 缓存key -> 实例
+	     */
+	    private cacheTarget;
+	    /**
+	     * 缓存类名 -> 实例
+	     */
+	    private cacheClassTarget;
+	    private static _CLSID;
+	    regActionHandler(action: string | number, handler: Laya.Handler, group?: string): void;
+	    /**
+	     * 分组存储对象
+	     * @param groupKey 分组key
+	     * @return
+	     */
+	    getGroup(groupKey: string): Map<string | number, Laya.Handler[]>;
+	    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void;
+	    clearView(): void;
+	    clearGroup(): void;
+	    removeAllAction(...args: string[]): void;
+	    removeGroup(groupKey: string): void;
+	    removeGroupActions(groupKey: string, ...args: any[]): void;
+	    removeActionHandler(action: string | number, method: Function, group?: string): void;
+	    removeFunction(groupObj: Map<string | number, Laya.Handler[]>, action: string | number, method: Function): void;
+	    removeTargetAll(caller: any): void;
+	    removeTarget(groupObj: Map<string | number, Laya.Handler[]>, caller: any): void;
+	    sendGroupAction(group: string, action: string | number, ...args: any[]): void;
+	    sendAction(action: string | number, ...args: any[]): void;
+	    sendActionEvent(group: string, action: string | number, ...args: any[]): boolean;
+	    addBean<T>(key: string | {
+	        new (): T;
+	    }, bean: T, saveClassName?: boolean): boolean;
+	    removeBean<T extends {
+	        new (...args: any[]): any;
+	    }>(key: string | T): void;
+	    getBean<T>(key: string | {
+	        new (): T;
+	    }): T;
+	    hasBean<T>(key: string | {
+	        new (): T;
+	    }): boolean;
+	    addView<T extends IView & IKey>(key: string | {
+	        new (): T;
+	    }, view: T): boolean;
+	    removeView<T extends IView & IKey>(key: string | T): void;
+	    getView<T>(key: string | {
+	        new (): T;
+	    }): T;
+	    addProxy<T extends IProxy & IKey>(key: string | {
+	        new (): T;
+	    }, proxy: T): boolean;
+	    removeProxy<T extends IProxy & IKey>(key: string | T): void;
+	    getProxy<T>(name: string | {
+	        new (): T;
+	    }): T;
+	    getMap(): Map<string, any>;
+	    /**
+	     * 返回类的唯一标识
+	     */
+	    private _getClassSign;
+	}
+	
+	export class GSpineSkeleton extends ESkeleton {
+	    ver: Laya.SpineVersion;
+	    template: Laya.SpineTemplet;
+	    constructor(ver?: Laya.SpineVersion);
+	    protected createDisplayObject(): void;
+	    get asSkeleton(): Laya.SpineSkeleton;
+	    /**
+	     * 获取spine的Skeleton对象
+	     */
+	    getSkeletonNative(): spine.Skeleton;
+	    /**
+	     * 加载json 或 skel格式的骨骼文件
+	     * @param jsonOrSkelUrl
+	     * @param handler 回调方法
+	     * @param ver
+	     */
+	    load(jsonOrSkelUrl: string, handler: ParamHandler, ver?: Laya.SpineVersion): void;
+	    private onError;
+	    private onComplete;
+	    set touchable(value: boolean);
+	    get touchable(): boolean;
+	    /**
+	     * 通过名字显示一套皮肤
+	     * @param    name    皮肤的名字
+	     */
+	    showSkinByName(name: string): void;
+	    /**
+	     * 通过索引显示一套皮肤
+	     * @param    skinIndex    皮肤索引
+	     */
+	    showSkinByIndex(skinIndex: number): void;
+	    getAniIndexByName(aniName: string): number;
+	    getAllAnimation(): spine.Animation[];
+	    getAllSkin(): spine.Skin[];
+	    getAnimation(aniIndex: number | string): spine.Animation;
+	    /**
+	     * 获取动画时长 秒
+	     * @param aniIndex
+	     */
+	    getAnimDuration(aniIndex: number | string | (number | string)[]): number;
+	    getAnimFrame(aniIndex: number | string): number;
+	    get currAniIndex(): number;
+	    set hitArea(rec: Laya.Rectangle);
+	    on(type: string, thisObject: any, listener: Function, args?: any[]): void;
+	    off(type: string, thisObject: any, listener: Function): void;
+	    offAll(type?: string): void;
+	    dispose(): void;
 	}
 	
 	export class ProxyBlock {
