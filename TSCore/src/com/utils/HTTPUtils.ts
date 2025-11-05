@@ -13,16 +13,19 @@ export class HTTPUtils {
     /**
      *
      * 时间加速比 (倍数)
+     * @internal
      */
-    private static timeAccelerationRatio = 1.0
+    private static _timeAccelerationRatio = 1.0
     /**
      * 本地最后执行同步的时间
+     * @internal
      */
-    private static lastLocalTime = 0
+    private static _lastLocalTime = 0
     /**
      * 最后收到的服务器时间
+     * @internal
      */
-    private static lastServerTime = 0
+    private static _lastServerTime = 0
     /** 过滤器 */
     static filter: IHttpFilter
 
@@ -255,24 +258,24 @@ export class HTTPUtils {
             this.castDifference(serverTime)
 
             const currentLocalTime = Laya.Browser.now()
-            if (this.lastServerTime > 0 && this.lastLocalTime > 0) {
+            if (this._lastServerTime > 0 && this._lastLocalTime > 0) {
                 // 计算本地时间和服务器时间的流逝差异
-                const localDelta = currentLocalTime - this.lastLocalTime;
-                const serverDelta = serverTime - this.lastServerTime;
+                const localDelta = currentLocalTime - this._lastLocalTime;
+                const serverDelta = serverTime - this._lastServerTime;
 
                 // 计算加速倍数
                 if (serverDelta > 0) {
-                    this.timeAccelerationRatio = localDelta / serverDelta;
+                    this._timeAccelerationRatio = localDelta / serverDelta;
                     // console.log(`time acceleration multiplier: ${this.timeAccelerationRatio.toFixed(2)}x`);
 
-                    if (Math.abs(this.timeAccelerationRatio - 1.0) > 0.1) {
-                        Log.warn(`Time acceleration detected! Acceleration multiplier: ${this.timeAccelerationRatio.toFixed(2)}x`);
+                    if (Math.abs(this._timeAccelerationRatio - 1.0) > 0.1) {
+                        Log.warn(`Time acceleration detected! Acceleration multiplier: ${this._timeAccelerationRatio.toFixed(2)}x`);
                     }
                 }
             }
 
-            this.lastLocalTime = currentLocalTime;
-            this.lastServerTime = serverTime;
+            this._lastLocalTime = currentLocalTime;
+            this._lastServerTime = serverTime;
 
         }
     }
@@ -294,17 +297,17 @@ export class HTTPUtils {
 
     /** 当前时间  毫秒 */
     static getTimer() {
-        if (this.lastServerTime === 0) {
+        if (this._lastServerTime === 0) {
             // 还没有从服务器获得初始时间，暂时使用本地时间
             return Laya.Browser.now();
         }
 
         const now = Laya.Browser.now();
-        const elapsed = now - this.lastLocalTime;
+        const elapsed = now - this._lastLocalTime;
         // 应用时间加速比率调整
-        const adjustedElapsed = elapsed / this.timeAccelerationRatio;
+        const adjustedElapsed = elapsed / this._timeAccelerationRatio;
 
-        return this.lastServerTime + adjustedElapsed;
+        return this._lastServerTime + adjustedElapsed;
     }
 
     /** 当前时间  秒 */
@@ -329,6 +332,30 @@ export class HTTPUtils {
             }
         }
         return value
+    }
+
+    /**
+     * 时间加速比 (倍数)
+     * @returns {number}
+     */
+    static get timeAccelerationRatio(): number {
+        return this._timeAccelerationRatio;
+    }
+
+    /**
+     * 本地最后执行同步的时间
+     * @returns {number}
+     */
+    static get lastLocalTime(): number {
+        return this._lastLocalTime;
+    }
+
+    /**
+     * 最后收到的服务器时间
+     * @returns {number}
+     */
+    static get lastServerTime(): number {
+        return this._lastServerTime;
     }
 
 }

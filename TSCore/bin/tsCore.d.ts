@@ -2920,19 +2920,6 @@ declare namespace tsCore {
 	    static checkTimer: number;
 	    /** 差值 */
 	    static difference: number;
-	    /**
-	     *
-	     * 时间加速比 (倍数)
-	     */
-	    private static timeAccelerationRatio;
-	    /**
-	     * 本地最后执行同步的时间
-	     */
-	    private static lastLocalTime;
-	    /**
-	     * 最后收到的服务器时间
-	     */
-	    private static lastServerTime;
 	    /** 过滤器 */
 	    static filter: IHttpFilter;
 	    private readonly ghr;
@@ -3028,6 +3015,21 @@ declare namespace tsCore {
 	    static getTimerSecond(): number;
 	    /** 解析json数据格式 */
 	    static parseJson(data?: any): string;
+	    /**
+	     * 时间加速比 (倍数)
+	     * @returns {number}
+	     */
+	    static get timeAccelerationRatio(): number;
+	    /**
+	     * 本地最后执行同步的时间
+	     * @returns {number}
+	     */
+	    static get lastLocalTime(): number;
+	    /**
+	     * 最后收到的服务器时间
+	     * @returns {number}
+	     */
+	    static get lastServerTime(): number;
 	}
 	
 	export class LanguageUtils {
