@@ -4141,28 +4141,6 @@ declare namespace gameLib {
 	}
 	
 	/**
-	 * 流量统计
-	 */
-	export class StatFlow {
-	    private static _instance;
-	    static get inst(): StatFlow;
-	    /** 未发送的流量统计 */
-	    private static NOT_SEND_STAT_FLOW;
-	    /** 公共流量计算接口 */
-	    private by;
-	    /**
-	     * 计算流量
-	     * @param url
-	     * @param value
-	     */
-	    castFlow(url: string, value: string): void;
-	    /** 添加用户统计 */
-	    private addUserStat;
-	    /** 根据用户id获取用户统计信息 */
-	    private getUserStat;
-	}
-	
-	/**
 	 * 洗牌的牌
 	 * @author boge
 	 *

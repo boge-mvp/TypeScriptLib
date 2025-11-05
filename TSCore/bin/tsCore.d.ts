@@ -2920,6 +2920,19 @@ declare namespace tsCore {
 	    static checkTimer: number;
 	    /** 差值 */
 	    static difference: number;
+	    /**
+	     *
+	     * 时间加速比 (倍数)
+	     */
+	    private static timeAccelerationRatio;
+	    /**
+	     * 本地最后执行同步的时间
+	     */
+	    private static lastLocalTime;
+	    /**
+	     * 最后收到的服务器时间
+	     */
+	    private static lastServerTime;
 	    /** 过滤器 */
 	    static filter: IHttpFilter;
 	    private readonly ghr;
@@ -2995,8 +3008,17 @@ declare namespace tsCore {
 	    abort(): void;
 	    get http(): AjaxRequest;
 	    getHttp(): AjaxRequest;
-	    /** 解析时间 */
+	    /**
+	     * 解析时间
+	     * @deprecated
+	     * @see HttpUtils.syncServerTime
+	     */
 	    static parseDate(data: HttpResponse): void;
+	    /**
+	     * 同步服务器时间
+	     * @param {HttpResponse} data
+	     */
+	    static syncServerTime(data: HttpResponse): void;
 	    static castDifference(serverTime: number): void;
 	    /** 获取差值 */
 	    static getDifference(): number;
