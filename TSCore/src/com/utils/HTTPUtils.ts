@@ -5,9 +5,15 @@ import {Log} from "../Log";
 
 export class HTTPUtils {
 
+    /**
+     * @default text
+     */
     static defaultResponseType = "text"
-    /** 检查服务器时间间隔 */
-    static checkTimer = 1000 * 60
+    /**
+     * 检查服务器时间间隔
+     * @default 1000 * 60
+     */
+    static checkServerTimeDelta = 1000 * 60
     /** 差值 */
     static difference = 0
     /**
@@ -35,7 +41,8 @@ export class HTTPUtils {
      */
     private url: string
     /**
-     * (default = null)发送的数据。
+     * 发送的数据。
+     * @default null
      */
     private data: any
     /**
@@ -44,11 +51,13 @@ export class HTTPUtils {
      */
     private method: string = null
     /**
-     * (default = "text")Web 服务器的响应类型，可设置为 "text"、"json"、"xml"、"arraybuffer"。
+     * Web 服务器的响应类型，可设置为 "text"、"json"、"xml"、"arraybuffer"。
+     * @default text
      */
     private responseType = HTTPUtils.defaultResponseType
     /**
-     * (default = null) HTTP 请求的头部信息。参数形如key-value数组：key是头部的名称，不应该包括空白、冒号或换行；value是头部的值，不应该包括换行。比如["Content-Type", "application/json"]。
+     * HTTP 请求的头部信息。参数形如key-value数组：key是头部的名称，不应该包括空白、冒号或换行；value是头部的值，不应该包括换行。比如["Content-Type", "application/json"]。
+     * @default null
      */
     private headers: string[]
     /** 完成 */

@@ -7188,7 +7188,8 @@ function TimerLoop(interval, custom) {
 	         */
 	        this.method = null;
 	        /**
-	         * (default = "text")Web 服务器的响应类型，可设置为 "text"、"json"、"xml"、"arraybuffer"。
+	         * Web 服务器的响应类型，可设置为 "text"、"json"、"xml"、"arraybuffer"。
+	         * @default text
 	         */
 	        this.responseType = HTTPUtils.defaultResponseType;
 	        this.async = true;
@@ -7451,9 +7452,15 @@ function TimerLoop(interval, custom) {
 	        return this._lastServerTime;
 	    }
 	}
+	/**
+	 * @default text
+	 */
 	HTTPUtils.defaultResponseType = "text";
-	/** 检查服务器时间间隔 */
-	HTTPUtils.checkTimer = 1000 * 60;
+	/**
+	 * 检查服务器时间间隔
+	 * @default 1000 * 60
+	 */
+	HTTPUtils.checkServerTimeDelta = 1000 * 60;
 	/** 差值 */
 	HTTPUtils.difference = 0;
 	/**
