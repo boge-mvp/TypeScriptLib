@@ -7,11 +7,12 @@ import {Log} from "./Log";
 import {IController, IKey, IProxy, IView} from "./interfaces/ICommon";
 import {Path} from "./Path";
 import Handler = Laya.Handler;
-import {TimerKit} from "./utils/TimerKit";
+import {TimerKit} from "./kit/TimerKit";
 
 export class App implements IAction {
 
     private static _instance: App
+
     static get inst(): App {
         return this._instance
     }
@@ -36,23 +37,31 @@ export class App implements IAction {
 
     static initEngine?: IInitEngine
     options: InitApp
+    /**
+     * @internal
+     */
     private _controller: IController
     /**
      * 绑定的类
      * 类名 -> 类 class
+     *
+     * @internal
      */
     static beanClassComponent: ComponentData[] = []
     /**
      * 绑定的方法
      * 类名 -> 生成方法
+     * @internal
      */
     static beanClassFunction = new Map<string, Function>()
     /**
      * 绑定事件处理方法
+     * @internal
      */
     static beanActionsFunction: ActionsData[] = []
     /**
      * 绑定监听事件处理方法
+     * @internal
      */
     static beanEventFunction: EventData[] = []
     /**
@@ -322,13 +331,8 @@ export class App implements IAction {
     }
 
     getStackTrace(): string {
-        try {
-            // 故意抛出一个错误来捕获堆栈信息
-            throw new Error()
-        } catch (error) {
-            // 返回错误对象的堆栈信息
-            return error.stack
-        }
+        // 返回错误对象的堆栈信息
+        return new Error().stack
     }
 
 }

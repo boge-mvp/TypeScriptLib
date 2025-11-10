@@ -134,6 +134,8 @@ export abstract class ESkeleton extends mixinExt(BezierCurves, ActionEvent, GCom
         this.asSkeleton.playbackRate(playbackRate)
 
         this.asSkeleton.play(this.nameOrIndex, false, force, start, end, freshSkin, playAudio)
+
+        this.displayObject.event(Laya.Event.SPINE_PLAY, this.nameOrIndex)
     }
 
     /**

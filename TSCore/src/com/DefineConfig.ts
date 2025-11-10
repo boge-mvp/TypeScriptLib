@@ -241,6 +241,14 @@ export class DefineConfig {
             }
         })
 
+        Object.defineProperties(Laya.Event, {
+            SPINE_PLAY: {
+                value: true,
+                writable: true,
+                configurable: true
+            }
+        })
+
         DefineConfig.defineSpineSkeleton()
         DefineConfig.defineSkeleton()
         DefineConfig.defineText()

@@ -241,7 +241,7 @@ export class EventController implements IController {
      * 返回类的唯一标识
      */
     private _getClassSign<T>(cla: { new(): T }, create = true): string {
-        let className = cla.name || cla["__className"] || cla["_cacheId"]
+        let className = cla["__className"] || cla["_cacheId"] || cla.name
         if (!className && create) {
             cla["_cacheId"] = className = `${App.DEFAULT_CACHE_HEAD}_${EventController._CLSID}`
             EventController._CLSID++

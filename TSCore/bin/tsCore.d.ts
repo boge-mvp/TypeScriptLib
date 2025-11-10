@@ -1555,25 +1555,6 @@ declare namespace tsCore {
 	    };
 	    static initEngine?: IInitEngine;
 	    options: InitApp;
-	    private _controller;
-	    /**
-	     * 绑定的类
-	     * 类名 -> 类 class
-	     */
-	    static beanClassComponent: ComponentData[];
-	    /**
-	     * 绑定的方法
-	     * 类名 -> 生成方法
-	     */
-	    static beanClassFunction: Map<string, Function>;
-	    /**
-	     * 绑定事件处理方法
-	     */
-	    static beanActionsFunction: ActionsData[];
-	    /**
-	     * 绑定监听事件处理方法
-	     */
-	    static beanEventFunction: EventData[];
 	    /**
 	     * 启动历史记录监听
 	     */
@@ -3575,7 +3556,6 @@ declare module Laya {
 
     }
 
-
     interface HttpRequest {
         /** 设置是否异步请求 默认true */
         async: boolean
@@ -3643,6 +3623,11 @@ declare module Laya {
 
     }
 
+}
+
+declare module Laya.Event {
+    /** 开始播放指定动画名字 */
+    export var SPINE_PLAY:string
 }
 
 declare module fgui {

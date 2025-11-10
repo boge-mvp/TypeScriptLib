@@ -22,7 +22,6 @@ declare module Laya {
 
     }
 
-
     interface HttpRequest {
         /** 设置是否异步请求 默认true */
         async: boolean
@@ -90,6 +89,11 @@ declare module Laya {
 
     }
 
+}
+
+declare module Laya.Event {
+    /** 开始播放指定动画名字 */
+    export var SPINE_PLAY:string
 }
 
 declare module fgui {

@@ -3014,6 +3014,7 @@ function TimerLoop(interval, custom) {
 	        }
 	        this.asSkeleton.playbackRate(playbackRate);
 	        this.asSkeleton.play(this.nameOrIndex, false, force, start, end, freshSkin, playAudio);
+	        this.displayObject.event(Laya.Event.SPINE_PLAY, this.nameOrIndex);
 	    }
 	    /**
 	     * 当动画停止时的回调函数 或 使用 skeleton.stop()
@@ -3709,6 +3710,13 @@ function TimerLoop(interval, custom) {
 	                if (Laya.Browser.onBLMiniGame && Laya.Browser.onAndroid && !data)
 	                    data = {};
 	                http.send(isJson ? JSON.stringify(data) : data);
+	            }
+	        });
+	        Object.defineProperties(Laya.Event, {
+	            SPINE_PLAY: {
+	                value: true,
+	                writable: true,
+	                configurable: true
 	            }
 	        });
 	        DefineConfig.defineSpineSkeleton();
@@ -4521,14 +4529,8 @@ function TimerLoop(interval, custom) {
 	        return new Laya.Point(s1, s2);
 	    }
 	    getStackTrace() {
-	        try {
-	            // 故意抛出一个错误来捕获堆栈信息
-	            throw new Error();
-	        }
-	        catch (error) {
-	            // 返回错误对象的堆栈信息
-	            return error.stack;
-	        }
+	        // 返回错误对象的堆栈信息
+	        return new Error().stack;
 	    }
 	}
 	/** 默认的分组名
@@ -4546,19 +4548,24 @@ function TimerLoop(interval, custom) {
 	/**
 	 * 绑定的类
 	 * 类名 -> 类 class
+	 *
+	 * @internal
 	 */
 	App.beanClassComponent = [];
 	/**
 	 * 绑定的方法
 	 * 类名 -> 生成方法
+	 * @internal
 	 */
 	App.beanClassFunction = new Map();
 	/**
 	 * 绑定事件处理方法
+	 * @internal
 	 */
 	App.beanActionsFunction = [];
 	/**
 	 * 绑定监听事件处理方法
+	 * @internal
 	 */
 	App.beanEventFunction = [];
 	/**
@@ -4787,7 +4794,7 @@ function TimerLoop(interval, custom) {
 	     * 返回类的唯一标识
 	     */
 	    _getClassSign(cla, create = true) {
-	        let className = cla.name || cla["__className"] || cla["_cacheId"];
+	        let className = cla["__className"] || cla["_cacheId"] || cla.name;
 	        if (!className && create) {
 	            cla["_cacheId"] = className = `${App.DEFAULT_CACHE_HEAD}_${EventController._CLSID}`;
 	            EventController._CLSID++;
