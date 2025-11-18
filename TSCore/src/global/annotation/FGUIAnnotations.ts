@@ -123,7 +123,7 @@ function fguiFindChild(target: fgui.GComponent, childs: string[]) {
  * 定时循环执行装饰器
  * 用于装饰类方法，使其按照指定间隔循环执行
  * @param interval - 执行间隔时间(毫秒)
- * @param custom - 自定义条件函数，返回true时继续执行，false时停止执行
+ * @param custom - 自定义执行条件函数，当该函数返回 true 时任务会无视默认的可见性检查而强制执行
  * @returns function - 装饰器函数
  *
  * ```
