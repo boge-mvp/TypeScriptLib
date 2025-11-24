@@ -36,8 +36,11 @@ export class EventController implements IController {
         return this.eventGroup.getOrPut(groupKey, () => new Map())
     }
 
-    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number) {
-        const handler = new Laya.Handler(caller, method)
+    regAction(action: string | number, caller: any, method: ParamHandler, group?: string, order?: number) {
+        let handler: Laya.Handler
+        if (!(method instanceof Laya.Handler)) {
+            handler = new Laya.Handler(caller, method)
+        }
         handler.order = order
         this.regActionHandler(action, handler, group)
     }

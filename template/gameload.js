@@ -73,7 +73,7 @@ function pathName(url) {
  *   - false: 顺序加载JS文件（仅对JS文件有效）
  * @param {Function} [onComplete=null] - 所有资源加载完成后的回调函数
  *   - 在所有资源都加载完毕后执行一次
- * @param {(data: *, url: string)=> boolean} [customParse=null] - 自定义解析函数，用于处理非JS资源的数据
+ * @param {(data: string, url: string)=> boolean} [customParse=null] - 自定义解析函数，用于处理非JS资源的数据
  *   - 接收参数(data, url)，其中data是加载的资源内容，url是资源地址
  *   - 返回false可中断当前资源的后续处理流程
  *
@@ -93,31 +93,40 @@ function loadBatch(url, parallel = true, onComplete = null, customParse = null) 
     const loadRes = url.map(value => getLoadUrl(value.key, value.v))
     let len = loadRes.length
     let completeIndex = 0
-    const check = loadRes.some(value => value.split("?")[0].endsWith(".js"))
-    if (!check) { // 非js
-        for (const key of loadRes) {
-            loadContent(key, (data, url) => {
-                if (customParse) {
-                    const result = customParse(data, url)
-                    if (!result) {
-                        complete()
-                        return
-                    }
-                }
-                const name = pathName(url)
-                let parameter = window["$_parameter"]
-                if (!parameter) {
-                    parameter = {}
-                    window["$_parameter"] = parameter
-                }
-                parameter[name] = [url, data]
-                if (url.endsWith(".xml")) {
-                    window["$_crc"] = data
-                }
-                complete()
-            }, [key.split("?")[0]], (e) => loadError(e))
+    const loadJs = []
+    const loadText = []
+    loadRes.forEach(value => {
+        const isJs = value.split("?")[0].endsWith(".js")
+        if (isJs) {
+            loadJs.push(value)
+        } else {
+            loadText.push(value)
         }
-    } else loadScript(loadRes, parallel, complete.bind(this))
+    })
+    // 非js
+    for (const key of loadText) {
+        loadContent(key, (data, url) => {
+            if (customParse) {
+                const result = customParse(data, url)
+                if (!result) {
+                    complete()
+                    return
+                }
+            }
+            const name = pathName(url)
+            let parameter = window["$_parameter"]
+            if (!parameter) {
+                parameter = {}
+                window["$_parameter"] = parameter
+            }
+            parameter[name] = [url, data]
+            if (url.endsWith(".xml")) {
+                window["$_crc"] = data
+            }
+            complete()
+        }, [key.split("?")[0]], (e) => loadError(e))
+    }
+    loadScript(loadJs, parallel, complete.bind(this))
 
     function complete() {
         completeLoaderNum++

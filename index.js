@@ -765,6 +765,17 @@ function getProject(tsConfig = "tsconfig.json", customTransformers) {
  */
 function createCompileStream(globs, opt, customTransformers) {
     const tsProject = getProject(undefined, customTransformers)
+    // gulp.src 不知道为什么不解析 typeRoots 这里强制添加
+    const types = tsProject.options.typeRoots || []
+    types.forEach((value, index) => {
+        // 检查路径是否已经是文件匹配模式，如果不是则添加 /*.ts
+        if (!value.endsWith("@types") && !value.includes('*') && !value.endsWith('.ts')) {
+            types[index] = value + '/**/*.ts'
+        } else {
+            types[index] = value
+        }
+    })
+    globs.push(...types)
     return gulp.src(globs, opt).pipe(function () {
         const project = tsProject()
         sortDeclaration(project)
@@ -966,7 +977,7 @@ function rollupStream(...options) {
  * @property {string} [outDir] - 输出目录路径
  * @property {string|false} [tsconfig="tsconfig.json"] - TypeScript 配置文件路径 当设置为 false 时，忽略配置文件中指定的任何选项。如果设置为与文件路径相对应的字符串，则指定的文件将用作配置文件。
  * @property {string|false} [filterRoot="false"] - 设置编译的根目录
- * @property {boolean} [sourcemap=false] - 是否生成 sourcemap 文件
+ * @property {boolean | 'inline' | 'hidden'} [sourcemap=false] - 是否生成 sourcemap 文件
  * @property {boolean|Options} [minify=false] - 是否压缩代码，若为对象则作为 terser 压缩配置
  * @property {rollup.InputPluginOption} [plugins=[]] - rollup 插件
  * @property {ReadonlyArray<string | RegExp> | string | RegExp | null} [include=undefined] - include 包括的文件 默认是 {,**\/*}.(cts|mts|ts|tsx)

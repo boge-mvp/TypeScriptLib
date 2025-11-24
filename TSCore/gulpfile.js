@@ -5,6 +5,10 @@ const {clean, buildLibrary} = require("../index")
 const path = require("path")
 const gulp = require("gulp")
 const {reserved} = require("../reserved")
+const gulpTs = require("gulp-typescript")
+const fs = require('fs');
+
+const ts = require('typescript')
 
 const project = "tsCore"
 

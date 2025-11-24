@@ -389,7 +389,7 @@ declare namespace tsCore {
 	     * @param group 分组集合
 	     * @param order 值越大 越后执行 默认 100
 	     */
-	    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void;
+	    regAction(action: string | number, caller: any, method: ParamHandler, group?: string, order?: number): void;
 	    /**
 	     * 删除所有分组中的此动作
 	     * @param args 动作名字
@@ -1430,10 +1430,10 @@ declare namespace tsCore {
 	}
 	
 	export class ActionEvent implements IAction {
-	    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void;
+	    regAction(action: string | number, caller: any, method: ParamHandler, group?: string, order?: number): void;
 	    regActionHandler(action: string | number, handler: Laya.Handler, group?: string): void;
 	    /** 注册游戏数据 */
-	    regGameAction(action: string | number, caller: any, method: Function, order?: number): void;
+	    regGameAction(action: string | number, caller: any, method: ParamHandler, order?: number): void;
 	    removeAllAction(...args: string[]): void;
 	    removeGroup(group: string): void;
 	    removeGroupActions(group: string, ...args: string[]): void;
@@ -1686,9 +1686,28 @@ declare namespace tsCore {
 	    private timerKit;
 	    private static initStop;
 	    /**
+	     * 运行应用引擎初始化流程
 	     *
-	     * @param init
-	     * @param options
+	     * 该方法负责启动整个应用程序的初始化过程，包括引擎初始化、资源配置等核心步骤。
+	     * 初始化过程采用异步方式执行，支持多个初始化阶段的回调控制。
+	     *
+	     * @param init 初始化引擎配置对象，包含各个阶段的回调函数
+	     * @param init.onRun 初始化运行前回调，可返回true来中断后续初始化流程
+	     * @param init.onEngine 引擎初始化完成后回调，可返回true来中断后续初始化流程
+	     * @param init.onEnd 所有初始化流程完成后的最终回调
+	     * @param init.onFail 初始化失败时的回调
+	     * @param options 应用初始化选项配置
+	     * @param options.laya Laya引擎初始化配置
+	     * @param options.laya.renders 渲染器数组，默认为[Laya.WebGL]
+	     * @param options.laya.width 游戏画布宽度，默认为720
+	     * @param options.laya.height 游戏画布高度，默认为1280
+	     * @param options.init 各组件初始化开关配置
+	     * @param options.init.laya 是否初始化Laya引擎，默认为true
+	     * @param options.init.fgui 是否初始化FGUI，默认为true
+	     * @param options.init.coreLib 是否初始化核心库，默认为true
+	     * @param options.resize 是否开启屏幕自适应，默认为true
+	     * @param options.isNotchEnable 是否启用刘海屏适配，默认为false
+	     *
 	     */
 	    static run(init?: IInitEngine, options?: InitApp): void;
 	    /** 设置默认竖屏布局 */
@@ -1710,7 +1729,7 @@ declare namespace tsCore {
 	    private onResize;
 	    protected initController(): void;
 	    regActionHandler(action: string | number, handler: Laya.Handler, group?: string): void;
-	    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void;
+	    regAction(action: string | number, caller: any, method: ParamHandler, group?: string, order?: number): void;
 	    removeAllAction(...args: string[]): void;
 	    removeGroup(group: string): void;
 	    removeGroupActions(group: string, ...args: any[]): void;
@@ -1780,7 +1799,7 @@ declare namespace tsCore {
 	     * @return
 	     */
 	    getGroup(groupKey: string): Map<string | number, Laya.Handler[]>;
-	    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void;
+	    regAction(action: string | number, caller: any, method: ParamHandler, group?: string, order?: number): void;
 	    clearView(): void;
 	    clearGroup(): void;
 	    removeAllAction(...args: string[]): void;
@@ -2217,7 +2236,7 @@ declare namespace tsCore {
 	     */
 	    static GAME_GROUP: string;
 	    /** 注册游戏数据 */
-	    regGameAction(action: string | number, caller: any, method: Function): void;
+	    regGameAction(action: string | number, caller: any, method: ParamHandler): void;
 	    /** 设置扩展 */
 	    protected insertExt<T extends fgui.GComponent>(pkgName: string, resName: string, clas: new () => T): void;
 	    /** 设置扩展 */
@@ -2322,7 +2341,7 @@ declare namespace tsCore {
 	    /** 设置扩展 */
 	    protected insertExtUrl<T extends fgui.GComponent>(url: string, clas: new () => T): void;
 	    /** 注册游戏数据 */
-	    regGameAction(action: string | number, caller: any, method: Function): void;
+	    regGameAction(action: string | number, caller: any, method: ParamHandler): void;
 	}
 	
 	const EWindow_base: Constructor<ActionEvent & StringBlock & fgui.Window & ViewProxy>;

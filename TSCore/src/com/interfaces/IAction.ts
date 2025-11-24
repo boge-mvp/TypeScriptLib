@@ -1,3 +1,4 @@
+
 export interface IAction {
 
     /**
@@ -16,7 +17,7 @@ export interface IAction {
      * @param group 分组集合
      * @param order 值越大 越后执行 默认 100
      */
-    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void
+    regAction(action: string | number, caller: any, method: ParamHandler, group?: string, order?: number): void
 
     /**
      * 删除所有分组中的此动作

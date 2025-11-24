@@ -72,9 +72,28 @@ export class App implements IAction {
     private static initStop: boolean | void = false
 
     /**
+     * 运行应用引擎初始化流程
      *
-     * @param init
-     * @param options
+     * 该方法负责启动整个应用程序的初始化过程，包括引擎初始化、资源配置等核心步骤。
+     * 初始化过程采用异步方式执行，支持多个初始化阶段的回调控制。
+     *
+     * @param init 初始化引擎配置对象，包含各个阶段的回调函数
+     * @param init.onRun 初始化运行前回调，可返回true来中断后续初始化流程
+     * @param init.onEngine 引擎初始化完成后回调，可返回true来中断后续初始化流程
+     * @param init.onEnd 所有初始化流程完成后的最终回调
+     * @param init.onFail 初始化失败时的回调
+     * @param options 应用初始化选项配置
+     * @param options.laya Laya引擎初始化配置
+     * @param options.laya.renders 渲染器数组，默认为[Laya.WebGL]
+     * @param options.laya.width 游戏画布宽度，默认为720
+     * @param options.laya.height 游戏画布高度，默认为1280
+     * @param options.init 各组件初始化开关配置
+     * @param options.init.laya 是否初始化Laya引擎，默认为true
+     * @param options.init.fgui 是否初始化FGUI，默认为true
+     * @param options.init.coreLib 是否初始化核心库，默认为true
+     * @param options.resize 是否开启屏幕自适应，默认为true
+     * @param options.isNotchEnable 是否启用刘海屏适配，默认为false
+     *
      */
     static run(init?: IInitEngine, options?: InitApp) {
         App.initEngine = init
@@ -211,7 +230,7 @@ export class App implements IAction {
         this._controller.regActionHandler(action, handler, group)
     }
 
-    regAction(action: string | number, caller: any, method: Function, group: string = null, order?: number) {
+    regAction(action: string | number, caller: any, method: ParamHandler, group: string = null, order?: number) {
         this._controller.regAction(action, caller, method, group, order)
     }
 

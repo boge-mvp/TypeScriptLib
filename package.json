@@ -4,10 +4,10 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "pack-install": "npm pack && for /f %i in ('dir /b *.tgz') do npm install -g %i",
+    "pack-install": "for /f %i in ('dir /b *.tgz') do npm install -g %i",
     "buildOnDel": "npm run pack-install && del *.tgz",
-    "pack": "npm pack",
-    "build-with-pack": "node packNpmLib.js packResources && npm run pack-install && node packNpmLib.js removeTemp",
+    "pack": "node packNpmLib.js packResources && npm pack",
+    "build-with-pack": "npm run pack && npm run pack-install && node packNpmLib.js removeTemp",
     "build": "npm run build-with-pack"
   },
   "repository": {

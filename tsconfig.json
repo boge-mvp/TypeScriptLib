@@ -4,6 +4,7 @@
     "target": "ES6",
     //  编译后的模块系统
     "module": "ES6",
+    "baseUrl": ".",
     // 生成 .d.ts 定义文件
     "declaration": true,
     // 去除注释
