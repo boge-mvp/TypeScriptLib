@@ -12,10 +12,25 @@ import {JSUtils} from "../utils/JSUtils"
 export class LoadingWindow extends BaseView {
 
     private static _instance: LoadingWindow
+    /**
+     * 用来判断是否已经初始化一次了
+     */
+    static isInit = false
 
     static get inst() {
-        this._instance ??= UIPackage.createObjectFromURL("//init/LoadingWindow", LoadingWindow) as LoadingWindow
+        if (this._instance == null && !this.isInit) {
+            this._instance = UIPackage.createObjectFromURL("//init/LoadingWindow", LoadingWindow) as LoadingWindow
+            this.isInit = true
+        }
         return this._instance
+    }
+
+    static hide() {
+        this.inst?.hide()
+    }
+
+    static show(index?: number, headText?: string) {
+        this.inst?.show(index, headText)
     }
 
     private headText: string
@@ -79,11 +94,14 @@ export class LoadingWindow extends BaseView {
      * @param tempCount 当前加载进度模块 1 开始
      * @param totalCount 总共要加载的模块数
      */
-    updateMsg(value: number, tempCount = 1, totalCount = 1) {
+    static updateMsg(value: number, tempCount = 1, totalCount = 1) {
 //			trace("LoadingWindow.updateMsg(vlaue)", value+"%")
-        this.tempValue = LoadingWindow.getProgress(value, tempCount, totalCount)
-        JSUtils.getProgress(this.tempValue)
-        this.mesText.text = this.getMsg() + this.tempValue.toFixed(2) + "%"
+        const temp = LoadingWindow.getProgress(value, tempCount, totalCount)
+        if (this._instance) {
+            this._instance.tempValue = temp
+            this._instance.mesText.text = this._instance.getMsg() + temp.toFixed(2) + "%"
+        }
+        JSUtils.getProgress(temp)
     }
 
     /**

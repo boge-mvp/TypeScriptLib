@@ -1185,7 +1185,13 @@ declare namespace gameLib {
 	/** 加载界面 */
 	export class LoadingWindow extends BaseView {
 	    private static _instance;
+	    /**
+	     * 用来判断是否已经初始化一次了
+	     */
+	    static isInit: boolean;
 	    static get inst(): LoadingWindow;
+	    static hide(): void;
+	    static show(index?: number, headText?: string): void;
 	    private headText;
 	    private loader;
 	    private mesText;
@@ -1214,7 +1220,7 @@ declare namespace gameLib {
 	     * @param tempCount 当前加载进度模块 1 开始
 	     * @param totalCount 总共要加载的模块数
 	     */
-	    updateMsg(value: number, tempCount?: number, totalCount?: number): void;
+	    static updateMsg(value: number, tempCount?: number, totalCount?: number): void;
 	    /**
 	     * 更新进度
 	     * @param value 当前模块进度值

@@ -276,12 +276,12 @@ export class AssetsLoader implements IFormatPath {
             let pro = parseInt(data * 100 + "")
             if (Render.isConchApp) {
 //                AppManager.showLoadingPro(pro, 2, 4)
-                LoadingWindow.inst.updateMsg(pro, 2, 4)
+                LoadingWindow.updateMsg(pro, 2, 4)
             } else {
                 if (Player.inst.urlParam.isJumpPage()) {
-                    LoadingWindow.inst.updateMsg(pro, 2, 4)
+                    LoadingWindow.updateMsg(pro, 2, 4)
                 } else {
-                    LoadingWindow.inst.updateMsg(pro, 2, 2)
+                    LoadingWindow.updateMsg(pro, 2, 2)
                 }
             }
         }
@@ -339,12 +339,12 @@ export class AssetsLoader implements IFormatPath {
         let pro = Utils.parseInt(e * 100 + "")
         if (Render.isConchApp) {
 //            AppManager.showLoadingPro(pro, 3, 4)
-            LoadingWindow.inst.updateMsg(pro, 3, 4)
+            LoadingWindow.updateMsg(pro, 3, 4)
         } else {
             if (Player.inst.urlParam.isJumpPage()) {
-                LoadingWindow.inst.updateMsg(pro, 3, 4)
+                LoadingWindow.updateMsg(pro, 3, 4)
             } else {
-                LoadingWindow.inst.updateMsg(pro, 1, 1)
+                LoadingWindow.updateMsg(pro, 1, 1)
             }
         }
     }
@@ -550,12 +550,12 @@ export class AssetsLoader implements IFormatPath {
         }
         if (Render.isConchApp) {
 //            AppManager.showLoadingPro(pro, 4, 4)
-            LoadingWindow.inst.updateMsg(pro, 4, 4)
+            LoadingWindow.updateMsg(pro, 4, 4)
         } else {
             if (Player.inst.urlParam.isJumpPage()) {
-                LoadingWindow.inst.updateMsg(pro, 4, 4)
+                LoadingWindow.updateMsg(pro, 4, 4)
             } else {
-                LoadingWindow.inst.updateMsg(pro, 1, 1)
+                LoadingWindow.updateMsg(pro, 1, 1)
             }
         }
     }

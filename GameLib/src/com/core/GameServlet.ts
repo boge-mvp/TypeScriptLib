@@ -195,7 +195,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
     protected enterFail(isTip = true, message?: string, request?: AjaxRequest) {
         Player.inst.gameId = CommonCmd.GAME_HOME
         GRoot.inst.closeModalWait()
-        LoadingWindow.inst.hide()
+        LoadingWindow.hide()
         JSUtils.alert(message ? message : getString(LibStr.GAME_OFF))
         JSUtils.gameClose()
         if (isTip) MessageTip.showTip(message ? message : LibStr.GAME_OFF)

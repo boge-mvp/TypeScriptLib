@@ -75,7 +75,7 @@ export class StateCode {
                     return true
                 }
                 GRoot.inst.closeModalWait()
-                LoadingWindow.inst.hide()
+                LoadingWindow.hide()
                 HtmlWindow.inst.hide()
                 if (typeof msg === "object") msg = this.getShowMessage(msg)
                 msg = msg ? msg : getString(LibStr.FIRST_LOG)

@@ -1836,9 +1836,19 @@ function _FguiBindView(classTarget, url) {
 	        this.tempValue = 0;
 	    }
 	    static get inst() {
-	        var _a;
-	        (_a = this._instance) !== null && _a !== void 0 ? _a : (this._instance = fgui.UIPackage.createObjectFromURL("//init/LoadingWindow", LoadingWindow));
+	        if (this._instance == null && !this.isInit) {
+	            this._instance = fgui.UIPackage.createObjectFromURL("//init/LoadingWindow", LoadingWindow);
+	            this.isInit = true;
+	        }
 	        return this._instance;
+	    }
+	    static hide() {
+	        var _a;
+	        (_a = this.inst) === null || _a === void 0 ? void 0 : _a.hide();
+	    }
+	    static show(index, headText) {
+	        var _a;
+	        (_a = this.inst) === null || _a === void 0 ? void 0 : _a.show(index, headText);
 	    }
 	    onInit() {
 	        this.controller = this.getController("c1");
@@ -1885,11 +1895,14 @@ function _FguiBindView(classTarget, url) {
 	     * @param tempCount 当前加载进度模块 1 开始
 	     * @param totalCount 总共要加载的模块数
 	     */
-	    updateMsg(value, tempCount = 1, totalCount = 1) {
+	    static updateMsg(value, tempCount = 1, totalCount = 1) {
 	        //			trace("LoadingWindow.updateMsg(vlaue)", value+"%")
-	        this.tempValue = LoadingWindow.getProgress(value, tempCount, totalCount);
-	        JSUtils.getProgress(this.tempValue);
-	        this.mesText.text = this.getMsg() + this.tempValue.toFixed(2) + "%";
+	        const temp = LoadingWindow.getProgress(value, tempCount, totalCount);
+	        if (this._instance) {
+	            this._instance.tempValue = temp;
+	            this._instance.mesText.text = this._instance.getMsg() + temp.toFixed(2) + "%";
+	        }
+	        JSUtils.getProgress(temp);
 	    }
 	    /**
 	     * 更新进度
@@ -1935,6 +1948,10 @@ function _FguiBindView(classTarget, url) {
 	        this.removeFromParent();
 	    }
 	}
+	/**
+	 * 用来判断是否已经初始化一次了
+	 */
+	LoadingWindow.isInit = false;
 	
 	gameLib.LoadingWindow = LoadingWindow
 	
@@ -2864,7 +2881,7 @@ function _FguiBindView(classTarget, url) {
 	                    return true;
 	                }
 	                fgui.GRoot.inst.closeModalWait();
-	                LoadingWindow.inst.hide();
+	                LoadingWindow.hide();
 	                HtmlWindow.inst.hide();
 	                if (typeof msg === "object")
 	                    msg = this.getShowMessage(msg);
@@ -3062,7 +3079,7 @@ function _FguiBindView(classTarget, url) {
 	    enterFail(isTip = true, message, request) {
 	        Player.inst.gameId = CommonCmd.GAME_HOME;
 	        fgui.GRoot.inst.closeModalWait();
-	        LoadingWindow.inst.hide();
+	        LoadingWindow.hide();
 	        JSUtils.alert(message ? message : getString(LibStr.GAME_OFF));
 	        JSUtils.gameClose();
 	        if (isTip)
@@ -3688,14 +3705,14 @@ function _FguiBindView(classTarget, url) {
 	            let pro = parseInt(data * 100 + "");
 	            if (Laya.Render.isConchApp) {
 	                //                AppManager.showLoadingPro(pro, 2, 4)
-	                LoadingWindow.inst.updateMsg(pro, 2, 4);
+	                LoadingWindow.updateMsg(pro, 2, 4);
 	            }
 	            else {
 	                if (Player.inst.urlParam.isJumpPage()) {
-	                    LoadingWindow.inst.updateMsg(pro, 2, 4);
+	                    LoadingWindow.updateMsg(pro, 2, 4);
 	                }
 	                else {
-	                    LoadingWindow.inst.updateMsg(pro, 2, 2);
+	                    LoadingWindow.updateMsg(pro, 2, 2);
 	                }
 	            }
 	        }
@@ -3743,14 +3760,14 @@ function _FguiBindView(classTarget, url) {
 	        let pro = Laya.Utils.parseInt(e * 100 + "");
 	        if (Laya.Render.isConchApp) {
 	            //            AppManager.showLoadingPro(pro, 3, 4)
-	            LoadingWindow.inst.updateMsg(pro, 3, 4);
+	            LoadingWindow.updateMsg(pro, 3, 4);
 	        }
 	        else {
 	            if (Player.inst.urlParam.isJumpPage()) {
-	                LoadingWindow.inst.updateMsg(pro, 3, 4);
+	                LoadingWindow.updateMsg(pro, 3, 4);
 	            }
 	            else {
-	                LoadingWindow.inst.updateMsg(pro, 1, 1);
+	                LoadingWindow.updateMsg(pro, 1, 1);
 	            }
 	        }
 	    }
@@ -3949,14 +3966,14 @@ function _FguiBindView(classTarget, url) {
 	        }
 	        if (Laya.Render.isConchApp) {
 	            //            AppManager.showLoadingPro(pro, 4, 4)
-	            LoadingWindow.inst.updateMsg(pro, 4, 4);
+	            LoadingWindow.updateMsg(pro, 4, 4);
 	        }
 	        else {
 	            if (Player.inst.urlParam.isJumpPage()) {
-	                LoadingWindow.inst.updateMsg(pro, 4, 4);
+	                LoadingWindow.updateMsg(pro, 4, 4);
 	            }
 	            else {
-	                LoadingWindow.inst.updateMsg(pro, 1, 1);
+	                LoadingWindow.updateMsg(pro, 1, 1);
 	            }
 	        }
 	    }
@@ -4482,7 +4499,7 @@ function _FguiBindView(classTarget, url) {
 	            AppRecordManager.JavaSendOpen(AppRecordManager.executeJson);
 	        }
 	        else {
-	            LoadingWindow.inst.hide();
+	            LoadingWindow.hide();
 	        }
 	    }
 	    /**
@@ -4606,7 +4623,7 @@ function _FguiBindView(classTarget, url) {
 	            code = GameConfigKit.gameCode(config);
 	        if (!config || code <= 0) {
 	            tsCore.Log.error("config = " + config, "code = " + code);
-	            LoadingWindow.inst.hide();
+	            LoadingWindow.hide();
 	            JSUtils.alert(getString(LibStr.GAME_NOT_FOUND));
 	            JSUtils.gameClose();
 	            return;
@@ -4724,7 +4741,7 @@ function _FguiBindView(classTarget, url) {
 	    /** 检查游戏状态 */
 	    checkGameState(data) {
 	        if ((data === null || data === void 0 ? void 0 : data.code) == -1) {
-	            LoadingWindow.inst.hide();
+	            LoadingWindow.hide();
 	            JSUtils.alert(StateCode.getShowMessage(data));
 	            JSUtils.gameClose();
 	            return;
@@ -4785,7 +4802,7 @@ function _FguiBindView(classTarget, url) {
 	                Player.inst.guestModel.guestPlayCount = 0;
 	                tsCore.Log.debug("call close loading");
 	                if (GameConfigKit.autoSendOnLoadEnd) {
-	                    LoadingWindow.inst.hide();
+	                    LoadingWindow.hide();
 	                    JSUtils.gameOnload();
 	                }
 	            });
@@ -4803,7 +4820,7 @@ function _FguiBindView(classTarget, url) {
 	            return;
 	        }
 	        PromptWindow.inst.showTip(LibStr.NET_ERROR, Laya.Handler.create(this, function () {
-	            LoadingWindow.inst.hide();
+	            LoadingWindow.hide();
 	            JSUtils.gameClose();
 	            Player.inst.gameId = CommonCmd.GAME_HOME;
 	        }));

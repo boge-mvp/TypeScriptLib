@@ -83,7 +83,7 @@ export class SceneManager extends EProxy {
         if (AppRecordManager.executeJson) {
             AppRecordManager.JavaSendOpen(AppRecordManager.executeJson)
         } else {
-            LoadingWindow.inst.hide()
+            LoadingWindow.hide()
         }
     }
 
@@ -221,7 +221,7 @@ export class SceneManager extends EProxy {
         if (code <= 0 && config) code = GameConfigKit.gameCode(config)
         if (!config || code <= 0) {
             Log.error("config = " + config, "code = " + code)
-            LoadingWindow.inst.hide()
+            LoadingWindow.hide()
             JSUtils.alert(getString(LibStr.GAME_NOT_FOUND))
             JSUtils.gameClose()
             return
@@ -353,7 +353,7 @@ export class SceneManager extends EProxy {
     /** 检查游戏状态 */
     private checkGameState(data: any) {
         if (data?.code == -1) {
-            LoadingWindow.inst.hide()
+            LoadingWindow.hide()
             JSUtils.alert(StateCode.getShowMessage(data))
             JSUtils.gameClose()
             return
@@ -418,7 +418,7 @@ export class SceneManager extends EProxy {
                 Player.inst.guestModel.guestPlayCount = 0
                 Log.debug("call close loading")
                 if (GameConfigKit.autoSendOnLoadEnd) {
-                    LoadingWindow.inst.hide()
+                    LoadingWindow.hide()
                     JSUtils.gameOnload()
                 }
             })
@@ -437,7 +437,7 @@ export class SceneManager extends EProxy {
             return
         }
         PromptWindow.inst.showTip(LibStr.NET_ERROR, Handler.create(this, function () {
-            LoadingWindow.inst.hide()
+            LoadingWindow.hide()
             JSUtils.gameClose()
             Player.inst.gameId = CommonCmd.GAME_HOME
         }))
