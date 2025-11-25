@@ -18,7 +18,8 @@ export class EventController implements IController {
 
     private static _CLSID = 0
 
-    regActionHandler(action: string | number, handler: Laya.Handler, group?: string) {
+    regActionHandler(action: string | number, handler: Laya.Handler, group?: string, order?: number) {
+        handler.order = order
         let groupObj = this.getGroup(group)
         // 获取此分组下  action 的执行函数存储数组
         groupObj.getOrPut(action, () => []).push(handler)
@@ -36,12 +37,9 @@ export class EventController implements IController {
         return this.eventGroup.getOrPut(groupKey, () => new Map())
     }
 
-    regAction(action: string | number, caller: any, method: ParamHandler, group?: string, order?: number) {
-        if (!(method instanceof Laya.Handler)) {
-            method = new Laya.Handler(caller, method)
-        }
-        method.order = order
-        this.regActionHandler(action, method, group)
+    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number) {
+        const handler = new Laya.Handler(caller, method)
+        this.regActionHandler(action, handler, group, order)
     }
 
     clearView() {

@@ -226,11 +226,11 @@ export class App implements IAction {
         this._controller = new EventController()
     }
 
-    regActionHandler(action: string | number, handler: Handler, group: string = null) {
-        this._controller.regActionHandler(action, handler, group)
+    regActionHandler(action: string | number, handler: Handler, group: string = null, order?: number) {
+        this._controller.regActionHandler(action, handler, group, order)
     }
 
-    regAction(action: string | number, caller: any, method: ParamHandler, group: string = null, order?: number) {
+    regAction(action: string | number, caller: any, method: Function, group: string = null, order?: number) {
         this._controller.regAction(action, caller, method, group, order)
     }
 

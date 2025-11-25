@@ -3026,8 +3026,8 @@ class RandomTimerSingle extends RandomTimer {
 	    regAction(action, caller, method, group, order) {
 	        App.inst.regAction(action, caller, method, group, order);
 	    }
-	    regActionHandler(action, handler, group) {
-	        App.inst.regActionHandler(action, handler, group);
+	    regActionHandler(action, handler, group, order) {
+	        App.inst.regActionHandler(action, handler, group, order);
 	    }
 	    /** 注册游戏数据 */
 	    regGameAction(action, caller, method, order) {
@@ -4630,8 +4630,8 @@ class RandomTimerSingle extends RandomTimer {
 	    initController() {
 	        this._controller = new EventController();
 	    }
-	    regActionHandler(action, handler, group = null) {
-	        this._controller.regActionHandler(action, handler, group);
+	    regActionHandler(action, handler, group = null, order) {
+	        this._controller.regActionHandler(action, handler, group, order);
 	    }
 	    regAction(action, caller, method, group = null, order) {
 	        this._controller.regAction(action, caller, method, group, order);
@@ -4787,7 +4787,8 @@ class RandomTimerSingle extends RandomTimer {
 	         */
 	        this.cacheClassTarget = new Map();
 	    }
-	    regActionHandler(action, handler, group) {
+	    regActionHandler(action, handler, group, order) {
+	        handler.order = order;
 	        let groupObj = this.getGroup(group);
 	        // 获取此分组下  action 的执行函数存储数组
 	        groupObj.getOrPut(action, () => []).push(handler);
@@ -4804,11 +4805,8 @@ class RandomTimerSingle extends RandomTimer {
 	        return this.eventGroup.getOrPut(groupKey, () => new Map());
 	    }
 	    regAction(action, caller, method, group, order) {
-	        if (!(method instanceof Laya.Handler)) {
-	            method = new Laya.Handler(caller, method);
-	        }
-	        method.order = order;
-	        this.regActionHandler(action, method, group);
+	        const handler = new Laya.Handler(caller, method);
+	        this.regActionHandler(action, handler, group, order);
 	    }
 	    clearView() {
 	        this.cacheTarget.clear();

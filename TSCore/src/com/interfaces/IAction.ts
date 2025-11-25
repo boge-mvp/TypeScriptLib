@@ -6,8 +6,9 @@ export interface IAction {
      * @param action 事件名字
      * @param handler 处理事件函数
      * @param group 分组集合
+     * @param order 值越大 越后执行 默认 100
      */
-    regActionHandler(action: string | number, handler: Laya.Handler, group?: string): void
+    regActionHandler(action: string | number, handler: Laya.Handler, group?: string, order?: number): void
 
     /**
      * 注册事件
@@ -17,7 +18,7 @@ export interface IAction {
      * @param group 分组集合
      * @param order 值越大 越后执行 默认 100
      */
-    regAction(action: string | number, caller: any, method: ParamHandler, group?: string, order?: number): void
+    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void
 
     /**
      * 删除所有分组中的此动作

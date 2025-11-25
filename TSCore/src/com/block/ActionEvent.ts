@@ -3,16 +3,16 @@ import {App} from "../App";
 
 export class ActionEvent implements IAction {
 
-    regAction(action: string | number, caller: any, method: ParamHandler, group?: string, order?: number) {
+    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number) {
         App.inst.regAction(action, caller, method, group, order)
     }
 
-    regActionHandler(action: string | number, handler: Laya.Handler, group?: string) {
-        App.inst.regActionHandler(action, handler, group)
+    regActionHandler(action: string | number, handler: Laya.Handler, group?: string, order?: number) {
+        App.inst.regActionHandler(action, handler, group, order)
     }
 
     /** 注册游戏数据 */
-    regGameAction(action: string | number, caller: any, method: ParamHandler, order?: number) {
+    regGameAction(action: string | number, caller: any, method: Function, order?: number) {
         this.regAction(action, caller, method, App.GAME_GROUP, order)
     }
 

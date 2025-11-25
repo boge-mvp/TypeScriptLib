@@ -379,8 +379,9 @@ declare namespace tsCore {
 	     * @param action 事件名字
 	     * @param handler 处理事件函数
 	     * @param group 分组集合
+	     * @param order 值越大 越后执行 默认 100
 	     */
-	    regActionHandler(action: string | number, handler: Laya.Handler, group?: string): void;
+	    regActionHandler(action: string | number, handler: Laya.Handler, group?: string, order?: number): void;
 	    /**
 	     * 注册事件
 	     * @param action 事件名字
@@ -389,7 +390,7 @@ declare namespace tsCore {
 	     * @param group 分组集合
 	     * @param order 值越大 越后执行 默认 100
 	     */
-	    regAction(action: string | number, caller: any, method: ParamHandler, group?: string, order?: number): void;
+	    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void;
 	    /**
 	     * 删除所有分组中的此动作
 	     * @param args 动作名字
@@ -1430,10 +1431,10 @@ declare namespace tsCore {
 	}
 	
 	export class ActionEvent implements IAction {
-	    regAction(action: string | number, caller: any, method: ParamHandler, group?: string, order?: number): void;
-	    regActionHandler(action: string | number, handler: Laya.Handler, group?: string): void;
+	    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void;
+	    regActionHandler(action: string | number, handler: Laya.Handler, group?: string, order?: number): void;
 	    /** 注册游戏数据 */
-	    regGameAction(action: string | number, caller: any, method: ParamHandler, order?: number): void;
+	    regGameAction(action: string | number, caller: any, method: Function, order?: number): void;
 	    removeAllAction(...args: string[]): void;
 	    removeGroup(group: string): void;
 	    removeGroupActions(group: string, ...args: string[]): void;
@@ -1728,8 +1729,8 @@ declare namespace tsCore {
 	    openResize(): void;
 	    private onResize;
 	    protected initController(): void;
-	    regActionHandler(action: string | number, handler: Laya.Handler, group?: string): void;
-	    regAction(action: string | number, caller: any, method: ParamHandler, group?: string, order?: number): void;
+	    regActionHandler(action: string | number, handler: Laya.Handler, group?: string, order?: number): void;
+	    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void;
 	    removeAllAction(...args: string[]): void;
 	    removeGroup(group: string): void;
 	    removeGroupActions(group: string, ...args: any[]): void;
@@ -1792,14 +1793,14 @@ declare namespace tsCore {
 	     */
 	    private cacheClassTarget;
 	    private static _CLSID;
-	    regActionHandler(action: string | number, handler: Laya.Handler, group?: string): void;
+	    regActionHandler(action: string | number, handler: Laya.Handler, group?: string, order?: number): void;
 	    /**
 	     * 分组存储对象
 	     * @param groupKey 分组key
 	     * @return
 	     */
 	    getGroup(groupKey: string): Map<string | number, Laya.Handler[]>;
-	    regAction(action: string | number, caller: any, method: ParamHandler, group?: string, order?: number): void;
+	    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void;
 	    clearView(): void;
 	    clearGroup(): void;
 	    removeAllAction(...args: string[]): void;
@@ -2236,7 +2237,7 @@ declare namespace tsCore {
 	     */
 	    static GAME_GROUP: string;
 	    /** 注册游戏数据 */
-	    regGameAction(action: string | number, caller: any, method: ParamHandler): void;
+	    regGameAction(action: string | number, caller: any, method: Function): void;
 	    /** 设置扩展 */
 	    protected insertExt<T extends fgui.GComponent>(pkgName: string, resName: string, clas: new () => T): void;
 	    /** 设置扩展 */
@@ -2341,7 +2342,7 @@ declare namespace tsCore {
 	    /** 设置扩展 */
 	    protected insertExtUrl<T extends fgui.GComponent>(url: string, clas: new () => T): void;
 	    /** 注册游戏数据 */
-	    regGameAction(action: string | number, caller: any, method: ParamHandler): void;
+	    regGameAction(action: string | number, caller: any, method: Function): void;
 	}
 	
 	const EWindow_base: Constructor<ActionEvent & StringBlock & fgui.Window & ViewProxy>;

@@ -13,7 +13,7 @@ export class EProxy extends Proxys {
     static GAME_GROUP = App.GAME_GROUP
 
     /** 注册游戏数据 */
-    override regGameAction(action: string | number, caller: any, method: ParamHandler) {
+    override regGameAction(action: string | number, caller: any, method: Function) {
         super.regAction(action, caller, method, App.GAME_GROUP)
     }
 
