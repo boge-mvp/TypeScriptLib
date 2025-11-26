@@ -291,19 +291,13 @@ export class SceneManager extends EProxy {
 
     private loadGameJs() {
         let obj = GameConfigKit.gameRes()
-        let res = obj.res
-        let resName = Player.inst.gameName
-        let tempStr: string
-        for (let i = 0; i < res.length; i++) {
-            tempStr = res[i].url
-            if (tempStr.endsWith(fgui.UIConfig.packageFileExtension)) {
-                resName = StringUtil.remove(tempStr, "." + fgui.UIConfig.packageFileExtension)
-            }
+        if (obj.js) {
+            // 加载游戏的js文件
+            AssetsLoader.inst.loadJS(Player.inst.gameName, Handler.create(this, this.loadJsComplete),
+                Handler.create(this, this.loadResErrorHandler))
+        } else {
+            this.loadJsComplete()
         }
-
-        // 加载游戏的js文件
-        AssetsLoader.inst.loadJS(Player.inst.gameName, Handler.create(this, this.loadJsComplete),
-            Handler.create(this, this.loadResErrorHandler))
     }
 
     private loadJsComplete() {

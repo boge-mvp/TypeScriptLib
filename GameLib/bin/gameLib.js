@@ -3756,6 +3756,10 @@ function _FguiBindView(classTarget, url) {
 	     */
 	    loadJS(config, handler, errorHandler) {
 	        let obj = GameConfigKit.gameRes(config);
+	        if ((obj === null || obj === void 0 ? void 0 : obj.js) == null) {
+	            runFun(errorHandler);
+	            return;
+	        }
 	        let jsName = "js/" + obj.js + ".min.js";
 	        this.loadJsProgress(0);
 	        tsCore.ELoader.loader.load(jsName, Laya.Handler.create(this, loadJsComplete), new Laya.Handler(this.loadJsProgress), Laya.Loader.TEXT);
@@ -4705,17 +4709,13 @@ function _FguiBindView(classTarget, url) {
 	    }
 	    loadGameJs() {
 	        let obj = GameConfigKit.gameRes();
-	        let res = obj.res;
-	        let resName = Player.inst.gameName;
-	        let tempStr;
-	        for (let i = 0; i < res.length; i++) {
-	            tempStr = res[i].url;
-	            if (tempStr.endsWith(fgui.UIConfig.packageFileExtension)) {
-	                resName = tsCore.StringUtil.remove(tempStr, "." + fgui.UIConfig.packageFileExtension);
-	            }
+	        if (obj.js) {
+	            // 加载游戏的js文件
+	            AssetsLoader.inst.loadJS(Player.inst.gameName, Laya.Handler.create(this, this.loadJsComplete), Laya.Handler.create(this, this.loadResErrorHandler));
 	        }
-	        // 加载游戏的js文件
-	        AssetsLoader.inst.loadJS(Player.inst.gameName, Laya.Handler.create(this, this.loadJsComplete), Laya.Handler.create(this, this.loadResErrorHandler));
+	        else {
+	            this.loadJsComplete();
+	        }
 	    }
 	    loadJsComplete() {
 	        let obj = GameConfigKit.gameRes();

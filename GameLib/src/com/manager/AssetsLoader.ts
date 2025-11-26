@@ -311,6 +311,10 @@ export class AssetsLoader implements IFormatPath {
      */
     loadJS(config: string, handler: ParamHandler, errorHandler?: ParamHandler) {
         let obj = GameConfigKit.gameRes(config)
+        if (obj?.js == null) {
+            runFun(errorHandler)
+            return
+        }
         let jsName = "js/" + obj.js + ".min.js"
         this.loadJsProgress(0)
         ELoader.loader.load(jsName, Laya.Handler.create(this, loadJsComplete),
