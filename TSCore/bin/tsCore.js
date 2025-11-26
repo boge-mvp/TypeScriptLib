@@ -285,6 +285,9 @@ String.prototype.endsWithAnyIgnore = function (...search) {
     const lowerCase = this.toLowerCase();
     return search.some((value) => lowerCase.endsWith(value.toLowerCase()));
 };
+String.prototype.equals = function (value, ignoreCase = false) {
+    return ignoreCase ? this.toLowerCase() === value.toLowerCase() : this === value;
+};
 String.prototype.equalsAny = function (...value) {
     const that = this.valueOf();
     return value.some((it) => that === it);
@@ -369,8 +372,18 @@ String.prototype.substringsBetween = function (open, close) {
     }
     return list;
 };
+String.prototype.remove = function (value) {
+    return this === null || this === void 0 ? void 0 : this.replace(value, "");
+};
+String.prototype.removeAll = function (value) {
+    return this.replaceAll(value, "");
+};
+String.prototype.removeAllWhitespace = function () {
+    return this === null || this === void 0 ? void 0 : this.replace(/\s/g, "");
+};
 String.prototype.toBoolean = function () {
-    return this !== null && this.trim().length > 0 && !this.equalsAnyIgnore("false", "0");
+    var _a;
+    return ((_a = this === null || this === void 0 ? void 0 : this.trim()) === null || _a === void 0 ? void 0 : _a.length) > 0 && !this.equalsAnyIgnore("false", "0");
 };
 String.prototype.toInt = function () {
     let value = 0;
@@ -1383,7 +1396,8 @@ class RandomTimerSingle extends RandomTimer {
 	     * 忽略大小字母比较字符是否相等
 	     * @param char1 字符串一
 	     * @param char2 字符串二
-	     * @return
+	     * @deprecated
+	     * @see String.equals
 	     */
 	    static equalsIgnoreCase(char1, char2) {
 	        return char1.toLowerCase() == char2.toLowerCase();
@@ -1549,15 +1563,11 @@ class RandomTimerSingle extends RandomTimer {
 	     * @param s1 第一个比较字符串。
 	     * @param s2 第二个比较字符串。
 	     * @param caseSensitive 是否区分大小写  默认不区分
-	     * @return
+	     * @deprecated
+	     * @see String.equals
 	     */
 	    static stringsAreEqual(s1, s2, caseSensitive = false) {
-	        if (caseSensitive) {
-	            return (s1 == s2);
-	        }
-	        else {
-	            return (s1.toUpperCase() == s2.toUpperCase());
-	        }
+	        return s1.equals(s2, caseSensitive);
 	    }
 	    /**
 	     * 去除首位的空白部分
@@ -1571,20 +1581,11 @@ class RandomTimerSingle extends RandomTimer {
 	    /**
 	     * 去除所有的空白部分
 	     * @param input 要被处理的字符串
-	     * @return
-	     *
+	     * @deprecated
+	     * @see String.removeAllWhitespace
 	     */
 	    static trimAll(input) {
-	        if (!input)
-	            return null;
-	        let value = "";
-	        let size = input.length;
-	        for (let i = 0; i < size; i++) {
-	            if (input.charCodeAt(i) > 32) {
-	                value += input.charAt(i);
-	            }
-	        }
-	        return value;
+	        return input === null || input === void 0 ? void 0 : input.removeAllWhitespace();
 	    }
 	    /**
 	     * 从前面指定的字符串中删除空格。
@@ -1651,7 +1652,8 @@ class RandomTimerSingle extends RandomTimer {
 	     * 删除在输入字符串中删除字符串的所有实例。
 	     * @param input 要被处理的字符串
 	     * @param remove 要删除的字符串
-	     * @return
+	     * @deprecated
+	     * @see String.removeAll
 	     */
 	    static remove(input, remove) {
 	        return this.replace(input, remove, "");
@@ -1661,6 +1663,8 @@ class RandomTimerSingle extends RandomTimer {
 	     * @param input 要被处理的字符串
 	     * @param replace 要被替换掉的字符串
 	     * @param replaceWith 用来替换的新字符串
+	     * @deprecated
+	     * @see String.replaceAll
 	     */
 	    static replace(input, replace, replaceWith) {
 	        return input.split(replace).join(replaceWith);
@@ -1729,6 +1733,16 @@ class RandomTimerSingle extends RandomTimer {
 	        return input;
 	    }
 	    /**
+	     * 判断此字符串中是否包含
+	     * @param value
+	     * @param arge
+	     * @deprecated
+	     * @see String.contains
+	     */
+	    static contains(value, ...arge) {
+	        return value === null || value === void 0 ? void 0 : value.contains(...arge);
+	    }
+	    /**
 	     * 字符串与对象进行比较。按字典顺序比较两个字符串
 	     * @param value 源字符串
 	     * @param anotherString 要比较的字符串
@@ -1771,16 +1785,6 @@ class RandomTimerSingle extends RandomTimer {
 	        return url;
 	    }
 	    /**
-	     * 判断此字符串中是否包含
-	     * @param value
-	     * @param arge
-	     * @deprecated
-	     * @see String.contains
-	     */
-	    static contains(value, ...arge) {
-	        return value === null || value === void 0 ? void 0 : value.contains(...arge);
-	    }
-	    /**
 	     * 将 Uint8Array 转换成16进制颜色值  至少保证3个值
 	     * @param value 数据
 	     * @param defaultColor 默认值  如果不满足要求  直接返回的值 默认#ffffff
@@ -1814,32 +1818,17 @@ class RandomTimerSingle extends RandomTimer {
 	                tempValue = parseFloat(value);
 	                break;
 	            case "boolean":
-	                if (this.isNumber(value)) {
-	                    tempValue = Laya.Utils.parseInt(value) > 0;
-	                }
-	                else {
-	                    tempValue = value == "true";
-	                }
+	                tempValue = value.toBoolean();
 	                break;
 	            case "array":
 	                tempValue = value.split(",");
 	                break;
 	            case "array,int":
-	                tempValue = value.split(",");
-	                for (let j = 0, len = tempValue.length; j < len; j++) {
-	                    tempValue[j] = this.changeType(tempValue[j], "int");
-	                }
-	                break;
 	            case "array,number":
-	                tempValue = value.split(",");
-	                for (let j = 0, len = tempValue.length; j < len; j++) {
-	                    tempValue[j] = this.changeType(tempValue[j], "number");
-	                }
-	                break;
 	            case "array,uint":
 	                tempValue = value.split(",");
 	                for (let j = 0, len = tempValue.length; j < len; j++) {
-	                    tempValue[j] = this.changeType(tempValue[j], "uint");
+	                    tempValue[j] = this.changeType(tempValue[j], "number");
 	                }
 	                break;
 	        }

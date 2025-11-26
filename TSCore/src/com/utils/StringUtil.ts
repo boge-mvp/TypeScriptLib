@@ -1,4 +1,4 @@
-import Utils = Laya.Utils
+
 
 /**
  * 字符串一些常用方法。
@@ -35,7 +35,8 @@ export class StringUtil {
      * 忽略大小字母比较字符是否相等
      * @param char1 字符串一
      * @param char2 字符串二
-     * @return
+     * @deprecated
+     * @see String.equals
      */
     static equalsIgnoreCase(char1: string, char2: string) {
         return char1.toLowerCase() == char2.toLowerCase()
@@ -212,19 +213,18 @@ export class StringUtil {
         return char ? pattern.test(char.trim()) : false
     }
 
+
+
     /**
      * 比较两个字符串是否相等
      * @param s1 第一个比较字符串。
      * @param s2 第二个比较字符串。
      * @param caseSensitive 是否区分大小写  默认不区分
-     * @return
+     * @deprecated
+     * @see String.equals
      */
     static stringsAreEqual(s1: string, s2: string, caseSensitive = false) {
-        if (caseSensitive) {
-            return (s1 == s2)
-        } else {
-            return (s1.toUpperCase() == s2.toUpperCase())
-        }
+        return s1.equals(s2, caseSensitive)
     }
 
     /**
@@ -240,19 +240,11 @@ export class StringUtil {
     /**
      * 去除所有的空白部分
      * @param input 要被处理的字符串
-     * @return
-     *
+     * @deprecated
+     * @see String.removeAllWhitespace
      */
     static trimAll(input: string | null) {
-        if (!input) return null
-        let value = ""
-        let size = input.length
-        for (let i = 0; i < size; i++) {
-            if (input.charCodeAt(i) > 32) {
-                value += input.charAt(i)
-            }
-        }
-        return value
+        return input?.removeAllWhitespace()
     }
 
     /**
@@ -326,7 +318,8 @@ export class StringUtil {
      * 删除在输入字符串中删除字符串的所有实例。
      * @param input 要被处理的字符串
      * @param remove 要删除的字符串
-     * @return
+     * @deprecated
+     * @see String.removeAll
      */
     static remove(input: string, remove: string) {
         return this.replace(input, remove, "")
@@ -337,6 +330,8 @@ export class StringUtil {
      * @param input 要被处理的字符串
      * @param replace 要被替换掉的字符串
      * @param replaceWith 用来替换的新字符串
+     * @deprecated
+     * @see String.replaceAll
      */
     static replace(input: string, replace: string, replaceWith: string) {
         return input.split(replace).join(replaceWith)
@@ -403,6 +398,18 @@ export class StringUtil {
         return input
     }
 
+
+    /**
+     * 判断此字符串中是否包含
+     * @param value
+     * @param arge
+     * @deprecated
+     * @see String.contains
+     */
+    static contains(value: string, ...arge) {
+        return value?.contains(...arge)
+    }
+
     /**
      * 字符串与对象进行比较。按字典顺序比较两个字符串
      * @param value 源字符串
@@ -447,17 +454,6 @@ export class StringUtil {
     }
 
     /**
-     * 判断此字符串中是否包含
-     * @param value
-     * @param arge
-     * @deprecated
-     * @see String.contains
-     */
-    static contains(value: string, ...arge) {
-        return value?.contains(...arge)
-    }
-
-    /**
      * 将 Uint8Array 转换成16进制颜色值  至少保证3个值
      * @param value 数据
      * @param defaultColor 默认值  如果不满足要求  直接返回的值 默认#ffffff
@@ -482,8 +478,8 @@ export class StringUtil {
      * @param type 类型
      * @return
      */
-    static changeType(value: any, type: string) {
-        let tempValue = value
+    static changeType(value: string, type: string) {
+        let tempValue: any = value
         switch (type) {
             case "int":
             case "uint":
@@ -491,31 +487,17 @@ export class StringUtil {
                 tempValue = parseFloat(value)
                 break
             case "boolean":
-                if (this.isNumber(value)) {
-                    tempValue = Utils.parseInt(value) > 0
-                } else {
-                    tempValue = value == "true"
-                }
+                tempValue = value.toBoolean()
                 break
             case "array":
                 tempValue = value.split(",")
                 break
             case "array,int":
-                tempValue = value.split(",")
-                for (let j = 0, len = tempValue.length; j < len; j++) {
-                    tempValue[j] = this.changeType(tempValue[j], "int")
-                }
-                break
             case "array,number":
-                tempValue = value.split(",")
-                for (let j = 0, len = tempValue.length; j < len; j++) {
-                    tempValue[j] = this.changeType(tempValue[j], "number")
-                }
-                break
             case "array,uint":
                 tempValue = value.split(",")
                 for (let j = 0, len = tempValue.length; j < len; j++) {
-                    tempValue[j] = this.changeType(tempValue[j], "uint")
+                    tempValue[j] = this.changeType(tempValue[j], "number")
                 }
                 break
         }

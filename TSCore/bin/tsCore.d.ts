@@ -502,7 +502,8 @@ declare namespace tsCore {
 	     * 忽略大小字母比较字符是否相等
 	     * @param char1 字符串一
 	     * @param char2 字符串二
-	     * @return
+	     * @deprecated
+	     * @see String.equals
 	     */
 	    static equalsIgnoreCase(char1: string, char2: string): boolean;
 	    /**
@@ -602,7 +603,8 @@ declare namespace tsCore {
 	     * @param s1 第一个比较字符串。
 	     * @param s2 第二个比较字符串。
 	     * @param caseSensitive 是否区分大小写  默认不区分
-	     * @return
+	     * @deprecated
+	     * @see String.equals
 	     */
 	    static stringsAreEqual(s1: string, s2: string, caseSensitive?: boolean): boolean;
 	    /**
@@ -615,8 +617,8 @@ declare namespace tsCore {
 	    /**
 	     * 去除所有的空白部分
 	     * @param input 要被处理的字符串
-	     * @return
-	     *
+	     * @deprecated
+	     * @see String.removeAllWhitespace
 	     */
 	    static trimAll(input: string | null): string;
 	    /**
@@ -672,7 +674,8 @@ declare namespace tsCore {
 	     * 删除在输入字符串中删除字符串的所有实例。
 	     * @param input 要被处理的字符串
 	     * @param remove 要删除的字符串
-	     * @return
+	     * @deprecated
+	     * @see String.removeAll
 	     */
 	    static remove(input: string, remove: string): string;
 	    /**
@@ -680,6 +683,8 @@ declare namespace tsCore {
 	     * @param input 要被处理的字符串
 	     * @param replace 要被替换掉的字符串
 	     * @param replaceWith 用来替换的新字符串
+	     * @deprecated
+	     * @see String.replaceAll
 	     */
 	    static replace(input: string, replace: string, replaceWith: string): string;
 	    /**
@@ -712,6 +717,14 @@ declare namespace tsCore {
 	     */
 	    static beginsCode(input: string, suffix: string, retain?: boolean, direction?: boolean): string;
 	    /**
+	     * 判断此字符串中是否包含
+	     * @param value
+	     * @param arge
+	     * @deprecated
+	     * @see String.contains
+	     */
+	    static contains(value: string, ...arge: any[]): boolean;
+	    /**
 	     * 字符串与对象进行比较。按字典顺序比较两个字符串
 	     * @param value 源字符串
 	     * @param anotherString 要比较的字符串
@@ -727,14 +740,6 @@ declare namespace tsCore {
 	     */
 	    static urlName(url: string, retain?: boolean): string;
 	    /**
-	     * 判断此字符串中是否包含
-	     * @param value
-	     * @param arge
-	     * @deprecated
-	     * @see String.contains
-	     */
-	    static contains(value: string, ...arge: any[]): boolean;
-	    /**
 	     * 将 Uint8Array 转换成16进制颜色值  至少保证3个值
 	     * @param value 数据
 	     * @param defaultColor 默认值  如果不满足要求  直接返回的值 默认#ffffff
@@ -746,7 +751,7 @@ declare namespace tsCore {
 	     * @param type 类型
 	     * @return
 	     */
-	    static changeType(value: any, type: string): any;
+	    static changeType(value: string, type: string): any;
 	}
 	
 	export class DateUtils {
@@ -3772,7 +3777,7 @@ declare module Laya {
 
 declare module Laya.Event {
     /** 开始播放指定动画名字 */
-    export var SPINE_PLAY:string
+    export var SPINE_PLAY: string
 }
 
 declare module fgui {
@@ -3826,6 +3831,14 @@ declare interface String {
      * @param search
      */
     startsWithAnyIgnore(...search: string []): boolean
+
+    /**
+     * 比较两个字符串是否相等
+     * @param value 要比较的字符串
+     * @param ignoreCase 是否忽略大小写，默认为false
+     * @returns 如果字符串相等则返回true，否则返回false
+     */
+    equals(value: string, ignoreCase?: boolean): boolean
 
     /**
      * 确定是否按指定字符串结束.满足一个返回 true
@@ -3902,6 +3915,26 @@ declare interface String {
      * @param close
      */
     substringsBetween(open: string, close: string): string[]
+
+    /**
+     * 从字符串中移除第一个匹配的子字符串
+     * @param value 要移除的子字符串
+     * @returns 移除第一个匹配项后的新字符串
+     */
+    remove(value: string): string
+
+    /**
+     * 从字符串中移除所有匹配的子字符串
+     * @param value 要移除的子字符串
+     * @returns 移除所有匹配项后的新字符串
+     */
+    removeAll(value: string): string
+
+    /**
+     * 移除字符串中所有的空白字符（包括空格、制表符、换行符等）
+     * @returns 移除了所有空白字符的新字符串，如果输入为 null 或 undefined 则返回 null
+     */
+    removeAllWhitespace(): string | null
 
     /**
      * 将字符串转换为布尔值

@@ -93,7 +93,7 @@ declare module Laya {
 
 declare module Laya.Event {
     /** 开始播放指定动画名字 */
-    export var SPINE_PLAY:string
+    export var SPINE_PLAY: string
 }
 
 declare module fgui {
@@ -147,6 +147,14 @@ declare interface String {
      * @param search
      */
     startsWithAnyIgnore(...search: string []): boolean
+
+    /**
+     * 比较两个字符串是否相等
+     * @param value 要比较的字符串
+     * @param ignoreCase 是否忽略大小写，默认为false
+     * @returns 如果字符串相等则返回true，否则返回false
+     */
+    equals(value: string, ignoreCase?: boolean): boolean
 
     /**
      * 确定是否按指定字符串结束.满足一个返回 true
@@ -223,6 +231,26 @@ declare interface String {
      * @param close
      */
     substringsBetween(open: string, close: string): string[]
+
+    /**
+     * 从字符串中移除第一个匹配的子字符串
+     * @param value 要移除的子字符串
+     * @returns 移除第一个匹配项后的新字符串
+     */
+    remove(value: string): string
+
+    /**
+     * 从字符串中移除所有匹配的子字符串
+     * @param value 要移除的子字符串
+     * @returns 移除所有匹配项后的新字符串
+     */
+    removeAll(value: string): string
+
+    /**
+     * 移除字符串中所有的空白字符（包括空格、制表符、换行符等）
+     * @returns 移除了所有空白字符的新字符串，如果输入为 null 或 undefined 则返回 null
+     */
+    removeAllWhitespace(): string | null
 
     /**
      * 将字符串转换为布尔值

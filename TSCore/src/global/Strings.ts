@@ -20,6 +20,10 @@ String.prototype.endsWithAnyIgnore = function (...search: string []) {
     return search.some((value) => lowerCase.endsWith(value.toLowerCase()))
 }
 
+String.prototype.equals = function (value: string, ignoreCase = false) {
+    return ignoreCase ? this.toLowerCase() === value.toLowerCase() : this === value
+}
+
 String.prototype.equalsAny = function (...value: string []) {
     const that = this.valueOf()
     return value.some((it) => that === it)
@@ -103,8 +107,20 @@ String.prototype.substringsBetween = function (open: string, close: string) {
     return list
 }
 
+String.prototype.remove = function (value: string) {
+    return this?.replace(value, "")
+}
+
+String.prototype.removeAll = function (value: string) {
+    return this.replaceAll(value, "")
+}
+
+String.prototype.removeAllWhitespace = function () {
+    return this?.replace(/\s/g, "")
+}
+
 String.prototype.toBoolean = function () {
-    return this !== null && this.trim().length > 0 && !this.equalsAnyIgnore("false", "0")
+    return this?.trim()?.length > 0 && !this.equalsAnyIgnore("false", "0")
 }
 
 String.prototype.toInt = function () {
