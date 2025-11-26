@@ -14,7 +14,6 @@ import HTTPUtils = tsCore.HTTPUtils;
 import App = tsCore.App;
 import ELoader = tsCore.ELoader;
 import UtilKit = tsCore.UtilKit;
-import StringUtil = tsCore.StringUtil;
 import MessageTip = tsCore.MessageTip;
 import SoundUtils = tsCore.SoundUtils;
 import MouseManager = Laya.MouseManager;
@@ -39,7 +38,6 @@ import {AssetsLoader} from "./AssetsLoader";
 import {StateCode} from "../utils/StateCode";
 import {BaseScene} from "../core/BaseScene";
 import {GameServlet} from "../core/GameServlet";
-import {BaseGameData} from "../core/BaseGameData";
 
 /**
  * 舞台

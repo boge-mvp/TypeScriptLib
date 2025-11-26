@@ -111,7 +111,7 @@ export abstract class BaseSlotGameData extends BaseGameData {
      */
     isReSpinModel: boolean
 
-    constructor() {
+    protected constructor() {
         super()
         this.lineValue = this.lottery.length
         this.gameType = GameType.SLOT

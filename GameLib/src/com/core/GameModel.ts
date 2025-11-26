@@ -31,10 +31,12 @@ import {PromptWindow} from "../view/PromptWindow";
 export class GameModel<T extends IGameData = BaseGameData> extends EProxy implements IGameModel {
     /**
      * @deprecated
+     * @see SceneManager.inst.starter.baseScene
      */
     protected _gameScene: IGameScene
     /**
      * @deprecated
+     * @see SceneManager.inst.starter.gameServlet
      */
     protected _gameServlet: IGameServlet
     /** 游戏番号 */
@@ -192,7 +194,7 @@ export class GameModel<T extends IGameData = BaseGameData> extends EProxy implem
             for (let k = 0; k < res.length; k++) {
                 fuiName = res[k].url
                 if (fuiName.indexOf(fgui.UIConfig.packageFileExtension) != -1) {
-                    fuiName = StringUtil.remove(fuiName, "." + fgui.UIConfig.packageFileExtension)
+                    fuiName = fuiName.remove("." + fgui.UIConfig.packageFileExtension)
                     break
                 }
             }
@@ -281,13 +283,11 @@ export class GameModel<T extends IGameData = BaseGameData> extends EProxy implem
     }
 
     get gameScene() {
-        this._gameScene ??= SceneManager.inst.starter.baseScene
-        return this._gameScene
+        return SceneManager.inst.starter.baseScene
     }
 
     get gameServlet() {
-        this._gameServlet ??= SceneManager.inst.starter.gameServlet
-        return this._gameServlet
+        return SceneManager.inst.starter.gameServlet
     }
 
     /**
@@ -313,27 +313,6 @@ export class GameModel<T extends IGameData = BaseGameData> extends EProxy implem
     }
 
     socketHandler(obj: any) {
-    }
-
-    /**
-     * @deprecated
-     */
-    get homeModel() {
-        return this._homeModel
-    }
-
-    /**
-     * @deprecated
-     */
-    set gameScene(value: IGameScene) {
-        this._gameScene = value
-    }
-
-    /**
-     * @deprecated
-     */
-    set gameServlet(value: IGameServlet) {
-        this._gameServlet = value
     }
 
     protected get gameData(): T {

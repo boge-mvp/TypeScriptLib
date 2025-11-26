@@ -1,6 +1,5 @@
 import {Player} from "../Player"
 import ConfigKit = tsCore.ConfigKit;
-import StringUtil = tsCore.StringUtil;
 
 export class GameConfigKit {
 
@@ -67,7 +66,7 @@ export class GameConfigKit {
         const config = GameConfigKit.gameConfig()
         if (name && config) {
             for (const key in config) {
-                if (StringUtil.trimAll(config[key]) == name) {
+                if (config[key].removeAllWhitespace() == name) {
                     return parseInt(key)
                 }
             }

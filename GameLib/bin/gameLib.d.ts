@@ -1743,7 +1743,7 @@ declare namespace gameLib {
 	     * 在 parseInitData 方法前执行
 	     */
 	    static customParseUser: (data: any) => void;
-	    constructor();
+	    protected constructor();
 	    protected get gameData(): T;
 	    /**
 	     * @deprecated
@@ -2141,10 +2141,12 @@ declare namespace gameLib {
 	export class GameModel<T extends IGameData = BaseGameData> extends tsCore.EProxy implements IGameModel {
 	    /**
 	     * @deprecated
+	     * @see SceneManager.inst.starter.baseScene
 	     */
 	    protected _gameScene: IGameScene;
 	    /**
 	     * @deprecated
+	     * @see SceneManager.inst.starter.gameServlet
 	     */
 	    protected _gameServlet: IGameServlet;
 	    /** 游戏番号 */
@@ -2247,8 +2249,8 @@ declare namespace gameLib {
 	    blurGame(): void;
 	    /** 游戏进入前台执行 */
 	    focusGame(): void;
-	    get gameScene(): IGameScene;
-	    get gameServlet(): IGameServlet;
+	    get gameScene(): import("./BaseScene").BaseScene<BaseGameData>;
+	    get gameServlet(): import("./GameServlet").GameServlet<BaseGameData>;
 	    /**
 	     * 已做以下处理
 	     * @example
@@ -2261,18 +2263,6 @@ declare namespace gameLib {
 	    set gameCode(value: number);
 	    get gameCode(): number;
 	    socketHandler(obj: any): void;
-	    /**
-	     * @deprecated
-	     */
-	    get homeModel(): IHomeModel;
-	    /**
-	     * @deprecated
-	     */
-	    set gameScene(value: IGameScene);
-	    /**
-	     * @deprecated
-	     */
-	    set gameServlet(value: IGameServlet);
 	    protected get gameData(): T;
 	    /**
 	     * @deprecated
@@ -2941,7 +2931,7 @@ declare namespace gameLib {
 	     * 当前在reSpin模式
 	     */
 	    isReSpinModel: boolean;
-	    constructor();
+	    protected constructor();
 	    /**
 	     * 初始化数据
 	     * 在创建Scene之前会被初始化

@@ -3513,7 +3513,7 @@ function _FguiBindView(classTarget, url) {
 	        const config = GameConfigKit.gameConfig();
 	        if (name && config) {
 	            for (const key in config) {
-	                if (tsCore.StringUtil.trimAll(config[key]) == name) {
+	                if (config[key].removeAllWhitespace() == name) {
 	                    return parseInt(key);
 	                }
 	            }
@@ -4037,7 +4037,7 @@ function _FguiBindView(classTarget, url) {
 	        for (let k = 0; k < res.length; k++) {
 	            fuiName = res[k].url;
 	            if (fuiName.indexOf("." + fgui.UIConfig.packageFileExtension) != -1) {
-	                fuiName = tsCore.StringUtil.remove(fuiName, "." + fgui.UIConfig.packageFileExtension);
+	                fuiName = fuiName.remove("." + fgui.UIConfig.packageFileExtension);
 	                if (!this.addPackage(fuiName)) {
 	                    tsCore.Log.debug("addPackage fail = " + fuiName);
 	                    return false;
@@ -4300,7 +4300,7 @@ function _FguiBindView(classTarget, url) {
 	            for (let k = 0; k < res.length; k++) {
 	                fuiName = res[k].url;
 	                if (fuiName.indexOf(fgui.UIConfig.packageFileExtension) != -1) {
-	                    fuiName = tsCore.StringUtil.remove(fuiName, "." + fgui.UIConfig.packageFileExtension);
+	                    fuiName = fuiName.remove("." + fgui.UIConfig.packageFileExtension);
 	                    break;
 	                }
 	            }
@@ -4381,14 +4381,10 @@ function _FguiBindView(classTarget, url) {
 	        tsCore.Log.debug("focusGame");
 	    }
 	    get gameScene() {
-	        var _a;
-	        (_a = this._gameScene) !== null && _a !== void 0 ? _a : (this._gameScene = SceneManager.inst.starter.baseScene);
-	        return this._gameScene;
+	        return SceneManager.inst.starter.baseScene;
 	    }
 	    get gameServlet() {
-	        var _a;
-	        (_a = this._gameServlet) !== null && _a !== void 0 ? _a : (this._gameServlet = SceneManager.inst.starter.gameServlet);
-	        return this._gameServlet;
+	        return SceneManager.inst.starter.gameServlet;
 	    }
 	    /**
 	     * 已做以下处理
@@ -4410,24 +4406,6 @@ function _FguiBindView(classTarget, url) {
 	        return this._gameCode;
 	    }
 	    socketHandler(obj) {
-	    }
-	    /**
-	     * @deprecated
-	     */
-	    get homeModel() {
-	        return this._homeModel;
-	    }
-	    /**
-	     * @deprecated
-	     */
-	    set gameScene(value) {
-	        this._gameScene = value;
-	    }
-	    /**
-	     * @deprecated
-	     */
-	    set gameServlet(value) {
-	        this._gameServlet = value;
 	    }
 	    get gameData() {
 	        return Player.inst.gameData;

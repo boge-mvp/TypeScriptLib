@@ -50,7 +50,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
      */
     static customParseUser: (data: any) => void
 
-    constructor() {
+    protected constructor() {
         super()
         this.regGameAction(ActionLib.GAME_CHECK_STATE, this, this.checkState)
         this.regGameAction(ActionLib.GAME_INIT_SERVLET, this, this.init)

@@ -16,6 +16,7 @@ import SoundUtils = tsCore.SoundUtils;
 import App = tsCore.App;
 import ConfigKit = tsCore.ConfigKit;
 import Path = tsCore.Path;
+import UIConfig = fgui.UIConfig;
 import {Player} from "../Player"
 import {AnalyticsManager} from "./AnalyticsManager"
 import {JSUtils} from "../utils/JSUtils"
@@ -26,7 +27,6 @@ import {LibStr} from "../LibStr"
 import {GameConfigKit} from "../kit/GameConfigKit";
 import {ILoadSoundFilter} from "../interfaces/IGame";
 import {ResUtils} from "../utils/ResUtils";
-import UIConfig = fgui.UIConfig;
 
 /**
  * 资源管理类
@@ -606,7 +606,7 @@ export class AssetsLoader implements IFormatPath {
         for (let k = 0; k < res.length; k++) {
             fuiName = res[k].url
             if (fuiName.indexOf("." + fgui.UIConfig.packageFileExtension) != -1) {
-                fuiName = StringUtil.remove(fuiName, "." + fgui.UIConfig.packageFileExtension)
+                fuiName = fuiName.remove("." + fgui.UIConfig.packageFileExtension)
                 if (!this.addPackage(fuiName)) {
                     Log.debug("addPackage fail = " + fuiName)
                     return false
