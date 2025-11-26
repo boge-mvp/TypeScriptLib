@@ -125,7 +125,7 @@ export class AppRecordManager extends tsCore.HistoryManager {
                 let token: string = json.token
                 if (token) {
                     Player.inst.token = token
-                    Player.inst.login.loginToken((data: any) => {
+                    Player.inst.login.loginToken((data) => {
                         if (data?.code == HttpCode.OK) {
                             if (Player.inst.gameId != -1) {
                                 AppRecordManager.JavaSendOpen(json)
@@ -171,9 +171,9 @@ export class AppRecordManager extends tsCore.HistoryManager {
         Log.debug(`JavaSendOpen() openGame=${json.openGame}`)
         Log.debug(`JavaSendOpen() gameName=${json.gameName}`)
         if (!Player.inst.isGuest && json.token) {
-            Player.inst.login.loginToken(Handler.create(null, function (data: any) {
+            Player.inst.login.loginToken((data) => {
                 AppRecordManager.open(json)
-            }))
+            })
         } else {
             AppRecordManager.open(json)
         }

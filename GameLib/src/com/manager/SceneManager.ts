@@ -165,9 +165,9 @@ export class SceneManager extends EProxy {
             }
         } else {
             if (Player.inst.token) {
-                Player.inst.login?.loginToken(Handler.create(this, function () {
+                Player.inst.login?.loginToken(() => {
                     GRoot.inst.closeModalWait()
-                }))
+                })
             } else {
                 GRoot.inst.closeModalWait()
             }
@@ -305,7 +305,7 @@ export class SceneManager extends EProxy {
         // 已经加载的游戏代码
         if (!Player.inst.urlParam.isJumpPage())
             GRoot.inst.closeModalWait()
-        LoadingWindow.inst.changeView(1, getString(LibStr.LOADING))
+        LoadingWindow.inst?.changeView(1, getString(LibStr.LOADING))
         AssetsLoader.inst.loadRes(obj, Handler.create(this, this.loadResComplete),
             Handler.create(this, this.loadResErrorHandler))
     }
@@ -343,7 +343,7 @@ export class SceneManager extends EProxy {
     }
 
     /** 检查游戏状态 */
-    private checkGameState(data: any) {
+    private checkGameState(data: HttpResponse) {
         if (data?.code == -1) {
             LoadingWindow.hide()
             JSUtils.alert(StateCode.getShowMessage(data))
@@ -420,7 +420,7 @@ export class SceneManager extends EProxy {
     /** 加载资源失败 */
     private loadResErrorHandler() {
         GRoot.inst.closeModalWait()
-        if (Player.inst.urlParam.isJumpPage()) {
+        if (Player.inst.urlParam?.isJumpPage()) {
             if (!Render.isConchApp)
                 JSUtils.alert(getString(LibStr.NET_ERROR))
             JSUtils.gameClose()
@@ -428,11 +428,18 @@ export class SceneManager extends EProxy {
             Player.inst.gameId = CommonCmd.GAME_HOME
             return
         }
-        PromptWindow.inst.showTip(LibStr.NET_ERROR, Handler.create(this, function () {
-            LoadingWindow.hide()
+        try {
+            PromptWindow.show(LibStr.NET_ERROR, Handler.create(this, function () {
+                LoadingWindow.hide()
+                JSUtils.gameClose()
+                Player.inst.gameId = CommonCmd.GAME_HOME
+            }))
+        } catch (e) {
+            Log.error(e?.stack)
+            // 当资源没有加载完成  调用会报错
+            JSUtils.alert(getString(LibStr.NET_ERROR))
             JSUtils.gameClose()
-            Player.inst.gameId = CommonCmd.GAME_HOME
-        }))
+        }
     }
 
     /** 游戏内部返回按钮被点击 */

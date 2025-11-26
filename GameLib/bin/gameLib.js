@@ -4576,9 +4576,9 @@ function _FguiBindView(classTarget, url) {
 	        }
 	        else {
 	            if (Player.inst.token) {
-	                (_e = Player.inst.login) === null || _e === void 0 ? void 0 : _e.loginToken(Laya.Handler.create(this, function () {
+	                (_e = Player.inst.login) === null || _e === void 0 ? void 0 : _e.loginToken(() => {
 	                    fgui.GRoot.inst.closeModalWait();
-	                }));
+	                });
 	            }
 	            else {
 	                fgui.GRoot.inst.closeModalWait();
@@ -4697,13 +4697,14 @@ function _FguiBindView(classTarget, url) {
 	        }
 	    }
 	    loadJsComplete() {
+	        var _a;
 	        let obj = GameConfigKit.gameRes();
 	        // 延迟执行初始化  否则isCall  将失去意义
 	        // this._starter = obj.completeFun()
 	        // 已经加载的游戏代码
 	        if (!Player.inst.urlParam.isJumpPage())
 	            fgui.GRoot.inst.closeModalWait();
-	        LoadingWindow.inst.changeView(1, getString(LibStr.LOADING));
+	        (_a = LoadingWindow.inst) === null || _a === void 0 ? void 0 : _a.changeView(1, getString(LibStr.LOADING));
 	        AssetsLoader.inst.loadRes(obj, Laya.Handler.create(this, this.loadResComplete), Laya.Handler.create(this, this.loadResErrorHandler));
 	    }
 	    /**
@@ -4810,8 +4811,9 @@ function _FguiBindView(classTarget, url) {
 	    }
 	    /** 加载资源失败 */
 	    loadResErrorHandler() {
+	        var _a;
 	        fgui.GRoot.inst.closeModalWait();
-	        if (Player.inst.urlParam.isJumpPage()) {
+	        if ((_a = Player.inst.urlParam) === null || _a === void 0 ? void 0 : _a.isJumpPage()) {
 	            if (!Laya.Render.isConchApp)
 	                JSUtils.alert(getString(LibStr.NET_ERROR));
 	            JSUtils.gameClose();
@@ -4819,11 +4821,19 @@ function _FguiBindView(classTarget, url) {
 	            Player.inst.gameId = CommonCmd.GAME_HOME;
 	            return;
 	        }
-	        PromptWindow.inst.showTip(LibStr.NET_ERROR, Laya.Handler.create(this, function () {
-	            LoadingWindow.hide();
+	        try {
+	            PromptWindow.show(LibStr.NET_ERROR, Laya.Handler.create(this, function () {
+	                LoadingWindow.hide();
+	                JSUtils.gameClose();
+	                Player.inst.gameId = CommonCmd.GAME_HOME;
+	            }));
+	        }
+	        catch (e) {
+	            tsCore.Log.error(e === null || e === void 0 ? void 0 : e.stack);
+	            // 当资源没有加载完成  调用会报错
+	            JSUtils.alert(getString(LibStr.NET_ERROR));
 	            JSUtils.gameClose();
-	            Player.inst.gameId = CommonCmd.GAME_HOME;
-	        }));
+	        }
 	    }
 	    /** 游戏内部返回按钮被点击 */
 	    backHandler() {
@@ -5157,9 +5167,9 @@ function _FguiBindView(classTarget, url) {
 	        tsCore.Log.debug(`JavaSendOpen() openGame=${json.openGame}`);
 	        tsCore.Log.debug(`JavaSendOpen() gameName=${json.gameName}`);
 	        if (!Player.inst.isGuest && json.token) {
-	            Player.inst.login.loginToken(Laya.Handler.create(null, function (data) {
+	            Player.inst.login.loginToken((data) => {
 	                AppRecordManager.open(json);
-	            }));
+	            });
 	        }
 	        else {
 	            AppRecordManager.open(json);

@@ -97,7 +97,7 @@ export interface IData {
 export interface ILogin {
 
     /** 使用Token登录 并获取用户数据 */
-    loginToken(callback: ParamHandler): void
+    loginToken(handler: (callback: HttpResponse) => void): void
 
 }
 

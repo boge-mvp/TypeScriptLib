@@ -75,7 +75,7 @@ export class APP {
         Log.debug("callback() openGame = " + json.openGame)
         Log.debug("callback() gameName = " + json.gameName)
         if (!Player.inst.isGuest && json.token) {
-            Player.inst.login.loginToken((data: any) => {
+            Player.inst.login.loginToken((data) => {
                 this.open(json)
             })
         } else {

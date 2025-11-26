@@ -514,8 +514,8 @@ declare type LoadRes = {
  * http请求数据返回
  */
 declare type HttpResponse<T = any> = {
-    code: number
-    data: T,
-    message: string,
+    code?: number
+    data?: T,
+    message?: string,
     [key: string]: any
 }

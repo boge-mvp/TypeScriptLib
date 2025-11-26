@@ -1400,7 +1400,7 @@ declare namespace gameLib {
 	 */
 	export interface ILogin {
 	    /** 使用Token登录 并获取用户数据 */
-	    loginToken(callback: ParamHandler): void;
+	    loginToken(handler: (callback: HttpResponse) => void): void;
 	}
 	/**
 	 * 游戏模式
@@ -1743,7 +1743,7 @@ declare namespace gameLib {
 	     * 在 parseInitData 方法前执行
 	     */
 	    static customParseUser: (data: any) => void;
-	    protected constructor();
+	    constructor();
 	    protected get gameData(): T;
 	    /**
 	     * @deprecated
@@ -2931,7 +2931,7 @@ declare namespace gameLib {
 	     * 当前在reSpin模式
 	     */
 	    isReSpinModel: boolean;
-	    protected constructor();
+	    constructor();
 	    /**
 	     * 初始化数据
 	     * 在创建Scene之前会被初始化
