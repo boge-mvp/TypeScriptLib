@@ -20,7 +20,8 @@ const {MinifyOptions} = require("terser")
 const webp = require("./webp/ToWebp")
 const concatSource = require("./gulp-concat-source");
 const sortDeclaration = require("./gulp-ts-sort-declaration");
-const rollupRename = require("./rollup-rename-plugin");
+const rollupRename = require("./rollup-plugin-rename");
+const generics = require("./rollup-plugin-generics");
 
 const ts = require('typescript')
 
@@ -1004,6 +1005,7 @@ function rollupPack(inputFile, outName, options) {
     const outDir = path.resolve(localPath, options.outDir || "")
 
     const plugins = [
+        generics(options),
         glsl({
             include: /.*(.glsl|.vs|.fs)$/,
             sourceMap: false,

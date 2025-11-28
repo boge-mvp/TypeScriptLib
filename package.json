@@ -36,6 +36,7 @@
     "reserved.js",
     "types.js",
     "monkey-path.js",
-    "rollup-rename-plugin.js"
+    "rollup-plugin-rename.js",
+    "rollup-plugin-generics.js"
   ]
 }

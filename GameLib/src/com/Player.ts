@@ -168,7 +168,7 @@ export class Player {
      * 获取游客模式的优惠券
      */
     getGuestCoupons(): Coupons[] {
-        return window["guestCoupons"]
+        return window["guestCoupons"] || []
     }
 
     /**

@@ -5508,7 +5508,7 @@ function _FguiBindView(classTarget, url) {
 	     * 获取游客模式的优惠券
 	     */
 	    getGuestCoupons() {
-	        return window["guestCoupons"];
+	        return window["guestCoupons"] || [];
 	    }
 	    /**
 	     * 设置当前拥有的优惠券
