@@ -32,7 +32,7 @@ export abstract class ESkeleton extends mixinExt(BezierCurves, ActionEvent, GCom
     protected _complete: ParamHandler
     /**
      * 播放循环次数
-     * @private
+     * @internal
      */
     private _loopCount = 0
 
@@ -113,6 +113,10 @@ export abstract class ESkeleton extends mixinExt(BezierCurves, ActionEvent, GCom
         }
     }
 
+    /**
+     *
+     * @internal
+     */
     private _play() {
         if (this.skeletonPlay.progress) {
             if ("before" in this.skeletonPlay.progress) {

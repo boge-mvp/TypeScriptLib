@@ -1153,31 +1153,6 @@ declare namespace tsCore {
 	    GET = "get",
 	    POST = "post"
 	}
-	export interface IFormatPath {
-	    /**
-	     * 格式化路径
-	     * @param url 格式化后的路径
-	     */
-	    path?(url: string): string;
-	    /**
-	     * 调用自定义的方法
-	     * @param url 原始请求地址
-	     * @param version 从版本控制中获取的版本号 可能为空
-	     * @return 返回处理后的版本号
-	     */
-	    version?(url: string, version: string | number): string | number;
-	    /**
-	     * 调用自定义的方法
-	     * @param url 原始请求地址
-	     * @param version 从版本控制中获取的版本号 可能为空
-	     * @return 返回处理后的版本号
-	     * @deprecated
-	     * @see IFormatPath.version
-	     */
-	    call?(url: string, version: string | number): string | number;
-	    /** 值越大 越后执行 默认:100 */
-	    order?: number;
-	}
 	export interface IKey {
 	    /**
 	     * 设置标识
@@ -1189,6 +1164,26 @@ declare namespace tsCore {
 	     */
 	    getKey(): string;
 	}
+	export interface IProxy extends IAction {
+	    getProxy<T>(key: string | {
+	        new (): T;
+	    }): T;
+	    removeProxy<T extends IProxy & IKey>(key: string | T): void;
+	    addProxy<T extends IProxy & IKey>(key: string | {
+	        new (): T;
+	    }, proxy: T): boolean;
+	}
+	export interface IRecord {
+	    /**
+	     * 显示当前界面
+	     */
+	    showRecord(): void;
+	    /**
+	     * 隐藏当前界面
+	     */
+	    hideRecord(): void;
+	}
+	
 	export interface IView extends IAction {
 	    /**
 	     * 添加一个view对象到缓存
@@ -1213,15 +1208,7 @@ declare namespace tsCore {
 	        new (): T;
 	    }): T;
 	}
-	export interface IProxy extends IAction {
-	    getProxy<T>(key: string | {
-	        new (): T;
-	    }): T;
-	    removeProxy<T extends IProxy & IKey>(key: string | T): void;
-	    addProxy<T extends IProxy & IKey>(key: string | {
-	        new (): T;
-	    }, proxy: T): boolean;
-	}
+	
 	export interface IController extends IView, IProxy {
 	    /**
 	     * 向缓存中添加一个bean实例
@@ -1268,15 +1255,31 @@ declare namespace tsCore {
 	    /** 清除所有分组和包含的事件 */
 	    clearGroup(): void;
 	}
-	export interface IRecord {
+	
+	export interface IFormatPath {
 	    /**
-	     * 显示当前界面
+	     * 格式化路径
+	     * @param url 格式化后的路径
 	     */
-	    showRecord(): void;
+	    path?(url: string): string;
 	    /**
-	     * 隐藏当前界面
+	     * 调用自定义的方法
+	     * @param url 原始请求地址
+	     * @param version 从版本控制中获取的版本号 可能为空
+	     * @return 返回处理后的版本号
 	     */
-	    hideRecord(): void;
+	    version?(url: string, version: string | number): string | number;
+	    /**
+	     * 调用自定义的方法
+	     * @param url 原始请求地址
+	     * @param version 从版本控制中获取的版本号 可能为空
+	     * @return 返回处理后的版本号
+	     * @deprecated
+	     * @see IFormatPath.version
+	     */
+	    call?(url: string, version: string | number): string | number;
+	    /** 值越大 越后执行 默认:100 */
+	    order?: number;
 	}
 	
 	export class Path {
@@ -1370,12 +1373,6 @@ declare namespace tsCore {
 	     * @param custom 可选的自定义执行条件函数
 	     */
 	    static addHandler(target: fgui.GObject, fun: (...args: any[]) => any, interval?: number, custom?: () => boolean): void;
-	    /**
-	     * 定时器主更新逻辑，在每一帧被调用
-	     * 判断每个任务是否满足运行条件，若满足则执行回调
-	     */
-	    private onUpdate;
-	    private runTask;
 	}
 	/**
 	 * TaskHandler 类表示一个具体的定时任务项，封装了任务的目标对象、回调函数及相关配置信息
@@ -1434,6 +1431,57 @@ declare namespace tsCore {
 	    copy(): TaskHandler;
 	}
 	
+	/**
+	 * 应用运行监听器接口，用于监听应用启动过程中的各个阶段
+	 */
+	export interface IAppRunListener {
+	    /**
+	     * 当开始初始化应用时调用
+	     *
+	     * @see onProxyComponentComplete
+	     */
+	    onStartInitialize?(): void;
+	    /**
+	     * 对与需要代理处理的类初始化完成
+	     *
+	     * @see onCreateMain
+	     */
+	    onProxyComponentComplete?(): void;
+	    /**
+	     * 创建主应用类后调用
+	     * 此刻只是创建，尚未给主应用类属性赋值 但已加入bean池
+	     * @param mainContext 已经创建好的主类
+	     *
+	     * @see onBeanFuncInitializing
+	     */
+	    onCreateMain?(mainContext: any): void;
+	    /**
+	     * 即将初始化被 @Bean 标记的函数
+	     * @see onComponentInitializing
+	     */
+	    onBeanFuncInitializing?(): void;
+	    /**
+	     * 即将初始化被 @Component 标记的类
+	     * @see onComponentProgress
+	     */
+	    onComponentInitializing?(): void;
+	    /**
+	     * @Component 初始化过程
+	     * @param target 已经初始化好的类
+	     * @see onMainAppInitializing
+	     */
+	    onComponentProgress?(target: any): void;
+	    /**
+	     * 即将初始化主应用类时调用
+	     * @see onComplete
+	     */
+	    onMainAppInitializing?(): void;
+	    /**
+	     * 应用完全初始化完成时调用
+	     */
+	    onComplete?(): void;
+	}
+	
 	export class ActionEvent implements IAction {
 	    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void;
 	    regActionHandler(action: string | number, handler: Laya.Handler, group?: string, order?: number): void;
@@ -1474,11 +1522,6 @@ declare namespace tsCore {
 	     */
 	    protected _spineResPath: string;
 	    protected _complete: ParamHandler;
-	    /**
-	     * 播放循环次数
-	     * @private
-	     */
-	    private _loopCount;
 	    get aniPath(): string;
 	    get spineResPath(): string;
 	    /**
@@ -1499,7 +1542,6 @@ declare namespace tsCore {
 	     * @param [playGroupIndex=-1] 如果是播放数组动画 需要要播放动画的位置
 	     */
 	    playAni(skeletonPlay: ISkeletonPlay, playGroupIndex?: number): void;
-	    private _play;
 	    /**
 	     * 当动画停止时的回调函数 或 使用 skeleton.stop()
 	     */
@@ -1570,18 +1612,6 @@ declare namespace tsCore {
 	     */
 	    load(url: string, handler: ParamHandler, aniMode?: number): void;
 	    /**
-	     * 加载完成
-	     */
-	    private _onLoaded;
-	    /**
-	     * 解析完成
-	     */
-	    private _parseComplete;
-	    /**
-	     * 解析失败
-	     */
-	    private _parseFail;
-	    /**
 	     * 延迟播放动画
 	     * @param    playDelay    延迟时间
 	     * @param    nameOrIndex    动画名字或者索引
@@ -1625,7 +1655,6 @@ declare namespace tsCore {
 	    getSlotYByName(name: string): number;
 	    getSlotPointByName(name: string): Laya.Point;
 	    getBoneSlotByName(name: string): Laya.BoneSlot;
-	    private static _emptyTexture;
 	    static get emptyTexture(): Laya.Texture;
 	    /**
 	     * 设置插槽的某个皮肤
@@ -1633,10 +1662,6 @@ declare namespace tsCore {
 	     * @param skin Texture 或 fairy gui 的路径  如：//package/skin
 	     */
 	    setSlotSkin(slotName: string, skin?: Laya.Texture | string): void;
-	    /**
-	     * 换装的时候，需要清一下缓冲区
-	     */
-	    private clearCache;
 	    on(type: string, thisObject: any, listener: Function, args?: any[]): void;
 	    off(type: string, thisObject: any, listener: Function): void;
 	    offAll(type?: string): void;
@@ -1652,12 +1677,6 @@ declare namespace tsCore {
 	
 	export class DefineConfig {
 	    static init(): void;
-	    private static defineLaya;
-	    private static defineFairy;
-	    private static defineText;
-	    private static defineTimer;
-	    private static defineSkeleton;
-	    private static defineSpineSkeleton;
 	}
 	
 	export class App implements IAction {
@@ -1723,7 +1742,6 @@ declare namespace tsCore {
 	     * @see run
 	     */
 	    static init(): void;
-	    private static _init;
 	    static initClass(...args: (new () => any)[]): void;
 	    lastInit(): void;
 	    constructor();
@@ -1731,7 +1749,6 @@ declare namespace tsCore {
 	     * 开启屏幕大小自动调整
 	     */
 	    openResize(): void;
-	    private onResize;
 	    protected initController(): void;
 	    regActionHandler(action: string | number, handler: Laya.Handler, group?: string, order?: number): void;
 	    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number): void;

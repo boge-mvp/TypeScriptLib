@@ -4,10 +4,13 @@ import {EventController} from "./core/EventController"
 import {ELoader} from "./extends/ELoader";
 import {ConfigKit, EnvType} from "./kit/ConfigKit";
 import {Log} from "./Log";
-import {IController, IKey, IProxy, IView} from "./interfaces/ICommon";
+import {IKey, IProxy} from "./interfaces/ICommon";
 import {Path} from "./Path";
 import Handler = Laya.Handler;
 import {TimerKit} from "./kit/TimerKit";
+import {IController} from "./interfaces/IController";
+import {IView} from "./interfaces/IView";
+import {IAppRunListener} from "./interfaces/IAppRunListener";
 
 export class App implements IAction {
 
@@ -65,10 +68,23 @@ export class App implements IAction {
      */
     static beanEventFunction: EventData[] = []
     /**
+     * 监听依赖注入整个生命周期
+     * @internal
+     */
+    static appRunListeners: IAppRunListener[] = []
+    /**
      * 启动历史记录监听
      */
     static enableHistory = false
+    /**
+     *
+     * @internal
+     */
     private timerKit: TimerKit;
+    /**
+     *
+     * @internal
+     */
     private static initStop: boolean | void = false
 
     /**
@@ -167,6 +183,9 @@ export class App implements IAction {
         App._init()
     }
 
+    /**
+     * @internal
+     */
     private static _init() {
         this._instance ??= new App()
         DefineConfig.init()
@@ -203,6 +222,9 @@ export class App implements IAction {
         }
     }
 
+    /**
+     * @internal
+     */
     private onResize() {
         let screenWidth = Laya.stage.width
         let screenHeight = Laya.stage.height

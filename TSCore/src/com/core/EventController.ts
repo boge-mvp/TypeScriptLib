@@ -1,7 +1,9 @@
 import {StringUtil} from "../utils/StringUtil"
 import {App} from "../App"
 import {Log} from "../Log";
-import {IController, IKey, IProxy, IView} from "../interfaces/ICommon";
+import {IKey, IProxy} from "../interfaces/ICommon";
+import {IController} from "../interfaces/IController";
+import {IView} from "../interfaces/IView";
 
 export class EventController implements IController {
 

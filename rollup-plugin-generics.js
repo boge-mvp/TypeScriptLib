@@ -13,6 +13,11 @@ let compilerOptions;
 const loadFile = new Set()
 const mapMoule = new Map()
 
+/**
+ * 解析泛型
+ * @param options
+ * @returns {{id: *, meta: {additionalDeps: T[]}, moduleSideEffects: boolean}|{code: string, map: null}|{name: string, buildStart(): void, resolveId(*, *, *): Promise<{id: *, meta: {additionalDeps: T[]}, moduleSideEffects: boolean}|undefined>, transform(*, *): Promise<{code: string, map: null}|undefined>}}
+ */
 function parseGenerics(options) {
 
     return {
@@ -154,6 +159,8 @@ function getGenerics(id) {
         }
         ts.forEachChild(node, visit);
     });
+
+
     const dependencies = [];
     // 如果找到了带有泛型的类，将泛型参数作为依赖添加到模块信息中
     if (hasClass && classGenericParams.length > 0) {

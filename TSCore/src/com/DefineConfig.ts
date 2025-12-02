@@ -20,6 +20,10 @@ export class DefineConfig {
         DefineConfig.defineFairy()
     }
 
+    /**
+     *
+     * @internal
+     */
     private static defineLaya() {
         Object.defineProperty(Laya.Stage.prototype, "_changeCanvasSize", {
             value: function () {
@@ -194,6 +198,10 @@ export class DefineConfig {
 
     }
 
+    /**
+     *
+     * @internal
+     */
     private static defineFairy() {
 
         Object.defineProperty(GRoot.prototype, "playOneShotSound", {
@@ -358,6 +366,10 @@ export class DefineConfig {
 
     }
 
+    /**
+     *
+     * @internal
+     */
     private static defineText() {
         Object.defineProperties(Laya.Text.prototype, {
             _isDrawRemoveLine: {
@@ -458,6 +470,10 @@ export class DefineConfig {
         })
     }
 
+    /**
+     *
+     * @internal
+     */
     private static defineTimer() {
 
         // 清理所有数据
@@ -500,6 +516,10 @@ export class DefineConfig {
         })
     }
 
+    /**
+     *
+     * @internal
+     */
     private static defineSkeleton() {
         Object.defineProperty(Laya.Skeleton.prototype, "getAniIndexByName", {
             value: function (name: string) {
@@ -633,6 +653,10 @@ export class DefineConfig {
 
     }
 
+    /**
+     *
+     * @internal
+     */
     private static defineSpineSkeleton() {
 
         Object.defineProperties(Laya.SpineTempletBase.prototype, {

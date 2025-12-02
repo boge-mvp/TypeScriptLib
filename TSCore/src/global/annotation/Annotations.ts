@@ -466,6 +466,12 @@ function proxyClass(classTarget: { new(...args: any[]): any }, beanName?: string
  */
 function runApplication<T>(classTarget?: { new(...args: any[]): T }): T {
     // @ts-ignore
+    const appRunListeners = tsCore.App.appRunListeners
+
+    // 通知开始初始化
+    appRunListeners.forEach(listener => listener.onStartInitialize?.());
+
+    // @ts-ignore
     const events: EventData[] = tsCore.App.beanEventFunction
     const eventMap = events.groupBy(value => value.target)
     eventMap.forEach((value, key) => {
@@ -489,12 +495,15 @@ function runApplication<T>(classTarget?: { new(...args: any[]): T }): T {
         }
     })
 
+    appRunListeners.forEach(listener => listener.onProxyComponentComplete?.());
+
     // @ts-ignore
     const mainClass: any = classTarget ?? tsCore.App.appMainClass;
     if (!mainClass) {
         // 应用程序的主类未定义，请使用 @AppMain 装饰器指定主类
         throw new Error("Application main class is not defined. Please use @AppMain to specify the main class.");
     }
+
 
     const app = new mainClass()
     const mainName: string = Reflect.getMetadata("class:name", mainClass) || mainClass.name
@@ -503,6 +512,11 @@ function runApplication<T>(classTarget?: { new(...args: any[]): T }): T {
         // @ts-ignore
         tsCore.App.inst.addBean(mainName.firstLowerCase(), app)
     }
+
+    appRunListeners.forEach(listener => listener.onCreateMain?.(app));
+
+    appRunListeners.forEach(listener => listener.onBeanFuncInitializing?.());
+
     // @ts-ignore
     tsCore.App.beanClassFunction.forEach((value: () => any, key: string) => {
         // @ts-ignore
@@ -512,6 +526,9 @@ function runApplication<T>(classTarget?: { new(...args: any[]): T }): T {
             tsCore.App.inst.addBean(key, target, false)
         }
     })
+
+    appRunListeners.forEach(listener => listener.onComponentInitializing?.());
+
     // @ts-ignore
     tsCore.App.beanClassComponent.sort((a, b) => a.order || 0 - b.order || 0).forEach((value: ComponentData) => {
         // @ts-ignore
@@ -529,12 +546,22 @@ function runApplication<T>(classTarget?: { new(...args: any[]): T }): T {
                 tsCore.App.inst.addBean(value.key, target)
             }
             initBean(target, classTargetName)
+
+            appRunListeners.forEach(listener => listener.onComponentProgress?.(target));
+
         }
     })
+
+    // 通知主应用即将初始化
+    appRunListeners.forEach(listener => listener.onMainAppInitializing?.());
+
     initBean(app, mainName)
     if (typeof app["start"] == "function") {
         app["start"]()
     }
+
+    // 通知完成
+    appRunListeners.forEach(listener => listener.onComplete?.());
 
     return app
 

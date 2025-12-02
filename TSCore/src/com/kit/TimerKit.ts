@@ -123,6 +123,7 @@ export class TimerKit {
     /**
      * 定时器主更新逻辑，在每一帧被调用
      * 判断每个任务是否满足运行条件，若满足则执行回调
+     * @internal
      */
     private onUpdate() {
         if (this.isPause) return
@@ -147,6 +148,12 @@ export class TimerKit {
 
     }
 
+    /**
+     *
+     * @param {TaskHandler} task
+     * @param {number} time
+     * @internal
+     */
     private runTask(task: TaskHandler, time: number = Laya.Browser.now()) {
         if (!task.target.isDisposed
             && task.target.parent

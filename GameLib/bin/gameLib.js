@@ -150,8 +150,9 @@ function FguiBindView(target) {
 function _FguiBindView(classTarget, url) {
     // 如果外部没有提供url，尝试从类的元数据中获取，如果还获取不到，则使用类的名称
     url = url || Reflect.getMetadata("class:name", classTarget) || classTarget.name;
-    bindView(url, classTarget, true);
+    lazyInitBindView.push([url, classTarget]);
 }
+const lazyInitBindView = [];
 
 (function (gameLib) {
 	var ActionLib;
@@ -387,7 +388,16 @@ function _FguiBindView(classTarget, url) {
 	    ActionLib["GAME_SHOW_FREE_FINISH_VIEW"] = "game_show_free_finish_view";
 	})(ActionLib || (ActionLib = {}));
 	
-	gameLib.ActionLib = ActionLib
+	/**
+	 * @internal
+	 */
+	class Activation {
+	    onProxyComponentComplete() {
+	        for (const data of lazyInitBindView) {
+	            bindView(data[0], data[1], true);
+	        }
+	    }
+	}
 	
 	/** 公用信息处理 */
 	var CommonCmd;
@@ -543,14 +553,6 @@ function _FguiBindView(classTarget, url) {
 	Urls.URL_GAME_SCRATCHER_LOTTERY = "/game/scratcher/handle";
 	/** 获取所有优惠券 */
 	Urls.URL_GAME_ALL_COUPON = "/coupon/all";
-	
-	gameLib.CommonCmd = CommonCmd
-	
-	gameLib.Cmd = Cmd
-	
-	gameLib.HttpCode = HttpCode
-	
-	gameLib.Urls = Urls
 	
 	/** app管理器 */
 	class AppManager {
@@ -939,8 +941,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
-	gameLib.AppManager = AppManager
-	
 	var LibStr;
 	(function (LibStr) {
 	    /** 等待处理 */
@@ -1081,8 +1081,6 @@ function _FguiBindView(classTarget, url) {
 	    LibStr[LibStr["WINS"] = 1069] = "WINS";
 	})(LibStr || (LibStr = {}));
 	
-	gameLib.LibStr = LibStr
-	
 	/** socket管理 */
 	class SocketManager extends tsCore.ESocket {
 	    constructor() {
@@ -1187,15 +1185,11 @@ function _FguiBindView(classTarget, url) {
 	}
 	SocketManager.SocketClass = tsCore.SocketClient;
 	
-	gameLib.SocketManager = SocketManager
-	
 	class BaseView extends tsCore.EView {
 	    constructor() {
 	        super();
 	    }
 	}
-	
-	gameLib.BaseView = BaseView
 	
 	/** 加载 */
 	class WaitResult extends fgui.GComponent {
@@ -1234,8 +1228,6 @@ function _FguiBindView(classTarget, url) {
 	WaitResult.CREATE_FUI_URL = "//gameCommon/WaitResult";
 	WaitResult.defaultDelay = 1000;
 	
-	gameLib.WaitResult = WaitResult
-	
 	/** 加载资源配置 */
 	class LoaderConfig {
 	    /**
@@ -1248,8 +1240,6 @@ function _FguiBindView(classTarget, url) {
 	        }
 	    }
 	}
-	
-	gameLib.LoaderConfig = LoaderConfig
 	
 	class ResUtils {
 	    static parseRes(urls) {
@@ -1285,8 +1275,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	ResUtils.matchReg = /\{(\d+,\d+)}/;
-	
-	gameLib.ResUtils = ResUtils
 	
 	/** 游戏主页必须继承的类 */
 	class BaseScene extends BaseView {
@@ -1834,8 +1822,6 @@ function _FguiBindView(classTarget, url) {
 	    return Player.inst.isGuest && ((_b = Player.inst.guestModel) === null || _b === void 0 ? void 0 : _b.guestPlayCount) >= CommonCmd.GUEST_MAX_PLAY_COUNT && (gameData != null && !gameData.isRecommend && winLimit <= ((_c = gameData === null || gameData === void 0 ? void 0 : gameData.totalWinMoney) !== null && _c !== void 0 ? _c : 100));
 	};
 	
-	gameLib.BaseScene = BaseScene
-	
 	/** 加载界面 */
 	class LoadingWindow extends BaseView {
 	    constructor() {
@@ -1961,8 +1947,6 @@ function _FguiBindView(classTarget, url) {
 	 */
 	LoadingWindow.isInit = false;
 	LoadingWindow.CREATE_FUI_URL = "//init/LoadingWindow";
-	
-	gameLib.LoadingWindow = LoadingWindow
 	
 	class JSUtils {
 	    /**
@@ -2151,8 +2135,6 @@ function _FguiBindView(classTarget, url) {
 	 */
 	JSUtils.openModal = JSUtils.alert;
 	
-	gameLib.JSUtils = JSUtils
-	
 	/**
 	 * 游戏类型
 	 */
@@ -2297,10 +2279,6 @@ function _FguiBindView(classTarget, url) {
 	        return JSON.stringify(this);
 	    }
 	}
-	
-	gameLib.GameType = GameType
-	
-	gameLib.BaseGameData = BaseGameData
 	
 	class HtmlWindow extends fgui.Window {
 	    constructor() {
@@ -2526,8 +2504,6 @@ function _FguiBindView(classTarget, url) {
 	}
 	HtmlWindow.CREATE_FUI_URL = "//common/HtmlWindow";
 	
-	gameLib.HtmlWindow = HtmlWindow
-	
 	class BaseWindow extends tsCore.EWindow {
 	    constructor() {
 	        super(...arguments);
@@ -2562,8 +2538,6 @@ function _FguiBindView(classTarget, url) {
 	        tsCore.Log.debug(value);
 	    }
 	}
-	
-	gameLib.BaseWindow = BaseWindow
 	
 	/** 提示框 */
 	class HomePrompt extends BaseWindow {
@@ -2650,8 +2624,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	HomePrompt.CREATE_FUI_URL = "//init/HomePrompt";
-	
-	gameLib.HomePrompt = HomePrompt
 	
 	/** 提示框 */
 	class PromptWindow extends BaseWindow {
@@ -2836,8 +2808,6 @@ function _FguiBindView(classTarget, url) {
 	}
 	PromptWindow.CREATE_FUI_URL = "//common/PromptWindow";
 	
-	gameLib.PromptWindow = PromptWindow
-	
 	/** 状态吗获取显示信息 */
 	class StateCode {
 	    /**
@@ -2942,8 +2912,6 @@ function _FguiBindView(classTarget, url) {
 	        JSUtils.gameClose();
 	    }
 	}
-	
-	gameLib.StateCode = StateCode
 	
 	/**
 	 * 游戏基础类
@@ -3383,8 +3351,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
-	gameLib.GameServlet = GameServlet
-	
 	class NoticeView extends BaseView {
 	    constructor() {
 	        super();
@@ -3459,8 +3425,6 @@ function _FguiBindView(classTarget, url) {
 	        super.dispose();
 	    }
 	}
-	
-	gameLib.NoticeView = NoticeView
 	
 	class GameConfigKit {
 	    /**
@@ -3554,8 +3518,6 @@ function _FguiBindView(classTarget, url) {
 	 * @default true
 	 */
 	GameConfigKit.autoSendOnLoadEnd = true;
-	
-	gameLib.GameConfigKit = GameConfigKit
 	
 	/**
 	 * 资源管理类
@@ -4160,8 +4122,6 @@ function _FguiBindView(classTarget, url) {
 	 */
 	AssetsLoader.formatUrl = tsCore.Path.formatUrl;
 	
-	gameLib.AssetsLoader = AssetsLoader
-	
 	/**
 	 *
 	 * @author boge
@@ -4418,8 +4378,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
-	gameLib.GameModel = GameModel
-	
 	class BaseStarter extends tsCore.EProxy {
 	    constructor() {
 	        super();
@@ -4459,8 +4417,6 @@ function _FguiBindView(classTarget, url) {
 	        //        })
 	    }
 	}
-	
-	gameLib.BaseStarter = BaseStarter
 	
 	/**
 	 * 舞台
@@ -5014,8 +4970,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
-	gameLib.SceneManager = SceneManager
-	
 	/**
 	 * app 访问记录管理
 	 * @author boge
@@ -5199,8 +5153,6 @@ function _FguiBindView(classTarget, url) {
 	/** 退出点击上一次时间 */
 	AppRecordManager.exitTimer = 0;
 	Object.defineProperty(tsCore.HistoryManager, "backHistory", { value: AppRecordManager._backHistory });
-	
-	gameLib.AppRecordManager = AppRecordManager
 	
 	/**
 	 * url 参数
@@ -5392,8 +5344,6 @@ function _FguiBindView(classTarget, url) {
 	        this._isGift = value;
 	    }
 	}
-	
-	gameLib.UrlParam = UrlParam
 	
 	/** 用户数据 */
 	class Player {
@@ -5692,8 +5642,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
-	gameLib.Player = Player
-	
 	/**
 	 * 统计管理器
 	 * @author boge
@@ -5781,8 +5729,6 @@ function _FguiBindView(classTarget, url) {
 	}
 	/** 开启数据统计 */
 	AnalyticsManager.isOpenAnalytics = true;
-	
-	gameLib.AnalyticsManager = AnalyticsManager
 	
 	/** 文案提示 */
 	class PromptTip extends tsCore.ELabel {
@@ -5886,8 +5832,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	PromptTip.CREATE_FUI_URL = "//gameCommon/PromptTip";
-	
-	gameLib.PromptTip = PromptTip
 	
 	class ActivityButton extends tsCore.EButton {
 	    constructor() {
@@ -6041,8 +5985,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
-	gameLib.ActivityButton = ActivityButton
-	
 	class BaseSkeletonWindow extends tsCore.SkeletonWindow {
 	    /**
 	     * 如果传入的 data.url 不带/符号  则自动转成 gameName/url.ends/data.url
@@ -6066,8 +6008,6 @@ function _FguiBindView(classTarget, url) {
 	        tsCore.Log.debug(value);
 	    }
 	}
-	
-	gameLib.BaseSkeletonWindow = BaseSkeletonWindow
 	
 	class BaseSlotGameData extends BaseGameData {
 	    /** 第一列是否存在 bounds
@@ -6209,8 +6149,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
-	gameLib.BaseSlotGameData = BaseSlotGameData
-	
 	/**
 	 * Slot 渲染状态
 	 */
@@ -6289,10 +6227,6 @@ function _FguiBindView(classTarget, url) {
 	    playLandingAni() {
 	    }
 	}
-	
-	gameLib.SlotItemType = SlotItemType
-	
-	gameLib.BaseSlotItem = BaseSlotItem
 	
 	class SlotModel extends GameModel {
 	    constructor() {
@@ -6620,8 +6554,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
-	gameLib.SlotModel = SlotModel
-	
 	class BaseSlotView extends BaseView {
 	    constructor() {
 	        super(...arguments);
@@ -6930,8 +6862,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
-	gameLib.BaseSlotView = BaseSlotView
-	
 	/**
 	 * 需要加载资源的组件
 	 * @author boge
@@ -6989,8 +6919,6 @@ function _FguiBindView(classTarget, url) {
 	        this.isInit = false;
 	    }
 	}
-	
-	gameLib.LoadComponent = LoadComponent
 	
 	var SlotRunState;
 	(function (SlotRunState) {
@@ -7225,10 +7153,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
-	gameLib.SlotRunState = SlotRunState
-	
-	gameLib.SlotScrollModel = SlotScrollModel
-	
 	/**
 	 * slot游戏滚动效果类 只使用了 Tween
 	 */
@@ -7308,8 +7232,6 @@ function _FguiBindView(classTarget, url) {
 	        super.dispose();
 	    }
 	}
-	
-	gameLib.SlotScrollTweenModel = SlotScrollTweenModel
 	
 	/**
 	 * 具有贝塞尔曲线运动的loader
@@ -7422,8 +7344,6 @@ function _FguiBindView(classTarget, url) {
 	}
 	GoldLoader.NAME = "GoldLoaderPool";
 	
-	gameLib.GoldLoader = GoldLoader
-	
 	class GoldSpray extends GoldLoader {
 	    constructor() {
 	        super(...arguments);
@@ -7464,8 +7384,6 @@ function _FguiBindView(classTarget, url) {
 	        this.setXY(this.x + this.vx, this.y + this.vy);
 	    }
 	}
-	
-	gameLib.GoldSpray = GoldSpray
 	
 	class GoldEffect extends tsCore.View {
 	    constructor() {
@@ -7545,8 +7463,6 @@ function _FguiBindView(classTarget, url) {
 	        super.dispose();
 	    }
 	}
-	
-	gameLib.GoldEffect = GoldEffect
 	
 	/**
 	 * 发射金币动画
@@ -7633,8 +7549,6 @@ function _FguiBindView(classTarget, url) {
 	        }
 	    }
 	}
-	
-	gameLib.GoldLaunch = GoldLaunch
 	
 	/** 播放各种金币动画 */
 	class GoldSprayAni {
@@ -7786,8 +7700,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
-	gameLib.GoldSprayAni = GoldSprayAni
-	
 	class APP {
 	    static get inst() {
 	        var _a;
@@ -7877,8 +7789,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
-	gameLib.APP = APP
-	
 	/** 卡牌 */
 	class Card extends tsCore.ELabel {
 	    constructor() {
@@ -7915,8 +7825,6 @@ function _FguiBindView(classTarget, url) {
 	        this.addChild(text);
 	    }
 	}
-	
-	gameLib.Card = Card
 	
 	class Deck {
 	    constructor() {
@@ -8118,8 +8026,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
-	gameLib.Deck = Deck
-	
 	/**
 	 * 拷贝对象
 	 */
@@ -8194,8 +8100,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
-	gameLib.CopyObject = CopyObject
-	
 	class CounterUtils {
 	    static create(total, complete) {
 	        return new Counter(complete, total);
@@ -8221,8 +8125,6 @@ function _FguiBindView(classTarget, url) {
 	        this.complete = null;
 	    }
 	}
-	
-	gameLib.CounterUtils = CounterUtils
 	
 	/**
 	 * 水果机旋转动画
@@ -8464,8 +8366,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
-	gameLib.FruitRotationUtils = FruitRotationUtils
-	
 	/**
 	 * 金币动画
 	 */
@@ -8639,8 +8539,6 @@ function _FguiBindView(classTarget, url) {
 	 * 默认声音
 	 */
 	GoldAniUtils.defaultSound = "sounds/gold.ogg";
-	
-	gameLib.GoldAniUtils = GoldAniUtils
 	
 	class ObjectUtil {
 	    static setColorTransform(source, value) {
@@ -8856,8 +8754,6 @@ function _FguiBindView(classTarget, url) {
 	ObjectUtil.colorTransform = new Laya.ColorFilter();
 	ObjectUtil.colorMatrixFilters = [new Laya.ColorFilter()];
 	
-	gameLib.ObjectUtil = ObjectUtil
-	
 	class RotationUtils {
 	    constructor() {
 	        /**
@@ -9019,8 +8915,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
-	gameLib.RotationUtils = RotationUtils
-	
 	class ShowUtils {
 	    static showSize(spr) {
 	        const bonus = new Laya.Sprite();
@@ -9034,8 +8928,6 @@ function _FguiBindView(classTarget, url) {
 	        spr.addChild(bonus);
 	    }
 	}
-	
-	gameLib.ShowUtils = ShowUtils
 	
 	/**
 	 * 洗牌的牌
@@ -9083,8 +8975,6 @@ function _FguiBindView(classTarget, url) {
 	CardDeck.NAME = "CardDeck";
 	CardDeck.CREATE_FUI_URL = "//gameCommon/CardDeck";
 	
-	gameLib.CardDeck = CardDeck
-	
 	class GlobalWaiting extends fgui.GComponent {
 	    onConstruct() {
 	        super.onConstruct();
@@ -9102,8 +8992,6 @@ function _FguiBindView(classTarget, url) {
 	        this.messageText.text = value;
 	    }
 	}
-	
-	gameLib.GlobalWaiting = GlobalWaiting
 	
 	/** 图片窗口 */
 	class ImageWindow extends BaseWindow {
@@ -9129,8 +9017,6 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	ImageWindow.CREATE_FUI_URL = "//init/ImageWindow";
-	
-	gameLib.ImageWindow = ImageWindow
 	
 	/** 提示框 */
 	class RechargeSuccessWindow extends BaseWindow {
@@ -9211,8 +9097,6 @@ function _FguiBindView(classTarget, url) {
 	}
 	RechargeSuccessWindow.CREATE_FUI_URL = "//common/RechargeSuccessWindow";
 	
-	gameLib.RechargeSuccessWindow = RechargeSuccessWindow
-	
 	/**
 	 * 房间通告
 	 * @author boge
@@ -9240,6 +9124,138 @@ function _FguiBindView(classTarget, url) {
 	    }
 	}
 	
+	gameLib.ActionLib = ActionLib
+	
+	gameLib.Activation = Activation
+	
+	gameLib.CommonCmd = CommonCmd
+	
+	gameLib.Cmd = Cmd
+	
+	gameLib.HttpCode = HttpCode
+	
+	gameLib.Urls = Urls
+	
+	gameLib.AppManager = AppManager
+	
+	gameLib.LibStr = LibStr
+	
+	gameLib.SocketManager = SocketManager
+	
+	gameLib.BaseView = BaseView
+	
+	gameLib.WaitResult = WaitResult
+	
+	gameLib.LoaderConfig = LoaderConfig
+	
+	gameLib.ResUtils = ResUtils
+	
+	gameLib.BaseScene = BaseScene
+	
+	gameLib.LoadingWindow = LoadingWindow
+	
+	gameLib.JSUtils = JSUtils
+	
+	gameLib.GameType = GameType
+	
+	gameLib.BaseGameData = BaseGameData
+	
+	gameLib.HtmlWindow = HtmlWindow
+	
+	gameLib.BaseWindow = BaseWindow
+	
+	gameLib.HomePrompt = HomePrompt
+	
+	gameLib.PromptWindow = PromptWindow
+	
+	gameLib.StateCode = StateCode
+	
+	gameLib.GameServlet = GameServlet
+	
+	gameLib.NoticeView = NoticeView
+	
+	gameLib.GameConfigKit = GameConfigKit
+	
+	gameLib.AssetsLoader = AssetsLoader
+	
+	gameLib.GameModel = GameModel
+	
+	gameLib.BaseStarter = BaseStarter
+	
+	gameLib.SceneManager = SceneManager
+	
+	gameLib.AppRecordManager = AppRecordManager
+	
+	gameLib.UrlParam = UrlParam
+	
+	gameLib.Player = Player
+	
+	gameLib.AnalyticsManager = AnalyticsManager
+	
+	gameLib.PromptTip = PromptTip
+	
+	gameLib.ActivityButton = ActivityButton
+	
+	gameLib.BaseSkeletonWindow = BaseSkeletonWindow
+	
+	gameLib.BaseSlotGameData = BaseSlotGameData
+	
+	gameLib.SlotItemType = SlotItemType
+	
+	gameLib.BaseSlotItem = BaseSlotItem
+	
+	gameLib.SlotModel = SlotModel
+	
+	gameLib.BaseSlotView = BaseSlotView
+	
+	gameLib.LoadComponent = LoadComponent
+	
+	gameLib.SlotRunState = SlotRunState
+	
+	gameLib.SlotScrollModel = SlotScrollModel
+	
+	gameLib.SlotScrollTweenModel = SlotScrollTweenModel
+	
+	gameLib.GoldLoader = GoldLoader
+	
+	gameLib.GoldSpray = GoldSpray
+	
+	gameLib.GoldEffect = GoldEffect
+	
+	gameLib.GoldLaunch = GoldLaunch
+	
+	gameLib.GoldSprayAni = GoldSprayAni
+	
+	gameLib.APP = APP
+	
+	gameLib.Card = Card
+	
+	gameLib.Deck = Deck
+	
+	gameLib.CopyObject = CopyObject
+	
+	gameLib.CounterUtils = CounterUtils
+	
+	gameLib.FruitRotationUtils = FruitRotationUtils
+	
+	gameLib.GoldAniUtils = GoldAniUtils
+	
+	gameLib.ObjectUtil = ObjectUtil
+	
+	gameLib.RotationUtils = RotationUtils
+	
+	gameLib.ShowUtils = ShowUtils
+	
+	gameLib.CardDeck = CardDeck
+	
+	gameLib.GlobalWaiting = GlobalWaiting
+	
+	gameLib.ImageWindow = ImageWindow
+	
+	gameLib.RechargeSuccessWindow = RechargeSuccessWindow
+	
 	gameLib.RoomNotice = RoomNotice
+	
+	new Activation()
 	
 }(this.gameLib || (this.gameLib = {})));

@@ -1,5 +1,6 @@
 import {App} from "../App";
-import {IKey, IView} from "../interfaces/ICommon";
+import {IKey} from "../interfaces/ICommon";
+import {IView} from "../interfaces/IView";
 
 export class ViewBlock {
 

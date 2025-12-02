@@ -1112,6 +1112,10 @@ function proxyClass(classTarget, beanName) {
  */
 function runApplication(classTarget) {
     // @ts-ignore
+    const appRunListeners = tsCore.App.appRunListeners;
+    // 通知开始初始化
+    appRunListeners.forEach(listener => { var _a; return (_a = listener.onStartInitialize) === null || _a === void 0 ? void 0 : _a.call(listener); });
+    // @ts-ignore
     const events = tsCore.App.beanEventFunction;
     const eventMap = events.groupBy(value => value.target);
     eventMap.forEach((value, key) => {
@@ -1135,6 +1139,7 @@ function runApplication(classTarget) {
             });
         }
     });
+    appRunListeners.forEach(listener => { var _a; return (_a = listener.onProxyComponentComplete) === null || _a === void 0 ? void 0 : _a.call(listener); });
     // @ts-ignore
     const mainClass = classTarget !== null && classTarget !== void 0 ? classTarget : tsCore.App.appMainClass;
     if (!mainClass) {
@@ -1148,6 +1153,8 @@ function runApplication(classTarget) {
         // @ts-ignore
         tsCore.App.inst.addBean(mainName.firstLowerCase(), app);
     }
+    appRunListeners.forEach(listener => { var _a; return (_a = listener.onCreateMain) === null || _a === void 0 ? void 0 : _a.call(listener, app); });
+    appRunListeners.forEach(listener => { var _a; return (_a = listener.onBeanFuncInitializing) === null || _a === void 0 ? void 0 : _a.call(listener); });
     // @ts-ignore
     tsCore.App.beanClassFunction.forEach((value, key) => {
         // @ts-ignore
@@ -1157,6 +1164,7 @@ function runApplication(classTarget) {
             tsCore.App.inst.addBean(key, target, false);
         }
     });
+    appRunListeners.forEach(listener => { var _a; return (_a = listener.onComponentInitializing) === null || _a === void 0 ? void 0 : _a.call(listener); });
     // @ts-ignore
     tsCore.App.beanClassComponent.sort((a, b) => a.order || 0 - b.order || 0).forEach((value) => {
         // @ts-ignore
@@ -1177,12 +1185,17 @@ function runApplication(classTarget) {
                 tsCore.App.inst.addBean(value.key, target);
             }
             initBean(target, classTargetName);
+            appRunListeners.forEach(listener => { var _a; return (_a = listener.onComponentProgress) === null || _a === void 0 ? void 0 : _a.call(listener, target); });
         }
     });
+    // 通知主应用即将初始化
+    appRunListeners.forEach(listener => { var _a; return (_a = listener.onMainAppInitializing) === null || _a === void 0 ? void 0 : _a.call(listener); });
     initBean(app, mainName);
     if (typeof app["start"] == "function") {
         app["start"]();
     }
+    // 通知完成
+    appRunListeners.forEach(listener => { var _a; return (_a = listener.onComplete) === null || _a === void 0 ? void 0 : _a.call(listener); });
     return app;
 }
 
@@ -2901,6 +2914,7 @@ class RandomTimerSingle extends RandomTimer {
 	    /**
 	     * 定时器主更新逻辑，在每一帧被调用
 	     * 判断每个任务是否满足运行条件，若满足则执行回调
+	     * @internal
 	     */
 	    onUpdate() {
 	        if (this.isPause)
@@ -2924,6 +2938,12 @@ class RandomTimerSingle extends RandomTimer {
 	            }
 	        }
 	    }
+	    /**
+	     *
+	     * @param {TaskHandler} task
+	     * @param {number} time
+	     * @internal
+	     */
 	    runTask(task, time = Laya.Browser.now()) {
 	        if (!task.target.isDisposed
 	            && task.target.parent
@@ -3072,7 +3092,7 @@ class RandomTimerSingle extends RandomTimer {
 	        this.playbackRate = 1;
 	        /**
 	         * 播放循环次数
-	         * @private
+	         * @internal
 	         */
 	        this._loopCount = 0;
 	    }
@@ -3157,6 +3177,10 @@ class RandomTimerSingle extends RandomTimer {
 	            this._play();
 	        }
 	    }
+	    /**
+	     *
+	     * @internal
+	     */
 	    _play() {
 	        var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k, _l, _m;
 	        if (this.skeletonPlay.progress) {
@@ -3347,6 +3371,7 @@ class RandomTimerSingle extends RandomTimer {
 	    }
 	    /**
 	     * 加载完成
+	     * @internal
 	     */
 	    _onLoaded(url) {
 	        var _a;
@@ -3388,6 +3413,7 @@ class RandomTimerSingle extends RandomTimer {
 	    }
 	    /**
 	     * 解析完成
+	     * @internal
 	     */
 	    _parseComplete() {
 	        var _a;
@@ -3402,6 +3428,7 @@ class RandomTimerSingle extends RandomTimer {
 	    }
 	    /**
 	     * 解析失败
+	     * @internal
 	     */
 	    _parseFail() {
 	        Log.error("[Error]:" + this._aniPath + " Parsing failed");
@@ -3546,6 +3573,7 @@ class RandomTimerSingle extends RandomTimer {
 	    }
 	    /**
 	     * 换装的时候，需要清一下缓冲区
+	     * @internal
 	     */
 	    clearCache() {
 	        if (this.aniMode == 0) {
@@ -3663,6 +3691,10 @@ class RandomTimerSingle extends RandomTimer {
 	        DefineConfig.defineLaya();
 	        DefineConfig.defineFairy();
 	    }
+	    /**
+	     *
+	     * @internal
+	     */
 	    static defineLaya() {
 	        Object.defineProperty(Laya.Stage.prototype, "_changeCanvasSize", {
 	            value: function () {
@@ -3831,6 +3863,10 @@ class RandomTimerSingle extends RandomTimer {
 	        DefineConfig.defineText();
 	        DefineConfig.defineTimer();
 	    }
+	    /**
+	     *
+	     * @internal
+	     */
 	    static defineFairy() {
 	        Object.defineProperty(fgui.GRoot.prototype, "playOneShotSound", {
 	            value: function (url, volumeScale) {
@@ -3986,6 +4022,10 @@ class RandomTimerSingle extends RandomTimer {
 	            }
 	        });
 	    }
+	    /**
+	     *
+	     * @internal
+	     */
 	    static defineText() {
 	        Object.defineProperties(Laya.Text.prototype, {
 	            _isDrawRemoveLine: {
@@ -4086,6 +4126,10 @@ class RandomTimerSingle extends RandomTimer {
 	            }
 	        });
 	    }
+	    /**
+	     *
+	     * @internal
+	     */
 	    static defineTimer() {
 	        // 清理所有数据
 	        Object.defineProperty(Laya.CallLater.prototype, "clear", {
@@ -4127,6 +4171,10 @@ class RandomTimerSingle extends RandomTimer {
 	            }
 	        });
 	    }
+	    /**
+	     *
+	     * @internal
+	     */
 	    static defineSkeleton() {
 	        Object.defineProperty(Laya.Skeleton.prototype, "getAniIndexByName", {
 	            value: function (name) {
@@ -4249,6 +4297,10 @@ class RandomTimerSingle extends RandomTimer {
 	            }
 	        });
 	    }
+	    /**
+	     *
+	     * @internal
+	     */
 	    static defineSpineSkeleton() {
 	        Object.defineProperties(Laya.SpineTempletBase.prototype, {
 	            loadResUrl: {
@@ -4503,6 +4555,9 @@ class RandomTimerSingle extends RandomTimer {
 	    static init() {
 	        App._init();
 	    }
+	    /**
+	     * @internal
+	     */
 	    static _init() {
 	        var _a;
 	        (_a = this._instance) !== null && _a !== void 0 ? _a : (this._instance = new App());
@@ -4537,6 +4592,9 @@ class RandomTimerSingle extends RandomTimer {
 	            this.onResize();
 	        }
 	    }
+	    /**
+	     * @internal
+	     */
 	    onResize() {
 	        let screenWidth = Laya.stage.width;
 	        let screenHeight = Laya.stage.height;
@@ -4694,6 +4752,11 @@ class RandomTimerSingle extends RandomTimer {
 	 * @internal
 	 */
 	App.beanEventFunction = [];
+	/**
+	 * 监听依赖注入整个生命周期
+	 * @internal
+	 */
+	App.appRunListeners = [];
 	/**
 	 * 启动历史记录监听
 	 */

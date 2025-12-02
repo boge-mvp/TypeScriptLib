@@ -19,14 +19,23 @@ function buildLib(done) {
             globs: ["src/**/*.ts", "**/*.d.ts", "../TsCore/bin/*.d.ts"],
         },
         outName: project,
-        dist: "./bin",
-        namespace: project,
-        js: {isMinify: true},
+        dist: "./bin"
+    }, done, {
+        js: {
+            namespace: project,
+            isMinify: true,
+            plugs: [{
+                onAfterCodeCompile: function (file) {
+                    let content = file.contentBuffer.toString()
+                    content += "\nnew Activation()\n"
+                    file.contentBuffer = Buffer.from(content)
+                }
+            }]
+        },
         dts: {
+            namespace: project,
             globalDtsFile: ["./src/entity.d.ts"]
         }
-    }, function () {
-        done()
     })
 }
 

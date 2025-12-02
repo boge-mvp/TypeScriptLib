@@ -1,5 +1,5 @@
-import {IFormatPath} from "./interfaces/ICommon";
 import {ELoader} from "./extends/ELoader";
+import {IFormatPath} from "./interfaces/IFormatPath";
 
 export class Path {
 

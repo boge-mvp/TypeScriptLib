@@ -98,6 +98,7 @@ export class GSkeleton extends ESkeleton {
 
     /**
      * 加载完成
+     * @internal
      */
     private _onLoaded(url?: string) {
         if (url) {
@@ -136,6 +137,7 @@ export class GSkeleton extends ESkeleton {
 
     /**
      * 解析完成
+     * @internal
      */
     private _parseComplete() {
         if (this.isDisposed) return
@@ -149,6 +151,7 @@ export class GSkeleton extends ESkeleton {
 
     /**
      * 解析失败
+     * @internal
      */
     private _parseFail() {
         Log.error("[Error]:" + this._aniPath + " Parsing failed")
@@ -262,6 +265,11 @@ export class GSkeleton extends ESkeleton {
         return slot
     }
 
+    /**
+     *
+     * @type {Laya.Texture}
+     * @internal
+     */
     private static _emptyTexture: Texture
     static get emptyTexture() {
         GSkeleton._emptyTexture ??= Texture.create(HTMLImage.create(50, 50, TextureFormat.R8G8B8A8), 0, 0, 50, 50)
@@ -306,6 +314,7 @@ export class GSkeleton extends ESkeleton {
 
     /**
      * 换装的时候，需要清一下缓冲区
+     * @internal
      */
     private clearCache() {
         if (this.aniMode == 0) {

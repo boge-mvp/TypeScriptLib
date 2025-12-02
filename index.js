@@ -1,23 +1,22 @@
 const fs = require('fs')
 const path = require('path')
 
-const streamNode = require("node:stream")
+const del = require("del")
 const gulp = require("gulp")
 const log = require("gulplog")
 const gulpTerser = require("gulp-terser")
-const inject = require("gulp-inject-string")
-const concat = require('gulp-concat')
-const del = require("del")
-const each = require("gulp-each")
-const sort = require('gulp-sort')
 const rename = require('gulp-rename')
 const sourcemaps = require('gulp-sourcemaps')
 const {InitOptions, WriteOptions} = require("gulp-sourcemaps")
 const gulpTs = require("gulp-typescript")
-const through2 = require("through2").obj
-const {Settings} = require("gulp-typescript")
+
+const through2 = require("through2")
 const {MinifyOptions} = require("terser")
 const webp = require("./webp/ToWebp")
+const {addMetadata, createNamespaceTransformer, scanNode} = require("./typescript-parse");
+const {rollupStream, run} = require("./gulp-stream-util")
+const ifelse = require("./gulp-ifelse")
+const namespacePlug = require("./gulp-namespace")
 const concatSource = require("./gulp-concat-source");
 const sortDeclaration = require("./gulp-ts-sort-declaration");
 const rollupRename = require("./rollup-plugin-rename");
@@ -25,515 +24,11 @@ const generics = require("./rollup-plugin-generics");
 
 const ts = require('typescript')
 
-const rollup = require('rollup')
-const File = require('vinyl')
-const source = require('vinyl-source-stream')
-const {globSync} = require('glob');
 const glsl = require('rollup-plugin-glsl')
 const typescriptRollup = require('@rollup/plugin-typescript')
 const rollupTerser = require("@rollup/plugin-terser")
 const {Options} = require("@rollup/plugin-terser")
 const {SrcOptions} = require("vinyl-fs")
-
-/***************************** 公共逻辑方法 *****************************/
-
-/**
- * https://astexplorer.net/
- * 创建一个命名空间转换器，用于处理 TypeScript 中的 import = 声明，
- * 并将简写的命名空间引用替换为完整的限定名路径。
- *
- * @returns 一个 Transformer 工厂函数，接受 TypeChecker 上下文并返回源文件转换函数。
- */
-function createNamespaceTransformer() {
-    return (context) => {
-        return (sourceFile) => {
-            // console.log(sourceFile.fileName)
-            // 存储 import = 声明的映射关系：简写名称 -> 完整命名空间路径
-            const namespaceMap = new Map();
-
-            /**
-             * 第一次遍历 AST，收集所有 import = 声明中的命名空间映射关系，
-             * 并移除这些 import 声明。
-             *
-             * @param node 当前遍历到的 AST 节点
-             * @returns {ts.Node} 转换后的节点（如果需要删除则返回 undefined）
-             */
-            function visitFirstPass(node) {
-                // 处理 import xxx = yyy.zzz 声明
-                if (ts.isImportEqualsDeclaration(node) && ts.isQualifiedName(node.moduleReference)) {
-                    const namespaceName = node.name.text;
-                    const fullName = node.moduleReference.getText(sourceFile);
-                    namespaceMap.set(namespaceName, fullName);
-                    // 移除这个 import 声明
-                    return undefined;
-                }
-                return ts.visitEachChild(node, visitFirstPass, context);
-            }
-
-            // 应用第一次遍历，构建命名空间映射表并清理 import 声明
-            sourceFile = ts.visitNode(sourceFile, visitFirstPass);
-
-            /**
-             * 第二次遍历 AST，根据已收集的命名空间映射关系，
-             * 将使用简写名称的地方替换为完整限定名表达式。
-             *
-             * @param node 当前遍历到的 AST 节点
-             * @returns {ts.Node|ts.TypeReferenceNode} 转换后的节点
-             */
-            function visitSecondPass(node) {
-                // 替换标识符为完整的命名空间路径
-                if (ts.isIdentifier(node) && namespaceMap.has(node.text)) {
-                    const parent = node.parent;
-                    if (!parent) return node
-                    // 检查是否是独立的标识符使用（不是属性访问的一部分）
-                    if (
-                        ts.isTypeQueryNode(parent) && parent.exprName === node ||
-                        // 变量声明类型: let a: Pool
-                        ts.isVariableDeclaration(parent) && parent.type === node ||
-                        // 函数参数类型: function test(a: Pool)
-                        ts.isParameter(parent) && parent.type === node ||
-                        // 返回值类型: function test(): Pool
-                        ts.isFunctionDeclaration(parent) && parent.type === node ||
-                        // 返回值类型: method test(): Pool (类中的方法)
-                        ts.isMethodDeclaration(parent) && parent.type === node ||
-                        // 泛型约束: <T extends Pool>
-                        ts.isTypeReferenceNode(parent) && parent.typeArguments?.includes(node) ||
-                        // 类型断言: obj as Pool
-                        ts.isAsExpression(parent) && parent.type === node ||
-                        // 数组类型等: Pool[]
-                        ts.isArrayTypeNode(parent) && parent.elementType === node ||
-                        // 联合类型: type MyType = A | Pool 虽然不常用于继承，但可能出现在类型定义中
-                        ts.isUnionTypeNode(parent) && parent.types?.includes(node) ||
-                        // 元组类型: let a: [Pool, OtherType]
-                        ts.isTupleTypeNode(parent) && parent.elements?.includes(node) ||
-                        // 条件类型: type A = Pool extends infer P ? P : never
-                        (ts.isConditionalTypeNode(parent) &&
-                            (parent.checkType === node || parent.extendsType === node)) ||
-                        // 映射类型: type A = { [K in Pool]: OtherType }
-                        (ts.isMappedTypeNode(parent) && parent.typeParameter?.constraint === node) ||
-                        // 索引签名: { [key: Pool]: OtherType }
-                        (ts.isIndexSignatureDeclaration(parent) && parent.parameters?.[0]?.type === node) ||
-                        // 模板字面量类型: type A = `Hello ${Pool}`
-                        (ts.isTemplateLiteralTypeNode(parent) && parent.types?.some(type => type === node)) ||
-                        // 函数参数默认值中的类型: function test(skeleton: {new(): Pool} = PoolImpl)
-                        (ts.isParameter(parent) && parent.type && ts.isTypeLiteralNode(parent.type) &&
-                            parent.type.members?.some(member =>
-                                ts.isConstructSignatureDeclaration(member) &&
-                                member.type === node)) ||
-                        // 构造签名返回类型: { new(): Pool }
-                        (ts.isConstructSignatureDeclaration(parent) && parent.type === node)
-                    ) {
-                        const fullName = namespaceMap.get(node.text);
-                        const qualifiedName = createQualifiedNameEntityName(fullName);
-                        setParentRecursive(qualifiedName, parent);
-                        return qualifiedName;
-                    }
-
-                    // 其他表达式上下文使用 PropertyAccessExpression
-                    if (
-                        // 新建实例: new Pool()
-                        ts.isNewExpression(parent) && parent.expression === node ||
-                        // 静态方法调用: Pool.method()
-                        ts.isPropertyAccessExpression(parent) && parent.expression === node ||
-                        // 函数调用参数: mixinExt(Pool, OtherClass)
-                        ts.isCallExpression(parent) && parent.arguments.includes(node) ||
-                        // 属性初始化器: static Pool = Pool
-                        (ts.isPropertyDeclaration(parent) && parent.initializer === node) ||
-                        // 变量赋值: let Pool = Pool
-                        (ts.isVariableDeclaration(parent) && parent.initializer === node) ||
-                        // 类继承: class UI extends Pool {}
-                        ts.isHeritageClause(parent) && parent.types?.some(type => type.expression === node) ||
-                        // 类继承中的类型参数: class UI extends Pool {}
-                        ts.isExpressionWithTypeArguments(parent) && parent.expression === node ||
-                        // 交叉继承类型: class UI extends A & B {}
-                        ts.isIntersectionTypeNode(parent) && parent.types?.includes(node) ||
-                        // 括号类型: class UI extends (Pool) {}
-                        ts.isParenthesizedTypeNode(parent) && parent.type === node ||
-                        // 索引访问继承类型: class UI extends Lib['BaseClass'] {}
-                        ts.isIndexedAccessTypeNode(parent) && parent.objectType === node ||
-                        // instanceof 表达式: t instanceof Pool
-                        (ts.isBinaryExpression(parent) && parent.operatorToken.kind === ts.SyntaxKind.InstanceOfKeyword && parent.right === node) ||
-                        // typeof 表达式: if (typeof obj === "object")
-                        (ts.isTypeOfExpression(parent) && parent.expression === node) ||
-                        // 等于比较表达式: value == Pool 或 value === Pool
-                        (ts.isBinaryExpression(parent) &&
-                            (parent.operatorToken.kind === ts.SyntaxKind.EqualsEqualsToken ||
-                                parent.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken ||
-                                parent.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsToken ||
-                                parent.operatorToken.kind === ts.SyntaxKind.ExclamationEqualsEqualsToken) &&
-                            (parent.left === node || parent.right === node)) ||
-                        // 逗号表达式中的参数: func(arg1, Pool, arg3)
-                        (ts.isCommaListExpression(parent) && parent.elements.includes(node)) ||
-                        // 条件表达式: condition ? Pool : OtherClass
-                        (ts.isConditionalExpression(parent) &&
-                            (parent.condition === node || parent.whenTrue === node || parent.whenFalse === node)) ||
-                        // 对象字面量属性值: { prop: Pool }
-                        (ts.isPropertyAssignment(parent) && parent.initializer === node) ||
-                        // 数组字面量元素: [Pool, OtherClass]
-                        (ts.isArrayLiteralExpression(parent) && parent.elements.includes(node)) ||
-                        // 元素访问表达式: Pool["property"] 或 Pool[variable]
-                        (ts.isElementAccessExpression(parent) && parent.expression === node) ||
-                        // 一元表达式: !Pool, +Pool, -Pool, ~Pool, ++Pool, --Pool
-                        (ts.isPrefixUnaryExpression(parent) && parent.operand === node) ||
-                        (ts.isPostfixUnaryExpression(parent) && parent.operand === node) ||
-                        // 逻辑表达式: Pool && other, Pool || other
-                        (ts.isBinaryExpression(parent) &&
-                            (parent.operatorToken.kind === ts.SyntaxKind.AmpersandAmpersandToken ||
-                                parent.operatorToken.kind === ts.SyntaxKind.BarBarToken) &&
-                            (parent.left === node || parent.right === node)) ||
-                        // Await表达式: await Pool
-                        (ts.isAwaitExpression(parent) && parent.expression === node) ||
-                        // Yield表达式: yield Pool
-                        (ts.isYieldExpression(parent) && parent.expression === node) ||
-                        // Spread表达式: ...Pool
-                        (ts.isSpreadElement(parent) && parent.expression === node) ||
-                        // Void表达式: void Pool
-                        (ts.isVoidExpression(parent) && parent.expression === node) ||
-                        // Delete表达式: delete Pool (虽然不常见，但语法上可能)
-                        (ts.isDeleteExpression(parent) && parent.expression === node) ||
-                        // in 表达式: prop in Pool
-                        (ts.isBinaryExpression(parent) &&
-                            parent.operatorToken.kind === ts.SyntaxKind.InKeyword &&
-                            parent.right === node) ||
-                        // 非空断言: Pool!
-                        (ts.isNonNullExpression(parent) && parent.expression === node) ||
-                        // 可选链: Pool?.method()
-                        (ts.isPropertyAccessExpression(parent) && parent.expression === node && parent.questionDotToken) ||
-                        // 装饰器参数: @Decorator(Pool)
-                        (ts.isDecorator(parent) && parent.expression.arguments?.includes(node)) ||
-                        // 函数参数默认值: function test(a = Pool)
-                        (ts.isParameter(parent) && parent.initializer === node)
-
-                    ) {
-                        const fullName = namespaceMap.get(node.text);
-                        const qualifiedName = createQualifiedNameExpression(fullName);
-                        setParentRecursive(qualifiedName, parent);
-                        return qualifiedName;
-                    }
-                }
-
-                // 处理类型引用节点，将简写的类型名替换为完整限定名 isTypeReferenceNode=173  isIdentifier=79
-                if (ts.isTypeReferenceNode(node) && ts.isIdentifier(node.typeName)
-                    && namespaceMap.has(node.typeName.text)) {
-                    const fullName = namespaceMap.get(node.typeName.text);
-                    const qualifiedName = createQualifiedNameEntityName(fullName);
-                    const typeReferenceNode = ts.factory.createTypeReferenceNode(
-                        qualifiedName,
-                        node.typeArguments
-                    );
-                    setParentRecursive(typeReferenceNode, node.parent);
-                    if (node.typeArguments) {
-                        node.typeArguments.forEach(arg => setParentRecursive(arg, typeReferenceNode));
-                    }
-                    return typeReferenceNode;
-                }
-
-                // 处理 typeof 表达式中的命名空间引用
-                if (ts.isTypeQueryNode(node) && ts.isQualifiedName(node.exprName)) {
-                    // 检查是否是形如 typeof Path.formatUrl 的表达式
-                    const leftmost = getLeftmostIdentifier(node.exprName);
-                    if (leftmost && namespaceMap.has(leftmost.text)) {
-                        const fullName = namespaceMap.get(leftmost.text);
-                        const qualifiedName = createQualifiedNameEntityName(fullName);
-
-                        // 重构整个表达式
-                        let newExprName = replaceLeftmostInQualifiedName(node.exprName, leftmost.text, qualifiedName);
-                        const newTypeQuery = ts.factory.createTypeQueryNode(newExprName);
-                        setParentRecursive(newTypeQuery, node.parent);
-                        return newTypeQuery;
-                    }
-                }
-
-                return ts.visitEachChild(node, visitSecondPass, context);
-            }
-
-
-            // 应用第二次遍历，完成命名空间路径的替换
-            /** @type ts.SourceFile */
-            const newNode = ts.visitNode(sourceFile, visitSecondPass);
-            // const text = ts.createPrinter().printFile(newNode)
-            // newNode.text = text
-            return newNode
-        };
-
-        // 辅助函数：获取限定名中最左边的标识符
-        function getLeftmostIdentifier(qualifiedName) {
-            if (ts.isIdentifier(qualifiedName)) {
-                return qualifiedName;
-            } else if (ts.isQualifiedName(qualifiedName)) {
-                return getLeftmostIdentifier(qualifiedName.left);
-            }
-            return null;
-        }
-
-// 辅助函数：替换限定名中最左边的标识符
-        function replaceLeftmostInQualifiedName(qualifiedName, oldName, newName) {
-            if (ts.isIdentifier(qualifiedName) && qualifiedName.text === oldName) {
-                return newName;
-            } else if (ts.isQualifiedName(qualifiedName)) {
-                const newLeft = replaceLeftmostInQualifiedName(qualifiedName.left, oldName, newName);
-                return ts.factory.createQualifiedName(newLeft, qualifiedName.right);
-            }
-            return qualifiedName;
-        }
-
-        /**
-         * 根据完整名称创建限定名表达式（如 a.b.c）。
-         *
-         * @param fullName 完整的命名空间路径字符串，以点号分隔
-         * @returns {ts.Identifier} 表达式节点，表示该限定名
-         */
-        function createQualifiedNameExpression(fullName) {
-            const parts = fullName.split('.');
-            if (parts.length === 1) return ts.factory.createIdentifier(parts[0]);
-
-            // 默认使用 PropertyAccessExpression，因为它在大多数上下文中都有效
-            let result = ts.factory.createIdentifier(parts[0]);
-            for (let i = 1; i < parts.length; i++) {
-                result = ts.factory.createPropertyAccessExpression(
-                    result,
-                    ts.factory.createIdentifier(parts[i])
-                );
-            }
-            return result;
-        }
-
-        /**
-         * 根据完整名称创建限定名实体名称（如 a.b.c），用于类型引用上下文。
-         *
-         * @param fullName 完整的命名空间路径字符串，以点号分隔
-         * @returns {ts.Identifier} 实体名称节点，表示该限定名
-         */
-        function createQualifiedNameEntityName(fullName) {
-            const parts = fullName.split('.');
-            if (parts.length === 1) return ts.factory.createIdentifier(parts[0]);
-
-            // 在类型上下文中使用 QualifiedName
-            let result = ts.factory.createIdentifier(parts[0]);
-            for (let i = 1; i < parts.length; i++) {
-                result = ts.factory.createQualifiedName(
-                    result,
-                    ts.factory.createIdentifier(parts[i])
-                );
-            }
-            return result;
-        }
-
-
-        /**
-         * 递归设置节点的 parent 属性
-         * @param node 要设置 parent 的节点
-         * @param parent 父节点
-         */
-        function setParentRecursive(node, parent) {
-            if (node) {
-                node.parent = parent;
-                ts.forEachChild(node, child => {
-                    setParentRecursive(child, node);
-                });
-            }
-        }
-
-    };
-}
-
-/**
- * 生成一个用于添加元数据的 TypeScript AST 转换器工厂函数。
- * 该函数会遍历 AST 中的类声明节点，如果类使用了指定装饰器（如 Component、FguiBindView、AppMain），
- * 则为其添加 Reflect.metadata 装饰器，并调整装饰器顺序，将 Component 装饰器移到最后。
- *
- * @returns {ts.TransformerFactory<ts.SourceFile>} 返回一个接收转换上下文 context 的函数，该函数返回实际的 AST 转换函数。
- */
-function addMetadata() {
-    return (context) => {
-        const decoratorName = ["Component", "FguiBindView", "AppMain"]
-        const printer = ts.createPrinter({
-            removeComments: false,
-            newLine: ts.NewLineKind.LineFeed
-        });
-
-        /**
-         * 遍历 AST 节点的访问器函数。
-         * 主要处理类声明节点，为其添加元数据装饰器并重新排序装饰器。
-         *
-         * @param {ts.Node} node 当前遍历到的 AST 节点
-         * @returns {ts.Node | ts.ClassDeclaration} 处理后的节点或原始节点
-         */
-        const visitor = (node) => {
-            // 只处理类声明
-            if (ts.isClassDeclaration(node)) {
-                const name = node.name.text
-                const decorators = ts.getDecorators(node)
-
-
-                // 查看装饰器中是否有目标装饰器之一
-                const hasTargetDecorator = decorators?.some(modifier => {
-                    // 获取装饰器表达式
-                    const decorator = getExpression(modifier.expression)
-                    return decoratorName.includes(decorator.text)
-                });
-                if (hasTargetDecorator && node.name) {
-                    const className = node.name.text;
-                    // 创建 Reflect.metadata 装饰器表达式
-                    const metadataDecorator = ts.factory.createDecorator(
-                        ts.factory.createCallExpression(
-                            ts.factory.createPropertyAccessExpression(
-                                ts.factory.createIdentifier('Reflect'),
-                                'metadata'
-                            ),
-                            undefined,
-                            [
-                                ts.factory.createStringLiteral('class:name'),
-                                ts.factory.createStringLiteral(className)
-                            ]
-                        )
-                    );
-                    setParent(metadataDecorator, node)
-                    const modifiers = (node.modifiers || [])
-                    modifiers.unshift(metadataDecorator)
-                    // 添加 metadata 装饰器到 modifiers 列表中
-                    const newModifiers = ts.canHaveDecorators(node) ? modifiers.toSorted((a, b) => {
-                        if (a.kind === b.kind && a.kind === ts.SyntaxKind.Decorator) {
-                            const aName = isNewNode(a) ?
-                                printer.printNode(ts.EmitHint.Unspecified, a, a.getSourceFile()) :
-                                a.getText()
-                            const bName = isNewNode(b) ?
-                                printer.printNode(ts.EmitHint.Unspecified, b, b.getSourceFile()) :
-                                b.getText()
-                            if (aName.startsWith("@Reflect.metadata") && !bName.startsWith("@Reflect.metadata"))
-                                return 1
-                            if (!aName.startsWith("@Reflect.metadata") && bName.startsWith("@Reflect.metadata"))
-                                return -1
-                            if (aName.startsWith("@Component") && !bName.startsWith("@Component"))
-                                return 1
-                            if (!aName.startsWith("@Component") && bName.startsWith("@Component"))
-                                return -1
-                        }
-                        return 0
-                    }) : [metadataDecorator];
-                    // 返回修改后的类节点
-                    return ts.factory.updateClassDeclaration(
-                        node,
-                        newModifiers,
-                        node.name,
-                        node.typeParameters,
-                        node.heritageClauses || [],
-                        node.members
-                    )
-                }
-
-            }
-            return ts.visitEachChild(node, visitor, context)
-        }
-
-        function isNewNode(node) {
-            return !node.getSourceFile() || node.pos === -1 || node.end === -1 || (node.getFullStart() === 0 && node.getEnd() === 0)
-        }
-
-        function setParent(node, parent) {
-            node.parent = parent
-            ts.forEachChild(node, (child) => {
-                setParent(child, node)
-            })
-        }
-
-        /**
-         *
-         * @param {LeftHandSideExpression} exp
-         * @return IdentifierObject
-         */
-        function getExpression(exp) {
-            if (ts.isCallExpression(exp) && ts.isIdentifier(exp.expression)) {
-                return getExpression(exp.expression)
-            }
-            return exp
-        }
-
-        /**
-         * 实际执行 AST 转换的函数。
-         * 接收源文件节点，使用 visitor 遍历并返回转换后的节点。
-         *
-         * @param {ts.SourceFile} sourceFile 源文件节点
-         * @returns {ts.Node} 转换后的节点
-         */
-        return (sourceFile) => {
-            /** @type ts.SourceFile */
-            const newNode = ts.visitNode(sourceFile, visitor);
-            // newNode.text = ts.createPrinter().printFile(newNode)
-            return newNode
-        }
-    }
-}
-
-/**
- * 条件执行gulp流中的插件
- * @param condition {boolean|function} 条件，如果为true则执行插件流
- * @param plugins {Array} gulp插件数组
- * @return {NodeJS.ReadWriteStream}
- */
-function ifelse(condition, plugins) {
-    return through2({objectMode: true}, function (chunk, encoding, callback) {
-        // 判断condition类型并计算实际的布尔值
-        let result = false;
-        if (typeof condition === "boolean") {
-            result = condition;
-        } else if (typeof condition === "function") {
-            // 当condition是函数时，传递chunk和encoding参数进行判断
-            result = condition.apply(this, [chunk, encoding]);
-        } else {
-            return callback(new Error("condition must be a boolean or function"));
-        }
-
-        // 如果条件为真且提供了插件数组，则执行这些插件
-        if (result && Array.isArray(plugins) && plugins.length > 0) {
-            const resultFile = []
-            // 创建初始流
-            let stream = through2({objectMode: true});
-            stream.myName = "stream name"
-            // 构建插件管道
-            let pipeline = stream;
-            for (let plugin of plugins) {
-                if (typeof plugin === 'function') {
-                    pipeline = pipeline.pipe(plugin());
-                } else {
-                    pipeline = pipeline.pipe(plugin);
-                }
-            }
-
-            // 跟踪是否已经回调，防止多次调用callback
-            let hasCallback = false;
-            const safeCallback = (err, data) => {
-                if (!hasCallback) {
-                    hasCallback = true;
-                    callback(err, data);// 完成本次处理
-                }
-            };
-
-            // 监听管道的结果
-            pipeline.on('data', (resultChunk) => {
-                resultFile.push(resultChunk)
-            });
-
-            pipeline.on('error', (err) => {
-                safeCallback(err);
-            });
-
-            // 监听结束事件，确保即使没有数据也完成回调
-            pipeline.on('end', () => {
-                resultFile.forEach(value => {
-                    safeCallback(null, value)
-                })
-            });
-            // 写入数据并结束流以触发处理
-            stream.write(chunk);
-            stream.end();
-        } else {
-            // 条件为假或没有插件，直接传递数据
-            callback(null, chunk);
-        }
-    });
-}
-
 
 /*************************** 创建新的打包代码方法 *************************/
 
@@ -657,40 +152,6 @@ function createDirectory(filePath) {
 }
 
 /**
- *
- * @type
- *
- * 配合gulp pipe 流执行，必须有返回非 undefined 的值 否则阻塞
- * @param func {function(chunk: Buffer | File, encoding: string, callback: function(Error|null, chunk: Buffer)): boolean}
- *        返回值不是 undefined 将会立即执行流传递，否则等待调用 callback
- * @param [end=null] {function(): void} 回调执行结束的方法，需要回调否则会阻塞
- * @param args {any} 附带的参数 会放在开头
- */
-function runStream(func, end, ...args) {
-    return through2(function (chunk, encoding, callback) {
-        if (func) {
-            let result = func.apply(this, [...args, chunk, encoding, callback])
-            if (result !== undefined)
-                callback(null, chunk)
-        } else callback(null, chunk)
-    }, end)
-}
-
-/**
- * 运行一次流处理 function中不要执行异步数据处理，否则执行顺序会混乱
- * @param func {({chunk},{enc})=>{}} 处理方法
- * @param [end=null] {function(()=>{}):{}} 回调流 参数方法需要回调不然会阻塞
- * @param args {any} 附带的参数  会放在开头
- * @return {*}
- */
-function run(func, end, ...args) {
-    return through2(function (chunk, encoding, callback) {
-        func && func.apply(this, [...args, chunk, encoding])
-        callback(null, chunk)
-    }, end)
-}
-
-/**
  * 收集指定路径下的所有文件路径
  * @param url {string} 相对路径或绝对路径
  * @return {Promise<string[]>} 完整路径数据
@@ -765,6 +226,7 @@ function getProject(tsConfig = "tsconfig.json", customTransformers) {
  * @return {gulpTs.CompileStream} 返回一个gulp流，用于后续的管道操作
  */
 function createCompileStream(globs, opt, customTransformers) {
+    if (!Array.isArray(globs)) globs = [globs]
     const tsProject = getProject(undefined, customTransformers)
     // gulp.src 不知道为什么不解析 typeRoots 这里强制添加
     const types = tsProject.options.typeRoots || []
@@ -795,34 +257,55 @@ function createCompileStream(globs, opt, customTransformers) {
  * @property {GlobsConfig} src - 源文件配置
  * @property {string} outName - 输出文件的名称（不包含扩展名）
  * @property {string} dist - 输出目录路径
- * @property {string} [namespace] - 命名空间名称
- * @property {{ isMinify?:boolean}} js
- * @property {{ globalDtsFile?:string[]}} dts
  */
+
+/**
+ * @typedef JSPlugin
+ * @property {(file:File)=>void} [onBeforeCodeCompile] - 代码编译前
+ * @property {(file:File)=>void} [onAfterCodeCompile] - 代码编译后
+ * @property {()=>void} [onBeforeFlush] - 代码处理结束前
+ * @property {()=>void} [onAfterFlush] - 代码处理结束后
+ */
+/**
+ * @typedef JSOptions
+ * @property {boolean} [isMinify] 默认值: false - 是否压缩代码
+ * @property {string} [namespace] 默认值: undefined - 命名空间名称
+ * @property {JSPlugin[]} [plugs] 默认值: [] - JS插件数组
+ */
+
+/**
+ * @typedef DTSOptions
+ * @property {string[]} [globalDtsFile]
+ * @property {string} [namespace] 默认值: undefined - 命名空间名称
+ */
+
 
 /**
  * 构建库文件的主函数
  * @param config {BuildConfig} 构建配置对象
- * @param done - Gulp任务完成回调函数
+ * @param done {()=>void} - Gulp任务完成回调函数
+ * @param [opt] { {js?:JSOptions, dts?:DTSOptions} } 可选配置
  */
-function buildLibrary(config, done) {
-    const tsResult = createCompileStream(config.src.globs, config.src.opt, () => ({
-        before: [
-            addMetadata(),
-            createNamespaceTransformer()
-        ],
-        afterDeclarations: [
-            createNamespaceTransformer()
-        ]
-    }))
+function buildLibrary(config, done, opt) {
+    const tsResult = createCompileStream(config.src.globs, config.src.opt, () => {
+        return {
+            before: [
+                addMetadata(),
+                createNamespaceTransformer()
+            ],
+            afterDeclarations: [
+                createNamespaceTransformer()
+            ]
+        }
+    })
     const jsStream = function (done) {
-        buildJs(tsResult, config.outName, config.dist, config.js.isMinify, config.namespace)
+        buildJs(tsResult, config.outName, config.dist, opt?.js)
             .pipe(run(function () {
                 done()
             }))
     }
     const dtsStream = function (done) {
-        buildDts(tsResult, config.outName, config.dist, config.dts.globalDtsFile, config.namespace)
+        buildDts(tsResult, config.outName, config.dist, opt?.dts?.globalDtsFile, opt?.dts?.namespace)
             .pipe(run(function () {
                 done()
             }))
@@ -833,16 +316,19 @@ function buildLibrary(config, done) {
     )(done)
 }
 
+
 /**
  * 构建JavaScript文件的函数
  * @param {GlobsConfig | gulpTs.CompileStream} tsResult - TypeScript编译流或是其生成需要的包含globs和opt的属性
  * @param {string} outName - 输出文件的名称（不包含扩展名）
  * @param {string} dist - 输出目录路径
- * @param {boolean} isMinify - 是否压缩文件，默认为false
- * @param {string|null} namespace - 命名空间，默认为null
+ * @param {JSOptions | null} opt - 可选配置
  * @returns {Stream} 返回 gulp 流对象，用于链式操作
  */
-function buildJs(tsResult, outName, dist, isMinify = false, namespace = null) {
+function buildJs(tsResult, outName, dist, opt) {
+    const isMinify = opt?.isMinify ?? false
+    const namespace = opt?.namespace
+    const plugs = opt?.plugs ?? []
     if (tsResult.globs) {
         tsResult = createCompileStream(tsResult.globs, tsResult.opt, () => ({
             before: [
@@ -853,7 +339,30 @@ function buildJs(tsResult, outName, dist, isMinify = false, namespace = null) {
     }
     return tsResult
         .js
-        .pipe(concatSource(`${outName}.js`, {namespace: namespace}))
+        .pipe(through2.obj(function (chunk, encoding, callback) {
+            for (const plug of plugs) {
+                plug.onBeforeCodeCompile?.(chunk)
+            }
+            callback(null, chunk)
+        }, function (done) {
+            for (const plug of plugs) {
+                plug.onBeforeFlush?.()
+            }
+            done()
+        }))
+        .pipe(concatSource(`${outName}.js`))
+        .pipe(namespacePlug(namespace))
+        .pipe(through2.obj(function (chunk, encoding, callback) {
+            for (const plug of plugs) {
+                plug.onAfterCodeCompile?.(chunk)
+            }
+            callback(null, chunk)
+        }, function (done) {
+            for (const plug of plugs) {
+                plug.onAfterFlush?.()
+            }
+            done()
+        }))
         .pipe(gulp.dest(dist))
         .pipe(ifelse(isMinify, [
             sourcemaps.init(),
@@ -884,9 +393,9 @@ function buildDts(tsResult, outName, dist, globalFile = [], namespace = null) {
     return tsResult
         .dts
         .pipe(concatSource(`${outName}.d.ts`, {
-            namespace: namespace,
             appendFile: globalFile
         }))
+        .pipe(namespacePlug(namespace))
         .pipe(gulp.dest(dist))
 }
 
@@ -912,65 +421,6 @@ const outSource = function (outName) {
             }
         }
     };
-}
-
-/**
- * 创建一个 Rollup 构建流，用于处理多个构建选项并生成对应的文件流
- * @param {...rollup.RollupOptions} options - Rollup 构建选项数组，每个选项包含输入和输出配置
- * @returns {streamNode.Readable} 返回一个可读流，包含构建生成的文件
- */
-function rollupStream(...options) {
-    const build = async (options, stream) => {
-        const bundle = await rollup.rollup(options);
-        stream.emit('bundle', bundle);
-        let outputOpt = options.output
-        if (!Array.isArray(outputOpt)) {
-            outputOpt = [outputOpt]
-        }
-        // 遍历每个 output 配置
-        for (const outputOptions of outputOpt) {
-            const {output} = await bundle.generate(outputOptions);
-            for (const chunk of output) {
-                let fileName = chunk.fileName;
-                const type = chunk.type
-                // 处理 chunk 类型（JS）
-                if (type === 'chunk') {
-                    let content = chunk.code
-                    const file = new File({
-                        contents: Buffer.from(content),
-                        path: fileName
-                    });
-                    result.push(file);
-                } else if (type === 'asset') {
-                    const source = chunk.source
-                    const file = new File({
-                        path: fileName,
-                        contents: Buffer.from(source),
-                    });
-                    result.push(file);
-                } else {
-                    log.warn("Unknown type : " + type)
-                }
-            }
-        }
-
-    };
-
-    const create = async (options, stream) => {
-        for (const option of options) {
-            await build(option, result)
-        }
-        stream.push(null); // 结束流
-    }
-    const result = new streamNode.Readable({
-        objectMode: true, // 默认只能是 string Buffer
-        read: () => {
-        }
-    });
-    create(options, result).catch((error) => {
-        result.emit('error', error);
-    });
-    return result;
 }
 
 /**
@@ -1093,8 +543,6 @@ exports = {
     defaults,
     createDirectory,
     cleanStream,
-    runStream,
-    run,
     mJs,
 
     log,
@@ -1104,11 +552,9 @@ exports = {
     addMetadata,
     createNamespaceTransformer,
     buildLibrary,
-    ifelse,
     buildJs,
     buildDts,
 
-    rollupStream,
     rollupPack,
     rollupRename
 }

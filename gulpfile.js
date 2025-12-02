@@ -9,7 +9,7 @@ const gulp = require("gulp")
 
 const AdmZip = require('adm-zip')
 const {reserved} = require("./reserved")
-const {createDirectory, clean, runStream, cleanStream, print, mJs} = require("./index")
+const {createDirectory, cleanStream, mJs, buildJs, buildDts} = require("./index")
 const {SourceMapConsumer, SourceNode} = require('source-map');
 
 gulp.task("resetSource", (f) => {
@@ -90,41 +90,6 @@ gulp.task("updateWEBP", (done) => {
     done()
 })
 
-gulp.task('build-Temp', () => {
-    if (!fs.existsSync(libCache)) {
-        createDirectory(libCache)
-        fs.writeFileSync(libCache, "{}", "utf8")
-    }
-    let nameCaches = JSON.parse(fs.readFileSync(libCache, "utf8"))
-    nameCaches = {}
-    return generate.mangleJs({
-        sourceMap: true,
-        nameCache: nameCaches,
-        toplevel: true,
-        mangle: {
-            properties: {
-                // keep_quoted: true, // 如果设为 true，被引号的属性名就不会被更改。
-                reserved: reserved,
-            },
-            // keep_fnames: /Laya\.*/,
-            // toplevel: false,
-        },
-    }, [
-        "./template/laya.core.js",
-        "./template/laya.html.js",
-        "./template/laya.ani.js",
-        "./template/laya.debugtool.js",
-        "./template/spine-core-3.8.js",
-        "./template/laya.spine.js",
-        "./template/fairygui.js",
-        "./template/worker.js",
-        "./template/workerloader.js",
-    ], generate.distPath + "/min", "../map")
-        .on('end', function () {
-            fs.writeFileSync(libCache, JSON.stringify(nameCaches));
-        })
-})
-
 gulp.task("min-js", () => {
     return mJs(
         ["./template/domparserinone.js", "./template/gameload.js", "./template/reflect.js"],
@@ -132,6 +97,34 @@ gulp.task("min-js", () => {
             addComment: false
         }
     ).pipe(gulp.dest("./template"))
+})
+
+gulp.task("buildJsTest", () => {
+    return buildJs({
+            globs: ["TSCore/src/com/*.ts", "./TsCore/bin/*.d.ts"]
+        }, "testApp", "bin/test", {
+            namespace: "teconst",
+            plugs: [{
+                onBeforeCodeCompile: function (file) {
+                    if (file.basename === "Path.js") {
+                        let code = file.contents.toString()
+                        code += "\nnew Path()\n"
+                        file.contents = Buffer.from(code)
+                        // console.log(file)
+                    }
+                },
+                onAfterCodeCompile: function (file) {
+                    const code = file.contents.toString()
+                    // console.log(file)
+                }
+            }]
+        }
+    )
+})
+gulp.task("buildDtsTest", () => {
+    return buildDts({
+        globs: ["TSCore/src/com/*.ts", "./TsCore/bin/*.d.ts"]
+    }, "testApp", "bin/test", undefined, "tscore")
 })
 
 

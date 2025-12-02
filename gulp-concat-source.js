@@ -5,7 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const File = require('vinyl');
 const Concat = require('concat-with-sourcemaps');
-
+const readline = require("readline")
 
 /**
  * @see gulp-concat
@@ -16,9 +16,9 @@ const Concat = require('concat-with-sourcemaps');
 /**
  *
  * @param file {string|File}
- * @param opt {{newLine?:string, namespace?:string, append?:string|string[], appendFile?:string|string[]}}
+ * @param opt {{newLine?:string, append?:string|string[], appendFile?:string|string[]} | null}
  */
-module.exports = function (file, opt) {
+module.exports = function (file, opt = null) {
     if (!file) {
         throw new Error('gulp-concat: Missing file option');
     }
@@ -29,13 +29,17 @@ module.exports = function (file, opt) {
         opt.newLine = '\n';
     }
 
-    const namespace = opt.namespace
-
     let isUsingSourceMaps = false;
     let latestFile;
     let latestMod;
     let fileName;
-    let golbalConcat;
+    /**
+     * @type Concat
+     */
+    let globalConcat;
+    /**
+     * @type Concat
+     */
     let concat;
 
     if (typeof file === 'string') {
@@ -46,17 +50,17 @@ module.exports = function (file, opt) {
         throw new Error('gulp-concat: Missing path in file options');
     }
 
-    function bufferContents(file, enc, cb) {
+    async function bufferContents(file, enc, done) {
         // ignore empty files
         if (file.isNull()) {
-            cb();
+            done();
             return;
         }
 
         // we don't do streams (yet)
         if (file.isStream()) {
             this.emit('error', new Error('gulp-concat: Streaming not supported'));
-            cb();
+            done();
             return;
         }
 
@@ -77,8 +81,8 @@ module.exports = function (file, opt) {
         if (!concat) {
             concat = new Concat(isUsingSourceMaps, fileName, opt.newLine);
         }
-        if (!golbalConcat) {
-            golbalConcat = new Concat(isUsingSourceMaps, fileName, opt.newLine);
+        if (!globalConcat) {
+            globalConcat = new Concat(isUsingSourceMaps, fileName, opt.newLine);
         }
 
         // add file to concat instance
@@ -89,57 +93,29 @@ module.exports = function (file, opt) {
 
         // js 入接口之类的会出现 export {}; 的空数据清理掉    dts中如果有空数据也会有这种情况
         content = content.replace(/export\s*\{\s*}(;?)(?:\r\n|\r|\n)?/g, "")
-
-        if (fileName.endsWith(".d.ts")) {
-            if (namespace) {
-                const results = content.matchAll(/export\s+declare\s+(class|interface|enum|abstract|const)\s+(\w+)(?=\s|<|\{|:)/g)
-                results.forEach(result => {
-                    content = content.replace(result[0], `export ${result[1]} ${result[2]}`)
-                })
-                if (/[/\\]global[/\\].*\.ts/g.test(_path)) {
-                    // 全局类
-
-                } else {
-                    // 非全局类 则都是namespace内的值 那么需要测底删除declare
-                    content = content.replaceAll(/\bdeclare\s+/g, "")
-                }
-            }
-        } else {
-            if (namespace) {
-                let results = content.matchAll(/export\s+(class|interface|enum|abstract|var)\s+(\w+)(?=\s|<|\{|;)/g)
-                results.forEach(result => {
-                    content += `\n${namespace}.${result[2]} = ${result[2]}\n`
-                })
-                results = content.matchAll(/export\s*\{\s*(\w+)\s*}\s*(;?)/g)
-                results.forEach(result => {
-                    content += `\n${namespace}.${result[1]} = ${result[1]}\n`
-                })
-            }
-            content = content.replace(/export\s*\{\s*\w*\s*}\s*(;?)/g, "")
-            content = content.replace(/export\s*/g, "")
-        }
-
         // 去除所有的本地导入 import {A} from '../P/A'
         content = content.replace(/import\s*\{\s*.*}\s*from\s*(["'].*["'])(;?)(?:\r\n|\r|\n)?/g, "")
 
         if (content.trim().length > 0) {
-            if (_path.includes("global")) {
-                golbalConcat.add(file.relative, Buffer.from(content), file.sourceMap);
+            const isGlobal = await isGlobalFile(_path)
+            if (isGlobal) {
+                globalConcat.add(file.relative, Buffer.from(content), file.sourceMap);
             } else {
                 concat.add(file.relative, Buffer.from(content), file.sourceMap);
             }
         }
 
-        cb();
+        done();
     }
 
-    function endStream(cb) {
+    async function endStream(done) {
         // no files passed in, no file goes out
         if (!latestFile || !concat) {
-            cb();
+            done();
             return;
         }
 
+        /** @type {File} */
         let joinedFile;
 
         // if file opt was a file path
@@ -152,14 +128,7 @@ module.exports = function (file, opt) {
         }
         /** @type {string} */
         let content = concat.content.toString()
-        if (namespace && content) {
-            const ns = content.split("\n")
-            if (fileName.endsWith(".d.ts")) {
-                content = `declare namespace ${namespace} {\n\n\t${ns.join("\n\t")}\n}`
-            } else {
-                content = `(function (${namespace}) {\n\t${ns.join("\n\t")}\n}(this.${namespace} || (this.${namespace} = {})));`
-            }
-        }
+
         const appendStr = []
         if (opt.append) {
             const append = opt.append
@@ -169,21 +138,83 @@ module.exports = function (file, opt) {
         }
         if (opt.appendFile) {
             const appendFile = Array.isArray(opt.appendFile) ? opt.appendFile : [opt.appendFile]
-            appendFile.forEach(value => appendStr.push(fs.readFileSync(path.join(process.cwd(), value))))
+            for (const value of appendFile) {
+                const file = path.join(process.cwd(), value)
+                const isGlobal = await isGlobalFile(file)
+                if (isGlobal) {
+                    globalConcat.add(file.relative, fs.readFileSync(file));
+                } else {
+                    appendStr.push(fs.readFileSync(file))
+                }
+            }
         }
         if (appendStr.length) {
             content += "\n" + appendStr.join("\n\n")
         }
 
-        joinedFile.contents = Buffer.from(`${golbalConcat.content}\n${content}`)
+        joinedFile.globalBuffer = globalConcat.content
+        joinedFile.contentBuffer = Buffer.from(content)
 
-        if (golbalConcat.sourceMapping) {
-            joinedFile.sourceMap = JSON.parse(golbalConcat.sourceMap);
+        const golbalCode = globalConcat.content.toString()
+        const newCode = `${golbalCode}\n${content}`
+        joinedFile.contents = Buffer.from(newCode)
+
+        if (globalConcat.sourceMapping) {
+            joinedFile.sourceMap = JSON.parse(globalConcat.sourceMap);
         }
 
         this.push(joinedFile);
-        cb();
+        done();
     }
 
     return through.obj(bufferContents, endStream);
 };
+
+/**
+ *
+ * @param file {string}
+ * @returns {Promise<Awaited<boolean>|*>}
+ */
+async function isGlobalFile(file) {
+    if (!path.isAbsolute(file)) {
+        file = path.join(process.cwd(), file)
+    }
+    if (/[/\\]global[/\\].*\.(ts|js)/g.test(file)) {
+        return Promise.resolve(true)
+    }
+    if (!fs.existsSync(file)) return Promise.resolve(false)
+    const lines = await readFirstLine(file)
+    if (!lines?.length) return Promise.resolve(false)
+    const firstLine = lines.trim();
+    return firstLine.startsWith('//') && firstLine.toLowerCase().includes('global')
+}
+
+/**
+ *
+ * @param filePath {string}
+ * @returns {Promise<string>}
+ */
+function readFirstLine(filePath) {
+    return new Promise((resolve, reject) => {
+        const fileStream = fs.createReadStream(filePath);
+        const rl = readline.createInterface({
+            input: fileStream,
+            crlfDelay: Infinity
+        });
+
+        rl.on('line', (line) => {
+            rl.close();
+            resolve(line);
+        });
+
+        rl.on('error', (err) => {
+            rl.close();
+            reject(err);
+        });
+
+        fileStream.on('error', (err) => {
+            rl.close();
+            reject(err);
+        });
+    });
+}

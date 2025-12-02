@@ -30,12 +30,19 @@
     "webp",
     "version_info.txt",
     "index.js",
+
+    "gulp-ifelse.js",
     "gulp-concat-source.js",
     "gulp-ts-sort-declaration.js",
+    "gulp-stream-util.js",
+    "gulp-namespace.js",
+
+    "typescript-parse.js",
     "ast-dependencies-parse.js",
     "reserved.js",
     "types.js",
     "monkey-path.js",
+
     "rollup-plugin-rename.js",
     "rollup-plugin-generics.js"
   ]
