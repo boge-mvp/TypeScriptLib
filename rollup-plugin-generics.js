@@ -19,20 +19,30 @@ const mapMoule = new Map()
  * @returns {{id: *, meta: {additionalDeps: T[]}, moduleSideEffects: boolean}|{code: string, map: null}|{name: string, buildStart(): void, resolveId(*, *, *): Promise<{id: *, meta: {additionalDeps: T[]}, moduleSideEffects: boolean}|undefined>, transform(*, *): Promise<{code: string, map: null}|undefined>}}
  */
 function parseGenerics(options) {
+    let parentApi
     return {
         name: 'inject',
-        buildStart() {
-            const tsConfig = ts.readConfigFile(options.tsconfig, ts.sys.readFile)
-            if (tsConfig.error) {
-                console.log(tsConfig.error.messageText);
+        buildStart({ plugins }) {
+            const parentName = 'virtual-main';
+            const parentPlugin = plugins.find(
+                plugin => plugin.name === parentName
+            );
+            if (parentPlugin) {
+                parentApi = parentPlugin.api;
+                compilerOptions = parentApi.compilerOptions()
+            } else {
+                const tsConfig = ts.readConfigFile(options.tsconfig, ts.sys.readFile)
+                if (tsConfig.error) {
+                    console.log(tsConfig.error.messageText);
+                }
+                const parsed = ts.parseJsonConfigFileContent(tsConfig.config, {
+                    useCaseSensitiveFileNames: ts.sys.useCaseSensitiveFileNames,
+                    readDirectory: () => [],
+                    fileExists: ts.sys.fileExists,
+                    readFile: ts.sys.readFile
+                }, path.resolve(path.dirname(options.tsconfig)))
+                compilerOptions = parsed.options
             }
-            const parsed = ts.parseJsonConfigFileContent(tsConfig.config, {
-                useCaseSensitiveFileNames: ts.sys.useCaseSensitiveFileNames,
-                readDirectory: () => [],
-                fileExists: ts.sys.fileExists,
-                readFile: ts.sys.readFile
-            }, path.resolve(path.dirname(options.tsconfig)))
-            compilerOptions = parsed.options
             // console.log("buildStart")
         },
         async resolveId(source, importer, options) {
@@ -70,7 +80,7 @@ function parseGenerics(options) {
                     }
                     const a = new RegExp("import\\s*\\{[^}]*\\b" + elementName + "\\b[^}]*\\}\\s*from")
                     if (!a.test(code)) {
-                        const imports = "import { " + elementName + " } from \"" + name + "\";"
+                        const imports = "import \"" + name + "\";"
                         addImport.push(imports)
                     }
                 }

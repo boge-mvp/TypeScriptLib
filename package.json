@@ -9,7 +9,7 @@
     "pack": "node packNpmLib.js packResources && npm pack",
     "build-with-pack": "npm run pack && npm run pack-install && node packNpmLib.js removeTemp",
     "build": "npm run build-with-pack",
-    "linkLib": "npx link --no-save C:/Users/10371/AppData/Roaming/npm/node_modules/tslib C:/Users/10371/AppData/Roaming/npm/node_modules/@types/gulp-sourcemaps"
+    "linkLib": "npx link --no-save C:/Users/10371/AppData/Roaming/npm/node_modules/tslib C:/Users/10371/AppData/Roaming/npm/node_modules/@types/gulp-sourcemaps C:/Users/10371/AppData/Roaming/npm/node_modules/@types/fs-extra"
   },
   "repository": {
     "type": "git",
@@ -45,6 +45,7 @@
     "monkey-path.js",
 
     "rollup-plugin-rename.js",
+    "rollup-plugin-decorators.js",
     "rollup-plugin-generics.js"
   ]
 }

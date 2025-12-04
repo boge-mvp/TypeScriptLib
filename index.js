@@ -21,6 +21,7 @@ const concatSource = require("./gulp-concat-source");
 const sortDeclaration = require("./gulp-ts-sort-declaration");
 const rollupRename = require("./rollup-plugin-rename");
 const generics = require("./rollup-plugin-generics");
+const decorators = require("./rollup-plugin-decorators");
 
 const ts = require('typescript')
 
@@ -446,7 +447,7 @@ const outSource = function (outName) {
  * @param {RollupOptions?} options - 打包配置选项
  * @returns {NodeJS.ReadWriteStream} 返回一个 Gulp 流，用于后续处理或写入文件
  */
-function rollupPack(inputFile, outName, options) {
+async function rollupPack(inputFile, outName, options) {
     options = defaults(options, {
         tsconfig: "tsconfig.json",
         sourcemap: false,
@@ -465,7 +466,43 @@ function rollupPack(inputFile, outName, options) {
     const compilerOptions = options.compilerOptions || {}
     compilerOptions.outDir ??= outDir
 
+    const inputCode = await decorators(inputFile)
+    let parsedCompilerOptions
     const plugins = [
+        {
+            name: "virtual-main",
+            order: "pre",
+            buildStart() {
+                const tsConfig = ts.readConfigFile(options.tsconfig, ts.sys.readFile)
+                if (tsConfig.error) {
+                    console.log(tsConfig.error.messageText);
+                }
+                const parsed = ts.parseJsonConfigFileContent(tsConfig.config, {
+                    useCaseSensitiveFileNames: ts.sys.useCaseSensitiveFileNames,
+                    readDirectory: () => [],
+                    fileExists: ts.sys.fileExists,
+                    readFile: ts.sys.readFile
+                }, path.resolve(path.dirname(options.tsconfig)))
+                parsedCompilerOptions = parsed.options
+                // console.log("buildStart")
+            },
+            api: {
+                compilerOptions: function () {
+                    return parsedCompilerOptions
+                }
+            },
+            async load(id) {
+                const input = await this.resolve(inputFile)
+                if (id === input.id) {
+                    const code = ts.transpile(inputCode, parsedCompilerOptions)
+                    return code
+                }
+            },
+            transform(code, id) {
+
+            }
+
+        },
         generics(options),
         glsl({
             include: /.*(.glsl|.vs|.fs)$/,
