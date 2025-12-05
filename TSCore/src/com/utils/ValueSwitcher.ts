@@ -137,7 +137,7 @@ export class ValueSwitcher<T> {
      */
     setValues(value?: T[], selectIndex = 1, triggerEvent = true) {
         if (value) this._values = value
-        this.setPosition(selectIndex, triggerEvent)
+        this.setPosition(selectIndex, triggerEvent, true)
     }
 
     /**
@@ -186,11 +186,11 @@ export class ValueSwitcher<T> {
      * 设置切换到指定的位置
      * @param index 索引
      * @param [triggerEvent = true] 是否触发变更事件 如果值和当前的值相同 不派发事件     *
-     *
+     * @param [force = false] 忽略索引相同判断强制更新变化
      */
-    setPosition(index: number, triggerEvent = true) {
+    setPosition(index: number, triggerEvent = true, force = false) {
         if (!this.values?.length) return
-        if (index > -1 && index < this.values.length && index != this._valueIndex) {
+        if (index > -1 && index < this.values.length && (force || index != this._valueIndex)) {
             let newValue = this.values[index]
             if (this.onValueChangeBefore) {
                 if (!runFun(this.onValueChangeBefore, newValue, index)) // 执行变化前的调用如果返回false 将停止继续执行
