@@ -41,9 +41,9 @@ export class ValueSwitcher<T> {
     /** 是否启用到达边界后禁用按钮 默认false */
     autoDisableButtons: boolean
     /** 当前正在读取值的下标 */
-    protected valueIndex = 0
+    protected _valueIndex = 0
     /** 上一个值的下班 */
-    protected previousIndex = 0
+    protected _previousIndex = 0
     /** 是否启用 */
     private isEnabled = true
     private increaseLongPressKit: LongPressKit
@@ -176,9 +176,9 @@ export class ValueSwitcher<T> {
      * @param [triggerEvent = true] 是否触发变更事件
      */
     before(triggerEvent = true) {
-        let tempAnte = this.valueIndex
-        if (tempAnte != this.previousIndex) {
-            this.setPosition(this.previousIndex, triggerEvent)
+        let tempAnte = this._valueIndex
+        if (tempAnte != this._previousIndex) {
+            this.setPosition(this._previousIndex, triggerEvent)
         }
     }
 
@@ -190,14 +190,14 @@ export class ValueSwitcher<T> {
      */
     setPosition(index: number, triggerEvent = true) {
         if (!this.values?.length) return
-        if (index > -1 && index < this.values.length && index != this.valueIndex) {
+        if (index > -1 && index < this.values.length && index != this._valueIndex) {
             let newValue = this.values[index]
             if (this.onValueChangeBefore) {
                 if (!runFun(this.onValueChangeBefore, newValue, index)) // 执行变化前的调用如果返回false 将停止继续执行
                     return
             }
-            this.previousIndex = this.valueIndex
-            this.valueIndex = index
+            this._previousIndex = this._valueIndex
+            this._valueIndex = index
             this.displayLabel.text = newValue.toString()
             this.checkAutoDisable()
             if (triggerEvent) this.dispatchValueChangeEvent(newValue)
@@ -224,7 +224,7 @@ export class ValueSwitcher<T> {
         let tempNums = this.values
         const len = tempNums.length
         if (!tempNums || len == 0) return
-        let index = this.valueIndex
+        let index = this._valueIndex
 
         const enabledLoop = this.isEnabled && !this.autoDisableButtons && this.loop
 
@@ -256,6 +256,13 @@ export class ValueSwitcher<T> {
         return this.displayLabel.text
     }
 
+    get valueIndex() {
+        return this._valueIndex
+    }
+    get previousIndex() {
+        return this._previousIndex
+    }
+
     /**
      * 获取当前值
      *
@@ -264,7 +271,7 @@ export class ValueSwitcher<T> {
      */
     get currentValue(): T {
         // 注意：这里需要根据具体类型实现转换逻辑
-        return this.values[this.valueIndex]
+        return this.values[this._valueIndex]
     }
 
     dispose() {
@@ -277,8 +284,8 @@ export class ValueSwitcher<T> {
     /** 检查自动启用停止 */
     private checkAutoDisable() {
         if (this.isEnabled && this.autoDisableButtons) {
-            this.increaseBtn.enabled = this.valueIndex < this.values.length - 1
-            this.decreaseBtn.enabled = this.valueIndex > 0
+            this.increaseBtn.enabled = this._valueIndex < this.values.length - 1
+            this.decreaseBtn.enabled = this._valueIndex > 0
         }
     }
 
