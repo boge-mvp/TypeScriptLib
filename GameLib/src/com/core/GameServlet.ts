@@ -471,7 +471,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
      * @param [closeGame=true] 是否关闭游戏
      * @param request
      */
-    protected showNotResult(data: any, closeGame = true, request?: AjaxRequest) {
+    protected showNotResult(data?: HttpResponse, closeGame = true, request?: AjaxRequest) {
         let str = StateCode.getShowMessage(data)
         if (StringUtil.isEmpty(str)) {
             str = getString(LibStr.NET_ERROR)

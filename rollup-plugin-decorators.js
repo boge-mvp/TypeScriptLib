@@ -45,7 +45,7 @@ async function analyzeAndProcessDecorators(entryFile) {
         code = await addImportsToMainFile(entryFile, filesWithDecorators);
     } else code = await fs.readFile(entryFile)
 
-    console.log("强制导入文件", filesWithDecorators.map(value => value.relativePath).join("\n"))
+    console.log("强制导入文件", filesWithDecorators.map(value => value.relativePath).join(" "))
 
     return code
 }

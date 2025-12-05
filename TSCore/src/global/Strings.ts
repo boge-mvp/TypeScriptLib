@@ -133,3 +133,11 @@ String.prototype.toInt = function () {
     }
     return value
 }
+String.prototype.toFloat = function () {
+    let value = 0.0
+    try {
+        value = parseFloat(this)
+    } catch (e) {
+    }
+    return value
+}

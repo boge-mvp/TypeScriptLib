@@ -262,6 +262,12 @@ declare interface String {
      */
     toInt(): number
 
+    /**
+     * 将字符串转换为浮点数
+     * @returns {number} 转换后的浮点数
+     */
+    toFloat(): number
+
 }
 
 declare interface Array<T> {
