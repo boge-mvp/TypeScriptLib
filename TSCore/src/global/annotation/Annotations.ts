@@ -265,6 +265,25 @@ function BindThis<T extends Function>(targetPrototype: any, propertyKey: string,
 }
 
 /**
+ * 资源准备好后立即执行
+ */
+let readyFunction: Map<any, Function[]>
+
+/**
+ * {@link Ready} 注解的方法会在所有bean都初始化完成、
+ * 应用完全启动后才被调用，适用于需要访问完整应用上下文的初始化逻辑。
+ */
+function Ready(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    if (!descriptor || (typeof descriptor.value !== 'function')) {
+        throw new TypeError(`Only methods can be decorated with @Ready. <${propertyKey}> is not a method!`);
+    }
+    readyFunction ??= new Map()
+    const values = readyFunction.getOrDefault(target, [])
+    values.push(descriptor.value)
+    readyFunction.set(target, values)
+}
+
+/**
  * Bean装饰器，标记类方法为返回Bean实例的方法。
  * @param target - 类的原型。
  * @param propertyKey - 属性键名。
@@ -556,9 +575,21 @@ function runApplication<T>(classTarget?: { new(...args: any[]): T }): T {
     appRunListeners.forEach(listener => listener.onMainAppInitializing?.());
 
     initBean(app, mainName)
+
     if (typeof app["start"] == "function") {
         app["start"]()
     }
+
+    if (readyFunction) {
+        readyFunction.forEach((value, key) => {
+            // @ts-ignore
+            const thisArg = tsCore.App.inst.getBean(key)
+            value.forEach(value1 => value1.call(thisArg))
+        })
+
+    }
+    readyFunction = undefined
+    // delete window["readyFunction"]
 
     // 通知完成
     appRunListeners.forEach(listener => listener.onComplete?.());

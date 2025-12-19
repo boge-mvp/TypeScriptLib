@@ -239,6 +239,15 @@ declare function BindThis<T extends Function>(targetPrototype: any, propertyKey:
     get(this: T): T;
 };
 /**
+ * 资源准备好后立即执行
+ */
+declare let readyFunction: Map<any, Function[]>;
+/**
+ * {@link Ready} 注解的方法会在所有bean都初始化完成、
+ * 应用完全启动后才被调用，适用于需要访问完整应用上下文的初始化逻辑。
+ */
+declare function Ready(target: any, propertyKey: string, descriptor: PropertyDescriptor): void;
+/**
  * Bean装饰器，标记类方法为返回Bean实例的方法。
  * @param target - 类的原型。
  * @param propertyKey - 属性键名。
@@ -623,21 +632,19 @@ declare interface String {
 
     /**
      * 将字符串转换为布尔值
-     *
-     * 会判断字符串是否为null，是否为空字符串，是否包含"false"或"0"
-     * @returns {boolean} 转换后的布尔值
+     * @returns {boolean} 转换后的布尔值，非空字符串且不等于"false"或"0"时返回true，否则返回false
      */
     toBoolean(): boolean
 
     /**
      * 将字符串转换为整数
-     * @returns {number} 转换后的整数
+     * @returns {number} 转换后的整数值，转换失败时返回0
      */
     toInt(): number
 
     /**
      * 将字符串转换为浮点数
-     * @returns {number} 转换后的浮点数
+     * @returns {number} 转换后的浮点数值，转换失败时返回0.0
      */
     toFloat(): number
 
@@ -964,6 +971,7 @@ declare type ComponentData = {
     order?: number
     /**
      * 创建UI的路径。
+     * //package/name
      */
     createUi?: string
     /**
@@ -3024,27 +3032,27 @@ declare namespace tsCore {
 	     * 补全数字
 	     * @param data 要处理的数字、或字符串化的数字
 	     * @param len 数字总长度
-	     * @param isLast 是否补在尾部
+	     * @param [isLast=false] 是否补在尾部
 	     */
 	    static fillAVacancy(data: number | string, len: number, isLast?: boolean): string;
 	    /**
 	     * 精确小数点  如果有小数点 保留指定数量  如果没有  返回整数
 	     * @param value 要处理的数字、或字符串化的数字
-	     * @param p 保留的小数位数
+	     * @param [p=0] 保留的小数位数
 	     * @return
 	     */
 	    static toFixed(value: number | string, p?: number): number;
 	    /**
 	     * 精确小数点  如果有小数点 保留指定数量  如果没有,添加指定保留的小数值
 	     * @param value 要处理的数字、或字符串化的数字
-	     * @param p 保留的小数位数
+	     * @param [p=0] 保留的小数位数
 	     */
 	    static toFixedStr(value: number | string, p?: number): string;
 	    /**
 	     * 从数组中获取大于指定值的元素及其索引
 	     * @param nums 数值数组
 	     * @param value 指定的值
-	     * @param includeEqual 是否包括等于指定值的元素，默认为true
+	     * @param [includeEqual=true] 是否包括等于指定值的元素，默认为true
 	     * @returns 返回一个对象，包含找到的元素的索引和值，如果没有找到则索引为-1，值为undefined
 	     */
 	    static findFirstGreaterOrEqual(nums: number[], value: number, includeEqual?: boolean): {
@@ -3055,7 +3063,7 @@ declare namespace tsCore {
 	     * 在给定的数字数组中，从后向前查找第一个小于等于指定值的元素。
 	     * @param nums 数字数组，作为查找范围。
 	     * @param value 指定的值，用于与数组元素进行比较。
-	     * @param includeEqual 是否包括等于指定值的元素，默认为true。
+	     * @param [includeEqual=true] 是否包括等于指定值的元素，默认为true。
 	     * @returns 返回一个对象，包含找到的元素的索引和值。如果没有找到符合条件的元素，则索引为-1，值为undefined。
 	     */
 	    static findLastLessOrEqual(nums: number[], value: number, includeEqual?: boolean): {
@@ -3088,18 +3096,13 @@ declare namespace tsCore {
 	     * 随机数
 	     * @param minNum 最小值
 	     * @param maxNum 最大值(不包括)
-	     * @param p 保留尾数  默认NAN 表示全保留
+	     * @param [p=NaN] 保留尾数  默认NaN 表示全保留
 	     * @return
 	     * @deprecated
 	     * @see global.randomFloat
 	     */
 	    static randomFloat(minNum: number, maxNum: number, p?: number): number;
 	}
-	/**
-	 * @deprecated
-	 * @see MathKit
-	 */
-	export const Cast: typeof MathKit;
 	
 	const View_base: Constructor<ActionEvent & fgui.GComponent & StringBlock & ViewBlock>;
 	export class View extends View_base implements IView, IKey {
@@ -3699,11 +3702,6 @@ declare namespace tsCore {
 	     */
 	    static formatMoney2(money: string | number, fixed?: boolean): number;
 	}
-	/**
-	 * @deprecated
-	 * @see UtilKit
-	 */
-	export const UtilsTool: typeof UtilKit;
 	
 	export interface IMarket {
 	    /**

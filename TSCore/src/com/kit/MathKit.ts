@@ -132,7 +132,7 @@ export class MathKit {
      * 补全数字
      * @param data 要处理的数字、或字符串化的数字
      * @param len 数字总长度
-     * @param isLast 是否补在尾部
+     * @param [isLast=false] 是否补在尾部
      */
     static fillAVacancy(data: number | string, len: number, isLast = false) {
         let string = data + ""
@@ -148,7 +148,7 @@ export class MathKit {
     /**
      * 精确小数点  如果有小数点 保留指定数量  如果没有  返回整数
      * @param value 要处理的数字、或字符串化的数字
-     * @param p 保留的小数位数
+     * @param [p=0] 保留的小数位数
      * @return
      */
     static toFixed(value: number | string, p = 0) {
@@ -162,7 +162,7 @@ export class MathKit {
     /**
      * 精确小数点  如果有小数点 保留指定数量  如果没有,添加指定保留的小数值
      * @param value 要处理的数字、或字符串化的数字
-     * @param p 保留的小数位数
+     * @param [p=0] 保留的小数位数
      */
     static toFixedStr(value: number | string, p = 0) {
         value = MathKit.toFixed(value, p)
@@ -187,7 +187,7 @@ export class MathKit {
      * 从数组中获取大于指定值的元素及其索引
      * @param nums 数值数组
      * @param value 指定的值
-     * @param includeEqual 是否包括等于指定值的元素，默认为true
+     * @param [includeEqual=true] 是否包括等于指定值的元素，默认为true
      * @returns 返回一个对象，包含找到的元素的索引和值，如果没有找到则索引为-1，值为undefined
      */
     static findFirstGreaterOrEqual(nums: number[], value: number, includeEqual = true) {
@@ -212,7 +212,7 @@ export class MathKit {
      * 在给定的数字数组中，从后向前查找第一个小于等于指定值的元素。
      * @param nums 数字数组，作为查找范围。
      * @param value 指定的值，用于与数组元素进行比较。
-     * @param includeEqual 是否包括等于指定值的元素，默认为true。
+     * @param [includeEqual=true] 是否包括等于指定值的元素，默认为true。
      * @returns 返回一个对象，包含找到的元素的索引和值。如果没有找到符合条件的元素，则索引为-1，值为undefined。
      */
     static findLastLessOrEqual(nums: number[], value: number, includeEqual = true) {
@@ -280,7 +280,7 @@ export class MathKit {
      * 随机数
      * @param minNum 最小值
      * @param maxNum 最大值(不包括)
-     * @param p 保留尾数  默认NAN 表示全保留
+     * @param [p=NaN] 保留尾数  默认NaN 表示全保留
      * @return
      * @deprecated
      * @see global.randomFloat
@@ -292,9 +292,3 @@ export class MathKit {
     }
 
 }
-
-/**
- * @deprecated
- * @see MathKit
- */
-export const Cast = MathKit

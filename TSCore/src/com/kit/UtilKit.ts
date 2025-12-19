@@ -331,9 +331,3 @@ export class UtilKit {
     }
 
 }
-
-/**
- * @deprecated
- * @see UtilKit
- */
-export const UtilsTool = UtilKit

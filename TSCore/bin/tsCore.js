@@ -933,6 +933,23 @@ function BindThis(targetPrototype, propertyKey, descriptor) {
     };
 }
 /**
+ * 资源准备好后立即执行
+ */
+let readyFunction;
+/**
+ * {@link Ready} 注解的方法会在所有bean都初始化完成、
+ * 应用完全启动后才被调用，适用于需要访问完整应用上下文的初始化逻辑。
+ */
+function Ready(target, propertyKey, descriptor) {
+    if (!descriptor || (typeof descriptor.value !== 'function')) {
+        throw new TypeError(`Only methods can be decorated with @Ready. <${propertyKey}> is not a method!`);
+    }
+    readyFunction !== null && readyFunction !== void 0 ? readyFunction : (readyFunction = new Map());
+    const values = readyFunction.getOrDefault(target, []);
+    values.push(descriptor.value);
+    readyFunction.set(target, values);
+}
+/**
  * Bean装饰器，标记类方法为返回Bean实例的方法。
  * @param target - 类的原型。
  * @param propertyKey - 属性键名。
@@ -1203,6 +1220,15 @@ function runApplication(classTarget) {
     if (typeof app["start"] == "function") {
         app["start"]();
     }
+    if (readyFunction) {
+        readyFunction.forEach((value, key) => {
+            // @ts-ignore
+            const thisArg = tsCore.App.inst.getBean(key);
+            value.forEach(value1 => value1.call(thisArg));
+        });
+    }
+    readyFunction = undefined;
+    // delete window["readyFunction"]
     // 通知完成
     appRunListeners.forEach(listener => { var _a; return (_a = listener.onComplete) === null || _a === void 0 ? void 0 : _a.call(listener); });
     return app;
@@ -5325,7 +5351,7 @@ class RandomTimerSingle extends RandomTimer {
 	     * 补全数字
 	     * @param data 要处理的数字、或字符串化的数字
 	     * @param len 数字总长度
-	     * @param isLast 是否补在尾部
+	     * @param [isLast=false] 是否补在尾部
 	     */
 	    static fillAVacancy(data, len, isLast = false) {
 	        let string = data + "";
@@ -5340,7 +5366,7 @@ class RandomTimerSingle extends RandomTimer {
 	    /**
 	     * 精确小数点  如果有小数点 保留指定数量  如果没有  返回整数
 	     * @param value 要处理的数字、或字符串化的数字
-	     * @param p 保留的小数位数
+	     * @param [p=0] 保留的小数位数
 	     * @return
 	     */
 	    static toFixed(value, p = 0) {
@@ -5354,7 +5380,7 @@ class RandomTimerSingle extends RandomTimer {
 	    /**
 	     * 精确小数点  如果有小数点 保留指定数量  如果没有,添加指定保留的小数值
 	     * @param value 要处理的数字、或字符串化的数字
-	     * @param p 保留的小数位数
+	     * @param [p=0] 保留的小数位数
 	     */
 	    static toFixedStr(value, p = 0) {
 	        value = MathKit.toFixed(value, p);
@@ -5381,7 +5407,7 @@ class RandomTimerSingle extends RandomTimer {
 	     * 从数组中获取大于指定值的元素及其索引
 	     * @param nums 数值数组
 	     * @param value 指定的值
-	     * @param includeEqual 是否包括等于指定值的元素，默认为true
+	     * @param [includeEqual=true] 是否包括等于指定值的元素，默认为true
 	     * @returns 返回一个对象，包含找到的元素的索引和值，如果没有找到则索引为-1，值为undefined
 	     */
 	    static findFirstGreaterOrEqual(nums, value, includeEqual = true) {
@@ -5404,7 +5430,7 @@ class RandomTimerSingle extends RandomTimer {
 	     * 在给定的数字数组中，从后向前查找第一个小于等于指定值的元素。
 	     * @param nums 数字数组，作为查找范围。
 	     * @param value 指定的值，用于与数组元素进行比较。
-	     * @param includeEqual 是否包括等于指定值的元素，默认为true。
+	     * @param [includeEqual=true] 是否包括等于指定值的元素，默认为true。
 	     * @returns 返回一个对象，包含找到的元素的索引和值。如果没有找到符合条件的元素，则索引为-1，值为undefined。
 	     */
 	    static findLastLessOrEqual(nums, value, includeEqual = true) {
@@ -5470,7 +5496,7 @@ class RandomTimerSingle extends RandomTimer {
 	     * 随机数
 	     * @param minNum 最小值
 	     * @param maxNum 最大值(不包括)
-	     * @param p 保留尾数  默认NAN 表示全保留
+	     * @param [p=NaN] 保留尾数  默认NaN 表示全保留
 	     * @return
 	     * @deprecated
 	     * @see global.randomFloat
@@ -5486,11 +5512,6 @@ class RandomTimerSingle extends RandomTimer {
 	MathKit.RAD_TO_DEG = 180 / Math.PI;
 	/** 计算弧度的公式  Math.PI / 180 */
 	MathKit.DEG_TO_RAD = Math.PI / 180;
-	/**
-	 * @deprecated
-	 * @see MathKit
-	 */
-	const Cast = MathKit;
 	
 	class View extends mixinExt(ActionEvent, StringBlock, ViewBlock, fgui.GComponent) {
 	    /**
@@ -6839,11 +6860,6 @@ class RandomTimerSingle extends RandomTimer {
 	UtilKit.bindInputBtn = UtilKit.bindInputKit;
 	/** @deprecated */
 	UtilKit.bindLongPressBtn = UtilKit.bindLongPressKit;
-	/**
-	 * @deprecated
-	 * @see UtilKit
-	 */
-	const UtilsTool = UtilKit;
 	
 	class NativeUtils {
 	}

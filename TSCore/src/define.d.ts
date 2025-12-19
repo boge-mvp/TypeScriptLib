@@ -250,21 +250,19 @@ declare interface String {
 
     /**
      * 将字符串转换为布尔值
-     *
-     * 会判断字符串是否为null，是否为空字符串，是否包含"false"或"0"
-     * @returns {boolean} 转换后的布尔值
+     * @returns {boolean} 转换后的布尔值，非空字符串且不等于"false"或"0"时返回true，否则返回false
      */
     toBoolean(): boolean
 
     /**
      * 将字符串转换为整数
-     * @returns {number} 转换后的整数
+     * @returns {number} 转换后的整数值，转换失败时返回0
      */
     toInt(): number
 
     /**
      * 将字符串转换为浮点数
-     * @returns {number} 转换后的浮点数
+     * @returns {number} 转换后的浮点数值，转换失败时返回0.0
      */
     toFloat(): number
 

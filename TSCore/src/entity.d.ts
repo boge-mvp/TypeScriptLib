@@ -137,6 +137,7 @@ declare type ComponentData = {
     order?: number
     /**
      * 创建UI的路径。
+     * //package/name
      */
     createUi?: string
     /**
