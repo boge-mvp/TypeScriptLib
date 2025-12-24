@@ -190,7 +190,8 @@ function loadScript(url, parallel = true, callback = null) {
 function getLoadUrl(key, v) {
     key = key.replace("{host}", window.location.host)
     if (!window.conch && !window.conchMarket) {
-        return `${key}?v=${version(key) || v}`
+        const ver = version(key) || v
+        return ver ? `${key}?v=${ver}` : key
     } else {
         return key
     }
