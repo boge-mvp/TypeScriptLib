@@ -3904,6 +3904,10 @@ const lazyInitBindView = [];
 	                this.runLoads.push(obj);
 	            }
 	        }
+	        if (loadArray.length == 0) {
+	            runFun(this.handler);
+	            return;
+	        }
 	        // 开始load
 	        tsCore.ELoader.loader.load(loadArray, Laya.Handler.create(this, this.loadComplete), new Laya.Handler(this, this.progressComplete));
 	    }
