@@ -57,6 +57,7 @@
     "@types/gulp-sourcemaps": "^0.0.38",
     "@types/node": "^14.18.63",
     "@types/through2": "^2.0.41",
+    "concat-with-sourcemaps": "^1.1.0",
     "del": "^5.1.0",
     "fs-extra": "^11.3.2",
     "gulp": "^5.0.1",
@@ -73,6 +74,8 @@
     "tslib": "^2.8.1",
     "typescript": "^5.9.2",
     "vinyl": "^3.0.1",
-    "vinyl-fs": "^4.0.2"
+    "vinyl-buffer": "^1.0.1",
+    "vinyl-fs": "^4.0.2",
+    "vinyl-source-stream": "^2.0.0"
   }
 }

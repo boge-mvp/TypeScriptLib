@@ -32,6 +32,9 @@ importers:
       '@types/through2':
         specifier: ^2.0.41
         version: 2.0.41
+      concat-with-sourcemaps:
+        specifier: ^1.1.0
+        version: 1.1.0
       del:
         specifier: ^5.1.0
         version: 5.1.0
@@ -80,9 +83,15 @@ importers:
       vinyl:
         specifier: ^3.0.1
         version: 3.0.1
+      vinyl-buffer:
+        specifier: ^1.0.1
+        version: 1.0.1
       vinyl-fs:
         specifier: ^4.0.2
         version: 4.0.2
+      vinyl-source-stream:
+        specifier: ^2.0.0
+        version: 2.0.0
 
   GameLib: {}
 
@@ -479,6 +488,9 @@ packages:
     resolution: {integrity: sha512-nAihlQsYGyc5Bwq6+EsubvANYGExeJKHDO3RjnvwU042fawQTQfM3Kxn7IHUXQOz4bzfwsGYYHGSvXyW4zOGLg==}
     engines: {node: '>=0.8'}
 
+  bl@1.2.3:
+    resolution: {integrity: sha512-pvcNpa0UU69UT341rO6AYy4FVAIkUHuZXRIWbq+zHnsVcRzDDjIAhGuuYoi0d//cwIwtt4pkpKycWEfjdV+vww==}
+
   bl@5.1.0:
     resolution: {integrity: sha512-tv1ZJHLfTDnXE6tMHv73YgSJaWR2AFuPwMntBe7XL/GBFHnT0CLnsHMogfk5+GzCDC5ZWarSCYaIGATZt9dNsQ==}
 
@@ -556,6 +568,9 @@ packages:
 
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
+
+  concat-with-sourcemaps@1.1.0:
+    resolution: {integrity: sha512-4gEjHJFT9e+2W/77h/DS5SGUgwDaOwprX8L/gl5+3ixnzkVJJsZWDSelmN3Oilw3LNDZjZV0yqH1hLG3k6nghg==}
 
   convert-source-map@1.9.0:
     resolution: {integrity: sha512-ASFBup0Mz1uyiIjANan1jzLQami9z1PoYSZCiiYW2FczPbenXc45FZdBZLzOT+r6+iciuEModtmCti+hjaAk0A==}
@@ -1457,6 +1472,9 @@ packages:
     resolution: {integrity: sha512-aeVK81SIuT6aMJfNo9Vte8Dw0/FZINGBV8BfCraGtqVxIeLAEhJyoWs8SmvRVmXfGss2PmmOwZCuBPbZR+IYWg==}
     engines: {node: '>= 10.13.0'}
 
+  vinyl-buffer@1.0.1:
+    resolution: {integrity: sha512-LRBE2/g3C1hSHL2k/FynSZcVTRhEw8sb08oKGt/0hukZXwrh2m8nfy+r5yLhGEk7eFFuclhyIuPct/Bxlxk6rg==}
+
   vinyl-contents@2.0.0:
     resolution: {integrity: sha512-cHq6NnGyi2pZ7xwdHSW1v4Jfnho4TEGtxZHw01cmnc8+i7jgR6bRnED/LbrKan/Q7CvVLbnvA5OepnhbpjBZ5Q==}
     engines: {node: '>=10.13.0'}
@@ -1468,6 +1486,9 @@ packages:
   vinyl-fs@4.0.2:
     resolution: {integrity: sha512-XRFwBLLTl8lRAOYiBqxY279wY46tVxLaRhSwo3GzKEuLz1giffsOquWWboD/haGf5lx+JyTigCFfe7DWHoARIA==}
     engines: {node: '>=10.13.0'}
+
+  vinyl-source-stream@2.0.0:
+    resolution: {integrity: sha512-Y5f1wRGajOfYukhv8biIGA7iZiY8UOIc3zJ6zcUNIbRG1BVuXzBsfSfe7MUJTttVkuy64k/pGQtJdd/aIt+hbw==}
 
   vinyl-sourcemap@1.1.0:
     resolution: {integrity: sha512-NiibMgt6VJGJmyw7vtzhctDcfKch4e4n9TBeoWlirb7FMg9/1Ov9k+A5ZRAtywBpRPiyECvQRQllYM8dECegVA==}
@@ -1833,6 +1854,11 @@ snapshots:
 
   binaryextensions@2.3.0: {}
 
+  bl@1.2.3:
+    dependencies:
+      readable-stream: 2.3.8
+      safe-buffer: 5.2.1
+
   bl@5.1.0:
     dependencies:
       buffer: 6.0.3
@@ -1924,6 +1950,10 @@ snapshots:
   commander@2.20.3: {}
 
   concat-map@0.0.1: {}
+
+  concat-with-sourcemaps@1.1.0:
+    dependencies:
+      source-map: 0.6.1
 
   convert-source-map@1.9.0: {}
 
@@ -2956,6 +2986,11 @@ snapshots:
 
   value-or-function@4.0.0: {}
 
+  vinyl-buffer@1.0.1:
+    dependencies:
+      bl: 1.2.3
+      through2: 2.0.5
+
   vinyl-contents@2.0.0:
     dependencies:
       bl: 5.1.0
@@ -3003,6 +3038,11 @@ snapshots:
     transitivePeerDependencies:
       - bare-abort-controller
       - react-native-b4a
+
+  vinyl-source-stream@2.0.0:
+    dependencies:
+      through2: 2.0.5
+      vinyl: 2.2.1
 
   vinyl-sourcemap@1.1.0:
     dependencies:
