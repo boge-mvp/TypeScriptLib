@@ -6,3 +6,5 @@ node_modules
 *.tgz
 demo
 .rollup.cache
+.gemini/
+gha-creds-*.json
