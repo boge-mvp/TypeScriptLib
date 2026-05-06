@@ -24,7 +24,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Upgraded to modern Node.js LTS
+          node-version: '22' # Upgraded to match user's local Node 22 environment
           cache: 'pnpm'
           registry-url: 'https://npm.pkg.github.com'
           # Defaults to the user or organization that owns the workflow file
