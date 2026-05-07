@@ -373,7 +373,7 @@ function buildJs(tsResult, outName, dist, opt) {
             sourcemaps.init(opt?.initMapsOpt),
             gulpTerser(),
             rename({extname: '.min.js', dirname: ""}),
-            sourcemaps.write(opt?.writeMapsOpt || {addComment: false}),
+            sourcemaps.write(".", opt?.writeMapsOpt || {addComment: false}),
             gulp.dest(dist)
         ]))
 }
