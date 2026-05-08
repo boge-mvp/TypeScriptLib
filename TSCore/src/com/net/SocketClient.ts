@@ -210,9 +210,9 @@ export class SocketClient extends Laya.EventDispatcher {
      */
     send(data: any) {
         if (Laya.Render.isConchApp && !StringUtil.isEmpty(SocketClient.SOCKET_CLASS_PATH)) {
-            this.socket.call("send", JSON.stringify(data))
+            this.socket?.call("send", JSON.stringify(data))
         } else {
-            this.socket.send(JSON.stringify(data))
+            this.socket?.send(JSON.stringify(data))
         }
     }
 
@@ -223,9 +223,9 @@ export class SocketClient extends Laya.EventDispatcher {
         this.connectTimes = this.MAX_CONNECT_TIMES
         this.reconnectDelay = this.RECONNECT_DELAY
         if (Laya.Render.isConchApp && !StringUtil.isEmpty(SocketClient.SOCKET_CLASS_PATH)) {
-            this.socket.call("close")
+            this.socket?.call("close")
         } else {
-            this.socket.close()
+            this.socket?.close()
         }
     }
 }
