@@ -33,16 +33,16 @@ function getStringArray(id: string | number, ...args: any[]): string[] {
 /**
  * 创建并初始化一个FairyGUI UI组件实例
  *
- * 该函数会创建指定UI类的实例，执行初始化函数，然后调用onConstruct生命周期方法
+ * 该函数会创建指定UI类的实例，执行初始化函数（如果提供），然后调用onConstruct生命周期方法
  * 适用于需要在创建时进行自定义初始化的UI组件场景
  *
  * @param uiClass - UI组件的构造函数，必须是fgui.GComponent的子类
- * @param initFun - 初始化函数，在此函数中this指向创建的UI实例，可以访问和修改实例的属性和方法
+ * @param onInit - 可选的初始化函数，在此函数中this指向创建的UI实例，可以访问和修改实例的属性和方法。默认为null
  *
  */
-function createUI<T extends fgui.GComponent>(uiClass: { new(): T }, initFun: (this: T )=> void) {
+function createUI<T extends fgui.GComponent>(uiClass: { new(): T }, onInit: (this: T) => void = null) {
     const target = new uiClass()
-    initFun.call(target)
+    onInit?.call(target)
     // @ts-ignore
     target.onConstruct()
     return target
