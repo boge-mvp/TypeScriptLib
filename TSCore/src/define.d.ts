@@ -85,6 +85,14 @@ declare module Laya {
 
     }
 
+    interface Byte {
+        /**
+         * 专为 FairyGUI 纯代码构建注入字符串表使用
+         * @param str 要写入的字符串
+         * @param stringTable 对应的字符串表引用
+         */
+        writeFguiString(str: string | null | undefined, stringTable: string[]): void;
+    }
 }
 
 declare module Laya.Event {

@@ -183,6 +183,25 @@ export class DefineConfig {
             }
         })
 
+        Object.defineProperty(Laya.Byte.prototype, "writeFguiString", {
+            value: function (str: string | null | undefined, stringTable: string[]): void {
+                if (!str) {
+                    this.writeInt16(65534); // fgui null占位
+                    return;
+                }
+                if (str === "") {
+                    this.writeInt16(65533); // fgui 空字符串占位
+                    return;
+                }
+                let idx = stringTable.indexOf(str);
+                if (idx === -1) {
+                    idx = stringTable.length;
+                    stringTable.push(str);
+                }
+                this.writeInt16(idx);
+            }
+        })
+
         Object.defineProperties(Laya.Event, {
             SPINE_PLAY: {
                 value: true,
