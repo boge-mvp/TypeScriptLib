@@ -11,7 +11,6 @@ function create(project) {
      * @type ProjectInfo
      */
     const projectInfo = project.project
-
     const fileDictionary = projectInfo.input.current
     const files = fileDictionary.files
     /** @type {ts.SourceFile} */
@@ -28,12 +27,10 @@ function create(project) {
             }
         }
         for (const fileName in fileArray) {
-            if (!files.hasOwnProperty(fileName))
-                continue;
+            if (!files.hasOwnProperty(fileName)) continue;
             let file = files[fileName];
             if (!parseSource) parseSource = file.ts
-            if (onlyGulp && !file.gulp)
-                continue;
+            if (onlyGulp && !file.gulp) continue;
             fileNames.push(file.fileNameOriginal);
         }
         return fileNames;

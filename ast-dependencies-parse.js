@@ -36,12 +36,15 @@ function sortFilesByDependencies(files) {
         pathCaseMap.set(unifyPath(fileName).toLowerCase(), fileName);
     }
 
+    // 提取并排序所有文件名，保证跨平台的入口顺序一致性
+    const sortedFileNames = Object.keys(files).sort();
+
     // 为每个文件计算依赖
     const fileDependencies = {};
     const inheritanceRelations = {}; // 存储继承关系
     const fileDependencyDetails = {}; // 存储详细依赖信息
 
-    for (const fileName in files) {
+    for (const fileName of sortedFileNames) {
         if (!files.hasOwnProperty(fileName)) continue;
 
         const file = files[fileName];
@@ -74,8 +77,8 @@ function sortFilesByDependencies(files) {
         stack.push(node);
         onStack.add(node);
 
-        // 遍历当前节点的所有依赖
-        const dependencies = fileDependencies[node] || [];
+        // 遍历当前节点的所有依赖，同样保证依赖遍历的稳定性
+        const dependencies = (fileDependencies[node] || []).slice().sort();
         dependencies.forEach(dependency => {
             if (!index.has(dependency)) {
                 // 未访问过的节点
@@ -96,13 +99,14 @@ function sortFilesByDependencies(files) {
                 onStack.delete(w);
                 scc.push(w);
             } while (w !== node);
+            // 排序SCC内部以保持一致性
+            scc.sort();
             sccs.push(scc);
         }
     }
 
-    // 对所有未访问的节点执行strongConnect
-    for (const fileName in files) {
-        if (!files.hasOwnProperty(fileName)) continue;
+    // 对所有未访问的节点执行strongConnect，使用排序后的文件名列表
+    for (const fileName of sortedFileNames) {
         if (!index.has(fileName)) {
             strongConnect(fileName);
         }
@@ -289,6 +293,7 @@ function sortFilesByDependencies(files) {
     // 构建返回对象
     const obj = {};
     finalResult.forEach(value => obj[value] = files[value]);
+
     return obj;
 }
 
@@ -348,6 +353,10 @@ function analyzeDependencies(sourceFile, allFiles) {
                     finalPath = pathCaseMap.get(possiblePath);
                     break;
                 }
+            }
+
+            if (!finalPath) {
+                console.log(`[DEBUG MISSING DEP] source: ${currentFilePath}, import: ${importPath}, resolved: ${resolvedPath}`);
             }
 
             // 如果找到了对应的文件路径
