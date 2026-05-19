@@ -383,6 +383,17 @@ export class DefineConfig {
             }
         })
 
+        Object.defineProperty(fgui.GComponent.prototype, "getChildByNames", {
+            value: function (...name: string[]) {
+                let child = null
+                for (const key of name) {
+                    child = this.getChild(key)
+                    if (child) return child
+                }
+                return child
+            }
+        })
+
     }
 
     /**

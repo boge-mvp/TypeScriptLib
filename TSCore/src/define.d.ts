@@ -124,6 +124,21 @@ declare module fgui {
 
     }
 
+    interface GComponent {
+        /**
+         * 通过多个名称查找子组件
+         * @param name - 要查找的子组件名称列表（可变参数）
+         * @returns 找到的第一个匹配的子组件，如果都未找到则返回 null
+         * @description 按顺序遍历传入的名称列表，返回第一个找到的子组件
+         * @example
+         * ```typescript
+         * // 查找名为 "btn1"、"btn2" 或 "btn3" 的子组件，返回第一个找到的
+         * const child = component.getChildByNames("btn1", "btn2", "btn3")
+         * ```
+         */
+        getChildByNames<T = GObject>(...name: string[]): T
+    }
+
 }
 
 //  **********************         扩展原生方法         *****************************
