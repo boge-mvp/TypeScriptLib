@@ -378,7 +378,7 @@ export class SceneManager extends EProxy {
      * 显示游戏到舞台上
      *
      */
-    private showGameScene() {
+    showGameScene() {
         // 初始化 历史管理
         AppRecordManager.init()
         AnalyticsManager.openGame()

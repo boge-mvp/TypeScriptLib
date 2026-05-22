@@ -13,14 +13,11 @@ export class View extends mixinExt(ActionEvent, StringBlock, ViewBlock, GCompone
     /**
      * 获取子组件
      * @param name 传入子组件多种命名方式
+     * @deprecated
+     * @see getChildByNames
      */
     override getChild<T = GObject>(...name: string[]): T {
-        let child = null
-        for (const key of name) {
-            child = super.getChild(key)
-            if (child) return child
-        }
-        return child
+        return this.getChildByNames(...name)
     }
 
     setKey(key: string) {
