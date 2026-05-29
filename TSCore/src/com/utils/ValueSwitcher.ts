@@ -79,6 +79,8 @@ export class ValueSwitcher<T> {
 
     /** 启用长按功能 */
     set enableLongPress(value: boolean) {
+        this.increaseBtn.offClick(this, this.onValueChangeHandler)
+        this.decreaseBtn.offClick(this, this.onValueChangeHandler)
         if (value) {
             if (!this.increaseLongPressKit)
                 this.increaseLongPressKit = UtilKit.bindLongPressKit(this.increaseBtn, this.onValueChangeHandler.bind(this), 1)
@@ -89,8 +91,6 @@ export class ValueSwitcher<T> {
             this.increaseLongPressKit?.dispose()
             this.decreaseLongPressKit?.dispose()
             this.increaseLongPressKit = this.decreaseLongPressKit = null
-            this.increaseBtn.offClick(this, this.onValueChangeHandler)
-            this.decreaseBtn.offClick(this, this.onValueChangeHandler)
             this.increaseBtn.onClick(this, this.onValueChangeHandler, [1])
             this.decreaseBtn.onClick(this, this.onValueChangeHandler, [2])
         }
