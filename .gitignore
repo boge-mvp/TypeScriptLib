@@ -10,3 +10,4 @@ demo
 gha-creds-*.json
 bin
 dist
+scratch
