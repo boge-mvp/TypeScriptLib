@@ -46,54 +46,68 @@ TypeScriptLib 是一个基于 LayaAir 引擎的专业游戏开发框架，包含
 
 #### 2. 执行安装命令
 
+> [!WARNING]
+> **💡 关于 pnpm Workspace (多包工作区) 环境的温馨提示：**
+> 如果您的项目是一个多包工作区（最外层目录下含有 `pnpm-workspace.yaml`），直接在最外层执行 pnpm 安装可能会触发以下安全拦截警示：
+> `ERR_PNPM_ADDING_TO_ROOT Running this command will add the dependency to the workspace root...`
+>
+> **解决方法（二选一）：**
+> 1. **推荐：** 先在终端 `cd` 进入具体的游戏子项目目录（如 `cd apps/game`），再运行下面的非 `-w` 安装命令。
+> 2. **全局化：** 如果您确实需要把依赖装在整个工作区的“最外层根目录”，请在下面的 pnpm 命令尾端追加 `-w`（即开发依赖合并全局安装：`-Dw`）。
+
 ##### A. 安装正式版本 (Stable - 推荐用于生产环境)
 
-推荐使用 **NPM 别名安装** 以保持您项目的代码清爽（在代码中直接 `require("game-lib")` 即可，避免了冗长且带范围的前缀）：
+因为本框架只在开发、编译和类型匹配阶段起作用（最终打包时代码已自动混入），我们**强烈推荐所有的安装均使用开发依赖方式（NPM 用 `-D` / pnpm 用 `-D` 或者是 `-Dw`）**引入：
 
 * **方式 A：使用 NPM 别名安装（⭐ 强烈推荐）**
   ```bash
-  # 使用 npm 安装并设置别名为 game-lib
-  npm install game-lib@npm:@boge-mvp/game-lib@latest
+  # 使用 npm (设置别名为 game-lib 并作为开发依赖)
+  npm install game-lib@npm:@boge-mvp/game-lib@latest -D
   
-  # 或使用 pnpm
-  pnpm add game-lib@npm:@boge-mvp/game-lib@latest
+  # 或使用 pnpm (设置别名为 game-lib 并作为开发依赖)
+  pnpm add game-lib@npm:@boge-mvp/game-lib@latest -D
   ```
 
 * **方式 B：标准范围安装**
   ```bash
-  npm install @boge-mvp/game-lib@latest
+  # 使用 npm
+  npm install @boge-mvp/game-lib@latest -D
   
   # 或使用 pnpm
-  pnpm add @boge-mvp/game-lib@latest
+  pnpm add @boge-mvp/game-lib@latest -D
   ```
 
 ##### B. 安装测试版本 (Beta / Pre-release - 用于功能预览)
 
-当您在进行功能测试和验证时，可通过 `beta` 分发标签安全地下载测试包：
+当您在进行新特性测试和验证时，可通过 `beta` 分发标签安全地下载测试包：
 
-* **方式 A：一键安装最新的测试版（⭐ 自动获取最新，无需每次都指定版本号）**
-  - 使用 `@beta` 动态标签。每次执行该命令都会由注册表解析并安装最新发布的那个测试版：
+* **方式 A：一键安装最新的测试版（⭐ 自动获取最新，无需每次都指定具体版本号）**
+  - 使用 `@beta` 动态标签。每次执行该命令都会由注册表自动解析并下载最新的那个测试版本：
   ```bash
-  # 别名安装
-  npm install game-lib@npm:@boge-mvp/game-lib@beta
+  # 别名安装方式
+  npm install game-lib@npm:@boge-mvp/game-lib@beta -D
+  pnpm add game-lib@npm:@boge-mvp/game-lib@beta -D
   
-  # 或标准安装
-  npm install @boge-mvp/game-lib@beta
+  # 标准安装方式
+  npm install @boge-mvp/game-lib@beta -D
+  pnpm add @boge-mvp/game-lib@beta -D
   ```
 
 * **方式 B：安装指定的特定测试版本**
   - 如果需要固定调试或回滚至某个特定的历史测试版本，可以显式声明版本号（格式为 `X.Y.Z-beta.N`）：
   ```bash
-  # 别名安装（例如安装 2.0.8-beta.0）
-  npm install game-lib@npm:@boge-mvp/game-lib@2.0.8-beta.0
+  # 别名安装方式（以安装 2.0.8-beta.0 为例）
+  npm install game-lib@npm:@boge-mvp/game-lib@2.0.8-beta.0 -D
+  pnpm add game-lib@npm:@boge-mvp/game-lib@2.0.8-beta.0 -D
   
-  # 或标准安装（例如安装 2.0.8-beta.0）
-  npm install @boge-mvp/game-lib@2.0.8-beta.0
+  # 标准安装方式
+  npm install @boge-mvp/game-lib@2.0.8-beta.0 -D
+  pnpm add @boge-mvp/game-lib@2.0.8-beta.0 -D
   ```
 
 ##### C. 查询与验证当前最新版本命令
 
-如果您需要查询和确认 GitHub Packages 上当前各个标签（如 `latest` 正式版、`beta` 测试版）具体指向的实际版本号，可在终端中直接执行以下命令：
+如果您需要查询 and 确认 GitHub Packages 上当前各个标签（如 `latest` 正式版、`beta` 测试版）具体指向的实际版本号，可在终端中直接执行以下命令：
 
 ```bash
 # 查询该依赖库所有的分发标签（dist-tags）及其当前绑定的具体版本号
