@@ -47,7 +47,19 @@ jobs:
         run: pnpm run build
 
       - name: Publish package
-        run: pnpm publish --no-git-checks
+        run: |
+          # GITHUB_REF_NAME contains the tag name, e.g., "v2.0.8-beta.0"
+          # Remove the 'v' prefix
+          VERSION=${GITHUB_REF_NAME#v}
+          
+          # Check if the version is a pre-release (contains '-')
+          if [[ "$VERSION" == *"-"* ]]; then
+            echo "Pre-release version detected: $VERSION. Publishing with 'beta' tag..."
+            pnpm publish --tag beta --no-git-checks
+          else
+            echo "Stable version detected: $VERSION. Publishing with 'latest' tag..."
+            pnpm publish --no-git-checks
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

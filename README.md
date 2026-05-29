@@ -22,11 +22,11 @@ TypeScriptLib 是一个基于 LayaAir 引擎的专业游戏开发框架，包含
 
 ## 📦 安装与使用方式
 
-项目现已支持通过 GitHub Packages 进行正式版本管理。
+项目已完全迁移至 **GitHub Packages** 托管，所有的编译产物都通过 npm 包进行统一的版本管理。
 
 ### 方法一：通过 GitHub Packages 安装 (推荐)
 
-这是最标准、最稳定的安装方式，支持版本控制且安装速度快。
+这是最标准、最稳定的安装方式，支持版本控制且开箱即用。
 
 #### 1. 配置认证
 在项目根目录或用户目录下创建/修改 `.npmrc` 文件。你需要一个 **GitHub 个人访问令牌 (PAT)**。
@@ -46,61 +46,63 @@ TypeScriptLib 是一个基于 LayaAir 引擎的专业游戏开发框架，包含
 
 #### 2. 执行安装命令
 
-你有两种方式可以安装此库，**强烈推荐使用别名安装**以保持代码清爽：
+##### A. 安装正式版本 (Stable - 推荐用于生产环境)
 
-**方式 A：使用 NPM 别名安装（⭐ 推荐）**
-```bash
-# 使用 npm 安装并设置别名为 game-lib
-npm install game-lib@npm:@boge-mvp/game-lib@latest
+推荐使用 **NPM 别名安装** 以保持您项目的代码清爽（在代码中直接 `require("game-lib")` 即可，避免了冗长且带范围的前缀）：
 
-# 或使用 pnpm
-pnpm add game-lib@npm:@boge-mvp/game-lib@latest
-```
-> **💡 别名的好处**：在 JS/TS 代码中，你只需简单地 `require("game-lib")` 即可，无需书写数字前缀。
+* **方式 A：使用 NPM 别名安装（⭐ 强烈推荐）**
+  ```bash
+  # 使用 npm 安装并设置别名为 game-lib
+  npm install game-lib@npm:@boge-mvp/game-lib@latest
+  
+  # 或使用 pnpm
+  pnpm add game-lib@npm:@boge-mvp/game-lib@latest
+  ```
 
-> **🔄 关于库的更新：**
-> - 直接带上 `@latest` 标签强制拉取最新代码：
->   `npm install game-lib@npm:@boge-mvp/game-lib@latest`
+* **方式 B：标准范围安装**
+  ```bash
+  npm install @boge-mvp/game-lib@latest
+  
+  # 或使用 pnpm
+  pnpm add @boge-mvp/game-lib@latest
+  ```
 
-**方式 B：标准安装**
-```bash
-npm install @boge-mvp/game-lib@latest
-# 或使用 pnpm
-pnpm add @boge-mvp/game-lib@latest
-```
+##### B. 安装测试版本 (Beta / Pre-release - 用于功能预览)
+
+当您在进行功能测试和验证时，可通过 `beta` 分发标签安全地下载测试包：
+
+* **方式 A：一键安装最新的测试版（⭐ 自动获取最新，无需每次都指定版本号）**
+  - 使用 `@beta` 动态标签。每次执行该命令都会由注册表解析并安装最新发布的那个测试版：
+  ```bash
+  # 别名安装
+  npm install game-lib@npm:@boge-mvp/game-lib@beta
+  
+  # 或标准安装
+  npm install @boge-mvp/game-lib@beta
+  ```
+
+* **方式 B：安装指定的特定测试版本**
+  - 如果需要固定调试或回滚至某个特定的历史测试版本，可以显式声明版本号（格式为 `X.Y.Z-beta.N`）：
+  ```bash
+  # 别名安装（例如安装 2.0.8-beta.0）
+  npm install game-lib@npm:@boge-mvp/game-lib@2.0.8-beta.0
+  
+  # 或标准安装（例如安装 2.0.8-beta.0）
+  npm install @boge-mvp/game-lib@2.0.8-beta.0
+  ```
 
 ---
 
-### 方法二：直接通过 Git 仓库安装
-
-适用于临时测试或直接引用源代码。
-
-```bash
-# 通过 GitHub 安装指定标签
-npm install game-lib@github:boge-mvp/TypeScriptLib#v2.2.2
-```
-
-⚠️ **此方法的弊端：**
-1. **缺少编译产物**：此方式下载的是原始源代码。如果仓库中没有提交 `dist` 目录，安装后将无法直接运行，除非你在本地手动执行构建。
-2. **环境依赖重**：使用者必须在本地安装所有开发依赖（如 Gulp, TypeScript 等）才能完成项目的二次编译。
-3. **安装速度慢**：npm 需要克隆整个 Git 仓库历史或下载源码包，体积远大于发布后的压缩包（tarball）。
-4. **版本管理松散**：不像 NPM 发布的正式版本那样严格遵循语义化版本规范，容易因分支变动导致构建不一致。
-
----
-
-### 方法三：在 package.json 中手动声明
+### 方法二：在 package.json 中手动声明
 
 ```json
 {
   "dependencies": {
     "// 方式 A：使用别名指向 GitHub Packages (推荐)": "",
-    "game-lib": "npm:@boge-mvp/game-lib@^2.2.2",
+    "game-lib": "npm:@boge-mvp/game-lib@^2.0.7",
     
     "// 方式 B：标准声明": "",
-    "@boge-mvp/game-lib": "^2.2.2",
-    
-    "// 方式 C：通过 Git 引用": "",
-    "game-lib": "git+https://github.com/boge-mvp/TypeScriptLib.git#v2.2.2"
+    "@boge-mvp/game-lib": "^2.0.7"
   }
 }
 ```
