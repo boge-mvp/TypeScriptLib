@@ -91,6 +91,20 @@ TypeScriptLib 是一个基于 LayaAir 引擎的专业游戏开发框架，包含
   npm install @boge-mvp/game-lib@2.0.8-beta.0
   ```
 
+##### C. 查询与验证当前最新版本命令
+
+如果您需要查询和确认 GitHub Packages 上当前各个标签（如 `latest` 正式版、`beta` 测试版）具体指向的实际版本号，可在终端中直接执行以下命令：
+
+```bash
+# 查询该依赖库所有的分发标签（dist-tags）及其当前绑定的具体版本号
+npm view @boge-mvp/game-lib dist-tags
+```
+
+> **💡 命令输出示例：**
+> ```text
+> { latest: '2.0.7', beta: '2.0.8-beta.0' }
+> ```
+
 ---
 
 ### 方法二：在 package.json 中手动声明
