@@ -35,6 +35,7 @@
     "webp",
     "version_info.txt",
     "index.js",
+    "index.d.ts",
     "gulp-ifelse.js",
     "gulp-concat-source.js",
     "gulp-ts-sort-declaration.js",
