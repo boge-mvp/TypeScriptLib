@@ -125,6 +125,10 @@ declare module fgui {
     }
 
     interface GComponent {
+
+
+        getChild<T = GObject>(name: string): T
+
         /**
          * 通过多个名称查找子组件
          * @param name - 要查找的子组件名称列表（可变参数）
