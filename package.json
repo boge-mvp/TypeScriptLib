@@ -17,6 +17,7 @@
     "pack": "npm run build && npm pack",
     "test-install": "for /f %i in ('dir /b *.tgz') do npm install -g %i"
   },
+  "types": "index.d.ts",
   "repository": {
     "type": "git",
     "url": "https://github.com/boge-mvp/TypeScriptLib.git"

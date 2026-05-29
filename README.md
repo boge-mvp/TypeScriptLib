@@ -51,23 +51,22 @@ TypeScriptLib 是一个基于 LayaAir 引擎的专业游戏开发框架，包含
 **方式 A：使用 NPM 别名安装（⭐ 推荐）**
 ```bash
 # 使用 npm 安装并设置别名为 game-lib
-npm install game-lib@npm:@boge-mvp/game-lib
+npm install game-lib@npm:@boge-mvp/game-lib@latest
 
 # 或使用 pnpm
-pnpm add game-lib@npm:@boge-mvp/game-lib
+pnpm add game-lib@npm:@boge-mvp/game-lib@latest
 ```
 > **💡 别名的好处**：在 JS/TS 代码中，你只需简单地 `require("game-lib")` 即可，无需书写数字前缀。
 
 > **🔄 关于库的更新：**
-> - **常规更新（小版本）**：如果库发布了新功能或修复（如 `2.0.8` -> `2.0.9`），可直接执行 `npm update game-lib`。
-> - **跨版本更新（强制最新）**：如果发布了重大更新（如 `3.0.0`），需要带上 `@latest` 标签强制拉取最新代码：
+> - 直接带上 `@latest` 标签强制拉取最新代码：
 >   `npm install game-lib@npm:@boge-mvp/game-lib@latest`
 
 **方式 B：标准安装**
 ```bash
-npm install @boge-mvp/game-lib
+npm install @boge-mvp/game-lib@latest
 # 或使用 pnpm
-pnpm add @boge-mvp/game-lib
+pnpm add @boge-mvp/game-lib@latest
 ```
 
 ---
@@ -78,7 +77,7 @@ pnpm add @boge-mvp/game-lib
 
 ```bash
 # 通过 GitHub 安装指定标签
-npm install game-lib@github:boge-mvp/TypeScriptLib#v2.0.8
+npm install game-lib@github:boge-mvp/TypeScriptLib#v2.2.2
 ```
 
 ⚠️ **此方法的弊端：**
@@ -95,13 +94,13 @@ npm install game-lib@github:boge-mvp/TypeScriptLib#v2.0.8
 {
   "dependencies": {
     "// 方式 A：使用别名指向 GitHub Packages (推荐)": "",
-    "game-lib": "npm:@boge-mvp/game-lib@^2.0.8",
+    "game-lib": "npm:@boge-mvp/game-lib@^2.2.2",
     
     "// 方式 B：标准声明": "",
-    "@boge-mvp/game-lib": "^2.0.8",
+    "@boge-mvp/game-lib": "^2.2.2",
     
     "// 方式 C：通过 Git 引用": "",
-    "game-lib": "git+https://github.com/boge-mvp/TypeScriptLib.git#v2.0.8"
+    "game-lib": "git+https://github.com/boge-mvp/TypeScriptLib.git#v2.2.2"
   }
 }
 ```
