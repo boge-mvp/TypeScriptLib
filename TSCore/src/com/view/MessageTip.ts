@@ -105,7 +105,7 @@ export class MessageTip extends fgui.GComponent {
     }
 
     private static createHandler() {
-        return UIPackage.createObjectFromURL(this.CREATE_FUI_URL, MessageTip) as MessageTip
+        return UIPackage.createObjectFromURL(MessageTip.CREATE_FUI_URL, MessageTip) as MessageTip
     }
 
     /**

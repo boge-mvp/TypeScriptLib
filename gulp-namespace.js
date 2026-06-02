@@ -107,7 +107,7 @@ module.exports = function (namespace = null, multi = false) {
                 content = `declare namespace ${namespace} {\n\n\t${ns.join("\n\t")}\n}`
             } else {
                 const ns = content.split("\n")
-                content = `(function (${namespace}) {\n\t${ns.join("\n\t")}\n}(this.${namespace} || (this.${namespace} = {})));`
+                content = `window.${namespace} = (function (${namespace}) {\n\t${ns.join("\n\t")}\n\treturn ${namespace}\n}({}));`
             }
         }
         return content

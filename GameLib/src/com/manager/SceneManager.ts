@@ -225,7 +225,8 @@ export class SceneManager extends EProxy {
             return
         }
         Player.inst.gameName = config
-        Player.inst.simpleName = config.charAt(0).toLowerCase() + config.substring(1)
+        Player.inst.simpleName = config.firstLowerCase()
+
         this.isCloseGame = false
         // 如果是未登陆状态
 //		if (!Player.inst.isGuest && !Player.inst.token) {
