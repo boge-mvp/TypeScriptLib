@@ -71,6 +71,7 @@ declare module "@boge-mvp/game-lib" {
         namespace?: string;
         /** 默认值: [] - JS插件数组 */
         plugs?: JSPlugin[];
+        terserOpt?: import("terser").MinifyOptions;
         /** 默认值: undefined - map初始化 */
         initMapsOpt?: import("gulp-sourcemaps").InitOptions;
         /** 默认值: undefined - map保存位置 */
