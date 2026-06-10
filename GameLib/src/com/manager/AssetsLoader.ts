@@ -553,7 +553,7 @@ export class AssetsLoader implements IFormatPath {
         let pro = parseInt(e * 100 + "")
         if (LoadingWindow.inst == null) {
             const tempValue = LoadingWindow.getProgress(pro, 4, 4)
-            JSUtils.getProgress(tempValue)
+            JSUtils.progress(tempValue)
             return
         }
         if (Render.isConchApp) {

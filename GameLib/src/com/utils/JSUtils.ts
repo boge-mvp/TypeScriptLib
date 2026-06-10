@@ -42,16 +42,6 @@ export class JSUtils {
         JSUtils.openPage("/jackpot")
     }
 
-    /**
-     * 打开指定的web页面 不关闭游戏的前提下
-     * @param value
-     * @deprecated
-     * @see openPage
-     */
-    static openWebPageWithoutLeaveGame(value: string) {
-        JSUtils.openPage(value, false)
-    }
-
     /** 关闭游戏
      * @param [type = 0]  0 默认直接退出  1 退出切换到新游戏
      * @param [data = null]

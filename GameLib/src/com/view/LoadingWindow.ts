@@ -102,7 +102,7 @@ export class LoadingWindow extends BaseView {
             this._instance.tempValue = temp
             this._instance.mesText.text = this._instance.getMsg() + temp.toFixed(2) + "%"
         }
-        JSUtils.getProgress(temp)
+        JSUtils.progress(temp)
     }
 
     /**
