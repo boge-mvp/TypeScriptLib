@@ -360,6 +360,15 @@ function buildJs(tsResult, outName, dist, opt) {
         .pipe(concatSource(`${outName}.js`))
         .pipe(namespacePlug(namespace))
         .pipe(through2.obj(function (chunk, encoding, callback) {
+            if (isMinify) {
+                // 压缩模式下 如果启用了方法压缩那么可能会导致装饰器中字符串命名的方法名不能被成功混淆，需要正则替换修改
+                if (chunk.isBuffer()) {
+                    let code = chunk.contents.toString("utf-8");
+                    // 极致性能与100%防误伤：在合并后的未压缩单 JS 内存中极速正则替换，匹配并绑定 __decorate 闭括号及第四参数
+                    code = code.replace(/]\s*,\s*([\w.]+?(?:\.prototype)?)\s*,\s*["'](\w+?)["']\s*(,\s*(?:null|void\s+0))?\s*\)/g, '], $1, Object.keys({ $2: 0 })[0]$3)');
+                    chunk.contents = Buffer.from(code);
+                }
+            }
             for (const plug of plugs) {
                 plug.onAfterCodeCompile?.(chunk)
             }
