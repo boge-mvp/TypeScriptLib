@@ -42,7 +42,7 @@ function getStringArray(id: string | number, ...args: any[]): string[] {
  * color("#ffffff", 0.5)   // 返回 "#ffffff80"
  * color("fff", 0.5)       // 返回 "#ffffff80"
  */
-function color(hex: string | number, a: number): string {
+function color(hex: string | number, a: number = 1): string {
     const h = typeof hex === "number" 
         ? hex.toString(16).padStart(6, "0")
         : (hex.startsWith("#") ? hex.slice(1) : hex);
