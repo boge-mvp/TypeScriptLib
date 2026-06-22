@@ -31,6 +31,33 @@ function getStringArray(id: string | number, ...args: any[]): string[] {
 }
 
 /**
+ * 将十六进制颜色和 Alpha 透明度格式化为带透明度的十六进制颜色字符串。
+ * 
+ * @param hex 十六进制颜色值，可以是数字（如 0xffffff）、带 # 的字符串（如 "#ffffff"、"#fff"）或不带 # 的字符串（如 "ffffff"、"fff"）。
+ * @param a Alpha 透明度值，取值范围为 0 ~ 1。
+ * @returns 格式化后的带透明度的十六进制颜色字符串（如 "#ffffffff"）。
+ * 
+ * @example
+ * color(0xffffff, 1)      // 返回 "#ffffffff"
+ * color("#ffffff", 0.5)   // 返回 "#ffffff80"
+ * color("fff", 0.5)       // 返回 "#ffffff80"
+ */
+function color(hex: string | number, a: number): string {
+    const h = typeof hex === "number" 
+        ? hex.toString(16).padStart(6, "0")
+        : (hex.startsWith("#") ? hex.slice(1) : hex);
+
+    const formattedHex = h.length === 3 
+        ? h.split("").map(c => c + c).join("") 
+        : h;
+
+    const alphaHex = Math.round(a * 255).toString(16).padStart(2, "0");
+
+    return `#${formattedHex}${alphaHex}`;
+}
+
+
+/**
  * 创建并初始化一个FairyGUI UI组件实例
  *
  * 该函数会创建指定UI类的实例，执行初始化函数（如果提供），然后调用onConstruct生命周期方法
