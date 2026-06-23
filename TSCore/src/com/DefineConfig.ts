@@ -12,6 +12,7 @@ import {GSkeleton} from "./view/GSkeleton"
 import {EDrawTextureCmd} from "./extends/EDrawTextureCmd"
 import {SoundUtils} from "./utils/SoundUtils";
 import {Log} from "./Log";
+import {ETexture} from "./extends/ETexture";
 
 export class DefineConfig {
 
@@ -215,6 +216,12 @@ export class DefineConfig {
         DefineConfig.defineText()
         DefineConfig.defineTimer()
 
+        // 动态注入 Laya.Texture 静态扩展方法
+        Object.defineProperty(Laya.Texture, "createGradientTexture", {
+            value: function (config: any) {
+                return ETexture.createGradientTexture(config);
+            }
+        });
     }
 
     /**

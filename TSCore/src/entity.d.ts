@@ -30,6 +30,66 @@ declare type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) e
 /** 获取构造函数的实例类型 */
 declare type InstanceTypeOfConstructor<T> = T extends Constructor<infer R> ? R : never
 
+/**
+ * 渐变纹理配置参数
+ */
+declare type GradientConfig = {
+    /** 渐变类型：'linear' (线性) | 'radial' (径向) | 'conic' (圆锥/角度) */
+    type?: "linear" | "radial" | "conic";
+
+    /** 纹理宽度，默认 256 */
+    width?: number;
+
+    /** 纹理高度，默认 256 */
+    height?: number;
+
+    /**
+     * 渐变色标列表。
+     * 1. 精确配置数组：[{ offset: 0, color: 'red' }, { offset: 1, color: 'blue' }]
+     * 2. 简易配置数组：['red', 'green', 'blue']（会自动均匀分配 offset，使开发更便捷）
+     */
+    colorStops: string[] | { offset: number; color: string }[];
+
+    /**
+     * 线性渐变角度 (角度制，如 0 表示从左到右，90 表示从上到下，180 从右到左，270 从下到上)。
+     * 开启此项后，会自动根据纹理宽高计算起终点，使渐变色彩完美贴合。
+     * 若未传且也未指定 linearPoints，则默认 angle = 0（从左至右）
+     */
+    angle?: number;
+
+    /**
+     * 手动指定线性渐变的精确起点与终点。指定后，angle 参数将失效。
+     */
+    linearPoints?: { x0: number; y0: number; x1: number; y1: number };
+
+    /**
+     * 手动指定径向渐变的内、外圆心和半径。
+     * 若不传，默认内圆在中心且半径为 0，外圆在中心且半径为外接圆半径（Math.sqrt(W^2 + H^2) / 2）。
+     */
+    radialPoints?: {
+        x0?: number; y0?: number; r0?: number;
+        x1?: number; y1?: number; r1?: number;
+    };
+
+    /**
+     * 圆锥渐变起始角度 (角度制，默认 0 表示向上) 以及中心点坐标 (默认纹理中心)。
+     */
+    conicPoints?: {
+        startAngle?: number;
+        x?: number;
+        y?: number;
+    };
+}
+
+
+
+
+
+
+
+
+
+
 declare type InitApp = {
     /** 初始化Laya */
     laya?: {
