@@ -376,10 +376,19 @@ export class SceneManager extends EProxy {
     }
 
     /**
-     * 显示游戏到舞台上
-     *
+     * 显示游戏到舞台上，初始化并启动游戏进程
+     * 
+     * 主要执行以下步骤：
+     * 1. 初始化历史管理器和游戏埋点
+     * 2. 连接游戏 Socket 并初始化相关事件监听
+     * 3. 清理消息提示，关闭前置音乐，并初始化游戏基础数据
+     * 4. 在舞台上创建并显示游戏场景
+     * 5. 场景显示后，加载声音和后续资源，启用交互按键
+     * 6. 在下一帧隐藏加载界面并执行加载完成的回调
+     * 
+     * @param onComplete 游戏完全加载并显示成功后的可选回调方法
      */
-    showGameScene() {
+    showGameScene(onComplete?: () => void) {
         // 初始化 历史管理
         AppRecordManager.init()
         AnalyticsManager.openGame()
@@ -413,6 +422,7 @@ export class SceneManager extends EProxy {
                 if (GameConfigKit.autoSendOnLoadEnd) {
                     LoadingWindow.hide()
                     JSUtils.gameOnload()
+                    onComplete?.()
                 }
             })
         }))
