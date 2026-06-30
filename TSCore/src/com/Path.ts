@@ -28,6 +28,7 @@ export class Path {
      * @return 格式化后可直接使用的路径
      */
     static formatUrl(url: string) {
+        let isNoWebp = url.indexOf("nowebp=1") !== -1
         url = url.split("?")[0]
         let version = Laya.URL.version[url]
         Path.formatPath.sort((a, b) => a.order - a.order)
@@ -36,8 +37,13 @@ export class Path {
             version = format.version?.(url, version) ?? version
             version = format.call?.(url, version) ?? version
         }
-        if (ELoader.isWebp && url.endsWithAny("png", "jpg")) url += ".webp"
-        if (!Laya.Browser.onLayaRuntime && version) url = `${url}?v=${version}`
+        if (ELoader.isWebp && !isNoWebp && url.endsWithAny("png", "jpg")) url += ".webp"
+        if (!Laya.Browser.onLayaRuntime && version) {
+            url = `${url}?v=${version}`
+            if (isNoWebp) url += "&nowebp=1"
+        } else if (isNoWebp) {
+            url = `${url}?nowebp=1`
+        }
         return url
     }
 

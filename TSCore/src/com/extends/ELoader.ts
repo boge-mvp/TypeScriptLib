@@ -46,7 +46,7 @@ export class ELoader {
             resInfo.type = type
             resInfo.cache = cache
             resInfo.ignoreCache = ignoreCache
-            resInfo.originalUrl = null
+            resInfo.originalUrl = url
             resInfo.complete = complete
             resInfo.progress = progress
             resInfo.priority = priority
@@ -89,7 +89,7 @@ export class ELoader {
             resInfo.type = type
             resInfo.cache = false
             resInfo.ignoreCache = true
-            resInfo.originalUrl = null
+            resInfo.originalUrl = url
             resInfo.createCache = cache
             resInfo.createConstructParams = constructParams;
             resInfo.createPropertyParams = propertyParams;
@@ -155,12 +155,20 @@ export class ELoader {
     private onSingleComplete(resInfo: ResInfo, content?: any) {
 
         if (!content) {
+            // 只要进入加载失败重试/降级阶段，强制将该资源标记为忽略加载器缓存，保障 Laya 100% 实打实发起物理网络请求
+            resInfo.ignoreCache = true;
             if (this.baseUrls) {
                 resInfo.useIndex++
                 if (resInfo.useIndex < this.baseUrls.length) {
                     this._load(resInfo)
                     return
                 }
+            }
+            if (ELoader.isWebp && resInfo.originalUrl && resInfo.originalUrl.endsWithAny("png", "jpg") && resInfo.url.indexOf("nowebp=1") === -1) {
+                resInfo.useIndex = 0
+                resInfo.url = resInfo.originalUrl + (resInfo.originalUrl.indexOf("?") !== -1 ? "&nowebp=1" : "?nowebp=1")
+                this._load(resInfo)
+                return
             }
         }
         if (!content) Log.debug("load res fail : " + resInfo.url + " " + content)
@@ -218,7 +226,14 @@ export class ELoader {
     }
 
     private formatURL(resInfo: ResInfo) {
-        if (ELoader.checkBaseUrl) this.baseUrls = ELoader.checkBaseUrl(resInfo.url)
+        if (ELoader.checkBaseUrl) {
+            // 剥离 url 中的查询参数(如 ?nowebp=1)，避免由于 nowebp=1 的加入导致项目自带的根据后缀(如.png)判断并分配 CDN 域名的逻辑失效
+            let cleanUrl = resInfo.url;
+            if (cleanUrl.indexOf("?") !== -1) {
+                cleanUrl = cleanUrl.substring(0, cleanUrl.indexOf("?"));
+            }
+            this.baseUrls = ELoader.checkBaseUrl(cleanUrl);
+        }
         if (this.baseUrls) {
             let index = resInfo.useIndex
             if (this.baseUrls.length <= index) {
