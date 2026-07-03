@@ -381,11 +381,14 @@ export class DefineConfig {
         })
 
         // 修复 HTML 富文本空格被清除的问题
-        const regExp = /(?<=\s|\S)\s+(?=\[\w{0,10}=.{0,10}])|(?<=\s|\S)\s+(?=\[\/\w{0,6}])|(?<=\[\w{0,10}=.{0,10}])\s+(?=\s|\S)|(?<=\[\/\w{0,10}])\s+(?=\s|\S)/g
+        const tagOpen = /\[\w{1,15}(?:=[^\]]{0,30})?]/
+        const tagClose = /\[\/\w{1,15}]/
+        const tag = `(?:${tagOpen.source}|${tagClose.source})`
+        const regExp = new RegExp(`(?<=${tag})\\s+|\\s+(?=${tag})`, 'g')
         const UBBParser_parse = fgui.UBBParser.prototype.parse
         Object.defineProperty(fgui.UBBParser.prototype, "parse", {
             value: function (text: string, remove?: boolean): string {
-                text = text.replace(regExp, "&nbsp;")
+                text = text.replace(regExp, m => "&nbsp;".repeat(m.length))
                 return UBBParser_parse.call(this, text, remove)
             }
         })
