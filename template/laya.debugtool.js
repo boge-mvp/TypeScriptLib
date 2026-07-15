@@ -930,6 +930,23 @@
 	        rst = ObjectTools.getNoSameArr(rst);
 	        return rst;
 	    }
+	    static getObjectGetSetKeysOnly(obj, rst = null) {
+	        if (!rst)
+	            rst = [];
+	        let temp = obj;
+	        while (temp) {
+	            let descript = Object.getOwnPropertyDescriptors(temp);
+	            for (let element in descript) {
+	                let tValue = descript[element];
+	                if (!tValue.get || !tValue.set)
+	                    continue;
+	                rst.push(element);
+	            }
+	            temp = Object.getPrototypeOf(temp);
+	        }
+	        rst = ObjectTools.getNoSameArr(rst);
+	        return rst;
+	    }
 	    static getClassName(tar) {
 	        if (tar instanceof Function)
 	            return tar.name;
@@ -3372,6 +3389,12 @@
 	        DebugTool._disBoundRec = Laya.Rectangle._getWrapRec(pointList, DebugTool._disBoundRec);
 	        DebugTool.debugLayer.graphics.drawRect(DebugTool._disBoundRec.x, DebugTool._disBoundRec.y, DebugTool._disBoundRec.width, DebugTool._disBoundRec.height, null, color);
 	        DebugInfoLayer.I.setTop();
+	        if (DebugTool.showDeclaredSize && sprite.width > 0 && sprite.height > 0) {
+	            var gp0 = sprite.localToGlobal(new Laya.Point());
+	            var gp1 = sprite.localToGlobal(new Laya.Point(sprite.width, sprite.height));
+	            DebugTool.debugLayer.graphics.drawRect(gp0.x, gp0.y, Math.abs(gp1.x - gp0.x), Math.abs(gp1.y - gp0.y), null, "#00ff00", 2);
+	            DebugInfoLayer.I.setTop();
+	        }
 	    }
 	    static showDisBoundToSprite(sprite = null, graphicSprite = null, color = "#ff0000", lineWidth = 1) {
 	        var pointList;
@@ -3582,6 +3605,8 @@
 	DebugTool.selectedNodes = [];
 	DebugTool.autoShowSelected = true;
 	DebugTool._showBound = true;
+	DebugTool.showDeclaredSize = true;
+	DebugTool.useFguiMode = false;
 	DebugTool.autoTraceEnable = false;
 	DebugTool.autoTraceBounds = false;
 	DebugTool.autoTraceSize = false;
@@ -4727,7 +4752,7 @@
 	        this.fromMe = false;
 	        this._init();
 	    }
-	    static enable(underGame = true, bgColor = "#ffffff") {
+	    static enable(underGame = true, bgColor = null) {
 	        if (!DebugPanel._enable && !DebugPanel.I) {
 	            DebugPanel._enable = true;
 	            DebugPanel.overlay = !underGame;
@@ -4739,18 +4764,63 @@
 	            DebugPanel.I = new DebugPanel();
 	            DebugPanel.I.setRoot(Laya.Laya.stage);
 	            CacheAnalyser.showRecacheSprite = false;
-	            if (bgColor) {
-	                DebugPanel.I.div.style.background = bgColor;
+	            DebugPanel.applyColorScheme(bgColor);
+	            if (window.matchMedia) {
+	                var mq = window.matchMedia('(prefers-color-scheme: dark)');
+	                var handler = function(e) {
+	                    DebugPanel.applyColorScheme(null);
+	                };
+	                if (mq.addEventListener) {
+	                    mq.addEventListener('change', handler);
+	                } else if (mq.addListener) {
+	                    mq.addListener(handler);
+	                }
 	            }
+	        }
+	    }
+	    static applyColorScheme(bgColor) {
+	        var isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+	        if (!bgColor) {
+	            bgColor = isDark ? "#1e1e1e" : "#ffffff";
+	        }
+	        if (DebugPanel.I && DebugPanel.I.div) {
+	            var div = DebugPanel.I.div;
+	            div.style.background = bgColor;
+	            div.style.colorScheme = isDark ? "dark" : "light";
+	            div.style.color = isDark ? "#e0e0e0" : "#000000";
+	            var borderColor = isDark ? "#3c3c3c" : "#cccccc";
+	            var styleId = "debugtool_color_scheme_style";
+	            var doc = Laya.Browser.document;
+	            var styleEl = doc.getElementById(styleId);
+	            if (!styleEl) {
+	                styleEl = doc.createElement("style");
+	                styleEl.id = styleId;
+	                doc.head.appendChild(styleEl);
+	            }
+	            styleEl.textContent = ".laya-debugtool, .laya-debugtool * { border-color: " + borderColor + " !important; }";
+	            div.className = "laya-debugtool";
 	        }
 	    }
 	    static getSpriteTreeArr(sprite) {
 	        var rst;
 	        rst = {};
-	        rst[DebugPanel.LabelSign] = "" + ClassTool.getNodeClassAndName(sprite);
+	        var label = "" + ClassTool.getNodeClassAndName(sprite);
+	        if (DebugTool.useFguiMode && sprite["$owner"] && sprite["$owner"].name) {
+	            var gobjName = sprite["$owner"].name;
+	            if (label.lastIndexOf("(") >= 0) {
+	                label = label.substring(0, label.length - 1) + ", " + gobjName + ")";
+	            } else {
+	                label += "(" + gobjName + ")";
+	            }
+	        }
+	        rst[DebugPanel.LabelSign] = label;
 	        rst.target = sprite;
-	        IDTools.idObj(sprite);
-	        rst.id = IDTools.getObjID(sprite);
+	        var idObj = sprite;
+	        if (DebugTool.useFguiMode && sprite["$owner"]) {
+	            idObj = sprite["$owner"];
+	        }
+	        IDTools.idObj(idObj);
+	        rst.id = IDTools.getObjID(idObj);
 	        var childs;
 	        childs = sprite._children;
 	        var i, len;
@@ -4759,9 +4829,19 @@
 	        childsList = [];
 	        rst[DebugPanel.ChildrenSign] = childsList;
 	        for (i = 0; i < len; i++) {
-	            childsList.push(DebugPanel.getSpriteTreeArr(childs[i]));
+	            DebugPanel._collectTreeChild(childs[i], childsList);
 	        }
 	        return rst;
+	    }
+	    static _collectTreeChild(sprite, arr) {
+	        if (DebugTool.useFguiMode && !sprite["$owner"]) {
+	            var childs = sprite._children;
+	            for (var i = 0; i < childs.length; i++) {
+	                DebugPanel._collectTreeChild(childs[i], arr);
+	            }
+	        } else {
+	            arr.push(DebugPanel.getSpriteTreeArr(sprite));
+	        }
 	    }
 	    removeNoDisplayKeys(arr) {
 	        var i;
@@ -4775,9 +4855,13 @@
 	        DebugPanel.tObjKeys.length = 0;
 	        if (!this.tShowObj)
 	            return;
-	        DebugPanel.tObjKeys = ClassTool.getObjectDisplayAbleKeys(this.tShowObj, DebugPanel.tObjKeys);
-	        if (this.tShowObj == Laya.Laya.stage) {
-	            this.removeNoDisplayKeys(DebugPanel.tObjKeys);
+	        if (DebugTool.useFguiMode) {
+	            DebugPanel.tObjKeys = ClassTool.getObjectGetSetKeysOnly(this.tShowObj, DebugPanel.tObjKeys);
+	        } else {
+	            DebugPanel.tObjKeys = ClassTool.getObjectDisplayAbleKeys(this.tShowObj, DebugPanel.tObjKeys);
+	            if (this.tShowObj == Laya.Laya.stage) {
+	                this.removeNoDisplayKeys(DebugPanel.tObjKeys);
+	            }
 	        }
 	        DebugPanel.tObjKeys.sort(Laya.MathUtil.sortSmallFirst);
 	    }
@@ -4835,10 +4919,18 @@
 	            console.log(this.tShowObj);
 	        });
 	        this.debug_view.onPrintEnabledNodeChain(() => {
-	            DebugTool.traceDisMouseEnable(this.tShowObj);
+	            var obj = this.tShowObj;
+	            if (DebugTool.useFguiMode && obj && obj["displayObject"]) {
+	                obj = obj["displayObject"];
+	            }
+	            DebugTool.traceDisMouseEnable(obj);
 	        });
 	        this.debug_view.onPrintSizeChain(() => {
-	            DebugTool.traceDisSizeChain(this.tShowObj);
+	            var obj = this.tShowObj;
+	            if (DebugTool.useFguiMode && obj && obj["displayObject"]) {
+	                obj = obj["displayObject"];
+	            }
+	            DebugTool.traceDisSizeChain(obj);
 	        });
 	        this.debug_view.onToggleVisibility((selectd) => {
 	            if (this.tShowObj) {
@@ -4874,8 +4966,29 @@
 	    }
 	    initNewDivs() {
 	        var parentNode;
-	        parentNode = Laya.Browser.document.getElementById("show_current_cache_control").parentNode;
-	        var switchNode;
+	        var cacheControlNode;
+	        cacheControlNode = Laya.Browser.document.getElementById("show_current_cache_control");
+	        parentNode = cacheControlNode.parentNode;
+	        var showDeclaredNode;
+	        showDeclaredNode = Laya.Browser.createElement("input");
+	        showDeclaredNode.type = "checkbox";
+	        showDeclaredNode.checked = true;
+	        parentNode.insertBefore(showDeclaredNode, cacheControlNode);
+	        parentNode.insertBefore(Laya.Browser.document.createTextNode("声明尺寸 "), cacheControlNode);
+        showDeclaredNode.addEventListener("change", function(e) {
+            DebugTool.showDeclaredSize = e.target.checked;
+        });
+        var fguiModeNode;
+        fguiModeNode = Laya.Browser.createElement("input");
+        fguiModeNode.type = "checkbox";
+        fguiModeNode.checked = false;
+        parentNode.insertBefore(fguiModeNode, cacheControlNode);
+        parentNode.insertBefore(Laya.Browser.document.createTextNode("FGUI模式 "), cacheControlNode);
+        fguiModeNode.addEventListener("change", function(e) {
+            DebugTool.useFguiMode = e.target.checked;
+            DebugPanel.I.setRoot(Laya.Laya.stage);
+        });
+        var switchNode;
 	        switchNode = Laya.Browser.createElement("input");
 	        switchNode.type = "checkbox";
 	        parentNode.appendChild(switchNode);
@@ -5028,10 +5141,33 @@
 	        Laya.Browser.document.body.addEventListener("mousemove", onBodyMouseMove.bind(this));
 	        Laya.Browser.document.body.addEventListener("mouseup", onDivMouseUp.bind(this));
 	    }
+	    static _findGObject(sprite) {
+	        if (sprite["$owner"]) return sprite["$owner"];
+	        var childs = sprite._children;
+	        if (childs) {
+	            for (var i = 0; i < childs.length; i++) {
+	                var gobj = DebugPanel._findGObject(childs[i]);
+	                if (gobj) return gobj;
+	            }
+	        }
+	        var parent = sprite.parent;
+	        while (parent) {
+	            if (parent["$owner"]) return parent["$owner"];
+	            parent = parent.parent;
+	        }
+	        return null;
+	    }
 	    onClickSelected(target) {
 	        if (!this._treeDataList)
 	            return;
-	        this.debug_view.tree.selectItem(IDTools.getObjID(target));
+	        if (DebugTool.useFguiMode) {
+	            var gobj = DebugPanel._findGObject(target);
+	            if (!gobj)
+	                return;
+	            this.debug_view.tree.selectItem(IDTools.getObjID(gobj));
+	        } else {
+	            this.debug_view.tree.selectItem(IDTools.getObjID(target));
+	        }
 	        this.debug_view.bounceUpInspectButton();
 	    }
 	    updateLoop() {
@@ -5067,30 +5203,34 @@
 	    showTargetInfo(tTarget) {
 	        if (!tTarget)
 	            return;
-	        this.debug_view.setVisibility(tTarget.visible);
+	        var showObj = tTarget;
+	        if (DebugTool.useFguiMode && tTarget["$owner"]) {
+	            showObj = tTarget["$owner"];
+	        }
+	        this.debug_view.setVisibility(showObj.visible);
 	        this.debug_view.setShowDebugBorder(SpriteRenderHook.isDisplayShowBorder(tTarget));
 	        var i, len;
 	        len = DebugPanel.tObjKeys.length;
 	        var key;
-	        if (this.tShowObj == tTarget) {
+	        if (this.tShowObj == showObj) {
 	            for (i = 0; i < len; i++) {
 	                key = DebugPanel.tObjKeys[i];
-	                if (this.preValueO[key] != tTarget[key]) {
-	                    this.debug_view.changeValueByLabel(key, tTarget[key]);
+	                if (this.preValueO[key] != showObj[key]) {
+	                    this.debug_view.changeValueByLabel(key, showObj[key]);
 	                }
 	            }
 	        }
 	        else {
-	            this.tShowObj = tTarget;
+	            this.tShowObj = showObj;
 	            this.updateShowKeys();
 	            var dataList;
-	            dataList = DebugPanel.getObjectData(tTarget);
+	            dataList = DebugPanel.getObjectData(showObj);
 	            this.debug_view.setContents(dataList);
 	        }
 	        for (i = 0; i < len; i++) {
 	            key = DebugPanel.tObjKeys[i];
 	            if (key !== "__proto__") {
-	                this.preValueO[key] = tTarget[key];
+	                this.preValueO[key] = showObj[key];
 	            }
 	        }
 	    }
