@@ -287,6 +287,11 @@ let beanActionsFunction: ActionsData[] = []
  */
 let beanEventFunction: EventData[] = []
 /**
+ * 绑定监听resize事件处理方法
+ * @internal
+ */
+let beanResizeFunction: { className: string, fun: Function }[] = []
+/**
  * 监听依赖注入整个生命周期
  * @internal
  */
@@ -382,6 +387,20 @@ function Actions(action: number | string, group?: string, order?: number) {
 }
 
 /**
+ * 监听屏幕大小变化 (resize) 装饰器
+ * 
+ * 当一个类方法被 `@OnResize` 装饰后，每当屏幕大小发生变化（Laya.Event.RESIZE 触发）时，该方法都会被自动调用。
+ * 该装饰器只能用于在 `@Component` 标记的类中。
+ */
+function OnResize(targetPrototype: any, propertyKey: string, descriptor: PropertyDescriptor) {
+    if (!descriptor || (typeof descriptor.value !== 'function')) {
+        throw new TypeError(`Only methods can be decorated with @OnResize. <${propertyKey}> is not a method!`);
+    }
+    const className = targetPrototype.constructor.name
+    beanResizeFunction.push({ className, fun: descriptor.value })
+}
+
+/**
  * 点击事件装饰器
  *
  * 该装饰器用于在FGUI的GObject上注册点击事件`Laya.Event.CLICK`监听，并将事件委托给特定的方法处理
@@ -453,6 +472,13 @@ function initBean(target: any, name: string) {
         .forEach((actionData: ActionsData) => {
             // @ts-ignore
             tsCore.App.inst.regAction(actionData.action, target, actionData.fun, actionData.group || tsCore.App.GAME_GROUP, actionData.order)
+        })
+
+    beanResizeFunction
+        .filter(data => name == data.className)
+        .forEach(data => {
+            // @ts-ignore
+            tsCore.App.inst.regOnResize(target, data.fun)
         })
 
 
@@ -536,6 +562,36 @@ function proxyClass(classTarget: { new(...args: any[]): any }, beanName?: string
             return classTarget.name
         }
     })
+
+    // 对类的 destroy 和 dispose 方法进行 AOP 劫持，在组件销毁时自动注销在框架中绑定的事件和 Resize 回调
+    const originalDestroy = classTemp.prototype.destroy;
+    classTemp.prototype.destroy = function (...args: any[]) {
+        // @ts-ignore
+        if (typeof tsCore !== "undefined" && tsCore.App && tsCore.App.inst) {
+            // @ts-ignore
+            tsCore.App.inst.removeTargetAll(this)
+            // @ts-ignore
+            tsCore.App.inst.removeOnResize(this)
+        }
+        if (originalDestroy) {
+            originalDestroy.apply(this, args);
+        }
+    };
+
+    const originalDispose = classTemp.prototype.dispose;
+    classTemp.prototype.dispose = function (...args: any[]) {
+        // @ts-ignore
+        if (typeof tsCore !== "undefined" && tsCore.App && tsCore.App.inst) {
+            // @ts-ignore
+            tsCore.App.inst.removeTargetAll(this)
+            // @ts-ignore
+            tsCore.App.inst.removeOnResize(this)
+        }
+        if (originalDispose) {
+            originalDispose.apply(this, args);
+        }
+    };
+
     return classTemp
 }
 

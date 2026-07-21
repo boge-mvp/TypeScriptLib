@@ -10,6 +10,10 @@ export class LanguageUtils {
 
     /** 语言配置文件 */
     protected xml: XMLDocument
+    /** 预解析的语言项缓存，以实现 O(1) 检索性能 */
+    private _elementCache = new Map<string, Element>()
+    /** 存储存在重复 name 的项，用于在检索时抛出 duplicate items 异常 */
+    private _duplicateNames = new Set<string>()
     /**
      * 忽略大小写
      * @default true
@@ -33,6 +37,38 @@ export class LanguageUtils {
 
     setXml(xml: XMLDocument) {
         this.xml = xml
+        this._elementCache.clear()
+        this._duplicateNames.clear()
+        if (xml && xml.documentElement) {
+            this.prebuildCache(xml.documentElement)
+        }
+    }
+
+    private prebuildCache(node: Element | ChildNode) {
+        if (!node) return
+        if (node.nodeType === Node.ELEMENT_NODE) {
+            const element = <Element>node
+            const id = element.getAttribute("id")
+            if (id) {
+                const key = this.ignoreCase ? id.toLowerCase() : id
+                this._elementCache.set(key, element)
+            }
+            const name = element.getAttribute("name")
+            if (name) {
+                const key = this.ignoreCase ? name.toLowerCase() : name
+                if (this._elementCache.has(key)) {
+                    this._duplicateNames.add(key)
+                } else {
+                    this._elementCache.set(key, element)
+                }
+            }
+        }
+        for (let i = 0; i < node.childNodes.length; i++) {
+            const childNode = node.childNodes[i]
+            if (childNode.nodeType === Node.ELEMENT_NODE) {
+                this.prebuildCache(childNode)
+            }
+        }
     }
 
     /**
@@ -77,20 +113,13 @@ export class LanguageUtils {
 
     getElement(str: string) {
         if (this.xml) {
-            let element = this.xml.getElementById(str)
-            if (element) {
-                return element
+            const key = this.ignoreCase ? str.toLowerCase() : str
+            if (this._duplicateNames.has(key)) {
+                throw new Error("Language configuration has duplicate items：" + str)
             }
-            let elements = this.xml.getElementsByName(str)
-            if (elements.length > 0) {
-                if (elements.length > 1)
-                    throw new Error("Language configuration has duplicate items：" + str)
-                return elements.item(0)
-            } else if (this.ignoreCase) {
-                const els = this.getElementsByNameIgnoreCase(this.xml.documentElement, str)
-                if (els.length > 0) {
-                    return els[0]
-                }
+            const cached = this._elementCache.get(key)
+            if (cached) {
+                return cached
             }
         }
         return null

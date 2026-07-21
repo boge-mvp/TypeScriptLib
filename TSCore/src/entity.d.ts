@@ -1,5 +1,13 @@
 // global
 
+/**
+ * 监听屏幕大小变化 (resize) 装饰器
+ * 
+ * 当一个类方法被 `@OnResize` 装饰后，每当屏幕大小发生变化（Laya.Event.RESIZE 触发）时，该方法都会被自动调用。
+ * 该装饰器只能用于在 `@Component` 标记的类中。
+ */
+declare function OnResize(targetPrototype: any, propertyKey: string, descriptor: PropertyDescriptor): void;
+
 
 // 通用装饰器类型定义
 // type PropertyDecorator = (target: any, propertyKey: string) => PropertyDescriptor | void;

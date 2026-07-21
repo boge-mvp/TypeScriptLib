@@ -39,6 +39,7 @@ export class App implements IAction {
 
     static initEngine?: IInitEngine
     options: InitApp
+    private _resizeHandlers: { caller: any, method: Function }[] = []
     /**
      * @internal
      */
@@ -187,32 +188,49 @@ export class App implements IAction {
      * 开启屏幕大小自动调整
      */
     openResize() {
-        if (this.options.resize && this.options.init?.fgui) {
-            Laya.stage.on(Laya.Event.RESIZE, this, this.onResize)
-            this.onResize()
-        }
+        Laya.stage.on(Laya.Event.RESIZE, this, this.onResize)
+        this.onResize()
     }
 
     /**
      * @internal
      */
     private onResize() {
-        let screenWidth = Laya.stage.width
-        let screenHeight = Laya.stage.height
-        let dx = Laya.stage.designWidth
-        let dy = Laya.stage.designHeight
-        if (screenWidth > screenHeight && dx < dy || screenWidth < screenHeight && dx > dy) {
-            //scale should not change when orientation change
-            let tmp = dx
-            dx = dy
-            dy = tmp
+        if (this.options.resize && this.options.init?.fgui) {
+            let screenWidth = Laya.stage.width
+            let screenHeight = Laya.stage.height
+            let dx = Laya.stage.designWidth
+            let dy = Laya.stage.designHeight
+            if (screenWidth > screenHeight && dx < dy || screenWidth < screenHeight && dx > dy) {
+                //scale should not change when orientation change
+                let tmp = dx
+                dx = dy
+                dy = tmp
+            }
+            let s1 = screenWidth / dx
+            let s2 = screenHeight / dy
+            let contentScaleFactor = Math.min(s1, s2)
+            fgui.GRoot.inst.setSize(Math.round(screenWidth / contentScaleFactor), Math.round(screenHeight / contentScaleFactor))
+            fgui.GRoot.inst.setScale(contentScaleFactor, contentScaleFactor)
+            Log.debug(`onResize ${screenWidth} ${screenHeight} ${contentScaleFactor}`)
         }
-        let s1 = screenWidth / dx
-        let s2 = screenHeight / dy
-        let contentScaleFactor = Math.min(s1, s2)
-        fgui.GRoot.inst.setSize(Math.round(screenWidth / contentScaleFactor), Math.round(screenHeight / contentScaleFactor))
-        fgui.GRoot.inst.setScale(contentScaleFactor, contentScaleFactor)
-        Log.debug(`onResize ${screenWidth} ${screenHeight} ${contentScaleFactor}`)
+        for (const handler of this._resizeHandlers) {
+            handler.method.call(handler.caller)
+        }
+    }
+
+    regOnResize(caller: any, method: Function) {
+        if (!this._resizeHandlers.some(h => h.caller === caller && h.method === method)) {
+            this._resizeHandlers.push({ caller, method })
+        }
+    }
+
+    removeOnResize(caller: any, method?: Function) {
+        if (method) {
+            this._resizeHandlers = this._resizeHandlers.filter(h => !(h.caller === caller && h.method === method))
+        } else {
+            this._resizeHandlers = this._resizeHandlers.filter(h => h.caller !== caller)
+        }
     }
 
     protected initController() {

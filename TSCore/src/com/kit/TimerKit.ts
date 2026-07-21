@@ -114,6 +114,7 @@ export class TimerKit {
         let handler = this.getHandler(target, fun)
         if (handler) {
             handler.initData(target, fun, interval, custom)
+            return
         }
         handler = this.getNewTask()
         handler.initData(target, fun, interval, custom)
@@ -130,8 +131,15 @@ export class TimerKit {
         const time = Browser.now()
 
         // 遍历所有任务进行判断和执行
-        for (let i = 0; i < TimerKit.tasks.length; i++) {
+        for (let i = TimerKit.tasks.length - 1; i >= 0; i--) {
             const task = TimerKit.tasks[i]
+
+            // 自动发现已销毁的 UI 任务并安全移除，回收到对象池，防止内存泄露和队列无限膨胀
+            if (task.target.isDisposed) {
+                TimerKit.tasks.splice(i, 1)
+                Pool.recover(TimerKit.NAME, task)
+                continue
+            }
 
             if (task.customConditions && task.customConditions()) {
                 this.runTask(task, time)
