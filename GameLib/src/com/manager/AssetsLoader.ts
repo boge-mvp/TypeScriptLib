@@ -47,12 +47,6 @@ export class AssetsLoader implements IFormatPath {
     /** 资源配置文件名 */
     static DEFAULT_INIT_RES_NAME = null
     /**
-     * 版本加载路径
-     * @example
-     * https://res.game.co/assetsversion.json
-     */
-    static VERSION_RES_URL = null
-    /**
      * 公共组件的配置信息
      * @property packageName 包名字 UIPackage.getByName(commonRes.packageName) this.addPackage(commonRes.packageName)
      * @property configName 获取公共配置信息的名字  ConfigKit.get(commonRes.configName)
@@ -181,35 +175,12 @@ export class AssetsLoader implements IFormatPath {
      */
     loadMain(handler: ParamHandler) {
         let loadXmlComplete = () => {
-            if (AssetsLoader.VERSION_RES_URL) {
-                let loadInitJson = [{url: AssetsLoader.VERSION_RES_URL, type: Loader.JSON}]
-                ELoader.loader.load(loadInitJson, Laya.Handler.create(this, loadJsonComplete))
+            if (StringUtil.isEmpty(AssetsLoader.DEFAULT_INIT_RES_NAME)) {
+                runFun(handler)
             } else {
-                loadInit()
-            }
-
-            function loadJsonComplete(success: boolean) {
-                if (!success) {
-                    loadErrorHandler()
-                    return
-                }
-                let versionJson = AssetProxy.inst.getRes(AssetsLoader.VERSION_RES_URL)
-                ELoader.loader.clearRes(AssetsLoader.VERSION_RES_URL)
-                Player.DOWNLOAD_APK_URL = versionJson.url
-                Player.VERSION = versionJson.version
-                Player.VERSION_CODE = versionJson.versionCode
-                Player.HOME_URL = versionJson.appUrl
-                loadInit()
-            }
-
-            function loadInit() {
-                if (StringUtil.isEmpty(AssetsLoader.DEFAULT_INIT_RES_NAME)) {
-                    runFun(handler)
-                } else {
-                    // init 资源加载
-                    let loads: LoadRes[] = Browser.window[AssetsLoader.DEFAULT_INIT_RES_NAME]
-                    ELoader.loader.load(loads, Laya.Handler.create(this, loadBaseComplete, [loads]))
-                }
+                // init 资源加载
+                let loads: LoadRes[] = Browser.window[AssetsLoader.DEFAULT_INIT_RES_NAME]
+                ELoader.loader.load(loads, Laya.Handler.create(this, loadBaseComplete, [loads]))
             }
         }
 
