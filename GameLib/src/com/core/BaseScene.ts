@@ -537,15 +537,15 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
     }
 
     protected eventCouponTip() {
-        let giftOpenTimerStr = LocalStorage.getItem("giftOpenTimer" + Player.inst.gameId)
-        let giftOpenTimer: number
-        if (StringUtil.isEmpty(giftOpenTimerStr)) {
-            giftOpenTimerStr = "0"
-        }
-        giftOpenTimer = parseFloat(giftOpenTimerStr)
-        if (!DateUtils.isSameDay(giftOpenTimer, Browser.now())) {
-            let coupon = Player.inst.getCouponGame(Player.inst.gameId)
-            if (coupon.length > 0) {
+        let coupon = Player.inst.getCouponGame(Player.inst.gameId)
+        if (coupon.length > 0) {
+            let giftOpenTimerStr = LocalStorage.getItem("giftOpenTimer" + Player.inst.gameId)
+            let giftOpenTimer: number
+            if (StringUtil.isEmpty(giftOpenTimerStr)) {
+                giftOpenTimerStr = "0"
+            }
+            giftOpenTimer = parseFloat(giftOpenTimerStr)
+            if (!DateUtils.isSameDay(giftOpenTimer, Browser.now())) {
                 this.activityHandler()
                 LocalStorage.setItem("giftOpenTimer" + Player.inst.gameId, Browser.now() + "")
             } else {

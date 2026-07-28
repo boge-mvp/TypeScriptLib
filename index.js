@@ -210,11 +210,12 @@ function findFilesSync(url) {
 
 /**
  * 创建并返回一个TypeScript项目实例
- * @param {string} tsConfig - TypeScript配置文件路径，默认为"tsconfig.json"
+ * @param {string} [tsConfig="tsconfig.json"] - TypeScript配置文件路径，默认为"tsconfig.json"
  * @param {(program?: ts.Program) => ts.CustomTransformers} [customTransformers] - 自定义转换器对象，用于扩展TypeScript编译过程
  * @returns {Object} 返回配置好的TypeScript项目实例
  */
-function getProject(tsConfig = "tsconfig.json", customTransformers) {
+function getProject(tsConfig, customTransformers) {
+    tsConfig = tsConfig || "tsconfig.json"
     return gulpTs.createProject(tsConfig, {
         typescript: ts,
         getCustomTransformers: customTransformers
@@ -226,11 +227,12 @@ function getProject(tsConfig = "tsconfig.json", customTransformers) {
  * @param {string|string[]} globs - 文件匹配模式，可以是字符串或字符串数组
  * @param [opt] {SrcOptions} - gulp.src的选项配置对象
  * @param {(program?: ts.Program) => ts.CustomTransformers} [customTransformers] - 自定义转换器对象，用于扩展TypeScript编译过程
+ * @param {string} [tsConfig="tsconfig.json"] - TypeScript配置文件路径，默认为"tsconfig.json"
  * @return {gulpTs.CompileStream} 返回一个gulp流，用于后续的管道操作
  */
-function createCompileStream(globs, opt, customTransformers) {
+function createCompileStream(globs, opt, customTransformers, tsConfig = "tsconfig.json") {
     if (!Array.isArray(globs)) globs = [globs]
-    const tsProject = getProject(undefined, customTransformers)
+    const tsProject = getProject(tsConfig, customTransformers)
     // gulp.src 不知道为什么不解析 typeRoots 这里强制添加
     const types = tsProject.options.typeRoots || []
     types.forEach((value, index) => {
@@ -291,8 +293,9 @@ function createCompileStream(globs, opt, customTransformers) {
  * @param config {BuildConfig} 构建配置对象
  * @param done {()=>void} - Gulp任务完成回调函数
  * @param [opt] { {js?:JSOptions, dts?:DTSOptions} } 可选配置
+ * @param {string} [tsConfig="tsconfig.json"] - TypeScript配置文件路径，默认为"tsconfig.json"
  */
-function buildLibrary(config, done, opt) {
+function buildLibrary(config, done, opt, tsConfig = "tsconfig.json") {
     const tsResult = createCompileStream(config.src.globs, config.src.opt, () => {
         return {
             before: [
@@ -303,7 +306,7 @@ function buildLibrary(config, done, opt) {
                 createNamespaceTransformer()
             ]
         }
-    })
+    }, tsConfig)
     const jsStream = function (done) {
         buildJs(tsResult, config.outName, config.dist, opt?.js)
             .pipe(run(function () {
@@ -329,9 +332,10 @@ function buildLibrary(config, done, opt) {
  * @param {string} outName - 输出文件的名称（不包含扩展名）
  * @param {string} dist - 输出目录路径
  * @param {JSOptions | null} opt - 可选配置
+ * @param {string} [tsConfig="tsconfig.json"] - TypeScript配置文件路径，默认为"tsconfig.json"
  * @returns {Stream} 返回 gulp 流对象，用于链式操作
  */
-function buildJs(tsResult, outName, dist, opt) {
+function buildJs(tsResult, outName, dist, opt, tsConfig = "tsconfig.json") {
     const isMinify = opt?.isMinify ?? false
     const namespace = opt?.namespace
     const plugs = opt?.plugs ?? []
@@ -342,7 +346,7 @@ function buildJs(tsResult, outName, dist, opt) {
                 addMetadata(),
                 createNamespaceTransformer()
             ]
-        }))
+        }), tsConfig)
     }
     return tsResult
         .js
@@ -396,15 +400,16 @@ function buildJs(tsResult, outName, dist, opt) {
  * @param {string} dist - 输出目录路径
  * @param {Array} globalFile - 需要追加的全局文件列表，默认为空数组
  * @param {string|null} namespace - 命名空间名称，默认为 null
+ * @param {string} [tsConfig="tsconfig.json"] - TypeScript配置文件路径，默认为"tsconfig.json"
  * @returns {Stream} 返回 gulp 流对象，用于链式操作
  */
-function buildDts(tsResult, outName, dist, globalFile = [], namespace = null) {
+function buildDts(tsResult, outName, dist, globalFile = [], namespace = null, tsConfig = "tsconfig.json") {
     if (tsResult.globs) {
         tsResult = createCompileStream(tsResult.globs, tsResult.opt, () => ({
             afterDeclarations: [
                 createNamespaceTransformer()
             ]
-        }))
+        }), tsConfig)
     }
     return tsResult
         .dts
