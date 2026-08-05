@@ -4,9 +4,6 @@
  * @returns T 返回指定的Bean实例。
  */
 function getBean<T>(name: string | { new(): T }): T {
-    if (typeof name !== "string") {
-        name = name.name.firstLowerCase()
-    }
     // @ts-ignore
     return tsCore.App.inst.getBean(name)
 }

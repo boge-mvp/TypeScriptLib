@@ -1,0 +1,3 @@
+# 让 OpenCode 识别被 Git 忽略的本地配置文件
+!.agents
+!.github

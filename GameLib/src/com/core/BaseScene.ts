@@ -56,10 +56,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
     /** 是否在执行运行事件 */
     private isRunEvent = false
 
-    constructor() {
-        super()
-        this.autoSetupRelation = true
-    }
+    override autoSetupRelation = true
 
     protected get gameData(): T {
         return Player.inst.gameData as T
