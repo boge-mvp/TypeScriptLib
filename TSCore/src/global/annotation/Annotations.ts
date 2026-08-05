@@ -128,8 +128,12 @@ function Component<T extends { new(...args: any[]): {} }>(value: string | false 
             return proxyClass(classTarget)
         }
         data.autoInit ??= true
-        const className = Reflect.getMetadata("class:name", classTarget) || classTarget.name
-        data.key = typeof value === "string" && value.trim().length > 0 ? value : className.firstLowerCase()
+        if (typeof value === "string" && value.trim().length > 0) {
+            data.key = value
+        } else {
+            data.key = Reflect.getMetadata("class:name", classTarget) || classTarget.name
+            data.keyIgnoreCase = true
+        }
         data.classTarget = classTarget
         if (!data.autoInit) {
             return proxyClass(classTarget, typeof value === "string" ? value : data.key)
@@ -385,7 +389,7 @@ function Actions(action: number | string, group?: string, order?: number) {
 
 /**
  * 监听屏幕大小变化 (resize) 装饰器
- * 
+ *
  * 当一个类方法被 `@OnResize` 装饰后，每当屏幕大小发生变化（Laya.Event.RESIZE 触发）时，该方法都会被自动调用。
  * 该装饰器只能用于在 `@Component` 标记的类中。
  */
@@ -394,7 +398,7 @@ function OnResize(targetPrototype: any, propertyKey: string, descriptor: Propert
         throw new TypeError(`Only methods can be decorated with @OnResize. <${propertyKey}> is not a method!`);
     }
     const className = targetPrototype.constructor.name
-    beanResizeFunction.push({ className, fun: descriptor.value })
+    beanResizeFunction.push({className, fun: descriptor.value})
 }
 
 /**
@@ -545,7 +549,7 @@ function proxyClass(classTarget: { new(...args: any[]): any }, beanName?: string
             initBean(this, name)
             if (this.isBean) {
                 // @ts-ignore
-                tsCore.App.inst.addBean(beanName || name.firstLowerCase(), this)
+                tsCore.App.inst.addBean(beanName || name, this)
             }
         }
     }
@@ -643,8 +647,7 @@ function runApplication<T>(classTarget?: { new(...args: any[]): T }): T {
     const mainName: string = Reflect.getMetadata("class:name", mainClass) || mainClass.name
     // @ts-ignore
     if (!tsCore.App.inst.hasBean(mainName)) {
-        // @ts-ignore
-        tsCore.App.inst.addBean(mainName.firstLowerCase(), app)
+        addBeanIgnoreCase(mainName, app)
     }
 
     appRunListeners.forEach(listener => listener.onCreateMain?.(app));
@@ -662,27 +665,26 @@ function runApplication<T>(classTarget?: { new(...args: any[]): T }): T {
 
     appRunListeners.forEach(listener => listener.onComponentInitializing?.());
 
-    beanClassComponent.sort((a, b) => a.order || 0 - b.order || 0).forEach((value: ComponentData) => {
-        // @ts-ignore
-        if (!tsCore.App.inst.hasBean(value.key)) {
-            const classTargetName = value.classTarget.name
-            let target: any
-            if (value.createUi) {
-                target = fgui.UIPackage.createObjectFromURL(value.createUi, value.classTarget)
-            } else target = new value.classTarget()
-            if (/^[A-Z]/.test(value.key.charAt(0)) && value.key.toLowerCase() == classTargetName.toLowerCase()) {
-                // @ts-ignore
-                tsCore.App.inst.addBean(value.key.firstLowerCase(), target)
-            } else {
-                // @ts-ignore
-                tsCore.App.inst.addBean(value.key, target)
+    beanClassComponent
+        .sort((a, b) => a.order || 0 - b.order || 0)
+        .forEach((value: ComponentData) => {
+            // @ts-ignore
+            if (!tsCore.App.inst.hasBean(value.key)) {
+                const classTargetName = value.classTarget.name
+                let target: any
+                if (value.createUi) {
+                    target = fgui.UIPackage.createObjectFromURL(value.createUi, value.classTarget)
+                } else target = new value.classTarget()
+                if (value.keyIgnoreCase) {
+                    addBeanIgnoreCase(value.key, target)
+                } else {
+                    // @ts-ignore
+                    tsCore.App.inst.addBean(value.key, target)
+                }
+                initBean(target, classTargetName)
+                appRunListeners.forEach(listener => listener.onComponentProgress?.(target));
             }
-            initBean(target, classTargetName)
-
-            appRunListeners.forEach(listener => listener.onComponentProgress?.(target));
-
-        }
-    })
+        })
 
     // 通知主应用即将初始化
     appRunListeners.forEach(listener => listener.onMainAppInitializing?.());
@@ -709,4 +711,25 @@ function runApplication<T>(classTarget?: { new(...args: any[]): T }): T {
 
     return app
 
+}
+
+/**
+ * 添加key 首字母大小写都存在的Bean
+ * @param key
+ * @param target
+ * @internal
+ */
+function addBeanIgnoreCase(key: string, target: any): any {
+    const first = key.charAt(0)
+    if (/^[A-Z]/.test(first)) {
+        // @ts-ignore
+        tsCore.App.inst.addBean(key, target)
+        // @ts-ignore
+        tsCore.App.inst.addBean(key.firstLowerCase(), target)
+    } else {
+        // @ts-ignore
+        tsCore.App.inst.addBean(key, target)
+        // @ts-ignore
+        tsCore.App.inst.addBean(key.firstUpperCase(), target)
+    }
 }

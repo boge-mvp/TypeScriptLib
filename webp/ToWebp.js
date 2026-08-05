@@ -1,10 +1,7 @@
 const exec = require('child_process').execFile;//get child_process module
 const fs = require('fs');
-const enwebp = require('./cwebp.js');//get cwebp module(converts other image format to webp)
-const dewebp = require('./dwebp.js');//get dwebp module(converts webp format to other image)
-const gifwebp = require('./gwebp.js');//get gif2webp module(convert git image to webp)
-const webpmux = require('./webpmux.js');//get webpmux module(convert non animated webp images to animated webp)
 const buffer_utils = require('./buffer_utils.js');//get buffer utilities
+const {ensureWebpBinaries, getExePath} = require('./downloader.js');//ensure webp binaries ready before exec & get exe path
 
 function Webp() {
 }
@@ -13,9 +10,11 @@ Webp.prototype = {
 
     //permission issue in Linux and macOS
     grant_permission() {
-        const arr = [enwebp(), dewebp(), gifwebp(), webpmux()];
-        arr.forEach(exe_path => {
-            fs.chmodSync(exe_path, 0o755);
+        const arr = [getExePath('cwebp'), getExePath('dwebp'), getExePath('gif2webp'), getExePath('webpmux')];
+        return ensureWebpBinaries().then(() => {
+            arr.forEach(exe_path => {
+                fs.chmodSync(exe_path, 0o755);
+            });
         });
     },
 
@@ -24,8 +23,10 @@ Webp.prototype = {
         // base64str of image
         // base64str image type jpg,png ...
         //option: options and quality,it should be given between 0 to 100
-        return buffer_utils.base64str2webp(base64str, image_type, option, extra_path).then(function (val) {
-            return val
+        return ensureWebpBinaries().then(() => {
+            return buffer_utils.base64str2webp(base64str, image_type, option, extra_path).then(function (val) {
+                return val
+            });
         });
     },
 
@@ -34,8 +35,10 @@ Webp.prototype = {
         // buffer of image
         // buffer image type jpg,png ...
         //option: options and quality,it should be given between 0 to 100
-        return buffer_utils.buffer2webp(buffer, image_type, option, extra_path).then(function (val) {
-            return val
+        return ensureWebpBinaries().then(() => {
+            return buffer_utils.buffer2webp(buffer, image_type, option, extra_path).then(function (val) {
+                return val
+            });
         });
     },
 
@@ -51,9 +54,9 @@ Webp.prototype = {
         const query = `${option} "${input_image}" -o "${output_image}" "${logging}"`; //command to convert image
 
         //enwebp() return which platform webp library should be used for conversion
-        return new Promise((resolve, reject) => {
+        return ensureWebpBinaries().then(() => new Promise((resolve, reject) => {
             //execute command
-            exec(`"${enwebp()}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
+            exec(`"${getExePath('cwebp')}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
                 if (error) {
                     reject(error);
                 } else if (stderr) {
@@ -62,7 +65,7 @@ Webp.prototype = {
                     resolve(stdout);
                 }
             });
-        });
+        }));
     },
 
     /******************************************************* dwebp *****************************************************/
@@ -76,9 +79,9 @@ Webp.prototype = {
         const query = `"${input_image}" ${option} "${output_image}" "${logging}"`;//command to convert image
 
         //dewebp() return which platform webp library should be used for conversion
-        return new Promise((resolve, reject) => {
+        return ensureWebpBinaries().then(() => new Promise((resolve, reject) => {
             //execute command
-            exec(`"${dewebp()}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
+            exec(`"${getExePath('dwebp')}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
                 if (error) {
                     reject(error);
                 } else if (stderr) {
@@ -87,7 +90,7 @@ Webp.prototype = {
                     resolve(stdout);
                 }
             });
-        });
+        }));
 
     },
 
@@ -104,9 +107,9 @@ Webp.prototype = {
         const query = `${option} "${input_image}" -o "${output_image}" "${logging}"`;//command to convert image
 
         //gifwebp() return which platform webp library should be used for conversion
-        return new Promise((resolve, reject) => {
+        return ensureWebpBinaries().then(() => new Promise((resolve, reject) => {
             //execute command
-            exec(`"${gifwebp()}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
+            exec(`"${getExePath('gif2webp')}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
                 if (error) {
                     reject(error);
                 } else if (stderr) {
@@ -115,7 +118,7 @@ Webp.prototype = {
                     resolve(stdout);
                 }
             });
-        });
+        }));
     },
 
     /******************************************************* webpmux *****************************************************/
@@ -131,9 +134,9 @@ Webp.prototype = {
         const query = `-set ${option} ${icc_profile} "${input_image}" -o "${output_image}" "${logging}"`;
 
         //webpmux() return which platform webp library should be used for conversion
-        return new Promise((resolve, reject) => {
+        return ensureWebpBinaries().then(() => new Promise((resolve, reject) => {
             //execute command
-            exec(`"${webpmux()}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
+            exec(`"${getExePath('webpmux')}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
                 if (error) {
                     reject(error);
                 } else if (stderr) {
@@ -142,7 +145,7 @@ Webp.prototype = {
                     resolve(stdout);
                 }
             });
-        });
+        }));
     },
 
     //%%%%%%%%%%%%% Extract ICC profile,XMP metadata and EXIF metadata
@@ -155,9 +158,9 @@ Webp.prototype = {
         const query = `-get ${option} "${input_image}" -o ${icc_profile} "${logging}"`;
 
         //webpmux() return which platform webp library should be used for conversion
-        return new Promise((resolve, reject) => {
+        return ensureWebpBinaries().then(() => new Promise((resolve, reject) => {
             //execute command
-            exec(`"${webpmux()}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
+            exec(`"${getExePath('webpmux')}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
                 if (error) {
                     reject(error);
                 } else if (stderr) {
@@ -166,7 +169,7 @@ Webp.prototype = {
                     resolve(stdout);
                 }
             });
-        });
+        }));
     },
 
     //%%%%%%%% Strip ICC profile,XMP metadata and EXIF metadata
@@ -179,9 +182,9 @@ Webp.prototype = {
         const query = `-strip ${option} "${input_image}" -o "${output_image}" "${logging}"`;
 
         //webpmux() return which platform webp library should be used for conversion
-        return new Promise((resolve, reject) => {
+        return ensureWebpBinaries().then(() => new Promise((resolve, reject) => {
             //execute command
-            exec(`"${webpmux()}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
+            exec(`"${getExePath('webpmux')}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
                 if (error) {
                     reject(error);
                 } else if (stderr) {
@@ -190,7 +193,7 @@ Webp.prototype = {
                     resolve(stdout);
                 }
             });
-        });
+        }));
     },
 
     //%%%%%%%%%%% Create an animated WebP file from Webp images
@@ -213,9 +216,9 @@ Webp.prototype = {
         const query = `${files} -loop ${loop} -bgcolor ${bgcolor} -o "${output_image}" "${logging}"`;
 
         //webpmux() return which platform webp library should be used for conversion
-        return new Promise((resolve, reject) => {
+        return ensureWebpBinaries().then(() => new Promise((resolve, reject) => {
             //execute command
-            exec(`"${webpmux()}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
+            exec(`"${getExePath('webpmux')}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
                 if (error) {
                     reject(error);
                 } else if (stderr) {
@@ -224,7 +227,7 @@ Webp.prototype = {
                     resolve(stdout);
                 }
             });
-        });
+        }));
     },
 
     //%%%%%%%%%%%% Get the a frame from an animated WebP file
@@ -238,9 +241,9 @@ Webp.prototype = {
         const query = `-get frame ${frame_number} "${input_image}" -o "${output_image}" "${logging}"`;
 
         //webpmux() return which platform webp library should be used for conversion
-        return new Promise((resolve, reject) => {
+        return ensureWebpBinaries().then(() => new Promise((resolve, reject) => {
             //execute command
-            exec(`"${webpmux()}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
+            exec(`"${getExePath('webpmux')}"`, query.split(/\s+/), {shell: true}, (error, stdout, stderr) => {
                 if (error) {
                     reject(error);
                 } else if (stderr) {
@@ -249,7 +252,7 @@ Webp.prototype = {
                     resolve(stdout);
                 }
             });
-        });
+        }));
     }
 
 }

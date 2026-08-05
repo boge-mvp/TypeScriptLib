@@ -191,6 +191,10 @@ declare type ComponentData = {
      */
     key?: string
     /**
+     * key忽略大小写
+     */
+    keyIgnoreCase?: boolean
+    /**
      * 目标类的构造函数。
      */
     classTarget?: { new(): any }

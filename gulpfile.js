@@ -7,7 +7,6 @@ const path = require("path")
 const log = require("gulplog")
 const gulp = require("gulp")
 
-const AdmZip = require('adm-zip')
 const {reserved} = require("./reserved")
 const {createDirectory, cleanStream, mJs, buildJs, buildDts, rollupPack} = require("./index")
 const {SourceMapConsumer, SourceNode} = require('source-map');
@@ -45,49 +44,16 @@ gulp.task('build', gulp.series("clean", (done) => {
     }
 ))
 
-let downloadWebp = "https://storage.googleapis.com/downloads.webmproject.org/releases/webp/libwebp-1.3.0-windows-x64.zip"
-const filePath = 'webp' // 下载文件的路径
-
+//下载并安装 webp 工具到用户目录 ~/.webp/bin/（委托 webp/downloader.js，支持多平台、版本 1.6.0）
 gulp.task("updateWEBP", (done) => {
-    // 创建http请求
-    http.get(downloadWebp, (res) => {
-        let downloadZip = filePath + "/file.zip"
-        if (fs.existsSync(downloadZip))
-            unzip()
-        else
-            download()
-
-        function download() {
-            // 创建写入文件的流
-            const fileWriteStream = fs.createWriteStream(downloadZip)
-            // 如果压缩文件被gzip压缩，则创建解压流
-            const unzipStream = res.headers['content-encoding'] === 'gzip' ? zlib.createGunzip() : null
-
-            // 将响应流和解压流连接起来
-            const responseStream = unzipStream ? res.pipe(unzipStream) : res
-
-            // 将响应流和写入文件的流连接起来
-            responseStream.pipe(fileWriteStream)
-
-            // 监听下载完成事件
-            fileWriteStream.on('finish', unzip)
-        }
-
-        function unzip() {
-            console.log('下载完成, 开始解压')
-            if (fs.existsSync(filePath + "/bin")) fs.unlinkSync(filePath + "/bin")
-            // 创建AdmZip对象
-            const zip = new AdmZip(downloadZip)
-            // 解压zip文件到指定文件夹
-            zip.extractEntryTo("libwebp-1.3.0-windows-x64/bin/", filePath + "/bin", false)
-            fs.unlinkSync(downloadZip)
-            // zip.extractAllTo(filePath, true)
-            console.log('解压完成')
-        }
-    }).on('error', (error) => {
-        console.error(`下载失败: ${error.message}`)
+    const {ensureWebpBinaries, getBinDir} = require("./webp/downloader.js")
+    ensureWebpBinaries().then(() => {
+        console.log(`[updateWEBP] webp 工具就绪: ${getBinDir()}`)
+        done()
+    }).catch((error) => {
+        console.error(`[updateWEBP] 下载或解压失败: ${error.message}`)
+        done(error)
     })
-    done()
 })
 
 gulp.task("min-js", () => {
