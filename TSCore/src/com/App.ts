@@ -7,6 +7,7 @@ import {Log} from "./Log";
 import {IKey, IProxy} from "./interfaces/ICommon";
 import {Path} from "./Path";
 import {TimerKit} from "./kit/TimerKit";
+import {ScaleKit} from "./kit/ScaleKit";
 import {IController} from "./interfaces/IController";
 import {IView} from "./interfaces/IView";
 import Handler = Laya.Handler;
@@ -201,15 +202,18 @@ export class App implements IAction {
             let screenHeight = Laya.stage.height
             let dx = Laya.stage.designWidth
             let dy = Laya.stage.designHeight
+            // 当屏幕方向与设计方向不一致时，交换设计宽高，使缩放计算方向匹配
             if (screenWidth > screenHeight && dx < dy || screenWidth < screenHeight && dx > dy) {
                 //scale should not change when orientation change
                 let tmp = dx
                 dx = dy
                 dy = tmp
             }
+            // s1/s2 为宽/高方向的缩放，取较小值保证内容完整显示（等比缩放）
             let s1 = screenWidth / dx
             let s2 = screenHeight / dy
             let contentScaleFactor = Math.min(s1, s2)
+            // GRoot 反向换算为逻辑尺寸，并施加统一缩放
             fgui.GRoot.inst.setSize(Math.round(screenWidth / contentScaleFactor), Math.round(screenHeight / contentScaleFactor))
             fgui.GRoot.inst.setScale(contentScaleFactor, contentScaleFactor)
             Log.debug(`onResize ${screenWidth} ${screenHeight} ${contentScaleFactor}`)
@@ -221,7 +225,7 @@ export class App implements IAction {
 
     regOnResize(caller: any, method: Function) {
         if (!this._resizeHandlers.some(h => h.caller === caller && h.method === method)) {
-            this._resizeHandlers.push({ caller, method })
+            this._resizeHandlers.push({caller, method})
         }
     }
 
@@ -340,28 +344,24 @@ export class App implements IAction {
     }
 
 
-    /** 获取当前屏幕等比例缩放系数 */
+    /**
+     * 获取当前屏幕等比例缩放系数
+     * @deprecated 请使用 ScaleKit.getEqualRatioScale，可显式传入 fgui.GRoot.inst.width/height 保持原行为
+     * @see ScaleKit.getEqualRatioScale
+     */
     getEqualRatioScale() {
-        let point = this.getEqualRatioRatio(fgui.GRoot.inst.width, fgui.GRoot.inst.height)
-        return Math.min(point.x, point.y)
+        return ScaleKit.getEqualRatioScale(fgui.GRoot.inst.width, fgui.GRoot.inst.height)
     }
 
     /**
      * 获取当前屏幕等比例缩放系数
      * @param [w=Laya.stage.width] 当前屏幕实际渲染宽度
      * @param [h=Laya.stage.height] 当前屏幕实际渲染高度
+     * @deprecated 请使用 ScaleKit.getEqualRatioRatio
+     * @see ScaleKit.getEqualRatioRatio
      */
-    getEqualRatioRatio(w?: number, h?: number) {
-        w ??= Laya.stage.width
-        h ??= Laya.stage.height
-        let s1 = w / Laya.stage.designWidth
-        let s2 = h / Laya.stage.designHeight
-        if (Laya.stage.screenMode == Laya.Stage.SCREEN_HORIZONTAL) {
-            s1 = w / Laya.stage.designHeight
-            s2 = h / Laya.stage.designWidth
-        }
-        return new Laya.Point(s1, s2)
-    }
+    getEqualRatioRatio = ScaleKit.getEqualRatioRatio
+
 
     getStackTrace(): string {
         // 返回错误对象的堆栈信息

@@ -8,7 +8,7 @@ import {StringBlock} from "../block/StringBlock";
 import {ViewProxy} from "../block/ViewProxy";
 import {ActionEvent} from "../block/ActionEvent";
 import {IRecord} from "../interfaces/ICommon";
-import {App} from "../App";
+import {ScaleKit} from "../kit/ScaleKit";
 import {Log} from "../Log";
 
 /**
@@ -25,7 +25,7 @@ export class EWindow extends mixinExt(StringBlock, ViewProxy, ActionEvent, fgui.
     startPoint: Point
 
     protected override onInit() {
-        let scale = App.inst.getEqualRatioScale()
+        let scale = ScaleKit.getEqualRatioScale(GRoot.inst.width, GRoot.inst.height)
         Log.debug(`window scale ratio ${scale}`)
         this.contentPane.setSize(this.width * scale, this.height * scale)
         this.setSize(this.contentPane.width, this.contentPane.height)
