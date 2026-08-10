@@ -136,9 +136,10 @@ declare type InitApp = {
         coreLib?: boolean
     }
     /**
-     * 是否让GRoot 自适应大小 需要初始化fgui保持开启状态 否则需手动调用 App.inst.openResize
+     * 是否让GRoot 自适应大小 需要初始化fgui保持开启状态 否则需手动调用 App.inst.onResize 同步
      * @default true
      * @see App.openResize
+     * @see App.onResize
      */
     resize?: boolean
     /**

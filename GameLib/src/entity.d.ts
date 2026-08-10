@@ -179,13 +179,14 @@ declare type CustomResult<T = any> = {
 declare module tsCore.SoundUtils {
 
     /**
-     * 默认播放游戏base地址 默认是 sounds
+     * 默认播放游戏 base 地址
+     * @default `sounds`
      */
-    export let PLAY_GAME_PATH: string
+    export let GAME_SOUND_URL_BASE: string
 
     /**
      *
-     * @param url 声音文件地址 是从 {@link PLAY_GAME_PATH} 路径文件夹中读取的
+     * @param url 声音文件地址 是从 {@link GAME_SOUND_URL_BASE} 路径文件夹中读取的
      * @param [loops=0] 循环次数,0表示无限循环
      * @param complete 声音播放完成回调 Handler对象。
      * @param [volume=-1] 音量范围从 0（静音）至 1（最大音量）。 -1表示不调整
@@ -196,7 +197,7 @@ declare module tsCore.SoundUtils {
 
     /**
      *
-     * @param url 声音文件地址。 是从 {@link PLAY_GAME_PATH} 路径文件夹中读取的
+     * @param url 声音文件地址。 是从 {@link GAME_SOUND_URL_BASE} 路径文件夹中读取的
      * @param [loops=1] 循环次数,0表示无限循环
      * @param complete 声音播放完成回调 Handler对象。
      * @param [volume=1] 音量范围从 0（静音）至 1（最大音量）。
@@ -206,7 +207,7 @@ declare module tsCore.SoundUtils {
 
     /**
      *
-     * @param {string} url 声音文件地址。 是从 {@link PLAY_GAME_PATH} 路径文件夹中读取的
+     * @param {string} url 声音文件地址。 是从 {@link GAME_SOUND_URL_BASE} 路径文件夹中读取的
      */
     export function stopGameSound(url: string): void
 }

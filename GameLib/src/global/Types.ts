@@ -55,7 +55,7 @@ function createView<T extends fgui.GObject>(url: string, userClass?: { new(): T 
 }
 
 Object.defineProperties(tsCore.SoundUtils, {
-    PLAY_GAME_PATH: {
+    GAME_SOUND_URL_BASE: {
         value: "sounds",
         writable: true,
         configurable: true
@@ -64,21 +64,21 @@ Object.defineProperties(tsCore.SoundUtils, {
 
 Object.defineProperty(tsCore.SoundUtils, "playGameMusic", {
     value: function (url: string, loops?: number, complete?: Laya.Handler, volume?: number, startTime?: number, coverBefore = false) {
-        url = tsCore.SoundUtils.PLAY_GAME_PATH + "/" + url
+        url = tsCore.SoundUtils.GAME_SOUND_URL_BASE + "/" + url
         return tsCore.SoundUtils.playMusic(url, loops, complete, volume, startTime, coverBefore)
     }
 })
 
 Object.defineProperty(tsCore.SoundUtils, "playGameSound", {
     value: function (url: string, loops?: number, complete?: Laya.Handler, volume?: number, startTime?: number) {
-        url = tsCore.SoundUtils.PLAY_GAME_PATH + "/" + url
+        url = tsCore.SoundUtils.GAME_SOUND_URL_BASE + "/" + url
         return tsCore.SoundUtils.playSound(url, loops, complete, volume, startTime)
     }
 })
 
 Object.defineProperty(tsCore.SoundUtils, "stopGameSound", {
     value: function (url: string) {
-        url = tsCore.SoundUtils.PLAY_GAME_PATH + "/" + url
+        url = tsCore.SoundUtils.GAME_SOUND_URL_BASE + "/" + url
         return tsCore.SoundUtils.stopSound(url)
     }
 })
