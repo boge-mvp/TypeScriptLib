@@ -352,7 +352,9 @@ export class SceneManager extends EProxy {
             return
         }
         let obj = GameConfigKit.gameRes()
-
+        if (!SoundUtils.GAME_SOUND_URL_BASE) {
+            SoundUtils.GAME_SOUND_URL_BASE = "sounds/" + Player.inst.simpleName
+        }
         if (obj.completeFun) {
             this._starter = obj.completeFun()
         } else this._starter = runApplication(obj.startClass)
@@ -377,7 +379,7 @@ export class SceneManager extends EProxy {
 
     /**
      * 显示游戏到舞台上，初始化并启动游戏进程
-     * 
+     *
      * 主要执行以下步骤：
      * 1. 初始化历史管理器和游戏埋点
      * 2. 连接游戏 Socket 并初始化相关事件监听
@@ -385,7 +387,7 @@ export class SceneManager extends EProxy {
      * 4. 在舞台上创建并显示游戏场景
      * 5. 场景显示后，加载声音和后续资源，启用交互按键
      * 6. 在下一帧隐藏加载界面并执行加载完成的回调
-     * 
+     *
      * @param onComplete 游戏完全加载并显示成功后的可选回调方法
      */
     showGameScene(onComplete?: () => void) {

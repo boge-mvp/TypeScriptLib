@@ -179,8 +179,7 @@ declare type CustomResult<T = any> = {
 declare module tsCore.SoundUtils {
 
     /**
-     * 默认播放游戏 base 地址
-     * @default `sounds`
+     * 默认播放游戏 base 地址，当没有设置的时候 自动设置成 sounds/${Player.inst.simpleName}
      */
     export let GAME_SOUND_URL_BASE: string
 

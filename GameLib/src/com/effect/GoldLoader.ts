@@ -27,6 +27,7 @@ export class GoldLoader extends mixinExt(BezierCurves, GLoader) {
         super()
         this.fill = LoaderFillType.Scale
         this.setPivot(.5, .5)
+        this.target = this
     }
 
     /**
@@ -68,6 +69,11 @@ export class GoldLoader extends mixinExt(BezierCurves, GLoader) {
 
     timeLine(callback?: ParamHandler) {
         this.getTimeLine(callback)
+        return this
+    }
+
+    addLabel(label: string, offset?: number) {
+        this._timeLine?.addLabel(label, offset || 0)
         return this
     }
 

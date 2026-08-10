@@ -56,7 +56,6 @@ function createView<T extends fgui.GObject>(url: string, userClass?: { new(): T 
 
 Object.defineProperties(tsCore.SoundUtils, {
     GAME_SOUND_URL_BASE: {
-        value: "sounds",
         writable: true,
         configurable: true
     }
