@@ -198,8 +198,25 @@ export class App implements IAction {
      */
     onResize() {
         if (this.options.resize && this.options.init?.fgui) {
-            fgui.GRoot.inst.setSize(Laya.stage.width, Laya.stage.height)
-            Log.debug(`onResize ${Laya.stage.width} ${Laya.stage.height}`)
+            let screenWidth = Laya.stage.width
+            let screenHeight = Laya.stage.height
+            let dx = Laya.stage.designWidth
+            let dy = Laya.stage.designHeight
+            // 当屏幕方向与设计方向不一致时，交换设计宽高，使缩放计算方向匹配
+            if (screenWidth > screenHeight && dx < dy || screenWidth < screenHeight && dx > dy) {
+                //scale should not change when orientation change
+                let tmp = dx
+                dx = dy
+                dy = tmp
+            }
+            // s1/s2 为宽/高方向的缩放，取较小值保证内容完整显示（等比缩放）
+            let s1 = screenWidth / dx
+            let s2 = screenHeight / dy
+            let contentScaleFactor = Math.min(s1, s2)
+            // GRoot 反向换算为逻辑尺寸，并施加统一缩放
+            fgui.GRoot.inst.setSize(Math.round(screenWidth / contentScaleFactor), Math.round(screenHeight / contentScaleFactor))
+            fgui.GRoot.inst.setScale(contentScaleFactor, contentScaleFactor)
+            Log.debug(`onResize ${screenWidth} ${screenHeight} ${contentScaleFactor}`)
         }
         for (const handler of this._resizeHandlers) {
             handler.method.call(handler.caller)
