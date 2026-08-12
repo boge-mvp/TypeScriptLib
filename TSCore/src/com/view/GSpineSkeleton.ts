@@ -9,7 +9,7 @@ export class GSpineSkeleton extends ESkeleton {
 
     ver: SpineVersion
     template: Laya.SpineTemplet
-    autoSize = true
+    autoSize = false
 
     constructor(ver: SpineVersion = SpineVersion.v3_8) {
         super()
