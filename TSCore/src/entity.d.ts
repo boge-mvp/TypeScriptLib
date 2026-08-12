@@ -359,6 +359,10 @@ declare type ISkeletonData = {
      */
     ver?: Laya.SpineVersion
     /**
+     * spine专用 用于控制 GSpineSkeleton 组件是否根据spine动画配置中的宽高自动改变size,默认true
+     */
+    autoSize?: boolean,
+    /**
      * 旋转骨骼动画
      */
     rotation?: number,

@@ -96,9 +96,14 @@ export class SpineUtils {
         skeletonClass ??= Laya.Utils.getFileExtension(url) === "json" ? GSpineSkeleton : GSkeleton
 
         let skeleton = new skeletonClass()
-        if (optional.ver && skeleton instanceof GSpineSkeleton) {
-            skeleton.ver = optional.ver
+
+        if (skeleton instanceof GSpineSkeleton) {
+            if (optional.ver) {
+                skeleton.ver = optional.ver
+            }
+            if (optional.autoSize != undefined) skeleton.autoSize = optional.autoSize
         }
+
         optional.rotation && (skeleton.rotation = optional.rotation)
         if (optional.scale) {
             skeleton.setScale(optional.scale, optional.scale)

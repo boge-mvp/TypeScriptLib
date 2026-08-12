@@ -9,6 +9,7 @@ export class GSpineSkeleton extends ESkeleton {
 
     ver: SpineVersion
     template: Laya.SpineTemplet
+    autoSize = true
 
     constructor(ver: SpineVersion = SpineVersion.v3_8) {
         super()
@@ -59,9 +60,11 @@ export class GSpineSkeleton extends ESkeleton {
         this._spineResPath = spine.loadResUrl
         const template = spine ?? this.template
         this.asSkeleton.init(template)
-        const w = template?.skeletonData?.width ?? 0
-        const h = template?.skeletonData?.height ?? 0
-        this.setSize(w, h)
+        if (this.autoSize) {
+            const w = template?.skeletonData?.width ?? 0
+            const h = template?.skeletonData?.height ?? 0
+            this.setSize(w, h)
+        }
         // 销毁已有的动画
         // for (let i = this.displayObject.numChildren - 1; i >= 0; i--) {
         //     let temp = this.displayObject.getChildAt(i)
