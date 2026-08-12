@@ -77,15 +77,19 @@ export class GoldAniUtils {
             } else {
                 this.startPoint = start.localToGlobal()
                 this.globalToLocal(this.startPoint)
-                this.startPoint.x += start.width / 2
-                this.startPoint.y += start.height / 2
+                if (!start.pivotAsAnchor) {
+                    this.startPoint.x += start.width / 2
+                    this.startPoint.y += start.height / 2
+                }
             }
         } else this.startPoint = start
         if (end instanceof GObject) {
             this.endPoint = end.localToGlobal()
             this.globalToLocal(this.endPoint)
-            this.endPoint.x += end.width / 2
-            this.endPoint.y += end.height / 2
+            if (!end.pivotAsAnchor) {
+                this.endPoint.x += end.width / 2
+                this.endPoint.y += end.height / 2
+            }
         } else this.endPoint = end
         this.completeFun = complete
         this.specialAward(num)
@@ -157,6 +161,12 @@ export class GoldAniUtils {
         parent.globalToLocal(endGlobal.x, endGlobal.y, endGlobal)
         let targetGlobal = targetObject.localToGlobal()
         parent.globalToLocal(targetGlobal.x, targetGlobal.y, targetGlobal)
+        if (!targetObject.pivotAsAnchor) {
+            targetGlobal.setTo(targetGlobal.x + targetObject.width / 2, targetGlobal.y + targetObject.height / 2)
+        }
+        if (!endObject.pivotAsAnchor) {
+            endGlobal.setTo(endGlobal.x + endObject.width / 2, endGlobal.y + endObject.height / 2)
+        }
         this.playGoldPointAni(targetObject, targetGlobal, endGlobal, endHandler, parent, props)
 
     }

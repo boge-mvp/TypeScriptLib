@@ -14,6 +14,7 @@ export class GoldLoader extends mixinExt(BezierCurves, GLoader) {
     static readonly NAME = "GoldLoaderPool"
     private _timeLine: TimeLine
     private playEndCallback: ParamHandler
+    private labelCallback: (label: string) => void
     private playEndRecover = false
 
     /**
@@ -40,6 +41,7 @@ export class GoldLoader extends mixinExt(BezierCurves, GLoader) {
         Laya.timer.clearAll(this)
         this.removeFromParent()
         super.recover()
+        this.target = this
         // 还原属性初始值
         this.fill = LoaderFillType.Scale
         this.setPivot(.5, .5)
@@ -58,17 +60,20 @@ export class GoldLoader extends mixinExt(BezierCurves, GLoader) {
         // super.dispose();
     }
 
-    getTimeLine(callback?: ParamHandler) {
+    getTimeLine(callback?: ParamHandler, labelCallback?: (label: string) => void) {
         if (!this._timeLine) {
             this._timeLine = new TimeLine()
             this._timeLine.on(Event.COMPLETE, this, this.onPlayEnd)
+            this._timeLine.on(Event.LABEL, this, this.onLabel)
         } else this._timeLine.reset()
         this.playEndCallback = callback
+        this.labelCallback = labelCallback
         return this._timeLine
     }
 
-    timeLine(callback?: ParamHandler) {
-        this.getTimeLine(callback)
+
+    timeLine(callback?: ParamHandler, labelCallback?: (label: string) => void) {
+        this.getTimeLine(callback, labelCallback)
         return this
     }
 
@@ -121,6 +126,10 @@ export class GoldLoader extends mixinExt(BezierCurves, GLoader) {
         this.playEndRecover = true
         this._timeLine?.play(timeOrLabel, loop)
         return this
+    }
+
+    private onLabel(label: string) {
+        this.labelCallback?.(label)
     }
 
     private onPlayEnd() {
