@@ -152,7 +152,7 @@ export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends
         if (isChangeFirst) this.isFirstPlayComplete = false
         let wins = this.gameData.userWinArray
         if (wins.length == 0) return
-
+        if (wins.length <= this.showLineIndex) this.showLineIndex = 0
         const lineData = wins[this.showLineIndex]
 
         if (typeof lineData == "number") {
