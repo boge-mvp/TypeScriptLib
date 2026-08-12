@@ -548,8 +548,7 @@ function proxyClass(classTarget: { new(...args: any[]): any }, beanName?: string
             const name = classTarget.name
             initBean(this, name)
             if (this.isBean) {
-                // @ts-ignore
-                tsCore.App.inst.addBean(beanName || name, this)
+                addBeanIgnoreCase(beanName || name, this)
             }
         }
     }
