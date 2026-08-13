@@ -485,8 +485,8 @@ function initBean(target: any, name: string) {
 
     // @ts-ignore
     tsCore.TimerKit.REG_TASK.groupBy(value => value.handler)
-        .values()
-        .forEach(value => {
+        ?.values()
+        ?.forEach(value => {
                 const task = value.filter(value =>
                     value.targetClassProperty.constructor.name == name && value.target == null
                 )
