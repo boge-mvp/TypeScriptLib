@@ -10,20 +10,20 @@ export interface IController extends IView, IProxy {
      * @param saveClassName 是否保存类名映射
      * @returns {boolean} 是否添加成功
      */
-    addBean<T>(key: string | { new(): T }, bean: T, saveClassName?: boolean): boolean
+    addBean<T extends object>(key: string | { new(): T }, bean: T, saveClassName?: boolean): boolean
 
     /**
      * 从缓存中移除Bean对象
      * @param key 键值或类构造函数
      */
-    removeBean<T extends { new(...args: any[]) }>(key: string | T): void
+    removeBean<T extends { new(...args: any[]): object }>(key: string | T): void
 
     /**
      * 获取Bean对象
      * @param key 键值或类构造函数
      * @returns Bean对象
      */
-    getBean<T>(key: string | { new(): T }): T
+    getBean<T>(key: string | { new(): T }): T | Nullish
 
     /**
      * 检查是否包含指定的Bean对象

@@ -25,7 +25,7 @@ export interface IProxy extends IAction {
      * @param name 键值或类构造函数
      * @returns 代理对象
      */
-    getProxy<T>(name: string | { new(): T }): T
+    getProxy<T>(name: string | { new(): T }): T | Nullish
 
     /**
      * 从缓存中移除代理对象

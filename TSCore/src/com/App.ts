@@ -39,12 +39,12 @@ export class App implements IAction {
     static appMainClass: { new(...args: any[]): IRunApplication }
 
     static initEngine?: IInitEngine
-    options: InitApp
+    options!: InitApp
     private _resizeHandlers: { caller: any, method: Function }[] = []
     /**
      * @internal
      */
-    private _controller: IController
+    private _controller!: IController
     /**
      * 启动历史记录监听
      */
@@ -53,7 +53,7 @@ export class App implements IAction {
      *
      * @internal
      */
-    private timerKit: TimerKit;
+    private timerKit!: TimerKit;
     /**
      *
      * @internal
@@ -99,18 +99,18 @@ export class App implements IAction {
             isNotchEnable: false
         }
 
-        App.inst.options = options = options ? defaults(options, def) : def
-        options.init?.coreLib && App._init()
-
+        const opt = options ? defaults(options, def) : def
+        App.inst.options = opt
+        opt.init?.coreLib && App._init()
 
         const asyncInit = async () => {
             this.initStop = await init?.onRun?.()
             if (this.initStop) {
                 return Promise.reject()
             }
-            options.init?.laya && Laya.init(options.laya.width, options.laya.height, ...options.laya.renders)
+            opt.init?.laya && Laya.init(opt.laya.width, opt.laya.height, ...opt.laya.renders)
 
-            options.init?.fgui && Laya.stage.addChild(fgui.GRoot.inst.displayObject)
+            opt.init?.fgui && Laya.stage.addChild(fgui.GRoot.inst.displayObject)
 
             this.initStop = await init?.onEngine?.()
             if (this.initStop) {
@@ -122,7 +122,7 @@ export class App implements IAction {
         asyncInit().then(() => {
             Laya.timer.callLater(App.inst, App.inst.lastInit)
         }).catch(() => {
-            init?.onFail()
+            init?.onFail?.()
         })
 
     }
@@ -130,7 +130,7 @@ export class App implements IAction {
     /** 设置默认竖屏布局 */
     static updateDefaultScreen() {
         // 设置竖屏
-        const conchConfig: { setScreenOrientation: Function } = ConfigKit.get("conchConfig")
+        const conchConfig = ConfigKit.get<{ setScreenOrientation: Function }>("conchConfig")
         // landscape: 0, portrait: 1, user: 2, behind: 3, sensor: 4, nosensor: 5, sensor_landscape: 6, sensor_portrait: 7, reverse_landscape: 8, reverse_portrait: 9, full_sensor: 10,
         conchConfig?.setScreenOrientation?.(1)
         //设置横竖屏
@@ -241,28 +241,27 @@ export class App implements IAction {
         this._controller = new EventController()
     }
 
-    regActionHandler(action: string | number, handler: Handler, group: string = null, order?: number) {
+    regActionHandler(action: string | number, handler: Handler, group?: string, order?: number) {
         this._controller.regActionHandler(action, handler, group, order)
     }
 
-    regAction(action: string | number, caller: any, method: Function, group: string = null, order?: number) {
+    regAction(action: string | number, caller: any, method: Function, group?: string, order?: number) {
         this._controller.regAction(action, caller, method, group, order)
     }
 
     removeAllAction(...args: string[]) {
-        this._controller.removeAllAction.apply(this._controller, args)
+        this._controller.removeAllAction(...args)
     }
 
     removeGroup(group: string) {
         this._controller.removeGroup(group)
     }
 
-    removeGroupActions(group: string, ...args) {
-        args.unshift(group)
-        this._controller.removeGroupActions.apply(this._controller, args)
+    removeGroupActions(group: string, ...args: string[]) {
+        this._controller.removeGroupActions(group, ...args)
     }
 
-    removeActionHandler(action: string | number, method: Function, group: string = null) {
+    removeActionHandler(action: string | number, method: Function, group?: string) {
         this._controller.removeActionHandler(action, method, group)
     }
 
@@ -283,25 +282,22 @@ export class App implements IAction {
     }
 
     sendAction(action: string | number, ...args: any[]) {
-        args.unshift(action)
-        this._controller.sendAction.apply(this._controller, args)
+        this._controller.sendAction(action, ...args)
     }
 
     sendGroupAction(group: string, action: string | number, ...args: any[]) {
-        args.unshift(action)
-        args.unshift(group)
-        this._controller.sendGroupAction.apply(this._controller, args)
+        this._controller.sendGroupAction(group, action, ...args)
     }
 
-    addBean<T>(key: string | { new(): T }, bean: T, saveClassName?: boolean) {
+    addBean<T extends object>(key: string | { new(): T }, bean: T, saveClassName?: boolean) {
         return this._controller.addBean(key, bean, saveClassName)
     }
 
-    removeBean<T extends { new(...args: any[]) }>(key: string | T) {
+    removeBean<T extends { new(...args: any[]): object }>(key: string | T) {
         this._controller.removeBean(key)
     }
 
-    getBean<T>(key: string | { new(): T }): T {
+    getBean<T>(key: string | { new(): T }): T | Nullish {
         return this._controller.getBean(key)
     }
 
@@ -317,11 +313,11 @@ export class App implements IAction {
         this._controller.removeView(key)
     }
 
-    getView<T>(key: string | { new(): T }): T {
+    getView<T>(key: string | { new(): T }): T | Nullish {
         return this._controller.getView(key)
     }
 
-    getProxy<T>(name: string | { new(): T }): T {
+    getProxy<T>(name: string | { new(): T }): T | Nullish {
         return this._controller.getProxy(name)
     }
 
@@ -363,7 +359,7 @@ export class App implements IAction {
     getEqualRatioRatio = ScaleKit.getEqualRatioRatio
 
 
-    getStackTrace(): string {
+    getStackTrace(): string | undefined {
         // 返回错误对象的堆栈信息
         return new Error().stack
     }

@@ -7,7 +7,7 @@ export class ProxyBlock {
         return App.inst.addProxy(key, proxy)
     }
 
-    getProxy<T>(key: string | { new(): T }): T {
+    getProxy<T>(key: string | { new(): T }): T | Nullish {
         return App.inst.getProxy(key)
     }
 
@@ -15,7 +15,7 @@ export class ProxyBlock {
         App.inst.removeProxy(key)
     }
 
-    getView<T>(key: string | { new(): T }): T {
+    getView<T>(key: string | { new(): T }): T | Nullish {
         return App.inst.getView(key)
     }
 

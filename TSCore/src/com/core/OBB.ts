@@ -9,7 +9,7 @@ export class OBB extends View {
     /** 轴心 0 X轴 1 Y轴 */
     private _axes: Vector2[] = []
     /** 变径长度 */
-    protected _extents: number[]
+    protected _extents!: number[]
     private _point = new Vector2()
 
     constructor() {
@@ -78,8 +78,8 @@ export class OBB extends View {
 
 class Vector2 {
 
-    private x: number
-    private y: number
+    private x!: number
+    private y!: number
 
     constructor(x = 0, y = 0) {
         this.setXY(x, y)

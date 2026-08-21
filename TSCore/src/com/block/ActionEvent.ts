@@ -17,7 +17,7 @@ export class ActionEvent implements IAction {
     }
 
     removeAllAction(...args: string[]) {
-        App.inst.removeAllAction.apply(App.inst, args)
+        App.inst.removeAllAction(...args)
     }
 
     removeGroup(group: string) {
@@ -25,8 +25,7 @@ export class ActionEvent implements IAction {
     }
 
     removeGroupActions(group: string, ...args: string[]) {
-        args.unshift(group)
-        App.inst.removeGroupActions.apply(App.inst, args)
+        App.inst.removeGroupActions(group, ...args)
     }
 
     removeActionHandler(action: string | number, method: Function, group?: string) {
@@ -49,15 +48,12 @@ export class ActionEvent implements IAction {
         return App.inst.hasAction(action)
     }
 
-    sendAction(action: string | number, ...args) {
-        args.unshift(action)
-        App.inst.sendAction.apply(App.inst, args)
+    sendAction(action: string | number, ...args: any[]) {
+        App.inst.sendAction(action, ...args)
     }
 
-    sendGroupAction(group: string, action: string | number, ...args) {
-        args.unshift(action)
-        args.unshift(group)
-        App.inst.sendGroupAction.apply(App.inst, args)
+    sendGroupAction(group: string, action: string | number, ...args: any[]) {
+        App.inst.sendGroupAction(group, action, ...args)
     }
 
 }

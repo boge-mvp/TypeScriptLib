@@ -51,7 +51,7 @@ export class EView extends View implements IRecord {
     override dispose() {
         HistoryManager.invalidHistory(this)
         // 删除 laya 中的所有延迟
-        let gid = this["$_GID"]
+        let gid = this.displayObject.$_GID
         if (gid) { // 是否有使用过延迟 使用延迟执行的都有这个标记
             let map = Laya.CallLater.I["_map"]
             let handler: any[] = Laya.CallLater.I["_laters"]

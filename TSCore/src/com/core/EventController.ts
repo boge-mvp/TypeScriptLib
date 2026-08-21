@@ -48,7 +48,7 @@ export class EventController implements IController {
 
     removeAllAction(...args: string[]) {
         for (const key of this.eventGroup.keys()) {// 获取key
-            this.removeGroupActions.apply(this, [key, ...args])
+            this.removeGroupActions(key, ...args)
         }
     }
 
@@ -93,7 +93,8 @@ export class EventController implements IController {
         }
     }
 
-    removeTarget(groupObj: Map<string | number, Laya.Handler[]>, caller: any) {
+    removeTarget(groupObj?: Map<string | number, Laya.Handler[]>, caller?: any) {
+        if (!groupObj) return
         for (const [key, value] of groupObj.entries()) {
             for (let i = 0; i < value.length; i++) {
                 let h = value[i]
@@ -118,16 +119,16 @@ export class EventController implements IController {
     }
 
     sendGroupAction(group: string, action: string | number, ...args: any[]) {
-        let result: boolean = this.sendActionEvent.apply(this, [group, action, ...args])
+        let result: boolean = this.sendActionEvent(group, action, ...args)
         if (!result) {
             Log.debug("group[" + group + "], action [" + action + "] not exist! Call failure")
         }
     }
 
     sendAction(action: string | number, ...args: any[]) {
-        let result: boolean
+        let result
         for (const groupName of this.eventGroup.keys()) {
-            let tempResult: boolean = this.sendActionEvent.apply(this, [groupName, action, ...args])
+            let tempResult = this.sendActionEvent(groupName, action, ...args)
             if (tempResult) result = true
         }
         if (!result)
@@ -145,7 +146,7 @@ export class EventController implements IController {
         let groupObj = this.getGroup(group)
         let arr = groupObj.get(action)
         if (arr) {
-            arr.sort((a, b) => a.order || 100 - b.order || 100)
+            arr.sort((a, b) => (a.order || 100) - (b.order || 100))
                 .forEach(value =>
                     value.runWith(args)
                 )
@@ -154,7 +155,7 @@ export class EventController implements IController {
         return false
     }
 
-    addBean<T>(key: string | { new(): T }, bean: T, saveClassName = true) {
+    addBean<T extends object>(key: string | { new(): T }, bean: T, saveClassName = true) {
         if (typeof key !== "string") {
             key = this._getClassSign(key)
         }
@@ -177,7 +178,7 @@ export class EventController implements IController {
      * 从缓存中移除Bean对象
      * @param key 键值或类构造函数
      */
-    removeBean<T extends { new(...args: any[]) }>(key: string | T) {
+    removeBean<T extends { new(...args: any[]): object }>(key: string | T) {
         if (!key) return
         if (typeof key !== "string") {
             key = this._getClassSign(key, false)
@@ -187,7 +188,7 @@ export class EventController implements IController {
         this.cacheClassTarget.delete(key.charAt(0).toUpperCase() + key.slice(1))
     }
 
-    getBean<T>(key: string | { new(): T }): T {
+    getBean<T>(key: string | { new(): T }): T | Nullish {
         if (!key) return
         if (typeof key !== "string") {
             key = this._getClassSign(key, false)
@@ -222,7 +223,7 @@ export class EventController implements IController {
         this.removeBean(key)
     }
 
-    getView<T>(key: string | { new(): T }): T {
+    getView<T>(key: string | { new(): T }): T | Nullish {
         return this.getBean(key)
     }
 
@@ -245,7 +246,7 @@ export class EventController implements IController {
         this.removeBean(key)
     }
 
-    getProxy<T>(name: string | { new(): T }): T {
+    getProxy<T>(name: string | { new(): T }): T | Nullish {
         return this.getBean(name)
     }
 
@@ -253,11 +254,11 @@ export class EventController implements IController {
      * 分组存储对象
      * @param groupKey 分组key
      */
-    getGroup(groupKey: string) {
+    getGroup(groupKey?: string) {
         if (StringUtil.isEmpty(groupKey)) {
             groupKey = App.DEFAULT_GROUP
         }
-        return this.eventGroup.getOrPut(groupKey, () => new Map())
+        return this.eventGroup.getOrPut(groupKey!, () => new Map())
     }
 
     /**
@@ -274,9 +275,9 @@ export class EventController implements IController {
      * @returns 类标识字符串
      */
     private _getClassSign<T>(cla: { new(): T }, create = true): string {
-        let className = cla["__className"] || cla["_cacheId"] || cla.name
+        let className = cla.__className || cla._cacheId || cla.name
         if (!className && create) {
-            cla["_cacheId"] = className = `${App.DEFAULT_CACHE_HEAD}_${EventController._CLSID}`
+            cla._cacheId = className = `${App.DEFAULT_CACHE_HEAD}_${EventController._CLSID}`
             EventController._CLSID++
         }
         return className

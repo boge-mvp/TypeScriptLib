@@ -22,6 +22,11 @@ declare module Laya {
         removeLineColor: string
 
     }
+    
+    interface EventDispatcher {
+        /** 延迟调度 GUID 标记（运行时注入，可能不存在） */
+        readonly "$_GID"?: string
+    }
 
     interface Stage {
         /**
@@ -81,7 +86,7 @@ declare module Laya {
         /** 值越大 越后执行
          * @default 100
          */
-        order: number
+        order?: number
 
     }
 
@@ -153,6 +158,25 @@ declare module fgui {
         getChildByNames<T = GObject>(...name: string[]): T
     }
 
+}
+
+
+/** ==================== 构造函数元数据 ==================== */
+
+/**
+ * LayaAir 运行时注入到类构造函数上的内部属性
+ *
+ * 使用位置：
+ * - DefineConfig.ts: SoundManager["_bgMusic"]
+ * - GSkeleton.ts:   Templet["TEMPLET_DICTIONARY"]
+ * - EventController._getClassSign(): cla["__className"] / cla["_cacheId"]
+ * - SpineUtils.ts:   skeleton["classType"] / skeleton["ver"] 等
+ */
+declare interface Function {
+    /** LayaAir 注入的类名标识（部分类有） */
+    readonly __className?: string
+    /** 运行时生成的缓存唯一 ID（EventController 动态写入） */
+    _cacheId?: string
 }
 
 //  **********************         扩展原生方法         *****************************

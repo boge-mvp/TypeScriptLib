@@ -134,11 +134,8 @@ export class StringUtil {
      */
     static getNotNumbers(char: string) {
         let pattern = /\D+/g
-        let value = ""
-        if (pattern.test(char)) {
-            value = char.match(pattern).join("")
-        }
-        return value
+        const matches = char.match(pattern)
+        return matches ? matches.join("") : ""
     }
 
     /**
@@ -170,7 +167,7 @@ export class StringUtil {
      * @param    char    指定字符串
      * @return
      */
-    static isEmpty(char: string) {
+    static isEmpty(char?: string) {
         switch (char) {
             case null:
             case "":
@@ -405,7 +402,7 @@ export class StringUtil {
      * @deprecated
      * @see String.contains
      */
-    static contains(value: string, ...arge) {
+    static contains(value: string, ...arge: string[]) {
         return value?.contains(...arge)
     }
 

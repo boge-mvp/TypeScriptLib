@@ -22,6 +22,6 @@ export interface IView extends IAction {
      * @param key 键值或类构造函数
      * @returns 视图对象
      */
-    getView<T>(key: string | { new(): T }): T
+    getView<T>(key: string | { new(): T }): T | Nullish
 
 }

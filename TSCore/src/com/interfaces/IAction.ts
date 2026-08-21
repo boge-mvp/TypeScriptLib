@@ -81,7 +81,7 @@ export interface IAction {
      * @param action 事件标识
      * @param args 事件参数
      */
-    sendGroupAction(group: string, action: string | number, ...args): void
+    sendGroupAction(group: string, action: string | number, ...args: any[]): void
 
     /**
      * 发送事件到所有分组
