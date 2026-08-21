@@ -15,13 +15,13 @@ export interface IView extends IAction {
      * 从缓存中移除视图对象
      * @param key 键值或类构造函数
      */
-    removeView<T extends IView & IKey>(key: string | T): void
+    removeView<T extends IView & IKey>(key?: string | T | Nullish): void
 
     /**
      * 获取视图对象
      * @param key 键值或类构造函数
      * @returns 视图对象
      */
-    getView<T>(key: string | { new(): T }): T | Nullish
+    getView<T>(key?: string | { new(): T } | Nullish): Nullable<T>
 
 }

@@ -5,11 +5,11 @@ import {App} from "../App";
  */
 export class ViewProxy {
 
-    getProxy<T>(name: string | { new(): T }): T {
+    getProxy<T>(name?: string | { new(): T }): Nullable<T> {
         return App.inst.getProxy(name)
     }
 
-    getView<T>(key: string | { new(): T }): T {
+    getView<T>(key?: string | { new(): T }): Nullable<T> {
         return App.inst.getView(key)
     }
 

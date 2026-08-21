@@ -7,13 +7,13 @@ import GComponent = fgui.GComponent;
 
 export class View extends mixinExt(ActionEvent, StringBlock, ViewBlock, GComponent) implements IView, IKey {
 
-    protected key: string
+    protected key?: string
 
     setKey(key: string) {
         this.key = key
     }
 
-    getKey(): string {
+    getKey(): Nullable<string> {
         return this.key
     }
 

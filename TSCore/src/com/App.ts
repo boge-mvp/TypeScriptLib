@@ -293,15 +293,15 @@ export class App implements IAction {
         return this._controller.addBean(key, bean, saveClassName)
     }
 
-    removeBean<T extends { new(...args: any[]): object }>(key: string | T) {
+    removeBean<T extends { new(...args: any[]): object }>(key?: string | T | Nullish) {
         this._controller.removeBean(key)
     }
 
-    getBean<T>(key: string | { new(): T }): T | Nullish {
+    getBean<T>(key?: string | { new(): T } | Nullish): Nullable<T> {
         return this._controller.getBean(key)
     }
 
-    hasBean<T>(key: string | { new(): T }): boolean {
+    hasBean<T>(key?: string | { new(): T } | Nullish): boolean {
         return this._controller.hasBean(key)
     }
 
@@ -309,15 +309,15 @@ export class App implements IAction {
         return this._controller.addView(key, view)
     }
 
-    removeView<T extends IView & IKey>(key: string | T) {
+    removeView<T extends IView & IKey>(key?: string | T | Nullish) {
         this._controller.removeView(key)
     }
 
-    getView<T>(key: string | { new(): T }): T | Nullish {
+    getView<T>(key?: string | { new(): T } | Nullish): Nullable<T> {
         return this._controller.getView(key)
     }
 
-    getProxy<T>(name: string | { new(): T }): T | Nullish {
+    getProxy<T>(name?: string | { new(): T } | Nullish): Nullable<T> {
         return this._controller.getProxy(name)
     }
 
@@ -325,7 +325,7 @@ export class App implements IAction {
         return this._controller.addProxy(key, proxy)
     }
 
-    removeProxy<T extends IProxy & IKey>(key: string | T) {
+    removeProxy<T extends IProxy & IKey>(key?: string | T | Nullish) {
         this._controller.removeProxy(key)
     }
 
@@ -359,7 +359,7 @@ export class App implements IAction {
     getEqualRatioRatio = ScaleKit.getEqualRatioRatio
 
 
-    getStackTrace(): string | undefined {
+    getStackTrace(): Nullable<string> {
         // 返回错误对象的堆栈信息
         return new Error().stack
     }

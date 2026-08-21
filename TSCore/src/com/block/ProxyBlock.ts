@@ -7,15 +7,15 @@ export class ProxyBlock {
         return App.inst.addProxy(key, proxy)
     }
 
-    getProxy<T>(key: string | { new(): T }): T | Nullish {
+    getProxy<T>(key?: string | { new(): T } | Nullish): Nullable<T> {
         return App.inst.getProxy(key)
     }
 
-    removeProxy<T extends IProxy & IKey>(key: string | T) {
+    removeProxy<T extends IProxy & IKey>(key?: string | T | Nullish) {
         App.inst.removeProxy(key)
     }
 
-    getView<T>(key: string | { new(): T }): T | Nullish {
+    getView<T>(key?: string | { new(): T } | Nullish): Nullable<T> {
         return App.inst.getView(key)
     }
 

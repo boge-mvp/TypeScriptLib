@@ -5,7 +5,7 @@ export class ETexture {
      * 构造并生成一个功能强大的渐变 Texture 纹理
      * @param config 渐变参数配置项
      */
-    static createGradientTexture(config: GradientConfig): Texture | null {
+    static createGradientTexture(config: GradientConfig): Nullable<Texture> {
         const width = config.width ?? 256;
         const height = config.height ?? 256;
 

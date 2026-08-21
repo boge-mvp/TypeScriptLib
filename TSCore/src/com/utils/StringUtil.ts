@@ -240,7 +240,7 @@ export class StringUtil {
      * @deprecated
      * @see String.removeAllWhitespace
      */
-    static trimAll(input: string | null) {
+    static trimAll(input?: Nullable<string>) {
         return input?.removeAllWhitespace()
     }
 

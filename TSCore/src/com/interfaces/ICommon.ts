@@ -13,7 +13,7 @@ export interface IKey {
     /**
      * 获取当前的key值
      */
-    getKey(): string
+    getKey(): Nullable<string>
 
 }
 
@@ -25,13 +25,13 @@ export interface IProxy extends IAction {
      * @param name 键值或类构造函数
      * @returns 代理对象
      */
-    getProxy<T>(name: string | { new(): T }): T | Nullish
+    getProxy<T>(name?: string | { new(): T } | Nullish): Nullable<T>
 
     /**
      * 从缓存中移除代理对象
      * @param key 键值或类构造函数
      */
-    removeProxy<T extends IProxy & IKey>(key: string | T): void
+    removeProxy<T extends IProxy & IKey>(key?: string | T | Nullish): void
 
     /**
      * 添加代理对象到缓存

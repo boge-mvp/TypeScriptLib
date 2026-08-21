@@ -4,12 +4,12 @@ export class BezierCurves {
 
     /** 经过时间 */
     private _t = -1
-    private p1: Laya.Point
-    private p2: Laya.Point
-    private p3: Laya.Point
-    private p4: Laya.Point
+    private p1!: Laya.Point
+    private p2!: Laya.Point
+    private p3!: Laya.Point
+    private p4!: Laya.Point
 
-    target: GObject
+    target?: GObject
 
     get t() {
 
@@ -58,7 +58,7 @@ export class BezierCurves {
      * 释放曲线数据
      */
     recover() {
-        this.target = null
+        this.target = undefined
         this._t = -1
         this.p1?.recover()
         this.p2?.recover()

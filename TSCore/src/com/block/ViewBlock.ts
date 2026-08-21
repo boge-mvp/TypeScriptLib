@@ -4,7 +4,7 @@ import {IView} from "../interfaces/IView";
 
 export class ViewBlock {
 
-    getProxy<T>(name: string | { new(): T }): T {
+    getProxy<T>(name?: string | { new(): T }): Nullable<T> {
         return App.inst.getProxy(name)
     }
 
@@ -12,11 +12,11 @@ export class ViewBlock {
         return App.inst.addView(key, view)
     }
 
-    getView<T>(key: string | { new(): T }): T {
+    getView<T>(key?: string | { new(): T }): Nullable<T> {
         return App.inst.getView(key)
     }
 
-    removeView<T extends IView & IKey>(key: string | T) {
+    removeView<T extends IView & IKey>(key?: string | T | Nullish) {
         App.inst.removeView(key)
     }
 

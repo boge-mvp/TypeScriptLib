@@ -1,8 +1,18 @@
 /**
  * 空值集合类型
  * 表示值可能为 null 或 undefined（命名源自 ?? 空值合并操作符的操作对象集合）
+ * @example
+ * function getProxy<T>(key: string): T | Nullish
  */
 type Nullish = null | undefined
+
+/**
+ * 可空类型包装
+ * 表示值可能为 T、null 或 undefined，等价于 T | Nullish
+ * @example
+ * function getProxy<T>(key: string): Nullable<T>
+ */
+type Nullable<T> = T | Nullish
 
 /**
  * 执行提供的 ParamHandler 函数。
@@ -73,7 +83,7 @@ function color(hex: string | number, a: number = 1): string {
  * @param onInit - 可选的初始化函数，在此函数中this指向创建的UI实例，可以访问和修改实例的属性和方法。默认为null
  *
  */
-function createUI<T extends fgui.GComponent>(uiClass: { new(): T }, onInit: ((this: T) => void) | Nullish = null) {
+function createUI<T extends fgui.GComponent>(uiClass: { new(): T }, onInit: Nullable<(this: T) => void> = null) {
     const target = new uiClass()
     onInit?.call(target)
     // @ts-ignore

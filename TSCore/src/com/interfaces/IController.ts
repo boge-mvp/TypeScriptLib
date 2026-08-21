@@ -16,21 +16,21 @@ export interface IController extends IView, IProxy {
      * 从缓存中移除Bean对象
      * @param key 键值或类构造函数
      */
-    removeBean<T extends { new(...args: any[]): object }>(key: string | T): void
+    removeBean<T extends { new(...args: any[]): object }>(key?: string | T | Nullish): void
 
     /**
      * 获取Bean对象
      * @param key 键值或类构造函数
      * @returns Bean对象
      */
-    getBean<T>(key: string | { new(): T }): T | Nullish
+    getBean<T>(key?: string | { new(): T } | Nullish): Nullable<T>
 
     /**
      * 检查是否包含指定的Bean对象
      * @param key 键值或类构造函数
      * @returns 是否包含
      */
-    hasBean<T>(key: string | { new(): T }): boolean
+    hasBean<T>(key?: string | { new(): T } | Nullish): boolean
 
     /**
      * 清空视图缓存

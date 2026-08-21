@@ -178,7 +178,7 @@ export class EventController implements IController {
      * 从缓存中移除Bean对象
      * @param key 键值或类构造函数
      */
-    removeBean<T extends { new(...args: any[]): object }>(key: string | T) {
+    removeBean<T extends { new(...args: any[]): object }>(key?: string | T | Nullish) {
         if (!key) return
         if (typeof key !== "string") {
             key = this._getClassSign(key, false)
@@ -188,7 +188,7 @@ export class EventController implements IController {
         this.cacheClassTarget.delete(key.charAt(0).toUpperCase() + key.slice(1))
     }
 
-    getBean<T>(key: string | { new(): T }): T | Nullish {
+    getBean<T>(key?: string | { new(): T } | Nullish): Nullable<T> {
         if (!key) return
         if (typeof key !== "string") {
             key = this._getClassSign(key, false)
@@ -196,11 +196,11 @@ export class EventController implements IController {
         return this.cacheTarget.get(key) ?? this.cacheClassTarget.get(key)
     }
 
-    hasBean<T>(key: string | { new(): T }): boolean {
+    hasBean<T>(key?: string | { new(): T }): boolean {
+        if (!key) return false
         if (typeof key !== "string") {
             key = this._getClassSign(key, false)
         }
-        if (!key) return false
         return this.cacheTarget.has(key) || this.cacheClassTarget.has(key)
     }
 
@@ -215,7 +215,7 @@ export class EventController implements IController {
         return false
     }
 
-    removeView<T extends IView & IKey>(key: string | T) {
+    removeView<T extends IView & IKey>(key?: string | T | Nullish) {
         if (!key) return
         if (typeof key !== "string") {
             key = key.getKey()
@@ -223,7 +223,7 @@ export class EventController implements IController {
         this.removeBean(key)
     }
 
-    getView<T>(key: string | { new(): T }): T | Nullish {
+    getView<T>(key: string | { new(): T } | Nullish): Nullable<T> {
         return this.getBean(key)
     }
 
@@ -238,7 +238,7 @@ export class EventController implements IController {
         return false
     }
 
-    removeProxy<T extends IProxy & IKey>(key: string | T) {
+    removeProxy<T extends IProxy & IKey>(key?: string | T | Nullish) {
         if (!key) return
         if (typeof key !== "string") {
             key = key.getKey()
@@ -246,7 +246,7 @@ export class EventController implements IController {
         this.removeBean(key)
     }
 
-    getProxy<T>(name: string | { new(): T }): T | Nullish {
+    getProxy<T>(name: string | { new(): T }): Nullable<T> {
         return this.getBean(name)
     }
 

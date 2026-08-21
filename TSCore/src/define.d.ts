@@ -96,7 +96,7 @@ declare module Laya {
          * @param str 要写入的字符串
          * @param stringTable 对应的字符串表引用
          */
-        writeFguiString(str: string | null | undefined, stringTable: string[]): void;
+        writeFguiString(str: Nullable<string>, stringTable: string[]): void;
     }
 
 }
@@ -307,7 +307,7 @@ declare interface String {
      * 移除字符串中所有的空白字符（包括空格、制表符、换行符等）
      * @returns 移除了所有空白字符的新字符串，如果输入为 null 或 undefined 则返回 null
      */
-    removeAllWhitespace(): string | null
+    removeAllWhitespace(): Nullable<string>
 
     /**
      * 将字符串转换为布尔值
@@ -398,13 +398,13 @@ declare interface Array<T> {
      * 返回产生给定函数的最小值的第一个元素。
      * @param selector
      */
-    minBy<R>(selector: (value: T) => R): T | undefined
+    minBy<R>(selector: (value: T) => R): Nullable<T>
 
     /**
      * 返回产生给定函数的最大值的第一个元素。
      * @param selector
      */
-    maxBy<R>(selector: (value: T) => R): T | undefined
+    maxBy<R>(selector: (value: T) => R): Nullable<T>
 
     /**
      * 返回与给定 predicate 匹配的元素数
