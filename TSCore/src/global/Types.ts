@@ -16,11 +16,11 @@ type Nullable<T> = T | Nullish
 
 /**
  * 执行提供的 ParamHandler 函数。
- * @param func 可选，要执行的函数或Laya.Handler实例。如果提供，它将根据其类型执行。
+ * @param func 可选，要执行的函数或Laya.Handler实例，可为空。如果提供，它将根据其类型执行。
  * @param args 可变参数，传递给函数的参数。
  * @returns 如果func存在且不为null，则根据func的类型执行并返回相应的结果；否则返回null。
  */
-function runFun(func?: ParamHandler, ...args: any[]) {
+function runFun(func?: Nullable<ParamHandler>, ...args: any[]) {
     if (func) return func instanceof Laya.Handler ? func.runWith(args) : func.apply(null, args)
     return null
 }

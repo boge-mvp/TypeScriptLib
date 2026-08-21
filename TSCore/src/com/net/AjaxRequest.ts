@@ -8,11 +8,11 @@ import HttpRequest = Laya.HttpRequest;
 export class AjaxRequest extends Laya.HttpRequest {
 
     /** 请求数据完成 */
-    private completeHandler: ParamHandler
+    private completeHandler: Nullable<ParamHandler>
     /** 请求错误 */
-    private errorHandler: ParamHandler
+    private errorHandler: Nullable<ParamHandler>
     /** 超时 */
-    private timerOutHandler: ParamHandler
+    private timerOutHandler: Nullable<ParamHandler>
     /** 设置是否异步请求 默认true */
     async = true
 
@@ -47,7 +47,7 @@ export class AjaxRequest extends Laya.HttpRequest {
         this.http.timeout = value
     }
 
-    override send(url: string, data?: any, method?: string, responseType?: string, headers?: string[] | null) {
+    override send(url: string, data?: any, method = "get", responseType = "text", headers?: string[] | null) {
         // super.send(url, data, method, responseType, headers)
         this._responseType = responseType;
         this._data = null;
@@ -124,7 +124,7 @@ export class AjaxRequest extends Laya.HttpRequest {
     }
 
     /** 清除处理器 */
-    private clearHandler(...handler: (ParamHandler | null | undefined)[]) {
+    private clearHandler(...handler: Nullable<ParamHandler>[]) {
         for (const value of handler) {
             if (value instanceof Laya.Handler) value.recover()
         }

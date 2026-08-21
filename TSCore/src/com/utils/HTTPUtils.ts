@@ -39,7 +39,7 @@ export class HTTPUtils {
     /**
      * 请求的地址。大多数浏览器实施了一个同源安全策略，并且要求这个 URL 与包含脚本的文本具有相同的主机名和端口。
      */
-    private url: string
+    private url!: string
     /**
      * 发送的数据。
      * @default null
@@ -49,7 +49,7 @@ export class HTTPUtils {
      * 用于请求的 HTTP 方法。值包括 "get"、"post"、"head"。
      * @default null
      */
-    private method: string = null
+    private method: Nullable<string> = null
     /**
      * Web 服务器的响应类型，可设置为 "text"、"json"、"xml"、"arraybuffer"。
      * @default text
@@ -59,20 +59,20 @@ export class HTTPUtils {
      * HTTP 请求的头部信息。参数形如key-value数组：key是头部的名称，不应该包括空白、冒号或换行；value是头部的值，不应该包括换行。比如["Content-Type", "application/json"]。
      * @default null
      */
-    private headers: string[]
+    private headers: Nullable<string[]>
     /** 完成 */
-    private complete: HttpOnComplete
+    private complete: Nullable<HttpOnComplete>
     /** 错误 */
-    private error: HttpOnError
+    private error: Nullable<HttpOnError>
     /** 超时 */
-    private timeout: HttpOnTimeout
+    private timeout: Nullable<HttpOnTimeout>
     private static https: HTTPUtils[] = []
 
     private async = true
     /**
      * 不管结果如何  执行完成后最后都会执行的方法
      */
-    private finally: HttpOnFinally
+    private finally: Nullable<HttpOnFinally>
 
     constructor() {
         this.ghr = new AjaxRequest()
@@ -364,7 +364,7 @@ export class HTTPUtils {
 
         if (typeof data === "string") return data
 
-        let value: string
+        let value: Nullable<string>
         let v: any
         for (let key in data) {
             v = data[key]

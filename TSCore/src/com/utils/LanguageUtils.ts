@@ -9,7 +9,7 @@ export class LanguageUtils {
     }
 
     /** 语言配置文件 */
-    protected xml: XMLDocument
+    protected xml?: XMLDocument
     /** 预解析的语言项缓存，以实现 O(1) 检索性能 */
     private _elementCache = new Map<string, Element>()
     /** 存储存在重复 name 的项，用于在检索时抛出 duplicate items 异常 */
@@ -28,7 +28,7 @@ export class LanguageUtils {
      * }
      * <br/>
      */
-    customConvert: (content: string) => string
+    customConvert?: (content: string) => string
 
     /**
      * 替换文案map
@@ -82,11 +82,11 @@ export class LanguageUtils {
         }
         let element = this.getElement(str)
         if (element?.nodeName == "array") {
-            const arr = []
+            const arr: Element[] = []
             for (let i = 0; i < element.childNodes.length; i++) {
                 const childNode = element.childNodes[i]
                 if (childNode.nodeType == Node.ELEMENT_NODE) {
-                    arr.push(childNode)
+                    arr.push(childNode as Element)
                 }
             }
             element = arr.random()
@@ -104,7 +104,10 @@ export class LanguageUtils {
             for (let i = 0; i < element.childNodes.length; i++) {
                 const childNode = element.childNodes[i]
                 if (childNode.nodeType == Node.ELEMENT_NODE) {
-                    out.push(this.__getStr(<Element>childNode))
+                    const str = this.__getStr(<Element>childNode)
+                    if (str) {
+                        out.push(str)
+                    }
                 }
             }
         }
@@ -125,7 +128,7 @@ export class LanguageUtils {
         return null
     }
 
-    private __getStr(element: Element) {
+    private __getStr(element: Nullable<Element>) {
         if (!element) return null
         let content = element.textContent
         if (this.customConvert) content = runFun(this.customConvert, content)

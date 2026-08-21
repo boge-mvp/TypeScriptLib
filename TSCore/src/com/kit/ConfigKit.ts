@@ -14,8 +14,8 @@ export class ConfigKit {
     /**
      * 从 window 中获取指定的对象
      */
-    static get<T>(key: string): T | null {
-        return window[key]
+    static get<T>(key: string): Nullable<T> {
+        return Reflect.get(window, key)
     }
 
     /**

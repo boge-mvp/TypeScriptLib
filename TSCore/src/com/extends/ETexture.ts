@@ -75,6 +75,8 @@ export class ETexture {
                 const defaultOuterRadius = Math.max(width, height) / 2;
                 gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, defaultOuterRadius);
             }
+        } else {
+            throw new Error(`[ETexture] 不支持的渐变类型: ${type}`)
         }
 
         // 4. 解析并智能注入色标色值
