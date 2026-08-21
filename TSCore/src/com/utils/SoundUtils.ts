@@ -14,10 +14,10 @@ export class SoundUtils {
 
     private static bgMusicLoop = 0
     private static bgVolume = 1
-    private static bgComplete: Laya.Handler
+    private static bgComplete?: Laya.Handler
     private static bgStartTime = 0
     /** 当前自动播放的声音文件路径 */
-    private static autoPlayUrl: string;
+    private static autoPlayUrl?: string;
 
     /**
      * 添加需要使用 SoundUtils.load() 加载的资源文件
@@ -44,7 +44,7 @@ export class SoundUtils {
             if (SoundUtils.autoPlayUrl == url) {
                 SoundUtils.playMusic(url, SoundUtils.bgMusicLoop, SoundUtils.bgComplete, SoundUtils.bgVolume, SoundUtils.bgStartTime)
                 Log.info("auto play = " + url)
-                SoundUtils.autoPlayUrl = null
+                SoundUtils.autoPlayUrl = undefined
             }
         }
         SoundUtils.autoPlay.length = 0
@@ -60,7 +60,7 @@ export class SoundUtils {
      * @param [coverBefore=false] 地址相同，是否覆盖正在播放的音乐
      */
     static playMusic(url: string, loops = 0, complete?: Laya.Handler, volume = -1, startTime = 0, coverBefore = false) {
-        if (SoundManager["_bgMusic"] == URL.formatURL(url) && SoundManager["_musicChannel"] && !coverBefore) {
+        if (SoundManager._bgMusic == URL.formatURL(url) && SoundManager["_musicChannel"] && !coverBefore) {
             if(SoundManager["_musicChannel"].isStopped) {
                 SoundManager["_musicChannel"].resume()
                 return SoundManager["_musicChannel"]
@@ -74,7 +74,7 @@ export class SoundUtils {
         SoundUtils.bgStartTime = startTime
         if (sound) {
             let channel = SoundManager.playMusic(url, loops,
-                (loops > 0 && complete) ? Handler.create(this, this.onPlayMusicEnd, [complete]) : null, startTime)
+                (loops > 0 && complete) ? Handler.create(this, this.onPlayMusicEnd, [complete]) : undefined, startTime)
             if (!channel) return null
             if (volume > -1) channel.volume = volume
             return channel
@@ -93,7 +93,7 @@ export class SoundUtils {
     }
 
     private static onPlayMusicEnd(complete?: Laya.Handler) {
-        SoundManager["_bgMusic"] = null
+        SoundManager._bgMusic = null
         complete?.run()
     }
 
@@ -108,7 +108,7 @@ export class SoundUtils {
     static playSound(url: string, loops = 1, complete?: Laya.Handler, volume = 1, startTime = 0) {
         let sound: Sound = Laya.loader.getRes(url)
         if (sound) {
-            let channel = SoundManager.playSound(url, loops, complete, null, startTime)
+            let channel = SoundManager.playSound(url, loops, complete, undefined, startTime)
             if (!channel) return null
             if (volume > -1) channel.volume = volume
             return channel
@@ -126,11 +126,11 @@ export class SoundUtils {
 
     static clear() {
         SoundUtils.autoPlay.length = 0
-        while (SoundUtils.loadAsset.length > 0) {
-            let loadRes = SoundUtils.loadAsset.shift()
-            Laya.loader.cancelLoadByUrl(loadRes.url)
-            SoundManager.destroySound(loadRes.url)
-        }
+        SoundUtils.loadAsset.removeAll((value)=> {
+            Laya.loader.cancelLoadByUrl(value.url)
+            SoundManager.destroySound(value.url)
+            return true;
+        })
         Log.info("clear sound")
         SoundUtils.loadAsset.length = 0
     }

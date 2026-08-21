@@ -81,6 +81,22 @@ declare module Laya {
         _anis: AnimationContent[]
     }
 
+    interface Texture {
+        _addReference()
+    }
+
+    interface GraphicsAni {
+        boneSlotName?: string
+        _saveToCmd(fun: Function, args: any)
+    }
+
+    interface SpineTempletBase {
+        /**
+         * @private
+         */
+        _textureDic: any
+    }
+
     interface Handler {
 
         /** 值越大 越后执行
@@ -101,6 +117,10 @@ declare module Laya {
 
 }
 
+declare module Laya.SoundManager {
+    let _bgMusic: Nullable<string>;
+}
+
 declare module Laya.Texture {
     /**
      * 创建一个功能强大的动态 Canvas 渐变纹理贴图。
@@ -108,6 +128,7 @@ declare module Laya.Texture {
      * @param config 渐变配置项
      */
     function createGradientTexture(config: GradientConfig): Laya.Texture | null;
+
 }
 
 declare module Laya.Event {
@@ -158,6 +179,14 @@ declare module fgui {
         getChildByNames<T = GObject>(...name: string[]): T
     }
 
+}
+
+
+
+declare module spine {
+    interface AssetManager {
+        success(callback: (path: string, asset: any) => void, path: string, data: any)
+    }
 }
 
 

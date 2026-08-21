@@ -47,8 +47,8 @@ export class DefineConfig {
         })
 
         Object.defineProperty(Laya.KeyBoardManager, "_addEvent", {
-            value: function (type) {
-                windowMy.addEventListener(type, function (e: any) {
+            value: function (type: any) {
+                windowMy?.addEventListener(type, function (e: any) {
                     Laya.KeyBoardManager["_dispatch"](e, type)
                 })
             }
@@ -115,7 +115,7 @@ export class DefineConfig {
             value: function (texture: Texture, x: number, y: number, width: number, height: number, matrix: Laya.Matrix | null, alpha: number, color: string | null, blendMode: string | null, uv?: number[]) {
                 const cmd = Pool.getItemByClass("DrawTextureCmd", EDrawTextureCmd)
                 cmd.texture = texture
-                texture["_addReference"]()
+                texture._addReference()
                 cmd.x = x
                 cmd.y = y
                 cmd.width = width
@@ -161,9 +161,7 @@ export class DefineConfig {
             }
         })
         // 更改值 并保留调用原始的
-        Object.defineProperty(Laya.GraphicsAni.prototype, "tempSaveToCmd", {
-            value: Laya.GraphicsAni.prototype["_saveToCmd"]
-        })
+        const tempSaveToCmd = Laya.GraphicsAni.prototype._saveToCmd
         Object.defineProperty(Laya.GraphicsAni.prototype, "_saveToCmd", {
             value: function (fun: Function, args: any) {
                 if (args instanceof EDrawTextureCmd) {
@@ -180,12 +178,12 @@ export class DefineConfig {
                     }
                     args.name = this.boneSlotName || ""
                 }
-                return this.tempSaveToCmd.call(this, fun, args)
+                return tempSaveToCmd.call(this, fun, args)
             }
         })
 
         Object.defineProperty(Laya.Byte.prototype, "writeFguiString", {
-            value: function (str: string | null | undefined, stringTable: string[]): void {
+            value: function (str: Nullable<string>, stringTable: string[]): void {
                 if (!str) {
                     this.writeInt16(65534); // fgui null占位
                     return;
@@ -235,7 +233,7 @@ export class DefineConfig {
                 if (fgui.ToolSet.startsWith(url, "ui://"))
                     return
                 if (!volumeScale) volumeScale = 1
-                SoundUtils.playSound(url, 1, null, volumeScale)
+                SoundUtils.playSound(url, 1, undefined, volumeScale)
             }
         })
         Object.defineProperty(GButton.prototype, "__click", {
@@ -341,7 +339,7 @@ export class DefineConfig {
             value: function () {
                 fgui.AssetProxy.inst.load(this._url, Laya.Handler.create(this, (url: string, tex: Laya.Texture) => {
                     if (this._url === url) this.__getResCompleted(tex)
-                }, [this._url]), null, Laya.Loader.IMAGE)
+                }, [this._url]), undefined, Laya.Loader.IMAGE)
             }
         })
         Object.defineProperty(fgui.GLoader.prototype, "loadExternal", {
@@ -625,13 +623,11 @@ export class DefineConfig {
             }
         })
 
-        Object.defineProperty(Laya.BoneSlot.prototype, "tempDraw", {
-            value: Laya.BoneSlot.prototype.draw
-        })
+        const tempDraw = Laya.BoneSlot.prototype.draw
         Object.defineProperty(Laya.BoneSlot.prototype, "draw", {
-            value: function (graphics, boneMatrixArray, noUseSave = false, alpha = 1) {
+            value: function (graphics: Laya.GraphicsAni, boneMatrixArray: any[], noUseSave = false, alpha = 1) {
                 graphics.boneSlotName = this.name
-                this.tempDraw.call(this, graphics, boneMatrixArray, noUseSave, alpha)
+                tempDraw.call(this, graphics, boneMatrixArray, noUseSave, alpha)
             }
         })
 
@@ -725,11 +721,11 @@ export class DefineConfig {
         })
 
         // 修改4.0
-        if (spine.AssetManager.prototype["success"]) {
+        if (spine.AssetManager.prototype.success) {
             // @ts-ignore
             const SpineAssetManager_success = spine.AssetManager.prototype.success
             Object.defineProperty(Laya.SpineAssetManager.prototype, "success", {
-                value: function (callback: (path: string, asset) => void, path: string, data: any) {
+                value: function (callback: (path: string, asset: any) => void, path: string, data: any) {
                     SpineAssetManager_success.call(this, callback, path, data)
                     if (!callback) {
                         if (typeof data !== "string") {
@@ -761,7 +757,7 @@ export class DefineConfig {
         Object.defineProperty(Laya.SpineSkeleton.prototype, "destroy", {
             value: function (destroyChild = true) {
                 this._templet ??= new Laya.SpineTempletBase()
-                this.state ??= new spine.AnimationState(null)
+                this.state ??= new spine.AnimationState(null as unknown as spine.AnimationStateData)
                 SpineSkeleton_destroy.call(this, destroyChild)
             }
         })
@@ -789,7 +785,7 @@ export class DefineConfig {
                         let time = (that.currentPlayTime * 1000 - eventData.time) / 1000
                         if (time < 0) time = 0
                         SoundUtils.playSound(templet["_textureDic"].root + eventData.audioValue, 1,
-                            null, 1, time)
+                            undefined, 1, time)
                         Laya.SoundManager.playbackRate = that._playbackRate
                     }
                 }

@@ -3,7 +3,7 @@
  * @param name - Bean的名称或构造函数。
  * @returns T 返回指定的Bean实例。
  */
-function getBean<T>(name: string | { new(): T }): T {
+function getBean<T>(name?: string | { new(): T }): T {
     // @ts-ignore
     return tsCore.App.inst.getBean(name)
 }
@@ -118,7 +118,7 @@ function Component<T extends { new(...args: any[]): {} }>(value: string | false 
         if (value == null || value == false) {
             return proxyClass(classTarget)
         }
-        let data: ComponentData = {}
+        let data: ComponentData = {classTarget: classTarget, key: ""}
         if (typeof value === "object") {
             data = value
             value = classTarget
@@ -134,7 +134,6 @@ function Component<T extends { new(...args: any[]): {} }>(value: string | false 
             data.key = Reflect.getMetadata("class:name", classTarget) || classTarget.name
             data.keyIgnoreCase = true
         }
-        data.classTarget = classTarget
         if (!data.autoInit) {
             return proxyClass(classTarget, typeof value === "string" ? value : data.key)
         }
@@ -204,14 +203,14 @@ function Resource(...args: any[]): any {
     // 作为直接装饰器调用 @Resource
     if (args.length >= 2 && typeof args[0] === 'object' && typeof args[1] === 'string') {
         const [targetPrototype, propertyKey] = args;
-        return _Resource(null, targetPrototype, propertyKey)
+        return _Resource(undefined, targetPrototype, propertyKey)
     }
 }
 
 /**
  * @internal
  */
-function _Resource(name: string, targetPrototype: any, propertyKey: string): PropertyDescriptor {
+function _Resource(name: Nullable<string>, targetPrototype: any, propertyKey: string): PropertyDescriptor {
     const classTarget = Reflect.getMetadata("design:type", targetPrototype, propertyKey)
     if (classTarget) {
         return {
@@ -251,7 +250,7 @@ function BindThis<T extends Function>(targetPrototype: any, propertyKey: string,
         configurable: true,
         get(this: T): T {
             // 将方法绑定到当前类实例，确保方法内的this指向正确
-            const bound: T = descriptor.value.bind(this)
+            const bound: T = descriptor.value!.bind(this)
             // 在类实例上定义属性，值为绑定后的函数，以便后续调用
             Object.defineProperty(this, propertyKey, {
                 value: bound,
@@ -301,7 +300,7 @@ let appRunListeners: tsCore.IAppRunListener[] = []
 /**
  * 资源准备好后立即执行
  */
-let readyFunction: Map<any, Function[]>
+let readyFunction: Nullable<Map<any, Function[]>>
 
 /**
  * {@link Ready} 注解的方法会在所有bean都初始化完成、
@@ -486,7 +485,7 @@ function initBean(target: any, name: string) {
     // @ts-ignore
     tsCore.TimerKit.REG_TASK.groupBy(value => value.handler)
         ?.values()
-        ?.forEach(value => {
+        ?.forEach((value: any[]) => {
                 const task = value.filter(value =>
                     value.targetClassProperty.constructor.name == name && value.target == null
                 )
@@ -653,7 +652,7 @@ function runApplication<T>(classTarget?: { new(...args: any[]): T }): T {
 
     appRunListeners.forEach(listener => listener.onBeanFuncInitializing?.());
 
-    beanClassFunction.forEach((value: () => any, key: string) => {
+    beanClassFunction.forEach((value, key) => {
         // @ts-ignore
         if (!tsCore.App.inst.hasBean(key)) {
             const target = value()
@@ -665,7 +664,7 @@ function runApplication<T>(classTarget?: { new(...args: any[]): T }): T {
     appRunListeners.forEach(listener => listener.onComponentInitializing?.());
 
     beanClassComponent
-        .sort((a, b) => a.order || 0 - b.order || 0)
+        .sort((a, b) => (a.order || 0) - (b.order || 0))
         .forEach((value: ComponentData) => {
             // @ts-ignore
             if (!tsCore.App.inst.hasBean(value.key)) {

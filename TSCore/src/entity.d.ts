@@ -190,7 +190,7 @@ declare type ComponentData = {
     /**
      * 创建key
      */
-    key?: string
+    key: string
     /**
      * key忽略大小写
      */
@@ -198,7 +198,7 @@ declare type ComponentData = {
     /**
      * 目标类的构造函数。
      */
-    classTarget?: { new(): any }
+    classTarget: { new(): any }
     /**
      * 是否自动初始化 默认true
      */
