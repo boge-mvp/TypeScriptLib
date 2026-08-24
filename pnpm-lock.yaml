@@ -13,16 +13,13 @@ importers:
         version: 0.4.4(rollup@4.60.3)
       '@rollup/plugin-typescript':
         specifier: ^12.1.4
-        version: 12.3.0(rollup@4.60.3)(tslib@2.8.1)(typescript@5.9.3)
+        version: 12.3.0(rollup@4.60.3)(tslib@2.8.1)(typescript@6.0.3)
       '@types/fs-extra':
         specifier: ^11.0.4
         version: 11.0.4
       '@types/gulp':
         specifier: ^4.0.18
         version: 4.0.18
-      '@types/gulp-rename':
-        specifier: ^2.0.4
-        version: 2.0.7
       '@types/gulp-sourcemaps':
         specifier: ^0.0.38
         version: 0.0.38
@@ -61,7 +58,7 @@ importers:
         version: 2.1.0
       gulp-typescript:
         specifier: ^6.0.0-alpha.1
-        version: 6.0.0-alpha.1(typescript@5.9.3)
+        version: 6.0.0-alpha.1(typescript@6.0.3)
       gulplog:
         specifier: ^2.2.0
         version: 2.2.0
@@ -81,8 +78,8 @@ importers:
         specifier: ^2.8.1
         version: 2.8.1
       typescript:
-        specifier: ^5.9.2
-        version: 5.9.3
+        specifier: ^6.0.3
+        version: 6.0.3
       vinyl:
         specifier: ^3.0.1
         version: 3.0.1
@@ -329,9 +326,6 @@ packages:
 
   '@types/glob@7.2.0':
     resolution: {integrity: sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==}
-
-  '@types/gulp-rename@2.0.7':
-    resolution: {integrity: sha512-W1xIGdui1w4AB1ylt/b8jrpV1MTNfeKmMFfJXsN/NOtSHjRg2w4Wp9H96J+Ld9tZenTtU0u5LatpGFJvOBN5EA==}
 
   '@types/gulp-sourcemaps@0.0.38':
     resolution: {integrity: sha512-9wm+P44eM/VKZSYwGDwalOH6rnvNckwfPgz0gEUlTzjKH1OsSbexdvE8aKBt+8syEkq827Fu+4gV17/EyUtH9w==}
@@ -1436,8 +1430,8 @@ packages:
   type@2.7.3:
     resolution: {integrity: sha512-8j+1QmAbPvLZow5Qpi6NCaN8FB60p/6x8/vfNqOk/hC+HuvFZhL4+WfekuhQLiqFZXOgQdrs3B+XxEmCc6b3FQ==}
 
-  typescript@5.9.3:
-    resolution: {integrity: sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw==}
+  typescript@6.0.3:
+    resolution: {integrity: sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw==}
     engines: {node: '>=14.17'}
     hasBin: true
 
@@ -1606,11 +1600,11 @@ snapshots:
     optionalDependencies:
       rollup: 4.60.3
 
-  '@rollup/plugin-typescript@12.3.0(rollup@4.60.3)(tslib@2.8.1)(typescript@5.9.3)':
+  '@rollup/plugin-typescript@12.3.0(rollup@4.60.3)(tslib@2.8.1)(typescript@6.0.3)':
     dependencies:
       '@rollup/pluginutils': 5.3.0(rollup@4.60.3)
       resolve: 1.22.12
-      typescript: 5.9.3
+      typescript: 6.0.3
     optionalDependencies:
       rollup: 4.60.3
       tslib: 2.8.1
@@ -1717,11 +1711,6 @@ snapshots:
     dependencies:
       '@types/minimatch': 6.0.0
       '@types/node': 14.18.63
-
-  '@types/gulp-rename@2.0.7':
-    dependencies:
-      '@types/node': 14.18.63
-      '@types/vinyl': 2.0.12
 
   '@types/gulp-sourcemaps@0.0.38':
     dependencies:
@@ -2356,13 +2345,13 @@ snapshots:
       through2: 4.0.2
       vinyl-sourcemaps-apply: 0.2.1
 
-  gulp-typescript@6.0.0-alpha.1(typescript@5.9.3):
+  gulp-typescript@6.0.0-alpha.1(typescript@6.0.3):
     dependencies:
       ansi-colors: 4.1.3
       plugin-error: 1.0.1
       source-map: 0.7.6
       through2: 3.0.2
-      typescript: 5.9.3
+      typescript: 6.0.3
       vinyl: 2.2.1
       vinyl-fs: 3.0.3
 
@@ -2961,7 +2950,7 @@ snapshots:
 
   type@2.7.3: {}
 
-  typescript@5.9.3: {}
+  typescript@6.0.3: {}
 
   unc-path-regex@0.1.2: {}
 

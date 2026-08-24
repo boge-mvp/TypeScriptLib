@@ -1,10 +1,7 @@
 {
   "compilerOptions": {
     // 编译后的 JavaScript 代码的目标版本
-    "target": "ES6",
-    //  编译后的模块系统
-    "module": "ES6",
-    "baseUrl": ".",
+    "target": "es2015",
     // 生成 .d.ts 定义文件
     "declaration": true,
     // 去除注释
@@ -16,6 +13,7 @@
     "skipLibCheck": true,
     // 重写必须添加override
     "noImplicitOverride": true,
+//    "strict": true,
     // 禁用完整类型检查
 //    "noCheck": true,
     // 禁用发出在其 JSDoc 注释中包含“@internal”的声明。
@@ -29,7 +27,7 @@
     // 编译器可用的类型定义和内置对象
     "lib": [
       "DOM",
-      "ES6"
+      "ESNext"
     ]
   },
   "exclude": [
