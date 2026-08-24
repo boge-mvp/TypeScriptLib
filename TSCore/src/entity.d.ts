@@ -586,13 +586,15 @@ declare type LoadRes = {
     runLoad?: boolean
     //------------  Laya 的数据
 
-    size: number
+    /** 资源大小权重（加载器缺省补 1，用于进度加权） */
+    size?: number
 
     priority?: number
 
     useWorkerLoader?: boolean
 
-    progress: number
+    /** 加载进度 0-1（加载器运行时填充） */
+    progress?: number
 
     group?: string
 

@@ -137,7 +137,7 @@ export class ELoader {
                 let num = 0
                 for (let j = 0; j < items.length; j++) {
                     let item1 = items[j]
-                    num += item1.size * item1.progress
+                    num += (item1.size ?? 1) * (item1.progress ?? 0)
                 }
                 let v = num / totalSize
                 progress.runWith(v)

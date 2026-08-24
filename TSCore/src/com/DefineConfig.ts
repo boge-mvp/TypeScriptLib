@@ -1,7 +1,7 @@
-import ColorFilter = Laya.ColorFilter
-import Texture = Laya.Texture
-import Pool = Laya.Pool
-import CallLater = Laya.CallLater
+import ColorFilter = Laya.ColorFilter;
+import Texture = Laya.Texture;
+import Pool = Laya.Pool;
+import CallLater = Laya.CallLater;
 import Timer = Laya.Timer;
 import PopupMenu = fgui.PopupMenu;
 import GObject = fgui.GObject;
@@ -19,11 +19,6 @@ export class DefineConfig {
     static init() {
         DefineConfig.defineLaya()
         DefineConfig.defineFairy()
-        const arr = [2,43,5,1,6,8,7,9,10]
-        console.log(
-            arr.at(2),
-            arr.at(-1)
-        )
     }
 
     /**

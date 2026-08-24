@@ -4,6 +4,8 @@
   ],
   "compilerOptions": {
     "outDir": "./bin",
+    // 源码已完成 strict 适配（Nullable 全量标注），显式声明与产物基线一致
+    "strict": true,
     //    "rootDir": "../",
     //    "baseUrl": ".",
     //    "paths": {
