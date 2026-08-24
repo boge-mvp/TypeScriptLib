@@ -11,27 +11,27 @@ export class TextAniUtils {
     /** 默认文本 */
     private _defaultText: string
     /** 当前要播放的文本 */
-    private _playText: string
+    private _playText?: string
     /** 显示文本框 */
     private _textField: GTextField
     /** 当前动画显示文本 */
-    private aniText: string
+    private aniText!: string
     /** 播放数字动画结束 */
-    private _endCallBack: ParamHandler
+    private _endCallBack?: ParamHandler
     /** 保存播放文字动画的位置 */
     private textObj: any[] = []
     /** 闪烁次数 */
-    private twinkleCount: number
+    private twinkleCount!: number
     /** 是否正在闪烁中*/
-    private isTwinkle: boolean
+    private isTwinkle = false
     /** 闪烁执行完成调用 */
-    private twinkleCallHandler: ParamHandler
+    private twinkleCallHandler?: ParamHandler
     /** 当前清楚完的数量 */
     private clearCount = 0
     /** 当前播放结束的数量 */
     private playEndCount = 0
     /** 要播放的一个数组文字 */
-    private playTexts: any[]
+    private playTexts?: any[]
     /** 数组文字位置 */
     private playIndex = 0
 
@@ -61,7 +61,7 @@ export class TextAniUtils {
      */
     play(playText: string) {
         if (this._playText == playText) return
-        this.playTexts = null
+        this.playTexts = undefined
         this._play(playText)
     }
 
@@ -101,20 +101,20 @@ export class TextAniUtils {
         this._playAni(playText)
     }
 
-    private _playClean(playText: string = null) {
-        if (this._playText.length != this.textObj.length) {
+    private _playClean(playText?: string) {
+        if (this._playText!.length != this.textObj.length) {
             return
         }
         Laya.timer.clearAll(this)
         this.playTwinkle(2, Handler.create(this, (playText: string) => {
-            let showTextLen = this._playText.length
+            let showTextLen = this._playText!.length
             let charData: any
             this.clearCount = 0
             for (let i = 0; i < showTextLen; i++) {
                 charData = this.textObj[i]
                 Tween.to(charData, {
                     count: 0,
-                    update: new Handler(this, this.onChangeText, [charData, this._playText.charAt(i)])
+                    update: new Handler(this, this.onChangeText, [charData, this._playText!.charAt(i)])
                 }, 300, null, Handler.create(this, this.onCleanTextEnd, [playText]), 300)
             }
         }, [playText]))
@@ -125,7 +125,7 @@ export class TextAniUtils {
      * @param ani 是否需要动画清理
      */
     clean(ani: boolean = true) {
-        this.playTexts = null
+        this.playTexts = undefined
         if (ani) {
             this._playClean()
         } else {
@@ -133,7 +133,7 @@ export class TextAniUtils {
             while (this.textObj.length > 0) {
                 Tween.clearAll(this.textObj.shift())
             }
-            this._playText = null
+            this._playText = undefined
             let msgLen = this._textField.text.length
             let text = ""
             for (let i = 0; i < msgLen; i++) {
@@ -148,7 +148,7 @@ export class TextAniUtils {
         this.clearCount++
         if (this.clearCount < this.textObj.length) return
         this.textObj.splice(0, this.textObj.length)
-        this._playText = null
+        this._playText = undefined
         if (!StringUtil.isEmpty(playText)) {
             Laya.timer.once(300, this, this._play, [playText])
         }
@@ -193,7 +193,7 @@ export class TextAniUtils {
     }
 
     private onChangeText(charData: any, txt: string) {
-        if (txt.removeAllWhitespace().length == 0) {
+        if ((txt.removeAllWhitespace()?.length || 0) == 0) {
             txt = this._defaultText
         }
         let index = Math.floor(charData.count)
@@ -219,7 +219,7 @@ export class TextAniUtils {
      * @param count 文字闪烁次数
      * @param callback
      */
-    playTwinkle(count = 2, callback: ParamHandler = null) {
+    playTwinkle(count = 2, callback?: ParamHandler) {
         this.twinkleCount = count
         this.twinkleCallHandler = callback
 //        if (this.textObj.length > 0) {
@@ -230,7 +230,7 @@ export class TextAniUtils {
     private onTwinkle() {
         if (this.isTwinkle) {
             let msgLen = this._textField.text.length
-            let tempPlayText = StringUtil.replace(this._playText, " ", ",")
+            let tempPlayText = StringUtil.replace(this._playText!, " ", ",")
             let showTextLen = tempPlayText.length
             let start = Math.floor((msgLen - showTextLen) / 2)
             let tempText = ""
@@ -265,12 +265,7 @@ export class TextAniUtils {
     }
 
     dispose() {
-        this._playText = null
-        this._textField = null
-        this._endCallBack = null
-        this._defaultText = null
-        this.twinkleCallHandler = null
-        this.playTexts = null
+        this._playText = this._endCallBack = this.twinkleCallHandler = this.playTexts = undefined
         Laya.timer.clearAll(this)
         while (this.textObj.length > 0) {
             Tween.clearAll(this.textObj.shift())

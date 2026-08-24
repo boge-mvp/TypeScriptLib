@@ -12,6 +12,7 @@ import BoneSlot = Laya.BoneSlot;
 import TextureFormat = Laya.TextureFormat;
 import {ESkeleton} from "../extends/ESkeleton";
 import {Log} from "../Log";
+import {ELoader} from "../extends/ELoader";
 
 export class GSkeleton extends ESkeleton {
 
@@ -61,7 +62,7 @@ export class GSkeleton extends ESkeleton {
     }
 
     protected override createDisplayObject() {
-        this._displayObject = new Skeleton(null, this.aniMode)
+        this._displayObject = new Skeleton(undefined, this.aniMode)
         super.createDisplayObject()
     }
 
@@ -96,12 +97,11 @@ export class GSkeleton extends ESkeleton {
      * @internal
      */
     private _onLoaded(url?: string) {
-        if (url) {
-            this._spineResPath = url
-        }
+        if (!this._aniPath) return;
+        if (url) this._spineResPath = url
         const arraybuffer: ArrayBuffer = Loader.getRes(this._aniPath)
         if (!arraybuffer) {
-            this._spineResPath = this._aniPath = null
+            this._spineResPath = this._aniPath = undefined
             return
         }
         Templet["TEMPLET_DICTIONARY"] ??= {}
@@ -126,7 +126,7 @@ export class GSkeleton extends ESkeleton {
             tFactory.on(Event.COMPLETE, this, this._parseComplete)
             tFactory.on(Event.ERROR, this, this._parseFail)
             tFactory.isParserComplete = false
-            tFactory.parseData(null, arraybuffer)
+            tFactory.parseData(null as unknown as Texture, arraybuffer)
         }
     }
 
@@ -198,7 +198,7 @@ export class GSkeleton extends ESkeleton {
     }
 
     // AnimationContent
-    getAnimation(aniIndex: number | string): AnimationContent {
+    getAnimation(aniIndex: number | string): AnimationContent | undefined {
         if (typeof aniIndex === "string") {
             return this.getAllAnimation().find(value => value.name === aniIndex)
         }
@@ -221,7 +221,7 @@ export class GSkeleton extends ESkeleton {
     }
 
     getAnimFrame(aniIndex: number | string) {
-        return this.getAnimation(aniIndex).totalKeyframeDatasLength
+        return this.getAnimation(aniIndex)?.totalKeyframeDatasLength ?? 0
     }
 
     get currAniIndex(): number {
@@ -239,21 +239,21 @@ export class GSkeleton extends ESkeleton {
 
     getSlotXByName(name: string) {
         const slot = this.getBoneSlotByName(name)
-        return slot ? slot.currDisplayData.transform.x : 0
+        return slot ? slot.currDisplayData?.transform.x : 0
     }
 
     getSlotYByName(name: string) {
         const slot = this.getBoneSlotByName(name)
-        return slot ? -slot.currDisplayData.transform.y : 0
+        return slot ? -slot.currDisplayData!.transform.y : 0
     }
 
     getSlotPointByName(name: string) {
         const slot = this.getBoneSlotByName(name)
-        return slot ? new Point(slot.currDisplayData.transform.x, -slot.currDisplayData.transform.y) : null
+        return slot ? new Point(slot.currDisplayData!.transform.x, -slot.currDisplayData!.transform.y) : null
     }
 
     getBoneSlotByName(name: string) {
-        let slot: BoneSlot = null
+        let slot: BoneSlot | undefined
         if (this.asSkeleton.templet) {
             slot = this.asSkeleton.getSlotByName(name)
         }
@@ -278,12 +278,12 @@ export class GSkeleton extends ESkeleton {
      * @param skin Texture 或 fairy gui 的路径  如：//package/skin
      */
     setSlotSkin(slotName: string, skin: Texture | string = GSkeleton.emptyTexture) {
-        let texture = null
-        if (skin && typeof skin === "string") {
+        let texture: Texture
+        if (typeof skin === "string") {
             const packageItem = UIPackage.getItemByURL(skin)
             if (packageItem) {
                 texture = packageItem.load() as Texture
-            }
+            } else throw "not skin"
         } else {
             texture = skin
         }
@@ -294,12 +294,12 @@ export class GSkeleton extends ESkeleton {
         }
         slot = this.getBoneSlotByName(slotName)
         if (slot) {
-            if (texture && texture != GSkeleton.emptyTexture) {
-                slot.currDisplayData.width = texture.width
-                slot.currDisplayData.height = texture.height
-                slot.currDisplayData.transform.scY = -1
+            if (texture != GSkeleton.emptyTexture) {
+                slot.currDisplayData!.width = texture.width
+                slot.currDisplayData!.height = texture.height
+                slot.currDisplayData!.transform.scY = -1
             }
-            slot.currDisplayData.texture = texture
+            slot.currDisplayData!.texture = texture
             slot.currTexture = texture
             this.clearCache()
         } else {
@@ -326,7 +326,7 @@ export class GSkeleton extends ESkeleton {
         }
     }
 
-    override on(type: string, thisObject: any, listener: Function, args: any[] = null) {
+    override on(type: string, thisObject: any, listener: Function, args?: any[]) {
         if (type == Event.STOPPED) {
             this.stoppedHandler.push(new Handler(thisObject, listener, args))
             return
@@ -348,7 +348,7 @@ export class GSkeleton extends ESkeleton {
         super.off(type, thisObject, listener)
     }
 
-    offAll(type: string = null) {
+    offAll(type?: string) {
         if (type == Event.STOPPED) {
             this.stoppedHandler.length = 0
             return
@@ -364,7 +364,7 @@ export class GSkeleton extends ESkeleton {
         }
         // tTemple?.destroy()
         while (this.stoppedHandler.length) {
-            this.stoppedHandler.shift().clear()
+            this.stoppedHandler.shift()!.clear()
         }
         Laya.timer.clearAll(this)
         super.dispose()

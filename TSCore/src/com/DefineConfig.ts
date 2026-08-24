@@ -19,6 +19,11 @@ export class DefineConfig {
     static init() {
         DefineConfig.defineLaya()
         DefineConfig.defineFairy()
+        const arr = [2,43,5,1,6,8,7,9,10]
+        console.log(
+            arr.at(2),
+            arr.at(-1)
+        )
     }
 
     /**
@@ -145,7 +150,7 @@ export class DefineConfig {
                 for (; i < n; i++) {
                     cmd = cmds[i]
                     if (cmd instanceof EDrawTextureCmd) {
-                        if (obj instanceof GSkeleton && obj.blendBoneSlotNames.indexOf(cmd.name) > -1) {
+                        if (cmd.name && obj instanceof GSkeleton && obj.blendBoneSlotNames.indexOf(cmd.name) > -1) {
                             // cmd.blendMode = BlendMode.ADD
                             //#__NO_MANGLE_PROP_START__
                             cmd.blendMode = "add"

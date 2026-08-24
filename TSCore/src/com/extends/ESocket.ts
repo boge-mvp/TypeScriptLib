@@ -33,7 +33,7 @@ export class ESocket {
      * @param type
      * @param obj
      */
-    sendEventManager(type: number, ...obj) {
+    sendEventManager(type: number, ...obj: ParamHandler[]) {
         let fun = this.eventManager["event_" + type]
         if (fun) {
             obj.unshift(fun)

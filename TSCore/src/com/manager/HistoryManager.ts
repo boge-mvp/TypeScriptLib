@@ -21,7 +21,7 @@ export class HistoryManager {
      * @param currentPage 当前的面板
      * @param newPage 添加的新面板
      */
-    static addHistory(currentPage: IRecord, newPage: IRecord) {
+    static addHistory(currentPage?: IRecord, newPage?: IRecord) {
         Log.debug("history add currentPage and newPage", currentPage, newPage)
         HistoryManager.history.push({current: currentPage, newPage: newPage})
     }
@@ -91,7 +91,7 @@ export class HistoryManager {
     /** 初始化是否创建一个历史页 默认 true */
     static initCreateHistory = true
 
-    static historyManager = {history: window.history, call: null}
+    static historyManager: { history: History, call?: Function } = {history: window.history}
 
     static init() {
         if (!App.enableHistory) return

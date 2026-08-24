@@ -2,7 +2,7 @@ export class EDrawTextureCmd extends Laya.DrawTextureCmd {
 
     /** 骨骼名字
      * @default null */
-    name: string
+    name: Nullable<string>
 
 
     override recover() {

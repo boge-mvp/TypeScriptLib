@@ -36,7 +36,7 @@ export class SpineUtils {
         }
         if (skeleton.asSkeleton.url == url && skeleton.asSkeleton.templet) {
             // loaderComplete && loaderComplete.run()
-            SpineUtils.parseComplete(skeleton, nameOrIndex, loop, loaderComplete, null)
+            SpineUtils.parseComplete(skeleton, nameOrIndex, loop, loaderComplete)
             return
         }
         if (aniMode == -1) aniMode = skeleton.aniMode
@@ -51,7 +51,7 @@ export class SpineUtils {
 
     private static parseComplete(skeleton: GSkeleton | GSpineSkeleton,
                                  nameOrIndex: string | number | (string | number)[] | ISkeletonPlay,
-                                 loop: boolean, loaderComplete: ParamHandler, fac?: Laya.Templet) {
+                                 loop: boolean, loaderComplete: Nullable<ParamHandler>, fac?: Laya.Templet) {
         runFun(loaderComplete)
         if (!Array.isArray(nameOrIndex) && typeof nameOrIndex === "object") {
             runFun(nameOrIndex.loaderComplete)
@@ -65,15 +65,17 @@ export class SpineUtils {
      * @param optional
      * @param skeletonClass 指定一个类型 GSpineSkeleton、GSkeleton
      */
-    static createSpine<T extends new () => GSkeleton | GSpineSkeleton | undefined>(url: string | ISkeletonData,
-                                                                                   optional?: ISkeletonData | T,
+    static createSpine<T extends new () => GSkeleton | GSpineSkeleton | undefined>(url: string | ISkeletonData | Nullish,
+                                                                                   optional?: ISkeletonData | T | Nullish,
                                                                                    skeletonClass?: T) {
 
         if (optional && !this.isInterface(optional)) {
             skeletonClass = optional
             optional = null
         }
-
+        if (!url) {
+            throw "The url must have a non-null"
+        }
         if (typeof url !== "string") {
             optional = url
             url = optional.url
@@ -88,14 +90,14 @@ export class SpineUtils {
             skeletonClass = optional.classType as T
         }
 
-        if (!url && !skeletonClass) {
-            throw "The url or skeletonClass must have a non-null"
-        }
-
         // @ts-ignore
         skeletonClass ??= Laya.Utils.getFileExtension(url) === "json" ? GSpineSkeleton : GSkeleton
 
-        let skeleton = new skeletonClass()
+        if (!skeletonClass) {
+            throw "The skeletonClass must have a non-null"
+        }
+
+        let skeleton = new skeletonClass()!
 
         if (skeleton instanceof GSpineSkeleton) {
             if (optional.ver) {
@@ -146,7 +148,7 @@ export class SpineUtils {
      * 判断是否是接口 用 prototype 是否存在判断
      * @param optional
      */
-    static isInterface(optional): optional is ISkeletonData {
+    static isInterface(optional: any): optional is ISkeletonData {
         return !("prototype" in optional)
     }
 

@@ -32,6 +32,7 @@ const {PartialCompilerOptions} = require('@rollup/plugin-typescript')
 const rollupTerser = require("@rollup/plugin-terser")
 const {Options} = require("@rollup/plugin-terser")
 const {SrcOptions} = require("vinyl-fs")
+const nodeResolve = require("@rollup/plugin-node-resolve").default
 
 /*************************** 创建新的打包代码方法 *************************/
 
@@ -471,7 +472,8 @@ async function rollupPack(inputFile, outName, options) {
         sourcemap: false,
         filterRoot: false,
         minify: false,
-        plugins: []
+        plugins: [],
+        bundleTslib: false
     })
     const localPath = process.cwd()
     const outDir = path.resolve(localPath, options.outDir || "")
@@ -487,6 +489,7 @@ async function rollupPack(inputFile, outName, options) {
     const inputCode = await decorators(inputFile)
     let parsedCompilerOptions
     const plugins = [
+        options.bundleTslib && nodeResolve({resolveOnly: ["tslib"]}),
         {
             name: "virtual-main",
             order: "pre",
@@ -512,7 +515,12 @@ async function rollupPack(inputFile, outName, options) {
             async load(id) {
                 const input = await this.resolve(inputFile)
                 if (id === input.id) {
-                    const code = ts.transpile(inputCode, parsedCompilerOptions)
+                    let code = ts.transpile(inputCode, parsedCompilerOptions)
+                    if (Array.isArray(options.bundleTslib) && options.bundleTslib.length > 0) {
+                        // 强制白名单：import 引用使 treeshake 保留 helper；直接挂 window 全局而非 IIFE 导出对象
+                        const assigns = options.bundleTslib.map(fn => `window.${fn} = ${fn};`).join("\n")
+                        code = `import {${options.bundleTslib.join(", ")}} from "tslib";\n${assigns}\n` + code
+                    }
                     return code
                 }
             }
@@ -574,8 +582,9 @@ async function rollupPack(inputFile, outName, options) {
     return new Promise((resolve, reject) => {
         rollupStream({
             input: inputFile,
-            treeshake: false,// 删除无调用代码
-            external: ["tslib"],// 排除 tslib，不将其打包进最终文件
+            // bundleTslib 开启时启用摇树以按需内联 tslib helper；默认关闭以保留全量代码
+            treeshake: !!options.bundleTslib,// 删除无调用代码
+            external: options.bundleTslib ? [] : ["tslib"],// 排除 tslib，不将其打包进最终文件
             output: {
                 // compact: true, // 去除多余缩进
                 format: 'iife',
@@ -584,7 +593,7 @@ async function rollupPack(inputFile, outName, options) {
                 name: outName,
                 extend: true,
                 sourcemap: options.sourcemap, // rollup不处理sourcemap映射
-                globals: {
+                globals: options.bundleTslib ? {} : {
                     tslib: "window"  // 告诉 Rollup 将 tslib 视为全局变量
                 }
             },

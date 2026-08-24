@@ -49,7 +49,7 @@ function Fgui(name: string): any {
             configurable: true,
             get(this: fgui.GComponent) {
                 const pathSegments = name.split(".")
-                let current: fgui.GObject = this
+                let current: Nullable<fgui.GObject> = this
                 let obj = null
                 const classTarget = Reflect.getMetadata("design:type", targetPrototype, propertyKey)
                 switch (true) {
@@ -106,7 +106,7 @@ function Fgui(name: string): any {
  * }
  */
 function fguiFindChild(target: fgui.GComponent, childs: string[]) {
-    let obj: fgui.GObject = target
+    let obj: Nullable<fgui.GObject> = target
     // 遍历子对象名称数组，逐层查找子对象
     for (const child of childs) {
         if (obj instanceof fgui.GComponent) {
@@ -200,7 +200,7 @@ class RandomTimer {
 
 class RandomTimerSingle extends RandomTimer {
 
-    protected value: number
+    protected value?: number
 
     static override create(min: number = 0, max: number = 100) {
         return new RandomTimerSingle(min, max)

@@ -17,10 +17,10 @@ export class Upload {
     }
 
     private _file: any
-    private target: Sprite
-    private inputWidth: number
-    private inputHeight: number
-    private target2: Sprite
+    private target?: Sprite
+    private inputWidth!: number
+    private inputHeight!: number
+    private target2?: Sprite
 
     get nativeFile() {
         this._file ??= Browser.getElementById("upload")
@@ -66,11 +66,11 @@ export class Upload {
         this.nativeFile.onchange = null
         Browser.removeElement(Browser.getElementById("upload"))
         this.focus = false
-        this.target = null
+        this.target = undefined
         this._file = null
         Laya.stage.off(Laya.Event.FOCUS, this, this.focusHandler)
         Laya.stage.off(Laya.Event.BLUR, this, this.blurHandler)
-        this.target2.off(Laya.Event.UNDISPLAY, this, this.hide)
+        this.target2?.off(Laya.Event.UNDISPLAY, this, this.hide)
     }
 
     show(target: Sprite, target2: Sprite) {

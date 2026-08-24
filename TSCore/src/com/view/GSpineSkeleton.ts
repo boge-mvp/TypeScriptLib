@@ -8,7 +8,7 @@ import {ESkeleton} from "../extends/ESkeleton";
 export class GSpineSkeleton extends ESkeleton {
 
     ver: SpineVersion
-    template: Laya.SpineTemplet
+    template?: Laya.SpineTemplet
     autoSize = false
 
     constructor(ver: SpineVersion = SpineVersion.v3_8) {
@@ -52,7 +52,7 @@ export class GSpineSkeleton extends ESkeleton {
     }
 
     private onError() {
-        this._spineResPath = null
+        this._spineResPath = undefined
     }
 
     private onComplete(spine: SpineTempletBase) {
@@ -126,8 +126,8 @@ export class GSpineSkeleton extends ESkeleton {
         return this.asSkeleton.templet?.skeletonData?.skins
     }
 
-    getAnimation(aniIndex: number | string): spine.Animation {
-        let animation: spine.Animation
+    getAnimation(aniIndex: number | string): spine.Animation | undefined {
+        let animation: Nullable<spine.Animation>
         if (typeof aniIndex === "string") {
             animation = this.getAllAnimation().find(value => value.name === aniIndex)
         } else animation = this.getAllAnimation()[aniIndex]
@@ -149,7 +149,7 @@ export class GSpineSkeleton extends ESkeleton {
     }
 
     getAnimFrame(aniIndex: number | string) {
-        return this.getAnimation(aniIndex).timelines.length
+        return this.getAnimation(aniIndex)?.timelines?.length ?? 0
     }
 
     get currAniIndex() {
@@ -168,7 +168,7 @@ export class GSpineSkeleton extends ESkeleton {
     }
 
 
-    override on(type: string, thisObject: any, listener: Function, args: any[] = null) {
+    override on(type: string, thisObject: any, listener: Function, args?: any[]) {
         if (type == Event.STOPPED) {
             this.stoppedHandler.push(new Laya.Handler(thisObject, listener, args))
             return
@@ -198,7 +198,7 @@ export class GSpineSkeleton extends ESkeleton {
         super.off(type, thisObject, listener)
     }
 
-    offAll(type: string = null) {
+    offAll(type?: string) {
         if (type == Event.STOPPED) {
             this.stoppedHandler.length = 0
             return

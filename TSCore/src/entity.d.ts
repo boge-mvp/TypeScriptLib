@@ -264,7 +264,7 @@ declare interface IRunApplication {
 }
 
 declare type PointType = { x?: number, y?: number }
-declare type RectangleType = { x?: number, y?: number, width?: number, height?: number }
+declare type RectangleType = { x: number, y: number, width: number, height: number }
 
 /**
  * 历史页面导航
@@ -586,13 +586,13 @@ declare type LoadRes = {
     runLoad?: boolean
     //------------  Laya 的数据
 
-    size?: number
+    size: number
 
     priority?: number
 
     useWorkerLoader?: boolean
 
-    progress?: number
+    progress: number
 
     group?: string
 

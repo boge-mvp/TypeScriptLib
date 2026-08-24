@@ -33,23 +33,23 @@ export class ValueSwitcher<T> {
     /** 值显示对象 */
     readonly displayLabel: GTextField
     /** 变动数据的存储库 */
-    private _values: T[]
+    private _values!: T[]
     /** 值变更回调 */
-    onValueChange: ((value: T) => void) | Laya.Handler
+    onValueChange?: ((value: T) => void) | Laya.Handler
     /** 值变更前回调 如果返回false 将停止继续执行 */
-    onValueChangeBefore: ((value: T, index: number) => boolean) | Laya.Handler
+    onValueChangeBefore?: ((value: T, index: number) => boolean) | Laya.Handler
     /** 是否启用到达边界后禁用按钮 默认false */
-    autoDisableButtons: boolean
+    autoDisableButtons?: boolean
     /** 当前正在读取值的下标 */
     protected _valueIndex = 0
     /** 上一个值的下班 */
     protected _previousIndex = 0
     /** 是否启用 */
     private isEnabled = true
-    private increaseLongPressKit: LongPressKit
-    private decreaseLongPressKit: LongPressKit
+    private increaseLongPressKit?: LongPressKit
+    private decreaseLongPressKit?: LongPressKit
     /** 动态值获取器 */
-    dynamicValueProvider: (() => T) | Laya.Handler
+    dynamicValueProvider?: (() => T) | Laya.Handler
     /**
      * 通过按钮进行切换值是否循环
      */
@@ -90,7 +90,7 @@ export class ValueSwitcher<T> {
         } else {
             this.increaseLongPressKit?.dispose()
             this.decreaseLongPressKit?.dispose()
-            this.increaseLongPressKit = this.decreaseLongPressKit = null
+            this.increaseLongPressKit = this.decreaseLongPressKit = undefined
             this.increaseBtn.onClick(this, this.onValueChangeHandler, [1])
             this.decreaseBtn.onClick(this, this.onValueChangeHandler, [2])
         }
@@ -198,7 +198,7 @@ export class ValueSwitcher<T> {
             }
             this._previousIndex = this._valueIndex
             this._valueIndex = index
-            this.displayLabel.text = newValue.toString()
+            this.displayLabel.text = newValue + ""
             this.checkAutoDisable()
             if (triggerEvent) this.dispatchValueChangeEvent(newValue)
         }
@@ -291,8 +291,8 @@ export class ValueSwitcher<T> {
     dispose() {
         this.increaseLongPressKit?.dispose()
         this.decreaseLongPressKit?.dispose()
-        this.increaseLongPressKit = null;
-        this.decreaseLongPressKit = null;
+        this.increaseLongPressKit = undefined;
+        this.decreaseLongPressKit = undefined;
     }
 
     /** 检查自动启用停止 */

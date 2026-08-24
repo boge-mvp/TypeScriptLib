@@ -109,7 +109,7 @@ export class TimerKit {
      * @param interval 执行间隔时间（毫秒），默认为 0 表示每次帧更新都执行
      * @param custom 可选的自定义执行条件函数
      */
-    static addHandler(target: GObject, fun: (...args) => any, interval = 0, custom?: () => boolean) {
+    static addHandler(target: GObject, fun: (...args: any) => any, interval = 0, custom?: () => boolean) {
         if (!target || !fun) return
         let handler = this.getHandler(target, fun)
         if (handler) {
@@ -181,23 +181,23 @@ class TaskHandler {
     /**
      * 关联的目标对象
      */
-    target: GObject
+    target!: GObject
 
     /**
      * 自定义执行条件函数，当该函数返回 true 时任务会无视默认的可见性检查而强制执行
      * 该函数不接收参数，需要在函数内部自行获取所需状态来决定是否应该执行任务
      */
-    customConditions: () => boolean
+    customConditions?: () => boolean
 
     /**
      * 实际要执行的回调函数
      */
-    handler: (...args) => any
+    handler!: (...args: any) => any
 
     /**
      * 执行间隔时间（毫秒）
      */
-    interval: number
+    interval!: number
     /**
      * 执行帧间隔
      */
@@ -216,7 +216,7 @@ class TaskHandler {
     /**
      * 上次执行的时间戳
      */
-    lastRunTime: number
+    lastRunTime!: number
 
     /**
      * 初始化任务处理器的数据
@@ -226,7 +226,7 @@ class TaskHandler {
      * @param custom 自定义执行条件函数（可选）
      * @returns 返回自身实例以支持链式调用
      */
-    initData(target: GObject, fun: (...args) => any, interval = 0, custom?: () => boolean) {
+    initData(target: GObject, fun: (...args: any) => any, interval = 0, custom?: () => boolean) {
         this.target = target
         this.handler = fun
         this.customConditions = custom

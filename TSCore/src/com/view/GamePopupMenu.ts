@@ -9,8 +9,8 @@ export type PopupMenuConfig = {/** 方向 */ dir?: PopupDirection | boolean,/** 
 
 export class GamePopupMenu extends PopupMenu {
 
-    private target: GButton
-    closeHandler: ParamHandler
+    private target?: GButton
+    closeHandler?: ParamHandler
 
     constructor(resourceURL?: string) {
         super(resourceURL)
@@ -52,7 +52,7 @@ export class GamePopupMenu extends PopupMenu {
         return item
     }
 
-    addSelectIconItem(caption: string, select: string, handler: Laya.Handler = null) {
+    addSelectIconItem(caption: string, select: string, handler?: Laya.Handler) {
         let item: GButton = this._list.addItemFromPool().asButton;
         item.icon = caption;
         item.selectedIcon = select;

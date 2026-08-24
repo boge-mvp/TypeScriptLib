@@ -8,10 +8,10 @@ import {GSpineSkeleton} from "./GSpineSkeleton";
  */
 export class SkeletonWindow extends EWindow {
 
-    protected skeleton: GSkeleton | GSpineSkeleton
+    protected skeleton!: GSkeleton | GSpineSkeleton
     protected loadComplete = false
     protected waitShow = false
-    protected skeletonData: ISkeletonData
+    protected skeletonData!: ISkeletonData
 
     protected override onInit(data?: ISkeletonData) {
         super.onInit();
@@ -19,7 +19,7 @@ export class SkeletonWindow extends EWindow {
             this.skeletonData = data
             const newData: ISkeletonData = Object.create(data)
             newData.loaderComplete = this._onLoadComplete.bind(this)
-            this.skeleton = SpineUtils.createSpine(newData)
+            this.skeleton = SpineUtils.createSpine(newData)!
             this.addChild(this.skeleton)
         } else throw Error("error data null")
     }

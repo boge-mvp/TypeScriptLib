@@ -32,7 +32,7 @@ export class DateUtils {
         //		Log.debug(localOffset)
         let tempStr = ""
         let match = fmt.match(/(y+)/)
-        if (match?.length > 0) {
+        if (match && match.length > 0) {
             tempStr = match[0]
             if (isUTC) {
                 fmt = fmt.replace(tempStr, (date.getUTCFullYear() + '').substring(4 - tempStr.length))
@@ -40,24 +40,26 @@ export class DateUtils {
                 fmt = fmt.replace(tempStr, (date.getFullYear() + '').substring(4 - tempStr.length))
             }
         }
-        let o = {
-            'M+': (isUTC ? date.getUTCMonth() : date.getMonth()) + 1,
-            'd+': (isUTC ? date.getUTCDate() : date.getDate()),
-            'h+': ((isUTC ? date.getUTCHours() : date.getHours()) % 12),
-            'H+': (isUTC ? date.getUTCHours() : date.getHours()),
-            'm+': (isUTC ? date.getUTCMinutes() : date.getMinutes()),
-            's+': (isUTC ? date.getUTCSeconds() : date.getSeconds()),
-            'S+': (isUTC ? date.getUTCMilliseconds() : date.getMilliseconds()),
+        let o: { [key: string]: string | number } = {
+            "M+": (isUTC ? date.getUTCMonth() : date.getMonth()) + 1,
+            "d+": (isUTC ? date.getUTCDate() : date.getDate()),
+            "h+": ((isUTC ? date.getUTCHours() : date.getHours()) % 12),
+            "H+": (isUTC ? date.getUTCHours() : date.getHours()),
+            "m+": (isUTC ? date.getUTCMinutes() : date.getMinutes()),
+            "s+": (isUTC ? date.getUTCSeconds() : date.getSeconds()),
+            "S+": (isUTC ? date.getUTCMilliseconds() : date.getMilliseconds()),
             "E+": DateUtils.weekday[(isUTC ? date.getUTCDay() : date.getDay())]
         }
 //		Log.debug(o)
         // 遍历这个对象
+
         for (let k in o) {
             match = fmt.match(new RegExp("(" + k + ")"))
-            if (match?.length > 0) {
+            if (match && match.length > 0) {
 //				 Log.debug('${k}')
                 tempStr = match[0]
-                fmt = fmt.replace(tempStr, tempStr.length == 1 ? o[k] : ("00" + o[k]).substring(("" + o[k]).length))
+                const v = o[k].toString()
+                fmt = fmt.replace(tempStr, tempStr.length == 1 ? v : ("00" + v).substring(v.length))
             }
         }
         return fmt
@@ -71,7 +73,7 @@ export class DateUtils {
      * @param time1
      * @param time2
      */
-    static compareTime(time1, time2) {
+    static compareTime(time1: string, time2: string) {
         if (Date.parse(time1.replace(/-/g, "/")) > Date.parse(time2.replace(/-/g, "/"))) {
             return 1
         } else if (Date.parse(time1.replace(/-/g, "/")) < Date.parse(time2.replace(/-/g, "/"))) {
@@ -142,6 +144,7 @@ export class DateUtils {
         let date = new Date(time)
         date = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
         let arr = date.toString().match(/([A-Z]+)([-+]\d+:?\d+)/)
+        if (arr == null) return
         return {'name': arr[1], 'value': arr[2]}
     }
 
@@ -206,7 +209,7 @@ export class DateUtils {
     static calculateTimeByMillisecond(time: number) {
         // 如果diff已经是负数，意味着时间已经过去，这里假设我们只处理未来的时间
         if (time <= 0) {
-            return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+            return {days: 0, hours: 0, minutes: 0, seconds: 0};
         }
         // 计算剩余的天数、小时数、分钟数和秒数
         const days = Math.floor(time / (1000 * 60 * 60 * 24))
@@ -215,7 +218,6 @@ export class DateUtils {
         const seconds = Math.floor((time % (1000 * 60)) / 1000)
         return {days, hours, minutes, seconds, timeDifference: time}
     }
-
 
 
 }

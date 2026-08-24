@@ -31,7 +31,7 @@ export class Path {
         let isNoWebp = url.indexOf("nowebp=1") !== -1
         url = url.split("?")[0]
         let version = Laya.URL.version[url]
-        Path.formatPath.sort((a, b) => a.order - a.order)
+        Path.formatPath.sort((a, b) => (a.order || 100) - (a.order || 100))
         for (const format of Path.formatPath) {
             url = format.path?.(url) ?? url
             version = format.version?.(url, version) ?? version

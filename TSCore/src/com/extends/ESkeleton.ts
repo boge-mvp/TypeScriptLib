@@ -11,7 +11,7 @@ export abstract class ESkeleton extends mixinExt(BezierCurves, ActionEvent, GCom
     /** 播放动画数组的索引 */
     protected playGroupIndex = 0
     /** 缓存每次播放的名字或下标 */
-    nameOrIndex: string | number
+    nameOrIndex!: string | number
     /** 播放结束执行函数 */
     protected stoppedHandler: Laya.Handler[] = []
     /**
@@ -22,14 +22,14 @@ export abstract class ESkeleton extends mixinExt(BezierCurves, ActionEvent, GCom
     /**
      * 播放数据
      */
-    protected skeletonPlay: ISkeletonPlay
+    protected skeletonPlay?: ISkeletonPlay
     /** 加载路径 */
-    protected _aniPath: string
+    protected _aniPath?: string
     /**
      * 当前spine正在使用的资源路径
      */
-    protected _spineResPath: string
-    protected _complete: ParamHandler
+    protected _spineResPath?: string
+    protected _complete?: ParamHandler
     /**
      * 播放循环次数
      * @internal
@@ -116,8 +116,8 @@ export abstract class ESkeleton extends mixinExt(BezierCurves, ActionEvent, GCom
             skeletonPlay.loop ??= true
             this.skeletonPlay = skeletonPlay
         }
-        let delayPlay = this.skeletonPlay.delayPlay
-        if (Array.isArray(this.skeletonPlay.nameOrIndex)) {
+        let delayPlay = this.skeletonPlay?.delayPlay
+        if (Array.isArray(this.skeletonPlay?.nameOrIndex)) {
             playGroupIndex = playGroupIndex < 0 ? 0 : playGroupIndex
             let play = this.skeletonPlay.nameOrIndex[playGroupIndex]
             if (typeof play === "object") {
@@ -126,7 +126,7 @@ export abstract class ESkeleton extends mixinExt(BezierCurves, ActionEvent, GCom
             }
             this.nameOrIndex = play
         } else {
-            this.nameOrIndex = this.skeletonPlay.nameOrIndex ?? 0
+            this.nameOrIndex = this.skeletonPlay?.nameOrIndex ?? 0
         }
         Laya.timer.clear(this, this._play)
         if (delayPlay && delayPlay > 0) {
@@ -141,18 +141,18 @@ export abstract class ESkeleton extends mixinExt(BezierCurves, ActionEvent, GCom
      * @internal
      */
     private _play() {
-        if (this.skeletonPlay.progress) {
+        if (this.skeletonPlay?.progress) {
             if ("before" in this.skeletonPlay.progress) {
                 runFun(this.skeletonPlay.progress.before, this.nameOrIndex)
             }
         }
-        let force = this.skeletonPlay.force ?? true
-        let start = this.skeletonPlay.start ?? 0
-        let end = this.skeletonPlay.end ?? 0
-        let freshSkin = this.skeletonPlay.freshSkin ?? true
-        let playAudio = this.skeletonPlay.playAudio ?? true
-        let playbackRate = this.skeletonPlay.playbackRate ?? this.playbackRate
-        if (Array.isArray(this.skeletonPlay.nameOrIndex)) {
+        let force = this.skeletonPlay?.force ?? true
+        let start = this.skeletonPlay?.start ?? 0
+        let end = this.skeletonPlay?.end ?? 0
+        let freshSkin = this.skeletonPlay?.freshSkin ?? true
+        let playAudio = this.skeletonPlay?.playAudio ?? true
+        let playbackRate = this.skeletonPlay?.playbackRate ?? this.playbackRate
+        if (Array.isArray(this.skeletonPlay?.nameOrIndex)) {
             let play = this.skeletonPlay.nameOrIndex[this.playGroupIndex]
             if (typeof play === "object") {
                 force = play.force ?? force
@@ -217,7 +217,7 @@ export abstract class ESkeleton extends mixinExt(BezierCurves, ActionEvent, GCom
                     return
                 }
                 // 当全局数组动画loop是false loopPlayIndex > -1
-                if (this.skeletonPlay.loopPlayIndex > -1 && this.skeletonPlay.loopPlayIndex < this.skeletonPlay.nameOrIndex.length) {
+                if (this.skeletonPlay.loopPlayIndex && this.skeletonPlay.loopPlayIndex > -1 && this.skeletonPlay.loopPlayIndex < this.skeletonPlay.nameOrIndex.length) {
                     this.playGroupIndex = this.skeletonPlay.loopPlayIndex
                     this.playAni(this.skeletonPlay, this.playGroupIndex)
                     return
@@ -230,7 +230,7 @@ export abstract class ESkeleton extends mixinExt(BezierCurves, ActionEvent, GCom
                         // @ts-ignore
                         len = (this as GSpineSkeleton).getAnimation(this.nameOrIndex ?? 0).timelines[0].getFrameCount()
                     } else if (this instanceof GSkeleton) {
-                        len = (this as GSkeleton).getAnimation(this.nameOrIndex ?? 0).totalKeyframeDatasLength
+                        len = (this as GSkeleton).getAnimation(this.nameOrIndex ?? 0)?.totalKeyframeDatasLength ?? 0
                     }
                     if (this.getAnimFrame(this.nameOrIndex ?? 0) > 1 || len > 1) {
                         // 若设置了延迟循环播放时间，则延时后播放；否则立即播放
@@ -245,7 +245,7 @@ export abstract class ESkeleton extends mixinExt(BezierCurves, ActionEvent, GCom
             }
             const fun = this.skeletonPlay.playComplete
             // 执行播放结束 并且没有循环播放 那么清理播放数据源
-            this.skeletonPlay = null
+            this.skeletonPlay = undefined
             // 执行播放完成的回调函数
             runFun(fun)
 
@@ -263,7 +263,7 @@ export abstract class ESkeleton extends mixinExt(BezierCurves, ActionEvent, GCom
     }
 
     stop() {
-        this.skeletonPlay = null
+        this.skeletonPlay = undefined
         Laya.timer.clearAll(this)
         this.asSkeleton.stop()
     }
@@ -288,7 +288,7 @@ export abstract class ESkeleton extends mixinExt(BezierCurves, ActionEvent, GCom
 
     abstract getAnimFrame(aniIndex: number | string): number
 
-    abstract getAnimation(aniIndex: number | string): AnimationContent | spine.Animation
+    abstract getAnimation(aniIndex: number | string): AnimationContent | spine.Animation | undefined
 
     abstract get currAniIndex(): number
 

@@ -128,7 +128,7 @@ String.prototype.toBoolean = function () {
 String.prototype.toInt = function () {
     let value = 0
     try {
-        value = parseInt(this)
+        value = parseInt(this.toString())
     } catch (e) {
     }
     return value
@@ -136,7 +136,7 @@ String.prototype.toInt = function () {
 String.prototype.toFloat = function () {
     let value = 0.0
     try {
-        value = parseFloat(this)
+        value = parseFloat(this.toString())
     } catch (e) {
     }
     return value

@@ -12,7 +12,7 @@ export class SocketClient extends Laya.EventDispatcher {
      * 原生平台 Socket 类路径配置
      * 如果为空则使用默认 Laya.Socket 实现
      */
-    static SOCKET_CLASS_PATH: string = null
+    static SOCKET_CLASS_PATH: Nullable<string> = null
 
     /**
      * 最大重连次数限制
@@ -49,7 +49,7 @@ export class SocketClient extends Laya.EventDispatcher {
     /**
      * 是否已认证标志
      */
-    protected isAuthenticated: boolean
+    protected isAuthenticated?: boolean
 
     /**
      * 客户端是否存活状态
@@ -83,7 +83,7 @@ export class SocketClient extends Laya.EventDispatcher {
     protected connect() {
         if (Laya.Render.isConchApp && !StringUtil.isEmpty(SocketClient.SOCKET_CLASS_PATH)) {
             // 使用原生平台特定 Socket 实现
-            this.socket = NativeUtils.PlatformClass.createClass(SocketClient.SOCKET_CLASS_PATH).newObject()
+            this.socket = NativeUtils.PlatformClass?.createClass(SocketClient.SOCKET_CLASS_PATH!).newObject()
             this.socket.call("connect", this.options.url)
         } else {
             // 使用标准 Laya.Socket 实现
@@ -152,7 +152,7 @@ export class SocketClient extends Laya.EventDispatcher {
      * 错误事件处理器
      * @param e 错误信息
      */
-    onError(e) {
+    onError(e: string | any) {
         if (typeof e !== "string") {
             e = e.data
         }

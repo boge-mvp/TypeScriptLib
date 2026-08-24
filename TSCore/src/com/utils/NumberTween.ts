@@ -9,13 +9,13 @@ export class NumberTween {
     private static nums: NumberTween[] = []
     private static _gid = 0
 
-    private gid: number
+    private gid!: number
     private value = 0
     private target: any
-    private complete: ParamHandler
-    private update: ((value: number) => void) | Handler
+    private complete?: ParamHandler
+    private update?: ((value: number) => void) | Handler
     /** 当前运行的动画 */
-    tween: Laya.Tween
+    tween?: Laya.Tween
 
     /**
      * 创建一个动画
@@ -29,7 +29,7 @@ export class NumberTween {
      * @param delay 延迟执行
      */
     static createTween(target: any, start = 0, end = 0, duration = 300,
-                       ease: Function = null, complete?: ParamHandler, update?: ((value: number) => void) | Handler, delay = 0) {
+                       ease?: Function, complete?: ParamHandler, update?: ((value: number) => void) | Handler, delay = 0) {
         if (start == end) {
             runFun(update, end)
             runFun(complete)
@@ -110,16 +110,16 @@ export class NumberTween {
     /** 直接完成动画 */
     completeTween() {
         this.tween?.complete()
-        this.tween = null
+        this.tween = undefined
     }
 
     /**
      * 销毁 并清理动画
      */
     dispose() {
-        this.update = null
-        this.complete = null
-        this.tween = null
+        this.update = undefined
+        this.complete = undefined
+        this.tween = undefined
         Laya.Tween.clearAll(this)
         this.removeTween(this.gid)
         Laya.Pool.recover(NumberTween.NAME, this)

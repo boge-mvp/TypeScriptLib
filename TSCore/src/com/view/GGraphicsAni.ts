@@ -3,7 +3,7 @@ import {GSkeleton} from "./GSkeleton"
 
 export class GGraphicsAni extends GraphicsAni {
 
-    boneSlotName = ""
+    override boneSlotName = ""
 
     static override create() {
         // 这里处理缓存动画

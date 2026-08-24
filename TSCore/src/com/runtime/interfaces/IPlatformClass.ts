@@ -7,6 +7,6 @@ export interface IPlatformClass extends IPlatform {
      * @param    args  构造函数的参数
      * @return  创建出来的对象
      */
-    newObject(...args): IPlatform
+    newObject(...args: any[]): IPlatform
 
 }

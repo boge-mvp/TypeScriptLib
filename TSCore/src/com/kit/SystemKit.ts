@@ -39,7 +39,7 @@ export class SystemKit {
         if (Browser.onMobile && App.inst.options.isNotchEnable) {
             let cacheNotch = 0
             let startTime = Browser.now() // 首次执行时间
-            function notchFun() {
+            const notchFun = ()=> {
                 const notch = SystemKit.notchHeight
                 if (notch > 0) {
                     Log.debug(`Successfully obtained the height of the bangs = ${notch}`)
@@ -56,7 +56,7 @@ export class SystemKit {
                 }
             }
 
-            function getNotchEnd() {
+            const getNotchEnd = () => {
                 cacheNotch = SystemKit.notchHeight
                 Log.debug(`notchHeight2=${cacheNotch}`)
                 value(cacheNotch)
@@ -115,7 +115,7 @@ class WakeLock {
         if ('wakeLock' in navigator) {
             try {
                 this._wakeLock = await (navigator as any).wakeLock?.request('screen')
-                this._wakeLock.onrelease = function (ev) {
+                this._wakeLock.onrelease = function (ev: any) {
                     console.log(ev)
                 }
                 this._wakeLock.addEventListener('release', (ev: Event) => {

@@ -5,7 +5,7 @@ import GObject = fgui.GObject
  */
 export class TwinkleAniUtils {
 
-    private callback: ParamHandler
+    private callback?: ParamHandler
 
     /**
      * 指定对象闪烁
@@ -34,7 +34,7 @@ export class TwinkleAniUtils {
     }
 
     dispose() {
-        this.callback = null
+        this.callback = undefined
         Laya.timer.clear(this, this.onTwinkle)
     }
 

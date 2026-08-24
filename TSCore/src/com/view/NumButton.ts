@@ -9,8 +9,8 @@ import {EButton} from "../extends/EButton"
 
 export class NumButton extends EButton {
 
-    private component: GLoader
-    private cornerMarker: GTextField
+    private component!: GLoader
+    private cornerMarker!: GTextField
     /** 绑定位置对象 */
     bindObject: any
     /** 偏移位置 */

@@ -10,23 +10,23 @@ import BoneSlot = Laya.BoneSlot
 
 export class GLoader3D extends GObject {
 
-    private _url: string
+    private _url: Nullable<string>
     private _align: string
     private _verticalAlign: string
-    private _autoSize: boolean
+    private _autoSize: Nullable<boolean>
     private _fill: number
-    private _shrinkOnly: boolean
+    private _shrinkOnly: Nullable<boolean>
     private _playing: boolean
     private _frame = 0
-    private _loop: boolean
-    private _animationName: string
-    private _skinName: string
+    private _loop: Nullable<boolean>
+    private _animationName?: string
+    private _skinName?: string
     private _color: string
-    private _contentItem: PackageItem
-    private _container: Sprite
-    private _content: Skeleton
+    private _contentItem?: PackageItem
+    private _container!: Sprite
+    private _content?: Skeleton
     private _updatingLayout = false
-    private loadSkeleton: Skeleton
+    private loadSkeleton?: Skeleton
     /** 是否有描点 */
     isAnchor = true
 
@@ -55,7 +55,7 @@ export class GLoader3D extends GObject {
         return this._url
     }
 
-    set url(value: string) {
+    set url(value: Nullable<string>) {
         if (this._url == value)
             return
 
@@ -64,8 +64,8 @@ export class GLoader3D extends GObject {
         this.updateGear(7)
     }
 
-    override get icon() {
-        return this._url
+    override get icon(): string {
+        return this._url ?? ""
     }
 
     override set icon(value: string) {
@@ -105,7 +105,7 @@ export class GLoader3D extends GObject {
         }
     }
 
-    get shrinkOnly() {
+    get shrinkOnly(): Nullable<boolean> {
         return this._shrinkOnly
     }
 
@@ -116,7 +116,7 @@ export class GLoader3D extends GObject {
         }
     }
 
-    get autoSize(): boolean {
+    get autoSize(): Nullable<boolean> {
         return this._autoSize
     }
 
@@ -153,7 +153,7 @@ export class GLoader3D extends GObject {
         }
     }
 
-    get animationName(): string {
+    get animationName(): Nullable<string> {
         return this._animationName
     }
 
@@ -164,7 +164,7 @@ export class GLoader3D extends GObject {
         }
     }
 
-    get skinName(): string {
+    get skinName(): Nullable<string> {
         return this._skinName
     }
 
@@ -175,7 +175,7 @@ export class GLoader3D extends GObject {
         }
     }
 
-    get loop(): boolean {
+    get loop(): Nullable<boolean> {
         return this._loop
     }
 
@@ -197,7 +197,7 @@ export class GLoader3D extends GObject {
         }
     }
 
-    get content(): Laya.Sprite {
+    get content(): Nullable<Laya.Sprite> {
         return null
     }
 
@@ -208,8 +208,8 @@ export class GLoader3D extends GObject {
         this.loadExternal()
     }
 
-    setSkeleton(skeleton: Skeleton, anchor: Point = null) {
-        this.url = null
+    setSkeleton(skeleton: Skeleton, anchor?: Point) {
+        this.url = undefined
         let bones = skeleton.templet.boneSlotArray
         let tempW: number = 0
         let tempH: number = 0
@@ -284,7 +284,7 @@ export class GLoader3D extends GObject {
 
         if (this._animationName) {
             if (this._playing)
-                this._content.play(this._animationName, this._loop)
+                this._content.play(this._animationName, this._loop || false)
             else
                 this._content.play(this._animationName, false, true, this._frame, this._frame)
         } else {
@@ -300,14 +300,14 @@ export class GLoader3D extends GObject {
 
     protected loadExternal() {
         this.loadSkeleton ??= new Skeleton()
-        this.loadSkeleton.load(this.url, Handler.create(this, this.loadEndHandler))
+        this.loadSkeleton.load(this.url!, Handler.create(this, this.loadEndHandler))
     }
 
     private loadEndHandler() {
         if (this.loadSkeleton) {
-            this._url = null
+            this._url = undefined
             this.setSkeleton(this.loadSkeleton)
-            this.loadSkeleton = null
+            this.loadSkeleton = undefined
         }
     }
 
@@ -384,14 +384,14 @@ export class GLoader3D extends GObject {
     }
 
     private clearContent() {
-        this._contentItem = null
+        this._contentItem = undefined
         if (this._content) {
             this._container.removeChild(this._content)
             this._content.destroy()
-            this._content = null
+            this._content = undefined
         }
         if (this.loadSkeleton) this.loadSkeleton.destroy()
-        this.loadSkeleton = null
+        this.loadSkeleton = undefined
     }
 
     protected override handleSizeChanged() {

@@ -10,7 +10,7 @@ Object.defineProperty(Array.prototype, "all", {value: Array.prototype.every})
 
 Object.defineProperty(Array.prototype, "distinctBy", {
     value: function (selector: (...args: any[]) => any) {
-        const map = {}
+        const map: { [key: string]: boolean } = {}
         const list = []
         for (let e of this) {
             const key = selector.call(this, e)

@@ -41,7 +41,7 @@ export class ELoader {
                 complete && complete.runWith(Array.isArray(content) ? [content] : content)
             })
         } else {
-            let resInfo = this._infoPool.length ? this._infoPool.pop() : new ResInfo()
+            let resInfo = this._infoPool.length ? this._infoPool.pop()! : new ResInfo()
             resInfo.url = url
             resInfo.type = type
             resInfo.cache = cache
@@ -84,7 +84,7 @@ export class ELoader {
                 complete && complete.runWith(Array.isArray(content) ? [content] : content)
             })
         } else {
-            let resInfo = this._infoPool.length ? this._infoPool.pop() : new ResInfo()
+            let resInfo = this._infoPool.length ? this._infoPool.pop()! : new ResInfo()
             resInfo.url = url
             resInfo.type = type
             resInfo.cache = false
@@ -93,7 +93,7 @@ export class ELoader {
             resInfo.createCache = cache
             resInfo.createConstructParams = constructParams;
             resInfo.createPropertyParams = propertyParams;
-            resInfo.group = null
+            resInfo.group = undefined
             resInfo.priority = priority
             resInfo.useWorkerLoader = false
             resInfo.complete = complete
@@ -104,7 +104,7 @@ export class ELoader {
     }
 
 
-    private loadAssets(arr: (string | LoadRes)[], complete: Handler, progress: Handler, type: string, priority: number, cache: boolean, group?: string) {
+    private loadAssets(arr: (string | LoadRes)[], complete?: Handler, progress?: Handler, type?: string, priority = 1, cache = true, group?: string) {
         let itemCount = arr.length
         let loadedCount = 0
         let totalSize = 0
@@ -112,17 +112,17 @@ export class ELoader {
         let success = true
         for (let i = 0; i < itemCount; i++) {
             let item = arr[i]
-            if (typeof item === "string") item = {url: item, type: type, size: 1, priority: priority}
+            if (typeof item === "string") item = {url: item, type: type, size: 1, priority: priority, progress: 0}
             if (!item.size) item.size = 1
             item.progress = 0
             totalSize += item.size
             items.push(item)
-            let progressHandler = progress ? Handler.create(null, loadProgress, [item], false) : null
-            let completeHandler = (complete || progress) ? Handler.create(null, loadComplete, [item]) : null
+            let progressHandler = progress ? Handler.create(null, loadProgress, [item], false) : undefined
+            let completeHandler = (complete || progress) ? Handler.create(null, loadComplete, [item]) : undefined
             this.load(item.url, completeHandler, progressHandler, item.type, item.priority || 1, cache, item.group || group, false, item.useWorkerLoader)
         }
 
-        function loadComplete(item: LoadRes, content?) {
+        function loadComplete(item: LoadRes, content?: any) {
             loadedCount++
             item.progress = 1
             if (!content) success = false
@@ -145,7 +145,7 @@ export class ELoader {
         }
     }
 
-    private _load(resInfo: ResInfo = null) {
+    private _load(resInfo: ResInfo) {
         ELoader.loader.formatURL(resInfo)
         const url = resInfo.url.replace(/\{host}/g, window.location.host)
         if (resInfo.createCache) {
@@ -188,9 +188,10 @@ export class ELoader {
         if (url.indexOf(":") == -1 && allBaseUrl && allBaseUrl.length > 0) { // 不是完整路径走这里
             let tempUrl = null
             for (const baseUrl of allBaseUrl) {
-                if (url.charAt(0) != "/")
+                if (url.charAt(0) != "/") {
                     tempUrl = baseUrl + URL.customFormat(url)
-                content = Loader.getRes(tempUrl)
+                    content = Loader.getRes(tempUrl)
+                }
                 if (content) {
                     return content
                 }
@@ -212,9 +213,10 @@ export class ELoader {
             let tempUrl = null
             for (const baseUrl of allBaseUrl) {
                 //如果不是全路径，处理url
-                if (url.charAt(0) != "/")
+                if (url.charAt(0) != "/") {
                     tempUrl = baseUrl + URL.customFormat(url)
-                Loader.clearRes(tempUrl)
+                    Loader.clearRes(tempUrl)
+                }
             }
         }
         Loader.clearRes(url)
@@ -250,19 +252,19 @@ export class ELoader {
 
 class ResInfo {
     /** 当前单次加载文件使用的域名下标 */
-    useIndex: number
+    useIndex!: number
 
-    url: string
-    type: string
-    cache: boolean
-    ignoreCache: boolean
-    originalUrl: string
-    group: string
-    createCache: boolean
-    complete: Laya.Handler
-    progress: Laya.Handler
-    priority: number
-    useWorkerLoader: boolean
+    url!: string
+    type?: string
+    cache!: boolean
+    ignoreCache?: boolean
+    originalUrl?: string
+    group?: string
+    createCache!: boolean
+    complete?: Laya.Handler
+    progress?: Laya.Handler
+    priority!: number
+    useWorkerLoader?: boolean
 
     createConstructParams: any
     createPropertyParams: any

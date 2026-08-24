@@ -4,7 +4,7 @@ export class BindInputKit {
     private component: fgui.GComponent
     private readonly array: (fgui.GTextInput | fgui.GButton)[]
     /** 当绑定的输入组件 内容修改后调用 */
-    private callback: ParamHandler
+    private callback?: ParamHandler
 
     /**
      *

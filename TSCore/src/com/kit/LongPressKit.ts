@@ -11,7 +11,7 @@ export class LongPressKit {
     /** 长按后回调方法 */
     private readonly callback: ParamHandler
     /** 玩家长时间按下 */
-    private _isApeHold: boolean
+    private _isApeHold?: boolean
     /** 执行回调方法  附带参数 */
     private readonly args: any[]
     /** 是否单次调用 */
@@ -58,7 +58,7 @@ export class LongPressKit {
     private onLoopClick() {
         if (this._isApeHold) {
             // 执行一次点击
-            this.onClick(null)
+            this.onClick()
             // 单次执行  直接执行清理结束操作
             if (this.single) this.onUp()
         } else {
@@ -66,7 +66,7 @@ export class LongPressKit {
         }
     }
 
-    private onClick(e: Laya.Event) {
+    private onClick(e?: Laya.Event) {
         e?.stopPropagation()
         runFun.apply(null, [this.callback, ...this.args])
     }

@@ -19,22 +19,22 @@ export class MessageTip extends fgui.GComponent {
      * @default 1800
      */
     static displayTime = 1800
-    content: GTextField
-    tween: Tween
+    content!: GTextField
+    tween?: Tween
     /** 缓存的字体大小 */
-    tempFontSize: number
+    tempFontSize!: number
     /** 当前执行的步骤 */
-    private steps: number
+    private steps!: number
 
     /** 依附的父组件 默认 GRoot */
-    rootParent: fgui.GComponent
+    rootParent?: fgui.GComponent
 
     static CREATE_FUI_URL = "//common/MessageTip"
 
     protected override constructFromXML(xml: any) {
         super.constructFromXML(xml)
         this.touchable = false
-        this.content = this.getChild("n1").asTextField
+        this.content = this.getChildByNames("title", "n1")!.asTextField
         this.tempFontSize = this.content.fontSize
 
     }
@@ -61,8 +61,8 @@ export class MessageTip extends fgui.GComponent {
         if (!UIPackage.getByName("common") || !value)
             return
         if (Array.isArray(value)) {
-            value[0] = LanguageUtils.inst.getStr(value[0])
-            value = StringUtil.format.apply(null, value) as string
+            const format = LanguageUtils.inst.getStr(value[0])
+            value = StringUtil.format(format, value.slice(1))
         } else {
             value = LanguageUtils.inst.getStr(value)
         }
@@ -75,7 +75,7 @@ export class MessageTip extends fgui.GComponent {
 
     private static createMsgTip() {
         if (MessageTip.cacheContent.length < 1) return
-        const tipData = MessageTip.cacheContent.shift()
+        const tipData = MessageTip.cacheContent.shift()!
         let mt: MessageTip = Pool.getItemByCreateFun(MessageTip.NAME, this.createHandler)
         mt.showMes(tipData.content, tipData.time)
 
@@ -94,7 +94,7 @@ export class MessageTip extends fgui.GComponent {
             } else { // 至少有3个值了
                 if (msg.steps < 3) {
                     Tween.clearAll(msg)
-                    msg.tween = null
+                    msg.tween = undefined
                     msg.movePoint(((fgui.GRoot.inst.height - msg.height) >> 1) - msg.moveUpStep * 2)
                     if (msg.steps === 1) msg.alpha = msg.scaleX = 1
                     msg.showEnd(400)
@@ -155,7 +155,7 @@ export class MessageTip extends fgui.GComponent {
     private hideEnd() {
         this.steps = 3
         Tween.clearAll(this)
-        this.tween = null
+        this.tween = undefined
         this.removeRelation(fgui.GRoot.inst, RelationType.Width)
         this.removeFromParent()
         Pool.recover(MessageTip.NAME, this)
@@ -167,9 +167,10 @@ export class MessageTip extends fgui.GComponent {
     /** 清楚所有提示 */
     static clearAll() {
         MessageTip.cacheContent.splice(0, MessageTip.cacheContent.length)
-        while (MessageTip.usePool.length) {
-            MessageTip.usePool.shift().hideEnd()
-        }
+        MessageTip.usePool.removeAll((value)=> {
+            value.hideEnd()
+            return true
+        })
     }
 
     getParent(): fgui.GComponent {

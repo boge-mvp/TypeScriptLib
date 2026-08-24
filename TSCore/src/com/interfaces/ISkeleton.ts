@@ -4,7 +4,7 @@ export interface ISkeleton {
      * 通过索引得动画名称
      * @param index
      */
-    getAniNameByIndex(index: number): string
+    getAniNameByIndex(index: number): Nullable<string>
 
     /**
      * 通过动画名称得索引
@@ -16,7 +16,7 @@ export interface ISkeleton {
      * 通过索引获取动画
      * @param aniIndex
      */
-    getAnimation(aniIndex: number): AnimationContent | spine.Animation
+    getAnimation(aniIndex: number): AnimationContent | spine.Animation | undefined
 
     /**
      * 通过索引获取动画时长

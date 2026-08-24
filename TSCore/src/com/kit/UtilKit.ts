@@ -102,7 +102,7 @@ export class UtilKit {
         return false
     }
 
-    static evil(fn) {
+    static evil(fn: string) {
         //一个变量指向Function，防止有些前端编译工具报错
         return new Function('return ' + fn)()
     }
@@ -119,7 +119,10 @@ export class UtilKit {
         script.type = "text/javascript"
         script.text = content
         document.getElementsByTagName('head')[0].appendChild(script)
-        removeLast && document.head.removeChild(document.head.lastChild)
+        if (removeLast) {
+            const last = document.head.lastChild
+            last && document.head.removeChild(last)
+        }
     }
 
     /**
@@ -174,7 +177,7 @@ export class UtilKit {
      * aes加密
      * @deprecated
      */
-    static encrypt(word, key = "abcdefgabcdefg12") {
+    static encrypt(word: string, key = "abcdefgabcdefg12") {
         let keyWordArray = CryptoJS.enc.Utf8.parse(key)
         let srcs = CryptoJS.enc.Utf8.parse(word)
         let encrypted: any = CryptoJS.AES.encrypt(srcs, keyWordArray, {
@@ -188,7 +191,7 @@ export class UtilKit {
      *  aes解密
      *  @deprecated
      */
-    static decrypt(word, key = "abcdefgabcdefg12") {
+    static decrypt(word: CryptoJS.lib.CipherParamsData, key = "abcdefgabcdefg12") {
         let keyWordArray = CryptoJS.enc.Utf8.parse(key)
         let decrypt = CryptoJS.AES.decrypt(word, keyWordArray, {
             mode: CryptoJS.mode.ECB,
@@ -305,7 +308,7 @@ export class UtilKit {
             right = right ? (right.length >= 2 ? '.' + right.substring(0, 2) : '.' + right + '0') : '.00'
             if (!fixed) right = ""
             let temp = left.split('').reverse().join('').match(/(\d{1,3})/g)
-            return (parseFloat(money) < 0 ? "-" : "") + temp.join(',').split('').reverse().join('') + right
+            return (parseFloat(money) < 0 ? "-" : "") + temp?.join(',')?.split('')?.reverse()?.join('') + right
         } else if (money === 0) {   //注意===在这里的使用，如果传入的money为0,if中会将其判定为boolean类型，故而要另外做===判断
             return fixed ? '0.00' : "0"
         } else {

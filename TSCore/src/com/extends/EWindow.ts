@@ -22,7 +22,7 @@ export class EWindow extends mixinExt(StringBlock, ViewProxy, ActionEvent, fgui.
     /** 是否加入后退记录 */
     joinRecord = true
     /** 动画起始点 */
-    startPoint: Point
+    startPoint?: Point
 
     protected override onInit() {
         let scale = ScaleKit.getEqualRatioScale(GRoot.inst.width, GRoot.inst.height)
@@ -38,10 +38,10 @@ export class EWindow extends mixinExt(StringBlock, ViewProxy, ActionEvent, fgui.
      * 获取子组件
      * @param name 传入子组件多种命名方式
      */
-    override getChild<T = fgui.GObject>(...name: string[]): T {
-        let child = null
+    override getChild<T = fgui.GObject>(...name: string[]): Nullable<T> {
+        let child: Nullable<T> = null
         for (const key of name) {
-            child = this.contentPane?.getChild(key) || super.getChild(key)
+            child = (this.contentPane?.getChild(key) || super.getChild(key)) as Nullable<T>
             if (child) return child
         }
         return child
@@ -91,7 +91,7 @@ export class EWindow extends mixinExt(StringBlock, ViewProxy, ActionEvent, fgui.
         this.displayObject.stage.off(Laya.Event.RESIZE, this, this.updateSizePoint)
         this.displayObject.stage.on(Laya.Event.RESIZE, this, this.updateSizePoint)
         this.touchable = true
-        if (this.joinRecord) HistoryManager.addHistory(null, this)
+        if (this.joinRecord) HistoryManager.addHistory(undefined, this)
         this.updateSizePoint()
         if (this.isAction) {
             this.setScale(.3, .3)
@@ -132,7 +132,7 @@ export class EWindow extends mixinExt(StringBlock, ViewProxy, ActionEvent, fgui.
     }
 
     override dispose() {
-        this.parent = null
+        this.parent = null!
         HistoryManager.invalidHistory(this)
         Tween.clearAll(this)
         this.displayObject?.stage.off(Laya.Event.RESIZE, this, this.updateSizePoint)

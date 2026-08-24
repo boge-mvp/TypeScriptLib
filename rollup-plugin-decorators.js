@@ -43,7 +43,7 @@ async function analyzeAndProcessDecorators(entryFile) {
     // 向主文件添加导入语句
     if (filesWithDecorators.length > 0) {
         code = await addImportsToMainFile(entryFile, filesWithDecorators);
-    } else code = await fs.readFile(entryFile)
+    } else code = await fs.readFile(entryFile, 'utf-8')
 
     console.log("强制导入文件", filesWithDecorators.map(value => value.relativePath).join(" "))
 
@@ -121,7 +121,7 @@ function checkForDecorators(files) {
  * @returns {Promise<string>}
  */
 async function addImportsToMainFile(mainFile, decoratorFiles) {
-    let content = await fs.readFile(mainFile)
+    let content = await fs.readFile(mainFile, 'utf-8')
     // 生成导入语句
     let importStatements = '';
     for (const file of decoratorFiles) {

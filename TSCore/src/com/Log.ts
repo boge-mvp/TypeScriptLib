@@ -35,26 +35,26 @@ export class Log {
     static MAX_HISTORY = 1000
     static history: { level: number, time?: number, data: any[] }[] = []
 
-    static trace(...value) {
+    static trace(...value: unknown[]) {
         Log.append({level: LogLevel.TRACE, data: value})
         if (Environment.active === EnvType.PROD || Log.level > LogLevel.TRACE) return
         // Log._log(value)
         Laya.Browser.onLayaRuntime ? console.log(...value) : console.trace(...value)
     }
 
-    static debug(...value) {
+    static debug(...value: unknown[]) {
         Log.append({level: LogLevel.DEBUG, data: value})
         if (Environment.active === EnvType.PROD || Log.level > LogLevel.DEBUG) return
         Laya.Browser.onLayaRuntime ? console.log(...value) : console.debug(...value)
     }
 
-    static info(...value) {
+    static info(...value: unknown[]) {
         Log.append({level: LogLevel.INFO, data: value})
         if (Log.level > LogLevel.INFO) return
         console.log(...value)
     }
 
-    static warn(...value) {
+    static warn(...value: unknown[]) {
         Log.append({level: LogLevel.INFO, data: value})
         if (Log.level > LogLevel.WARN) return
         Laya.Browser.onLayaRuntime ? console.log(...value) : console.warn(...value)
@@ -64,7 +64,7 @@ export class Log {
      * 错误
      * @param value
      */
-    static error(...value) {
+    static error(...value: unknown[]) {
         Log.append({level: LogLevel.ERROR, data: value})
         if (Log.level > LogLevel.ERROR) return
         Laya.Browser.onLayaRuntime ? console.log(...value) : console.error(...value)
@@ -74,7 +74,7 @@ export class Log {
      * 致命的错误
      * @param value
      */
-    static fatal(...value) {
+    static fatal(...value: unknown[]) {
         Log.append({level: LogLevel.FATAL, data: value})
         if (Log.level > LogLevel.FATAL) return
         Laya.Browser.onLayaRuntime ? console.log(...value) : console.error(...value)
@@ -87,7 +87,7 @@ export class Log {
         const logs = [...Log.history]
         let time: any[]
         for (const value of logs) {
-            time = [DateUtils.formatDate(value.time, fmt), LogLevel[value.level]]
+            time = [DateUtils.formatDate(value.time ?? 0, fmt), LogLevel[value.level]]
             console.log.apply(window, time.concat(value.data))
         }
     }

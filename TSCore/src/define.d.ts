@@ -22,10 +22,9 @@ declare module Laya {
         removeLineColor: string
 
     }
-    
+
     interface EventDispatcher {
-        /** 延迟调度 GUID 标记（运行时注入，可能不存在） */
-        readonly "$_GID"?: string
+        [key: string]: any
     }
 
     interface Stage {
@@ -79,6 +78,7 @@ declare module Laya {
          * 所有动画
          */
         _anis: AnimationContent[]
+
     }
 
     interface Texture {
@@ -87,14 +87,9 @@ declare module Laya {
 
     interface GraphicsAni {
         boneSlotName?: string
-        _saveToCmd(fun: Function, args: any)
-    }
+        _sp?: Laya.Sprite
 
-    interface SpineTempletBase {
-        /**
-         * @private
-         */
-        _textureDic: any
+        _saveToCmd(fun: Function, args: any)
     }
 
     interface Handler {
@@ -136,6 +131,11 @@ declare module Laya.Event {
     export var SPINE_PLAY: string
 }
 
+declare module Laya.Templet {
+    /** 开始播放指定动画名字 */
+    export var TEMPLET_DICTIONARY: any
+}
+
 declare module fgui {
 
     interface GLoader {
@@ -153,6 +153,10 @@ declare module fgui {
 
     }
 
+    interface GObject {
+        [key: string]: any
+    }
+
     interface Window {
 
         /** 值越小 层级越高 */
@@ -163,7 +167,7 @@ declare module fgui {
     interface GComponent {
 
 
-        getChild<T = GObject>(name: string): T
+        getChild<T = GObject>(name: string): Nullable<T>
 
         /**
          * 通过多个名称查找子组件
@@ -176,11 +180,10 @@ declare module fgui {
          * const child = component.getChildByNames("btn1", "btn2", "btn3")
          * ```
          */
-        getChildByNames<T = GObject>(...name: string[]): T
+        getChildByNames<T = GObject>(...name: string[]): Nullable<T>
     }
 
 }
-
 
 
 declare module spine {

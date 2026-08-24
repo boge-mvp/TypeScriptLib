@@ -21,7 +21,7 @@ export class StringUtil {
      * @param format 带占位符的字符串
      * @param args 替换文本，如果只有一个值，将会被用来替换所有的占位符
      */
-    static format(format: string, ...args: string[]) {
+    static format(format: string, ...args: any[]) {
         if (args.length == 1) {
             format = format.replace(/\{(\d+)}/g, args[0])
         } else {
@@ -167,7 +167,7 @@ export class StringUtil {
      * @param    char    指定字符串
      * @return
      */
-    static isEmpty(char?: string) {
+    static isEmpty(char: Nullable<string>) {
         switch (char) {
             case null:
             case "":
