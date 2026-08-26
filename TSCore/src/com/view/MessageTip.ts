@@ -62,7 +62,7 @@ export class MessageTip extends fgui.GComponent {
             return
         if (Array.isArray(value)) {
             const format = LanguageUtils.inst.getStr(value[0])
-            value = StringUtil.format(format, value.slice(1))
+            value = StringUtil.format(format, ...value.slice(1))
         } else {
             value = LanguageUtils.inst.getStr(value)
         }

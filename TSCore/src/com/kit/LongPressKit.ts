@@ -68,7 +68,7 @@ export class LongPressKit {
 
     private onClick(e?: Laya.Event) {
         e?.stopPropagation()
-        runFun.apply(null, [this.callback, ...this.args])
+        runFun(this.callback, ...this.args)
     }
 
     clearEvent() {

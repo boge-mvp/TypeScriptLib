@@ -113,7 +113,7 @@ export class HTTPUtils {
 
     }
 
-    setMethod(data: Method | string): HTTPUtils {
+    setMethod(data: Method | string | Nullish): HTTPUtils {
         this.method = data
         return this
     }
@@ -128,7 +128,7 @@ export class HTTPUtils {
         return this
     }
 
-    setHeaders(array: string[]): HTTPUtils {
+    setHeaders(array: Nullable<string[]>): HTTPUtils {
         this.headers = array
         return this
     }
@@ -143,22 +143,22 @@ export class HTTPUtils {
         return this
     }
 
-    onFinally(handler: HttpOnFinally) {
+    onFinally(handler: Nullable<HttpOnFinally>) {
         this.finally = handler
         return this
     }
 
-    onComplete(handler: HttpOnComplete): HTTPUtils {
+    onComplete(handler: Nullable<HttpOnComplete>): HTTPUtils {
         this.complete = handler
         return this
     }
 
-    onError(handler: HttpOnError): HTTPUtils {
+    onError(handler: Nullable<HttpOnError>): HTTPUtils {
         this.error = handler
         return this
     }
 
-    onTimeout(handler: HttpOnTimeout): HTTPUtils {
+    onTimeout(handler: Nullable<HttpOnTimeout>): HTTPUtils {
         this.timeout = handler
         return this
     }

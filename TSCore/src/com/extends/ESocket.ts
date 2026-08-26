@@ -36,8 +36,7 @@ export class ESocket {
     sendEventManager(type: number, ...obj: ParamHandler[]) {
         let fun = this.eventManager["event_" + type]
         if (fun) {
-            obj.unshift(fun)
-            runFun.apply(null, obj)
+            runFun(fun, ...obj)
         }
     }
 

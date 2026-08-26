@@ -44,6 +44,7 @@ export class SocketClient extends Laya.EventDispatcher {
         url: string,           // 连接地址
         notify: (data: any) => void,  // 消息通知回调
         auth: any              // 认证信息
+        [key: string]: any
     }
 
     /**
@@ -60,7 +61,7 @@ export class SocketClient extends Laya.EventDispatcher {
      * 创建一个socket连接客户端
      * @param options 连接参数对象
      */
-    constructor(options: { url: string, notify: (data: any) => void, auth: any }) {
+    constructor(options: { url: string, notify: (data: any) => void, auth: any, [key: string]: any }) {
         super()
         this.options = options
         this.createConnect()
