@@ -13,6 +13,10 @@ import {EDrawTextureCmd} from "./extends/EDrawTextureCmd"
 import {SoundUtils} from "./utils/SoundUtils";
 import {Log} from "./Log";
 import {ETexture} from "./extends/ETexture";
+import {EUIFactory} from "./uifactory/EUIFactory";
+import {IBaseElementConfig} from "./uifactory/IBaseElementConfig";
+import {IGraphConfig} from "./uifactory/IGraphConfig";
+import {IIconConfig} from "./uifactory/IIconConfig";
 
 export class DefineConfig {
 
@@ -399,6 +403,74 @@ export class DefineConfig {
                     if (child) return child
                 }
                 return child
+            }
+        })
+
+        Object.defineProperty(fgui.GComponent.prototype, "setupScrollPanel", {
+            value: function (this: fgui.GComponent, overflowType?: fgui.OverflowType, scrollType?: fgui.ScrollType) {
+                if (overflowType == undefined)
+                    overflowType = fgui.OverflowType.Visible
+                if (overflowType == fgui.OverflowType.Scroll) {
+                    if (this._displayObject == this._container) {
+                        this._container = new Laya.Sprite();
+                        this._displayObject.addChild(this._container);
+                    }
+                    this._scrollPane = EUIFactory.createScrollPanel(this, scrollType ?? fgui.ScrollType.Vertical)
+                } else this.setupOverflow(overflowType)
+            }
+        })
+
+        const GComponent_setBounds = fgui.GComponent.prototype.setBounds
+        Object.defineProperty(fgui.GComponent.prototype, "setBounds", {
+            value: function (this: fgui.GComponent, ax: number, ay: number, aw: number, ah: number) {
+                GComponent_setBounds.call(this, ax, ay, aw, ah)
+                const w = Math.round(ax + aw)
+                const h = Math.round(ay + ah)
+                if (this._scrollPane) {
+                    this._displayObject?.graphics?.drawRect(0, 0, w, h, color("#6c6666", 0))
+                }
+            }
+        })
+
+        const GComponent_handleSizeChanged = fgui.GComponent.prototype["handleSizeChanged"]
+        Object.defineProperty(fgui.GComponent.prototype, "handleSizeChanged", {
+            value: function (this: fgui.GComponent) {
+                GComponent_handleSizeChanged.call(this)
+                const renderBg = this["renderBg"]
+                if (renderBg) {
+                    this.drawBackground(renderBg)
+                }
+            }
+        })
+
+        Object.defineProperty(fgui.GComponent.prototype, "drawBackground", {
+            value: function (this: fgui.GComponent, config?: string | IIconConfig | IGraphConfig | IBaseElementConfig) {
+                this["renderBg"] = config
+                this.displayObject.graphics.clear()
+                if (!config) return
+                const initW = this.width
+                const initH = this.height
+                if (typeof config === "string") {
+                    if (config.startsWith("#") || config.startsWith("rgb")) {
+                        this.displayObject.graphics.drawRect(0, 0, initW, initH, config)
+                    } else {
+                        this.displayObject.graphics.loadImage(Laya.URL.formatURL(config), 0, 0, initW, initH)
+                    }
+                } else if (typeof config === "object") {
+                    if ("type" in config) {
+                        if (config.type === "icon") {
+                            this.displayObject.graphics.loadImage(Laya.URL.formatURL(config.url), 0, 0, initW, initH)
+                        } else if (config.type === "graph") {
+                            const graphBg = config as IGraphConfig;
+                            const w = initW || graphBg.width || this.width
+                            const h = initH || graphBg.height || this.height
+                            const fillColor = graphBg.fillColor || null
+                            const lineSize = graphBg.lineSize
+                            const lineColor = graphBg.lineColor
+                            this.displayObject.graphics.drawRect(0, 0, w, h, fillColor, lineColor, lineSize)
+                        }
+                    }
+                }
             }
         })
 

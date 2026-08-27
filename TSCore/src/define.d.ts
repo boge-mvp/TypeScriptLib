@@ -181,6 +181,30 @@ declare module fgui {
          * ```
          */
         getChildByNames<T = GObject>(...name: string[]): Nullable<T>
+
+        /**
+         * 动态绘制或设置组件背景
+         *
+         * 根据传入的配置类型，支持以下三种绘制模式：
+         * 1. **字符串模式 (图片/颜色)**:
+         *    - `#`/`rgb` 开头按矢量纯色矩形绘制；否则按图片 URL 加载铺满组件
+         * 2. **Icon 模式 (IIconConfig)**:
+         *    - 传入 `{ type: "icon", url: string, ... }` 配置，读取 `config.url` 铺满整个组件
+         * 3. **矢量图形模式 (IGraphConfig)**:
+         *    - 传入 `{ type: "graph", ... }` 配置，绘制矩形（支持描边/填充/宽高缺省取组件尺寸）
+         *
+         * @param config 背景配置，可以为图片 URL、IIconConfig 对象或 IGraphConfig 对象
+         */
+        drawBackground(config?: string | IIconConfig | IGraphConfig | IBaseElementConfig): void
+
+        /**
+         * 反射式底层构建：为组件纯代码装配滚动容器 (ScrollPane)
+         * 当 overflowType 为 Scroll 时，将组件内部容器分离并挂载滚动面板，
+         * 解决去 fgui 编辑器资源包依赖后代码动态托管 ScrollView 交互的问题
+         * @param overflowType 溢出类型（缺省 Visible；仅 Scroll 时激活滚动）
+         * @param scrollType 滚动方向（缺省 Vertical）
+         */
+        setupScrollPanel(overflowType?: fgui.OverflowType, scrollType?: fgui.ScrollType): void
     }
 
 }
