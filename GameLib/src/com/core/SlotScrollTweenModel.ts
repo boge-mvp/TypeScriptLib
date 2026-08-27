@@ -4,6 +4,7 @@ import Handler = Laya.Handler;
 import MathKit = tsCore.MathKit;
 import {SlotModel} from "./SlotModel"
 import {BaseSlotGameData} from "./BaseSlotGameData";
+import {ScrollContext} from "./strategy/ISlotScrollStrategy";
 
 /**
  * slot游戏滚动效果类 只使用了 Tween
@@ -12,10 +13,22 @@ export class SlotScrollTweenModel<T extends BaseSlotGameData = BaseSlotGameData>
 
     protected override playLottery(value: SlotLotteryData[]) {
         super.playLottery(value)
-        this.listRolls.forEach((value, index) => {
-            this.setRenderListData(index)
-            this.createTween(index, value)
-        })
+
+        if (this._scrollStrategy) {
+            // 使用自定义滚动策略
+            this.listRolls.forEach((val, index) => {
+                this.setRenderListData(index)
+                if (this.isRunList(val, index))
+                    this.createTweenWithStrategy(index, val)
+            })
+        } else {
+            // 原有逻辑（向后兼容）
+            this.listRolls.forEach((val, index) => {
+                this.setRenderListData(index)
+                this.createTween(index, val)
+            })
+        }
+
         this.startPlayResultTween()
     }
 
@@ -43,13 +56,39 @@ export class SlotScrollTweenModel<T extends BaseSlotGameData = BaseSlotGameData>
         this.tweenList.push(tween)
     }
 
+    /**
+     * 使用策略创建滚动动画
+     */
+    protected createTweenWithStrategy(index: number, list: fgui.GList) {
+        const itemHeight = this.getItemHeight(list)
+        let total: number
+        if (this.isScrollUp) {
+            list.scrollPane.posY = itemHeight * this.lotteryData[index].itemCount
+            total = MathKit.scrollLong(itemHeight, this.lotteryData[index].itemCount, this.getLaps(index), this.getLaps(index), this.rowNum)
+        } else {
+            list.scrollPane.posY = itemHeight * this.lotteryData[index].itemCount * this.getLaps(index)
+            total = itemHeight * this.rowNum
+        }
+        this.onScrollTween(index, this.lotteryData[index])
+
+        const context: ScrollContext = {
+            model: this,
+            index,
+            list,
+            targetPos: total,
+            isScrollUp: this.isScrollUp,
+            onComplete: (l: GList) => this.completeHandler(l)
+        }
+        this._scrollStrategy?.spin(context, this._scrollConfig)
+    }
+
     protected override setRenderListData(index: number) {
         let list = this.listRolls[index]
         list.data = this.lotteryData[index].arr
         list.numItems = list.data.length
     }
 
-    protected getDuration(index: number, isTurboMode: boolean): number {
+    getDuration(index: number, isTurboMode: boolean): number {
         let duration = index * 150 + 2000
         if (isTurboMode) {
             duration = 2000
@@ -57,7 +96,7 @@ export class SlotScrollTweenModel<T extends BaseSlotGameData = BaseSlotGameData>
         return duration
     }
 
-    protected getDelay(index: number, isTurboMode: boolean): number {
+    getDelay(index: number, isTurboMode: boolean): number {
         let delay = index * 30
         if (isTurboMode) {
             delay = 0
@@ -78,7 +117,7 @@ export class SlotScrollTweenModel<T extends BaseSlotGameData = BaseSlotGameData>
         }
         this.lotteryData.splice(0, this.lotteryData.length)
         while (this.tweenList.length > 0) {
-            this.tweenList.shift().clear()
+            this.tweenList.shift()?.clear()
         }
         if (this.allEndDelay) {
             Laya.timer.once(this.allEndDelay, this, this.rollComplete)

@@ -13,10 +13,10 @@ export interface IGameModel {
     insertExtension(): void
 
     /** 获取游戏显示类 */
-    gameScene: IGameScene
+    gameScene: Nullable<IGameScene>
 
     /** 获取游戏显示类 */
-    gameServlet: IGameServlet
+    gameServlet: Nullable<IGameServlet>
 
     /** 销毁所有数据 */
     dispose(): void

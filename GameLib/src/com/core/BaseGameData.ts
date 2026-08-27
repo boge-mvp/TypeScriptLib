@@ -112,7 +112,7 @@ export class BaseGameData implements IGameData {
      * bet 额度切换值数组
      * @default []
      */
-    betMoney = [];
+    betMoney: any[] = [];
 
     /**
      * 当前bet值
@@ -124,13 +124,13 @@ export class BaseGameData implements IGameData {
      * 开奖结果数组
      * @default []
      */
-    lotteryId: any[];
+    lotteryId: any[] = [];
 
     /**
      * 通知数据数组
      * @default []
      */
-    noticeData = [];
+    noticeData: any[] = [];
 
     /**
      * 重置默认bet值标识

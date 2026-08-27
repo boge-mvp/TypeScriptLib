@@ -52,13 +52,13 @@ export class SceneManager extends EProxy {
     }
 
     /** 游戏设计面板宽度 */
-    gameWidth: number
+    gameWidth?: number
     /** 游戏设计面板高度 */
-    gameHeight: number
+    gameHeight?: number
     // 获取失去焦点的时间
-    private blurTimer: number
+    private blurTimer!: number
     /** 当前游戏的 Starter */
-    private _starter: BaseStarter
+    private _starter?: BaseStarter
     /** 是否已经初始化完成 等待外部调用 */
     initComplete = false
     /** 是否已经初始化完成 等待外部调用 */
@@ -68,7 +68,7 @@ export class SceneManager extends EProxy {
     /**
      * 判断是否已关闭游戏
      */
-    private isCloseGame: boolean
+    private isCloseGame?: boolean
 
     showHomeScene() {
         Player.inst.gameId = CommonCmd.GAME_HOME
@@ -91,7 +91,7 @@ export class SceneManager extends EProxy {
      * @see showLoginTip
      */
     showLogin() {
-        if (Player.inst.urlParam.isJumpPage()) JSUtils.login()
+        if (Player.inst.urlParam?.isJumpPage()) JSUtils.login()
     }
 
     /** 退出登录 */
@@ -99,7 +99,7 @@ export class SceneManager extends EProxy {
         LocalStorage.removeItem("token")
         LocalStorage.removeItem("userData")
 
-        Player.inst.token = null
+        Player.inst.token = undefined
 
         SocketManager.inst.close()
         SoundManager.stopAll()
@@ -119,20 +119,20 @@ export class SceneManager extends EProxy {
     }
 
     private visibleId = 0
-    private visibles: ((v: boolean) => void)[] = []
+    private visibles: VisibleHandler[] = []
 
     /**
      * 添加应用显示与隐藏调用方法
      * @param fun
      */
-    onVisibleChange(fun: (v: boolean) => void) {
-        fun["$vid"] = this.visibleId++
+    onVisibleChange(fun: VisibleHandler) {
+        fun.$vid = this.visibleId++
         this.visibles.push(fun)
     }
 
-    offVisibleChange(fun: (v: boolean) => void) {
-        if (fun["$vid"]) {
-            let index = this.visibles.findIndex((value) => fun["$vid"] === value["$vid"])
+    offVisibleChange(fun: VisibleHandler) {
+        if (fun.$vid) {
+            let index = this.visibles.findIndex((value) => fun.$vid === value.$vid)
             this.visibles.splice(index, 1)
         }
     }
@@ -206,7 +206,7 @@ export class SceneManager extends EProxy {
      * @param config 游戏配置文件名
      * @param code 游戏id
      */
-    openGame(config: string, code = -1) {
+    openGame(config?: Nullable<string>, code = -1) {
         Log.info("openGame -> " + config + " " + code)
         Laya.stage.pauseUpdateTimer = false
         this.visibles.length = 0
@@ -235,7 +235,7 @@ export class SceneManager extends EProxy {
 //			return
 //		}
 
-        if (!Player.inst.urlParam.isJumpPage())
+        if (!Player.inst.urlParam?.isJumpPage())
             GRoot.inst.showModalWait(getString(LibStr.WAITING))
 
         Player.inst.gameId = code
@@ -259,23 +259,23 @@ export class SceneManager extends EProxy {
         if (obj) { // 缓存中已经有了
             onComplete()
         } else {
-            let gameResJS = `${GameConfigKit.gameNameCanonical().firstLowerCase()}/res${AssetsLoader.inst.httpProtocol ? "" : ".min"}.js`
+            let gameResJS = `${GameConfigKit.gameNameCanonical()?.firstLowerCase()}/res${AssetsLoader.inst.httpProtocol ? "" : ".min"}.js`
             this.loadRes(gameResJS, (content) => {
                 if (!content) {// 加载失败
                     // 游戏脚本加载
                     gameResJS = "configs/gameRes" + (AssetsLoader.inst.httpProtocol ? "" : ".min") + ".js"
                     this.loadRes(gameResJS, onLoadComplete)
-                } else onLoadComplete(content)
+                } else onLoadComplete?.(content)
             })
         }
     }
 
-    private loadRes(url: string, onComplete: (content?: any) => void) {
+    private loadRes(url: string, onComplete?: (content?: any) => void) {
         let content = ELoader.loader.getRes(url)
         if (!content) {
-            ELoader.loader.load(url, Handler.create(this, onComplete), null, Loader.TEXT)
+            ELoader.loader.load(url, onComplete && Handler.create(this, onComplete), undefined, Loader.TEXT)
         } else {
-            onComplete(content)
+            onComplete?.(content)
         }
     }
 
@@ -284,15 +284,15 @@ export class SceneManager extends EProxy {
             this.loadResErrorHandler()
             return
         }
-        UtilKit.loadScript(content, true, Render.isConchApp ? null : "res.js")
+        UtilKit.loadScript(content, true, Render.isConchApp ? undefined : "res.js")
         this.loadGameJs()
     }
 
     private loadGameJs() {
         let obj = GameConfigKit.gameRes()
-        if (obj.js) {
+        if (obj?.js) {
             // 加载游戏的js文件
-            AssetsLoader.inst.loadJS(Player.inst.gameName, Handler.create(this, this.loadJsComplete),
+            AssetsLoader.inst.loadJS(Player.inst.gameName!, Handler.create(this, this.loadJsComplete),
                 Handler.create(this, this.loadResErrorHandler))
         } else {
             this.loadJsComplete()
@@ -304,11 +304,15 @@ export class SceneManager extends EProxy {
         // 延迟执行初始化  否则isCall  将失去意义
         // this._starter = obj.completeFun()
         // 已经加载的游戏代码
-        if (!Player.inst.urlParam.isJumpPage())
+        if (!Player.inst.urlParam?.isJumpPage())
             GRoot.inst.closeModalWait()
         LoadingWindow.inst?.changeView(1, getString(LibStr.LOADING))
-        AssetsLoader.inst.loadRes(obj, Handler.create(this, this.loadResComplete),
-            Handler.create(this, this.loadResErrorHandler))
+        if (obj) {
+            AssetsLoader.inst.loadRes(obj, Handler.create(this, this.loadResComplete),
+                Handler.create(this, this.loadResErrorHandler))
+        } else {
+            this.loadResErrorHandler()
+        }
     }
 
     /**
@@ -336,7 +340,7 @@ export class SceneManager extends EProxy {
         if (this.initComplete && this.isLoaderResComplete || !this.isCall) {
             // 不是游客模式 检查token
             if (!Player.inst.isGuest && Player.inst.token) {
-                Player.inst.login.loginToken(this.checkGameState.bind(this))
+                Player.inst.login?.loginToken(this.checkGameState.bind(this))
             } else {
                 this.checkGameState({code: 0})
             }
@@ -355,9 +359,9 @@ export class SceneManager extends EProxy {
         if (!SoundUtils.GAME_SOUND_URL_BASE) {
             SoundUtils.GAME_SOUND_URL_BASE = "sounds/" + Player.inst.simpleName
         }
-        if (obj.completeFun) {
+        if (obj?.completeFun) {
             this._starter = obj.completeFun()
-        } else this._starter = runApplication(obj.startClass)
+        } else this._starter = runApplication(obj?.startClass)
         AnalyticsManager.openGame()
         Player.inst.status = 1
         // 如果是游客模式
@@ -409,7 +413,7 @@ export class SceneManager extends EProxy {
         // 创建游戏到舞台上
         this.sendAction(ActionLib.GAME_CREATE_SCENE_SHOW, Handler.create(this, function () {
             GRoot.inst.closeModalWait()
-            AppRecordManager.executeJson = null
+            AppRecordManager.executeJson = undefined
             Log.debug("load sound")
             // 开始加载运行加载的声音
             SoundUtils.load()
@@ -418,7 +422,7 @@ export class SceneManager extends EProxy {
             // 启动按键
             TouchManager.I.enable = MouseManager.enabled = KeyBoardManager.enabled = true
             // 放到下一帧去播放  不然 进入需要旋转的游戏 渲染跟不上
-            Laya.timer.callLater(this, function () {
+            Laya.timer.callLater(null, function () {
                 if (Player.inst.guestModel) Player.inst.guestModel.guestPlayCount = 0
                 Log.debug("call close loading")
                 if (GameConfigKit.autoSendOnLoadEnd) {
@@ -447,7 +451,7 @@ export class SceneManager extends EProxy {
                 JSUtils.gameClose()
                 Player.inst.gameId = CommonCmd.GAME_HOME
             }))
-        } catch (e) {
+        } catch (e: any) {
             Log.error(e?.stack)
             // 当资源没有加载完成  调用会报错
             JSUtils.alert(getString(LibStr.NET_ERROR))
@@ -460,7 +464,7 @@ export class SceneManager extends EProxy {
         JSUtils.gameClose()
         SoundUtils.clear()
         Laya.timer.callLater(this, function () {
-            Player.inst.urlParam.clearJumpPage()
+            Player.inst.urlParam?.clearJumpPage()
         })
     }
 
@@ -527,7 +531,7 @@ export class SceneManager extends EProxy {
      * @param code 游戏id
      *
      */
-    changeScene(config: string, code: number) {
+    changeScene(config?: Nullable<string>, code?: number) {
         if (Player.inst.gameId != code) {
             this.closeGame()
             this.openGame(config, code)
@@ -566,7 +570,7 @@ export class SceneManager extends EProxy {
             },
             callback: () => {
                 this.sendAction(ActionLib.GAME_RECONNECTION_NET, Handler.create(this, function () {
-                    Laya.timer.callLater(this, function () {
+                    Laya.timer.callLater(null, function () {
                         if (Player.inst.gameId != CommonCmd.GAME_HOME) {
                             AppRecordManager.backHistory()
                             AnalyticsManager.send("exit_game_net_timeout_error_" + Player.inst.gameId)

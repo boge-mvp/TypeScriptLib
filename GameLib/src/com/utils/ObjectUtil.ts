@@ -53,6 +53,7 @@ export class ObjectUtil {
             ObjectUtil.colorMatrixFilters[0].setByMatrix(array)
             source.filters = this.colorMatrixFilters
         } else {
+            // @ts-ignore
             source.filters = null
         }
     }
@@ -108,7 +109,7 @@ export class ObjectUtil {
      * @param buf
      */
     static ab2str(buf: ArrayBuffer): string {
-        return String.fromCharCode.apply(null, new Uint8Array(buf))
+        return String.fromCharCode(...new Uint8Array(buf))
     }
 
     /**
@@ -221,6 +222,7 @@ export class ObjectUtil {
         let cls = null
         for (let i = 0; i < c.length; i++) {
             if (!cls) {
+                // @ts-ignore
                 cls = window[c[i]]
             } else {
                 cls = cls[c[i]]

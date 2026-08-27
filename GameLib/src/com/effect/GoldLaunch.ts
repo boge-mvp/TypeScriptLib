@@ -14,9 +14,9 @@ export class GoldLaunch {
     goldW = 70
     /** 高 */
     goldH = 70
-    private endPoint: Point
+    private endPoint?: Point
     /** 动画结束回调 */
-    private endHandler: ParamHandler
+    private endHandler?: ParamHandler
     /** 动画结束数量 */
     private completeCount = 0
 
@@ -82,18 +82,18 @@ export class GoldLaunch {
         if (this.completeCount == this.goldAniBox.length) {
             runFun(this.endHandler)
             while (this.goldAniBox.length) {
-                this.goldAniBox.shift().dispose()
+                this.goldAniBox.shift()?.dispose()
             }
         }
     }
 
     dispose() {
-        this.endHandler = null
-        let goldAniBox: GoldLoader
+        this.endHandler = undefined
+        let goldAniBox: Nullable<GoldLoader>
         while (this.goldAniBox.length) {
             goldAniBox = this.goldAniBox.shift()
             Tween.clearAll(goldAniBox)
-            goldAniBox.dispose()
+            goldAniBox?.dispose()
         }
     }
 

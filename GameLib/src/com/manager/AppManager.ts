@@ -7,7 +7,7 @@ import NativeUtils = tsCore.NativeUtils;
 /** app管理器 */
 export class AppManager {
 
-    private static jsToJava: IPlatform
+    private static jsToJava?: IPlatform
 
     /** 关闭app自定义返回 */
     static closeAppBack() {
@@ -130,7 +130,7 @@ export class AppManager {
             this.LP_enterShareAndFeed(JSON.stringify(obj), this.nullFun)
         } else {
             let obj = {action: 10027, data: content + (StringUtil.isEmpty(url) ? "" : "\n" + url)}
-            this.LP_SendMessageToPlatform(JSON.stringify(obj), null)
+            this.LP_SendMessageToPlatform(JSON.stringify(obj), this.nullFun)
         }
     }
 
@@ -236,20 +236,20 @@ export class AppManager {
     static showGame(value: any) {
         let obj = {action: 10018, data: value}
         if (Browser.onLayaRuntime)
-            this.LP_SendMessageToPlatform(JSON.stringify(obj), null)
+            this.LP_SendMessageToPlatform(JSON.stringify(obj), this.nullFun)
     }
 
     /** 显示网页 */
     static showWeb(value: any) {
         let obj = {action: 10019, data: value}
         if (Browser.onLayaRuntime)
-            this.LP_SendMessageToPlatform(JSON.stringify(obj), null)
+            this.LP_SendMessageToPlatform(JSON.stringify(obj), this.nullFun)
     }
 
     static umengTest() {
         let obj = {action: -100, method: "test", data: ["s", "2"]}
         if (Browser.onLayaRuntime)
-            this.LP_SendMessageToPlatform(JSON.stringify(obj), null)
+            this.LP_SendMessageToPlatform(JSON.stringify(obj), this.nullFun)
     }
 
     /**
@@ -260,7 +260,7 @@ export class AppManager {
     static onProfileSignIn(Provider: string, ID: string) {
         let obj = {action: -100, method: "onProfileSignIn", data: [Provider, ID]}
         if (Browser.onLayaRuntime)
-            this.LP_SendMessageToPlatform(JSON.stringify(obj), null)
+            this.LP_SendMessageToPlatform(JSON.stringify(obj), this.nullFun)
     }
 
     /**
@@ -269,7 +269,7 @@ export class AppManager {
     static onProfileSignOff() {
         let obj = {action: -100, method: "onProfileSignIn", data: []}
         if (Browser.onLayaRuntime)
-            this.LP_SendMessageToPlatform(JSON.stringify(obj), null)
+            this.LP_SendMessageToPlatform(JSON.stringify(obj), this.nullFun)
     }
 
     /**
@@ -282,7 +282,7 @@ export class AppManager {
     static pay(money: number, coin: number, source: number) {
         let obj = {action: -100, method: "pay", data: [money, coin, source]}
         if (Browser.onLayaRuntime)
-            this.LP_SendMessageToPlatform(JSON.stringify(obj), null)
+            this.LP_SendMessageToPlatform(JSON.stringify(obj), this.nullFun)
     }
 
     /**
@@ -315,7 +315,7 @@ export class AppManager {
             return
         }
         this.LP_init()
-        this.jsToJava.callWithBack(callback, "LP_sendMessageToPlatform", json)
+        this.jsToJava?.callWithBack(callback, "LP_sendMessageToPlatform", json)
     }
 
     static LP_enterBBS(json: string, callback: Function) {
@@ -324,7 +324,7 @@ export class AppManager {
             return
         }
         this.LP_init()
-        this.jsToJava.callWithBack(callback, "LP_enterBBS", json)
+        this.jsToJava?.callWithBack(callback, "LP_enterBBS", json)
     }
 
     static LP_enterFeedback(json: string, callback: Function) {
@@ -333,7 +333,7 @@ export class AppManager {
             return
         }
         this.LP_init()
-        this.jsToJava.callWithBack(callback, "LP_enterFeedback", json)
+        this.jsToJava?.callWithBack(callback, "LP_enterFeedback", json)
     }
 
     static LP_enterInvite(json: string, callback: Function) {
@@ -342,7 +342,7 @@ export class AppManager {
             return
         }
         this.LP_init()
-        this.jsToJava.callWithBack(callback, "LP_enterInvite", json)
+        this.jsToJava?.callWithBack(callback, "LP_enterInvite", json)
     }
 
     static LP_enterShareAndFeed(json: string, callback: Function) {
@@ -351,7 +351,7 @@ export class AppManager {
             return
         }
         this.LP_init()
-        this.jsToJava.callWithBack(callback, "LP_enterShareAndFeed", json)
+        this.jsToJava?.callWithBack(callback, "LP_enterShareAndFeed", json)
     }
 
     static LP_init() {
@@ -366,8 +366,8 @@ export class AppManager {
 //                    log(key)
 //                }
 //            }
-            this.jsToJava = NativeUtils.PlatformClass.createClass("layaair.game.Market.MarketTest").newObject()
-            this.jsToJava.call("LP_Init")
+            this.jsToJava = NativeUtils.PlatformClass?.createClass("layaair.game.Market.MarketTest").newObject()
+            this.jsToJava?.call("LP_Init")
         }
     }
 

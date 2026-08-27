@@ -12,21 +12,21 @@ import {SceneManager} from "../manager/SceneManager";
  */
 export class UrlParam {
 
-    private _amount: string
-    private _inviteCode: string
-    private openGame: string
+    private _amount?: string
+    private _inviteCode?: string
+    private openGame?: string
 
     /** 国家 'ke'肯尼亚；'ug'乌干达, 'ng'尼日尼亚 */
-    private _country: string
+    private _country?: string
     /** 语言 en zh-CN */
-    private _language: string
+    private _language?: string
     /** 渠道平台 */
-    public channel: string
+    public channel?: string
     /** 0:ai  1:people 2:friend */
     private _playWith = "1"
-    private _roomId: string
+    private _roomId?: string
     /** 1 守门员  2 踢球 */
-    private _role: number
+    private _role?: number
     /** 是否是赠送金 0 没有 1 有 */
     private _isGift = 0
     /** 是否是debug模式 */
@@ -46,7 +46,7 @@ export class UrlParam {
         this.channel = defaults?.channel
         this.debug = !!defaults?.debug
 
-        this.parseData(null)
+        this.parseData(undefined)
 
         if (!Render.isConchApp) {
             let url = window.location.href
@@ -77,7 +77,7 @@ export class UrlParam {
 
     }
 
-    parseData(json: ExecuteData) {
+    parseData(json?: ExecuteData) {
         Player.inst.parseParam = json
         // 获取链接附带参数
         let isweb = this.getValue(json, "isweb")
@@ -106,7 +106,8 @@ export class UrlParam {
 
         // 游戏名字
         if (this.openGame || tempGameName) {
-            const gameId = Utils.parseInt(this.openGame)
+            const game = this.openGame || tempGameName
+            const gameId = Utils.parseInt(game!)
             Player.inst.gameId = gameId
             Player.inst.gameName = tempGameName
             AppRecordManager.executeJson = {type: 2, data: gameId, openGame: gameId, gameName: tempGameName}
@@ -122,7 +123,7 @@ export class UrlParam {
      * @param fun - 处理查询结果的回调函数，接受一个布尔值作为参数
      * @param keys - 用于定位json对象内目标值的一系列键名组成的数组
      */
-    getQueryBoolean(json: any | null, fun: (value: boolean) => void, ...keys: string[]) {
+    getQueryBoolean(json: Nullable<any>, fun: (value: boolean) => void, ...keys: string[]) {
         const value = this.getValue(json, ...keys)
         // 判断获取的值是否存在且不等同于"false"或"0"
         if (value) {
@@ -136,7 +137,7 @@ export class UrlParam {
      * @param fun
      * @param keys
      */
-    getQuery(json: any | null, fun: (value: string) => void, ...keys: string[]) {
+    getQuery(json: Nullable<any>, fun: (value: string) => void, ...keys: string[]) {
         const value = this.getValue(json, ...keys)
         if (value) {
             fun(value)
@@ -148,7 +149,7 @@ export class UrlParam {
      * @param json
      * @param keys
      */
-    getValueBoolean(json: any | null, ...keys: string[]) {
+    getValueBoolean(json: Nullable<any>, ...keys: string[]) {
         const value = this.getValue(json, ...keys)
         return !(!value || value.equalsAnyIgnore("false", "0"))
     }
@@ -158,8 +159,8 @@ export class UrlParam {
      * @param json
      * @param keys
      */
-    getValue(json: any | null, ...keys: string[]): string | undefined {
-        let value: string = undefined
+    getValue(json: Nullable<any>, ...keys: string[]): Nullable<string> {
+        let value: Nullable<string>
         for (const key of keys) {
             if (json && key in json) {
                 value = json[key] + ""
@@ -193,7 +194,7 @@ export class UrlParam {
      * 清理跳转记录
      */
     clearJumpPage() {
-        this.openGame = null
+        this.openGame = undefined
     }
 
     get country() {
@@ -212,7 +213,7 @@ export class UrlParam {
         this._playWith = value
     }
 
-    set roomId(value: string) {
+    set roomId(value: string | undefined) {
         this._roomId = value
     }
 
@@ -224,7 +225,7 @@ export class UrlParam {
         return this._role
     }
 
-    set role(value: number) {
+    set role(value: number | undefined) {
         this._role = value
     }
 

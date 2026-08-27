@@ -16,9 +16,9 @@ export class LoadComponent extends BaseView {
     /** 是否已经初始化 */
     private isInit: boolean = true
     /** 需要加载的资源 */
-    private loadArray: any[]
+    private loadArray!: any[]
     /** 内容面板 */
-    private _contentPane: GComponent
+    private _contentPane!: GComponent
 
 
     constructor() {

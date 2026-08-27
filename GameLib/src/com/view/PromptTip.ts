@@ -8,7 +8,7 @@ import {SceneManager} from "../manager/SceneManager"
 /** 文案提示 */
 export class PromptTip extends ELabel {
 
-    private target: GComponent
+    private target!: GComponent
     private downward: any
 
     static CREATE_FUI_URL = "//gameCommon/PromptTip"

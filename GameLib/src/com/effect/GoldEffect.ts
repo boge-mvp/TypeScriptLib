@@ -11,13 +11,13 @@ export class GoldEffect extends View {
     private golds: GoldSpray[] = []
     private count = 0
     private maxCount = 100
-    private recoveryPoint: Point
+    private recoveryPoint?: Point
     /** 宽 */
     goldW = 80
     /** 高 */
     goldH = 80
     /** Y坐标位置 */
-    private bottomLimit
+    private bottomLimit!: number
 
     constructor() {
         super()
@@ -85,7 +85,7 @@ export class GoldEffect extends View {
         this.removeFromParent()
         while (this.golds.length) {
             let body = this.golds.shift()
-            body.dispose()
+            body?.dispose()
         }
     }
 

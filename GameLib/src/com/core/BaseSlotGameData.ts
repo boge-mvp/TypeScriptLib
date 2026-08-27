@@ -39,11 +39,11 @@ export abstract class BaseSlotGameData extends BaseGameData {
     /** 当前购买的线 */
     lineValue = 0
     /** 玩家赢的线 */
-    lines: any[]
+    lines = []
     /** 项目总数 */
     itemCount = 40
     /** 临时存储开奖结果 */
-    tempLotteryId: any[]
+    tempLotteryId = []
     /** 玩家的中奖项 */
     userWinArray = []
     /** 小奖 要最少满足3个的线 */
@@ -57,7 +57,7 @@ export abstract class BaseSlotGameData extends BaseGameData {
     hasFreeSpin = 0
 
     /** 是否进入免费模式开奖流程 */
-    isFreeModel: boolean
+    isFreeModel?: boolean
     /** 免费游戏押注参数 */
     freeBetTotalObj: any
     /** free spin 原始数据 */
@@ -98,7 +98,7 @@ export abstract class BaseSlotGameData extends BaseGameData {
     }
 
     /** 第一列是否存在 bounds */
-    firstExistBonus: boolean
+    firstExistBonus?: boolean
     /** 当前开出免费游戏图标个数 */
     freeBonusNum = 0
 
@@ -109,7 +109,7 @@ export abstract class BaseSlotGameData extends BaseGameData {
     /**
      * 当前在reSpin模式
      */
-    isReSpinModel: boolean
+    isReSpinModel?: boolean
 
     constructor() {
         super()
@@ -155,8 +155,8 @@ export abstract class BaseSlotGameData extends BaseGameData {
      * @param index 列
      */
     getSlotListArr(index: number): number[] {
-        this[`slotList${index}`] ??= []
-        return this[`slotList${index}`]
+        const slots = this as unknown as Record<`slotList${number}`, number[] | undefined>
+        return slots[`slotList${index}`] ??= []
     }
 
     /**
@@ -165,7 +165,8 @@ export abstract class BaseSlotGameData extends BaseGameData {
      * @param ar 新的值
      */
     setSlotListArr(index: number, ar: number[]) {
-        this[`slotList${index}`] = ar
+        const slots = this as unknown as Record<`slotList${number}`, number[] | undefined>
+        slots[`slotList${index}`] = ar
     }
 
     /**

@@ -16,16 +16,16 @@ export class HomePrompt<T extends BaseGameData = BaseGameData> extends BaseWindo
     }
 
     /** 当前显示面板控制器 */
-    private controller: Controller
+    private controller?: Controller
     /** ok按钮 */
-    private okBtn: GButton
+    private okBtn?: GButton
     /** 取消 */
-    private cancelBtn: GButton
+    private cancelBtn?: GButton
     /** 显示的内容 */
-    private message: GTextField
+    private message?: GTextField
 
-    private callback: Function
-    private cancelCallback: Function
+    private callback?: Function
+    private cancelCallback?: Function
     static CREATE_FUI_URL = "//init/HomePrompt"
 
     constructor() {
@@ -40,13 +40,13 @@ export class HomePrompt<T extends BaseGameData = BaseGameData> extends BaseWindo
 
         this.controller = this.contentPane.getController("c1")
 
-        this.okBtn = this.contentPane.getChild("n15").asButton
-        this.cancelBtn = this.contentPane.getChild("n16").asButton
+        this.okBtn = this.contentPane.getChild("n15")?.asButton
+        this.cancelBtn = this.contentPane.getChild("n16")?.asButton
 
-        this.message = this.contentPane.getChild("message").asTextField
+        this.message = this.contentPane.getChild("message")?.asTextField
 
-        this.cancelBtn.onClick(this, this.cancelHandler)
-        this.okBtn.onClick(this, this.okHandler)
+        this.cancelBtn?.onClick(this, this.cancelHandler)
+        this.okBtn?.onClick(this, this.okHandler)
 
         super.onInit()
 
@@ -55,17 +55,17 @@ export class HomePrompt<T extends BaseGameData = BaseGameData> extends BaseWindo
     private cancelHandler() {
         if (this.parent) AppRecordManager.backHistory()
         if (this.cancelCallback) this.cancelCallback()
-        this.cancelCallback = null
+        this.cancelCallback = undefined
     }
 
     private okHandler() {
         if (this.parent) AppRecordManager.backHistory()
         if (this.callback) this.callback()
-        this.callback = null
+        this.callback = undefined
     }
 
     protected override onShown() {
-//			AppRecordManager.addHistory(null, this)
+//			AppRecordManager.addHistory(undefined, this)
     }
 
     /**
@@ -77,35 +77,40 @@ export class HomePrompt<T extends BaseGameData = BaseGameData> extends BaseWindo
      * @param obj 附带设置 (okName:'', cancelName:'')
      *
      */
-    showTip(code: number, content: string | number | any[], callback: Function = null, cancelCallback: Function = null, obj: any = null) {
+    showTip(code: number, content: string | number | any[], callback?: Function, cancelCallback?: Function, obj?: any) {
         this.offClick(this, AppRecordManager.backHistory)
         this.callback = callback
         this.cancelCallback = cancelCallback
 
         if (Array.isArray(content)) {
-            content = getString.apply(null, content) as string
+            content = getString(content[0], ...content.slice(1))
         } else {
             content = getString(content)
         }
 
         this.show()
         this.center()
-        this.controller.selectedIndex = code
-        if (obj?.okName) {
-            this.okBtn.text = obj.okName
-        } else {
-            if (code == 0) {
-                this.okBtn.text = getString(LibStr.OK)
-            } else if (code == 1) {
-                this.okBtn.text = getString(LibStr.RESEND)
+        this.controller && (this.controller.selectedIndex = code)
+        if (this.okBtn) {
+            if (obj?.okName) {
+                this.okBtn.text = obj.okName
+            } else {
+                if (code == 0) {
+                    this.okBtn.text = getString(LibStr.OK)
+                } else if (code == 1) {
+                    this.okBtn.text = getString(LibStr.RESEND)
+                }
             }
         }
-        if (obj?.cancelName) {
-            this.cancelBtn.text = obj.cancelName
-        } else {
-            this.cancelBtn.text = getString(LibStr.CANCEL)
+        if (this.cancelBtn) {
+            if (obj?.cancelName) {
+                this.cancelBtn.text = obj.cancelName
+            } else {
+                this.cancelBtn.text = getString(LibStr.CANCEL)
+            }
         }
-        this.message.text = content
+        if (this.message)
+            this.message.text = content
     }
 
     override hideRecord() {

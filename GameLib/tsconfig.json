@@ -3,7 +3,9 @@
     "../tsconfig.json"
   ],
   "compilerOptions": {
-    "outDir": "./bin"
+    "outDir": "./bin",
+    // 源码尚未 strict 适配；显式 false 防止 TS6 默认翻转改变产物推断语义
+//    "strict": false
     //    "rootDir": "../",
     //    "paths": {
     //      "tsCore/*": ["../TSCore/bin"]

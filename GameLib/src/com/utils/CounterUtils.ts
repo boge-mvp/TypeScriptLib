@@ -11,7 +11,7 @@ export class CounterUtils {
 class Counter {
 
     /** 执行玩所有次数调用 */
-    complete: ParamHandler
+    complete?: ParamHandler
     total = 0
     private _index = 0
 
@@ -31,7 +31,7 @@ class Counter {
     }
 
     dispose() {
-        this.complete = null
+        this.complete = undefined
     }
 
 }

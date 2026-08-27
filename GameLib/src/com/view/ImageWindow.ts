@@ -27,7 +27,9 @@ export class ImageWindow<T extends BaseGameData = BaseGameData> extends BaseWind
 
     showTip(url: string) {
         this.show()
-        this.contentPane.getChild("icon").asLoader.icon = url
+        const loader = this.contentPane.getChild("icon")?.asLoader
+        if (loader)
+            loader.icon = url
     }
 
 }

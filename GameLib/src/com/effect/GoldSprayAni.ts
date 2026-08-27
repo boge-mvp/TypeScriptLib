@@ -8,11 +8,11 @@ export class GoldSprayAni {
 
     private goldAniBox: GoldSpray[] = []
 
-    private endPoint: Point
+    private endPoint?: Point
     /** Y坐标位置 */
-    private centreY
+    private centreY!: number
     /** 动画结束回调 */
-    private endHandler: ParamHandler
+    private endHandler?: ParamHandler
     /**
      * 宽
      * @default 70
@@ -24,7 +24,7 @@ export class GoldSprayAni {
      */
     goldH = 70
     /** 重写最后一步方法 */
-    readTweenFunction: ParamHandler
+    readTweenFunction?: ParamHandler
     /** 动画结束数量 */
     private completeCount = 0
     /**
@@ -152,20 +152,20 @@ export class GoldSprayAni {
         if (this.completeCount == this.goldAniBox.length) {
             runFun(this.endHandler)
             while (this.goldAniBox.length) {
-                this.goldAniBox.shift().dispose()
+                this.goldAniBox.shift()?.dispose()
             }
         }
     }
 
     dispose() {
         Laya.timer.clear(this, this.onFrameLoop)
-        this.readTweenFunction = null
-        this.endHandler = null
-        let goldAniBox: GoldSpray
+        this.readTweenFunction = undefined
+        this.endHandler = undefined
+        let goldAniBox: Nullable<GoldSpray>
         while (this.goldAniBox.length) {
             goldAniBox = this.goldAniBox.shift()
             Tween.clearAll(goldAniBox)
-            goldAniBox.dispose()
+            goldAniBox?.dispose()
         }
     }
 

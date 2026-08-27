@@ -18,7 +18,7 @@ export class APP {
     }
 
     openGame(gameId: number) {
-        SceneManager.inst.openGame(null, gameId)
+        SceneManager.inst.openGame(undefined, gameId)
     }
 
     hide() {
@@ -70,12 +70,12 @@ export class APP {
 
         if (AppRecordManager.customJavaSendOpen && AppRecordManager.customJavaSendOpen(json)) return
 
-        Player.inst.urlParam.parseData(json)
+        Player.inst.urlParam?.parseData(json)
         Log.debug("callback() type = " + json.type)
         Log.debug("callback() openGame = " + json.openGame)
         Log.debug("callback() gameName = " + json.gameName)
         if (!Player.inst.isGuest && json.token) {
-            Player.inst.login.loginToken((data) => {
+            Player.inst.login?.loginToken((data) => {
                 this.open(json)
             })
         } else {
@@ -88,7 +88,7 @@ export class APP {
             case 1:// 打开网页
                 if (typeof json.data !== "string") return
                 HtmlWindow.inst.showTip(json.data)
-                AppRecordManager.executeJson = null
+                AppRecordManager.executeJson = undefined
                 break
             case 2:// 进入游戏
                 if (typeof json.data === "number")

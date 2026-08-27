@@ -103,7 +103,7 @@ export class JSUtils {
 
         // 替换域名和 语言
         page.page = page.page.replace(/{host}/g, window.location.host)
-            .replace(/\/{lang}/g, Player.inst.urlParam.language ? "/" + Player.inst.urlParam.language : "")
+            .replace(/\/{lang}/g, Player.inst.urlParam!.language ? "/" + Player.inst.urlParam!.language : "")
 
 
         if (AppManager.callIOS("openPage", page)) return
@@ -123,8 +123,9 @@ export class JSUtils {
     static callMethod(methodName: string, args?: any[]) {
         Log.debug(`callMethod-> methodName:${methodName}, args=${args}`)
         if (AppManager.callIOS(methodName, args)) return
-        Browser.window.APP?.[methodName]?.call(null, ...args)
-        Browser.window.parent?.GameToHall?.[methodName]?.call(null, ...args)
+        const v = args || []
+        Browser.window.APP?.[methodName]?.call(null, ...v)
+        Browser.window.parent?.GameToHall?.[methodName]?.call(null, ...v)
     }
 
     /** 进入游戏进度条 */

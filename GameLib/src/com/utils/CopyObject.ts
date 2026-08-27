@@ -15,7 +15,7 @@ export class CopyObject {
      * @param parent 设置一个父对象  更换的时候 会同事转换原坐标到新的父对象上
      */
     static copyLoader(loader: GLoader, parent?: GComponent) {
-        let newObject: GLoader = new GLoader()
+        let newObject = new GLoader()
         newObject.setPivot(loader.pivotX, loader.pivotY, loader.pivotAsAnchor)
         newObject.setSize(loader.width, loader.height)
         newObject.setScale(loader.scaleX, loader.scaleY)

@@ -10,7 +10,7 @@ import {BaseGameData} from "../core/BaseGameData";
 /** 提示框 */
 export class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWindow<T> {
 
-    protected static _instance: PromptWindow
+    protected static _instance?: PromptWindow
 
     static get inst() {
         PromptWindow._instance ??= new PromptWindow()
@@ -37,16 +37,16 @@ export class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWin
     /** 确定 */
     protected continueBtn?: GButton
     /** 提示框的击中类型 */
-    protected buttonController: Controller
+    protected buttonController?: Controller
     /** 标题显示控制器 */
-    protected titleDisplayController: fgui.Controller
+    protected titleDisplayController?: fgui.Controller
     /**
      * 关闭按钮显示控制器
      */
-    protected closeButtonDisplayController: fgui.Controller
-    protected closeFun: ParamHandler
-    protected continueFun: ParamHandler
-    protected callback: ParamHandler
+    protected closeButtonDisplayController?: fgui.Controller
+    protected closeFun?: ParamHandler
+    protected continueFun?: ParamHandler
+    protected callback?: ParamHandler
     /** 缓存的提示框 */
     protected cacheMessage: PromptData[] = []
 
@@ -83,20 +83,20 @@ export class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWin
     }
 
     protected continueHandler() {
-        this.callback = null
-        this.closeFun = null
+        this.callback = undefined
+        this.closeFun = undefined
         if (this.parent) AppRecordManager.backHistory()
     }
 
     protected closeHandler() {
-        this.continueFun = null
-        this.callback = null
+        this.continueFun = undefined
+        this.callback = undefined
         if (this.parent) AppRecordManager.backHistory()
     }
 
     protected cancelHandler() {
-        this.closeFun = null
-        this.continueFun = null
+        this.closeFun = undefined
+        this.continueFun = undefined
         if (this.parent) AppRecordManager.backHistory()
     }
 
@@ -110,10 +110,12 @@ export class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWin
         runFun(this.continueFun)
         runFun(this.callback)
         runFun(this.closeFun)
-        this.callback = this.continueFun = this.closeFun = null
+        this.callback = this.continueFun = this.closeFun = undefined
         if (this.cacheMessage.length > 0) {
             let arr = this.cacheMessage.shift()
-            this._showWindow(arr.msg, arr.obj, arr.callback, arr.continue, arr.isAction)
+            if (arr) {
+                this._showWindow(arr.msg, arr.obj, arr.callback, arr.continue, arr.isAction)
+            }
         }
     }
 
@@ -170,7 +172,7 @@ export class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWin
     protected _show(data: PromptData) {
         let msg = data.msg
         if (Array.isArray(msg)) {
-            msg = getString.apply(null, msg) as string
+            msg = getString(msg[0], ...msg.slice(1))
         } else {
             msg = getString(msg)
         }
@@ -193,7 +195,8 @@ export class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWin
         if (this.continueBtn) this.continueBtn.text = obj.okName
         if (this.cancelBtn) this.cancelBtn.text = obj.cancelName
         this.setControllers(data)
-        this.content.text = msg
+        if (this.content)
+            this.content.text = msg
         if (this.titleText) this.titleText.text = data.title || ""
         this.callback = data.callback
         this.continueFun = data.continue
@@ -209,7 +212,7 @@ export class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWin
     override dispose() {
         this.clearCache()
         Laya.timer.clearAll(this)
-        PromptWindow._instance = null
+        PromptWindow._instance = undefined
         super.dispose()
     }
 

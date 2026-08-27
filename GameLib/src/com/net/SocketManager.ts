@@ -14,11 +14,11 @@ export class SocketManager extends ESocket {
     }
 
     /** 当前连接的房间号 */
-    private _roomId: number
+    private _roomId?: number
     /** 接受到的消息 */
-    private receiveData = []
+    private receiveData: any[] = []
 
-    private _client: tsCore.SocketClient
+    private _client?: tsCore.SocketClient
     static SocketClass = tsCore.SocketClient
     /**
      * 自定义socket url
@@ -34,7 +34,7 @@ export class SocketManager extends ESocket {
      *
      * })
      */
-    customUrl: ((url: string) => string) | Laya.Handler
+    customUrl?: ((url: string) => string) | Laya.Handler
 
     /**
      * 链接服务器socket
@@ -43,7 +43,7 @@ export class SocketManager extends ESocket {
      * @param userId 用户id 默认 110
      * @param url 连接地址 如果不存在 会使用 window.socketUrl
      */
-    connect(roomId: number, token: string, userId = 110, url?: string) {
+    connect(roomId: number, token?: string, userId = 110, url?: string) {
         if (this.isConnect) {
             this.close()
         }
@@ -56,7 +56,7 @@ export class SocketManager extends ESocket {
         let obj = {
             auth: {rid: this._roomId, uid: userId},
             notify: this.onMessageReceived.bind(this),
-            url: url,
+            url: url!,
             token: token
         }
 
@@ -90,13 +90,13 @@ export class SocketManager extends ESocket {
         this._roomId = -1
         if (this._client) this._client.isActive = false
         if (this._client) this._client.close()
-        this._client = null
+        this._client = undefined
         this.receiveData.splice(0, this.receiveData.length)
         super.close()
     }
 
     /** 服务器发来消息 */
-    onMessageReceived(data) {
+    onMessageReceived(data: any) {
         if (!this.isConnect) {
             return
         }
@@ -107,11 +107,11 @@ export class SocketManager extends ESocket {
         this._client?.onClose(msg)
     }
 
-    messageHandler(evt) {
+    messageHandler(evt: any) {
         this._client?.onMessage(evt)
     }
 
-    errorHandler(e) {
+    errorHandler(e: any) {
         this._client?.onError(e)
     }
 

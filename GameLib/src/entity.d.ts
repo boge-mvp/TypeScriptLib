@@ -153,7 +153,7 @@ declare type ExecuteData = {
     /** 执行数据 */
     data?: number | string
     /** 打开游戏名字 */
-    gameName?: string
+    gameName?: Nullable<string>
     /** 打开游戏id 和 gameId一样的 */
     openGame?: number
     /** 打开游戏id 和 openGame一样的 */
@@ -210,5 +210,5 @@ declare module tsCore.SoundUtils {
      */
     export function stopGameSound(url: string): void
 }
-
-
+/** 带显示监听 id 的回调（SceneManager 内部使用） */
+declare type VisibleHandler = ((v: boolean) => void) & { $vid?: number }

@@ -15,8 +15,8 @@ export class WaitResult extends GComponent {
     static CREATE_FUI_URL = "//gameCommon/WaitResult"
     static defaultDelay = 1000
 
-    private img: GImage
-    private graph: GGraph
+    private img!: GImage
+    private graph!: GGraph
 
     static show(delay = WaitResult.defaultDelay) {
         this.inst.show(delay)
@@ -32,8 +32,8 @@ export class WaitResult extends GComponent {
         this.addRelation(GRoot.inst, RelationType.Size)
         this.setSize(GRoot.inst.width, GRoot.inst.height)
 
-        this.img = this.getChild("n0").asImage
-        this.graph = this.getChild("n1").asGraph
+        this.img = this.getChild("n0")!
+        this.graph = this.getChild("n1")!
 
     }
 

@@ -29,12 +29,12 @@ import AjaxRequest = tsCore.AjaxRequest;
  */
 export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends EProxy implements IGameServlet {
 
-    protected _gameModel: IGameModel
-    protected initHandler: ParamHandler
+    protected _gameModel?: Nullable<IGameModel>
+    protected initHandler?: ParamHandler
     /** 当前访问接口获得游戏状态 */
-    protected gameStatus: number
+    protected gameStatus?: number
     /** 网络通信名字 */
-    networkName: string
+    networkName?: string
     /**
      * 全局外部定义的初始化
      *
@@ -220,7 +220,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
         let obj: any = {}
         obj.token = Player.inst.token
         obj.game_id = Player.inst.gameId
-        obj.is_gift = Player.inst.urlParam.isGift
+        obj.is_gift = Player.inst.urlParam?.isGift
         this.postData(`/game/${this.networkName}/init`, obj, succeed, error)
     }
 
@@ -273,7 +273,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
                 })
             } else this.nextInit()
         } else {
-            this.enterFail(true, null, request)
+            this.enterFail(true, undefined, request)
         }
     }
 
@@ -335,7 +335,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
      * @param data
      *
      */
-    protected abstract parseInitData(data: any)
+    protected abstract parseInitData(data: any): void
 
     /**
      * 拉取账户金额
@@ -404,7 +404,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
     sendBet(url: string, data: any, callback: HttpOnComplete) {
         this.postData(url, data, (data, request) => {
             if (data.code == HttpCode.OK) {
-                Player.inst.gameData.playCount++
+                Player.inst.gameData!.playCount++
                 Player.inst.playCount++
                 if (Player.inst.isGuest && Player.inst.guestModel) Player.inst.guestModel.guestPlayCount++
             }
@@ -486,11 +486,11 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
 
 
     get gameModel() {
-        this._gameModel ??= SceneManager.inst.starter.gameModel
+        this._gameModel ??= SceneManager.inst.starter?.gameModel
         return this._gameModel
     }
 
-    set gameModel(value: IGameModel) {
+    set gameModel(value: Nullable<IGameModel>) {
         this._gameModel = value
     }
 

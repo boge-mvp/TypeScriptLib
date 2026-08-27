@@ -7,10 +7,10 @@ import {ActionLib} from "../ActionLib"
 
 export class BaseStarter extends EProxy {
 
-    baseScene: BaseScene
-    gameServlet: GameServlet
-    gameModel: GameModel
-    private callback: ParamHandler
+    baseScene?: BaseScene
+    gameServlet?: GameServlet
+    gameModel?: GameModel
+    private callback?: ParamHandler
 
     constructor() {
         super()

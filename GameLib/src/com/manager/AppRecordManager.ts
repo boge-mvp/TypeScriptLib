@@ -1,4 +1,3 @@
-import Handler = Laya.Handler;
 import Browser = Laya.Browser;
 import Render = Laya.Render;
 import Utils = Laya.Utils;
@@ -22,7 +21,7 @@ export class AppRecordManager extends tsCore.HistoryManager {
 
 
     /** 进入大厅后执行命令 */
-    static executeJson: ExecuteData
+    static executeJson?: ExecuteData
     /** 退出点击上一次时间 */
     private static exitTimer = 0
 
@@ -116,16 +115,16 @@ export class AppRecordManager extends tsCore.HistoryManager {
                 }
                 break
             case 10008:
-                SceneManager.inst.openGame(null, value[0])
+                SceneManager.inst.openGame(undefined, value[0])
                 break
             case 1000:// 与java交互
                 let str: string = value[0]
                 Log.info(str)
                 let json: ExecuteData = JSON.parse(str)
-                let token: string = json.token
+                let token = json.token
                 if (token) {
                     Player.inst.token = token
-                    Player.inst.login.loginToken((data) => {
+                    Player.inst.login?.loginToken((data) => {
                         if (data?.code == HttpCode.OK) {
                             if (Player.inst.gameId != -1) {
                                 AppRecordManager.JavaSendOpen(json)
@@ -166,12 +165,12 @@ export class AppRecordManager extends tsCore.HistoryManager {
             return
         }
 
-        Player.inst.urlParam.parseData(json)
+        Player.inst.urlParam?.parseData(json)
         Log.debug(`JavaSendOpen() type=${json.type}`)
         Log.debug(`JavaSendOpen() openGame=${json.openGame}`)
         Log.debug(`JavaSendOpen() gameName=${json.gameName}`)
         if (!Player.inst.isGuest && json.token) {
-            Player.inst.login.loginToken((data) => {
+            Player.inst.login?.loginToken((data) => {
                 AppRecordManager.open(json)
             })
         } else {
@@ -184,7 +183,7 @@ export class AppRecordManager extends tsCore.HistoryManager {
         switch (json.type) {
             case 1:// 打开网页
                 HtmlWindow.inst.showTip(json.data)
-                AppRecordManager.executeJson = null
+                AppRecordManager.executeJson = undefined
                 break
             case 2:// 进入游戏
                 SceneManager.inst.openGame(json.gameName, Utils.parseInt(json.data) || Utils.parseInt(json.openGame) || -1)

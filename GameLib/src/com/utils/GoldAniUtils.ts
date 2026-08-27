@@ -28,10 +28,10 @@ export class GoldAniUtils {
 
     private loaders: GoldLoader[] = []
     private count = 0
-    private startPoint: Laya.Point
-    private endPoint: Laya.Point
-    private completeFun: ParamHandler
-    private goldTween: Tween
+    private startPoint?: Laya.Point
+    private endPoint?: Laya.Point
+    private completeFun?: ParamHandler
+    private goldTween?: Tween
     /** 宽 */
     goldW = 70
 
@@ -107,6 +107,7 @@ export class GoldAniUtils {
     private specialAward(len: number) {
         this.count = 0
         this.clearGoldLoader()
+        if (!this.startPoint || !this.endPoint) return
         for (let i = 0; i < len; i++) {
             let loader = GoldLoader.create()
             loader.icon = this.icon
@@ -183,7 +184,7 @@ export class GoldAniUtils {
     playGoldPointAni(targetObject: GObject, startPoint: PointType, endPoint: PointType, endHandler?: ParamHandler, parent?: fgui.GComponent, props?: GoldAniData) {
         parent ??= this.scene
         props ??= {}
-        targetObject.setXY(startPoint.x, startPoint.y)
+        targetObject.setXY(startPoint.x!, startPoint.y!)
         parent.addChild(targetObject)
         props.x = endPoint.x
         props.y = endPoint.y
@@ -194,7 +195,7 @@ export class GoldAniUtils {
         let ease = props.ease
         this.goldTween = Tween.to(targetObject, props, duration, ease,
             Laya.Handler.create(this, (endHandler: ParamHandler) => {
-                this.goldTween = null
+                this.goldTween = undefined
                 runFun(endHandler)
             }, [endHandler]), delay)
     }
@@ -214,7 +215,7 @@ export class GoldAniUtils {
 
     clearGoldLoader() {
         while (this.loaders.length) {
-            this.loaders.shift().recover()
+            this.loaders.shift()?.recover()
         }
     }
 

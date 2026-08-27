@@ -1,26 +1,26 @@
-import GComponent = fgui.GComponent
-import GList = fgui.GList
-import Graphics = Laya.Graphics
-import Point = Laya.Point
-import GLabel = fgui.GLabel
-import Handler = Laya.Handler
+import GComponent = fgui.GComponent;
+import GList = fgui.GList;
+import Graphics = Laya.Graphics;
+import Point = Laya.Point;
+import GLabel = fgui.GLabel;
+import Handler = Laya.Handler;
+import Log = tsCore.Log;
 import {BaseSlotItem} from "./BaseSlotItem"
 import {SceneManager} from "../manager/SceneManager"
 import {BaseSlotGameData} from "./BaseSlotGameData"
 import {SlotModel} from "./SlotModel"
 import {BaseView} from "./BaseView";
-import Log = tsCore.Log;
 import {ActionLib} from "../ActionLib";
 import {Player} from "../Player";
 
 export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends BaseView {
 
     /** 线的面板 */
-    protected linePanel: GComponent
+    protected linePanel?: GComponent
     /** 绘制线 */
-    protected lineGraphics: Graphics
+    protected lineGraphics?: Graphics
     /** 滚动开奖列表 */
-    protected list: GList
+    protected list?: GList
     /** 线数字 */
     protected lineNum = [
         [4, 2, 20, 16, 10, 1, 11, 17, 3, 5],
@@ -29,9 +29,9 @@ export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends
     /** 当前显示的中奖线 默认：0 */
     protected showLineIndex = 0
     /** 左侧线名字列表 */
-    protected leftLineList: GList
+    protected leftLineList?: GList
     /** 右侧线名字列表 */
-    protected rightLineList: GList
+    protected rightLineList?: GList
     /** 线的大小 默认：3 */
     protected lineSize = 3
     /** 线颜色 默认：#ff0000 */
@@ -45,7 +45,7 @@ export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends
     /**
      * 用于显示动画的面板
      */
-    aniPanel: GComponent
+    aniPanel!: GComponent
 
     protected override onInit() {
         super.onInit()
@@ -82,21 +82,21 @@ export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends
         if (alone) this.lineGraphics?.clear()
         let lottery = this.gameData.getLottery(value - 1)
         let index = 0
-        let list: GList
+        let list: Nullable<GList>
         let items: BaseSlotItem[] = []
         for (let k = 0; k < lottery.length; k += this.getSlotModel().rowNum) {
             list = this.getList(index)
             for (let i = 0; i < this.getSlotModel().rowNum; i++) {
                 if (lottery[k + i] == 1) {
-                    items.push(list.getChildAt(i) as BaseSlotItem)
+                    items.push(list?.getChildAt(i) as BaseSlotItem)
                     break
                 }
             }
             index++
         }
 
-        let isLeft: boolean
-        let tempBtnArray: any[]
+        let isLeft: Nullable<boolean>
+        let tempBtnArray: Nullable<any[]>
         if (this.lineNum[0].indexOf(value) != -1) {
             tempBtnArray = this.lineNum[0]
             isLeft = true
@@ -185,13 +185,13 @@ export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends
         // 指定的线  显示出来
         let lottery = this.gameData.getLottery(lineId)
         let tempItemValue = -1; // 临时值
-        let slotItem: BaseSlotItem
+        let slotItem: Nullable<BaseSlotItem>
         for (let k = 0; k < lottery.length; k++) {
             let tempValue = lottery[k]
             if (tempValue == 1) {
                 let tempCol = Math.floor(k / this.getSlotModel().rowNum)
                 let tempRow = k % this.getSlotModel().rowNum
-                slotItem = this.getList(tempCol).getChildAt(tempRow) as BaseSlotItem
+                slotItem = this.getList(tempCol)?.getChildAt(tempRow) as BaseSlotItem
                 if (tempItemValue == -1) {
                     if (slotItem.data != this.getSlotModel().WILD) {
                         tempItemValue = slotItem.data; // 没有第一个中奖值 这里初始化设置
@@ -216,8 +216,8 @@ export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends
         let list = this.getList(colIndex)
         for (let j = 0; j < dataArr.length; j++) {
             if (dataArr[j] == 1) {
-                foot = list.getChildAt(j) as BaseSlotItem
-                foot.showWin()
+                foot = list?.getChildAt(j) as BaseSlotItem
+                foot?.showWin()
             }
         }
     }
@@ -264,11 +264,11 @@ export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends
      * @param col 列
      * @param index 位置
      */
-    showItem(col: number, ...index) {
+    showItem(col: number, ...index: number[]) {
         this.allSlotItemDark()
-        let list: GList = this.getList(col)
+        let list = this.getList(col)
         for (let i = 0; i < index.length; i++) {
-            (<BaseSlotItem>list.getChildAt(index[i])).showWin()
+            (<BaseSlotItem>list?.getChildAt(index[i]))?.showWin()
         }
     }
 
@@ -276,17 +276,17 @@ export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends
      * 单独显示指定id的项
      * @param id 中奖的id
      */
-    showDataItem(id) {
+    showDataItem(id: any) {
         this.allSlotItemDark()
-        for (let i = 0; i < this.list.numChildren; i++) {
-            let list: GList = this.getList(i)
-            for (let j = 0; j < list.numChildren; j++) {
-                let item = (<BaseSlotItem>list.getChildAt(j))
+        this.list?._children?.forEach((_value, index) => {
+            let list = this.getList(index)
+            list?._children?.forEach((_value1, index1) => {
+                let item = list.getChildAt(index1) as BaseSlotItem
                 if (item.data == id) {
                     item.showWin()
                 }
-            }
-        }
+            })
+        })
     }
 
     /** 获取单个滚动列表 */
@@ -320,7 +320,7 @@ export class BaseSlotView<T extends BaseSlotGameData = BaseSlotGameData> extends
     }
 
     getSlotModel() {
-        return SceneManager.inst.starter.gameModel as SlotModel
+        return SceneManager.inst.starter?.gameModel as SlotModel
     }
 
     /**

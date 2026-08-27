@@ -42,15 +42,15 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
     /** bonus事件 */
     EVENT_BONUS = "bonus"
 
-    protected _gameModel: IGameModel
+    protected _gameModel?: Nullable<IGameModel>
     /** 游戏说明 */
-    protected guideSprite: GLoader
+    protected guideSprite?: GLoader
     /** 启动事件 */
     protected startupEvent: { handler: ParamHandler, weight?: number, name?: string }[] = []
     /** 当前游戏的活动按钮 */
-    activityBtn: ActivityButton
+    activityBtn?: ActivityButton
     /** 提示文案 */
-    promptTip: PromptTip
+    promptTip?: PromptTip
     /** 奖金组件 */
     jackpotBtn: any
     /** 是否在执行运行事件 */
@@ -91,7 +91,8 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
      * @param value 房间号
      */
     protected updateRoomIdChange(value: number) {
-        this.gameModel.gameCode = value
+        if (this.gameModel)
+            this.gameModel.gameCode = value
     }
 
     /**
@@ -107,7 +108,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
 
     /** 押注变化 */
     private betChangeHandler() {
-        let betValue = Player.inst.gameData.getTotalBetMoney()
+        let betValue = Player.inst.gameData!.getTotalBetMoney()
         // 清理正在使用的优惠券
         let useObj = Player.inst.getUseCoupon()
         if (useObj) {
@@ -195,7 +196,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
      */
     protected override addedHandler() {
         super.addedHandler()
-        HistoryManager.addHistory(null, this)
+        HistoryManager.addHistory(undefined, this)
         this.updateRoomIdChange(Player.inst.gameId)
         // 因为有旋转屏幕  为了获取正确的宽高  延迟执行添加舞台
         Laya.timer.callLater(this, this.regEvent)
@@ -231,12 +232,12 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
      * 注册启动事件
      * @param handler 执行的方法
      * @param weight 权重 越大越后执行  默认0
-     * @param name 事件名字 默认 null
+     * @param name 事件名字 默认 undefined
      */
-    regStartupEvent(handler: ParamHandler, weight = 0, name = null) {
+    regStartupEvent(handler: ParamHandler, weight = 0, name?: string) {
         for (let i = 0; i < this.startupEvent.length; i++) {
             let regs = this.startupEvent[i]
-            if (regs.weight > weight) {// 传入的值比当前值小
+            if (regs.weight && regs.weight > weight) {// 传入的值比当前值小
                 this.regStartupEventIndex(i, handler, weight, name)
                 return
             }
@@ -250,9 +251,9 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
      * @param index 位置
      * @param handler 方法
      * @param weight 权重 默认0
-     * @param name 事件名字 默认 null
+     * @param name 事件名字 默认 undefined
      */
-    regStartupEventIndex(index: number, handler: ParamHandler, weight = 0, name = null) {
+    regStartupEventIndex(index: number, handler: ParamHandler, weight = 0, name?: string) {
         Log.debug("regStartupEventIndex -> name = " + name)
         this.startupEvent.splice(index, 0, {handler: handler, weight: weight, name: name})
     }
@@ -312,8 +313,8 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
     runEvent() {
         if (this.startupEvent.length > 0) {
             let event = this.startupEvent.shift()
-            Log.debug("execute event = " + event.name)
-            runFun(event.handler)
+            Log.debug("execute event = " + event?.name)
+            runFun(event?.handler)
         } else {
             this.runEventEnd()
         }
@@ -349,7 +350,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
         HistoryManager.pauseHistory = true
         // 同步用户金额
         PromptWindow.inst.clearCache()
-        this.gameModel.gameServlet.getUserMoney((obj: HttpResponse) => {
+        this.gameModel!.gameServlet!.getUserMoney((obj: HttpResponse) => {
             if (obj.code == HttpCode.OK) {
                 let data = obj.data
                 Player.inst.money = data.balance
@@ -369,12 +370,12 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
 
     /**
      * 邀请玩现金场 的基本需求
-     * @returns {boolean}
      */
-    static inviteRealMoneyNeed = (): boolean => {
+    static inviteRealMoneyNeed = () => {
         let gameData = Player.inst.gameData
         let winLimit = (gameData?.getTotalBetMoney() ?? 0) * 3
-        return Player.inst.isGuest && Player.inst.guestModel?.guestPlayCount >= CommonCmd.GUEST_MAX_PLAY_COUNT && (
+        const guestPlayCount = Player.inst.guestModel?.guestPlayCount || 0
+        return Player.inst.isGuest && guestPlayCount >= CommonCmd.GUEST_MAX_PLAY_COUNT && (
             gameData != null && !gameData.isRecommend && winLimit <= (gameData?.totalWinMoney ?? 100)
         )
     }
@@ -390,7 +391,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
      * @param handler - 可选的回调函数，在逻辑处理完成后执行
      */
     newGameStartLogic(handler?: ParamHandler) {
-        let gameData = Player.inst.gameData
+        let gameData = Player.inst.gameData!
         if (BaseScene.inviteRealMoneyNeed()) {
             gameData.isRecommend = true
             this.showInviteRealMoney(handler)
@@ -413,7 +414,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
         let obj: IPromptData = {okName: "Ok"}
         if (Player.inst.token) {
             WaitResult.inst.show()
-            this.gameModel.gameServlet.postData(Player.inst.data.getWapUrl(Urls.URL_USER_ACCOUNT_ASSET),
+            this.gameModel!.gameServlet!.postData(Player.inst.data.getWapUrl(Urls.URL_USER_ACCOUNT_ASSET),
                 {token: Player.inst.token}, (data, request) => {
                     WaitResult.inst.hide()
                     if (data.code == HttpCode.OK && data.data) {
@@ -480,11 +481,11 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
     }
 
     get gameModel() {
-        this._gameModel ??= SceneManager.inst.starter.gameModel
+        this._gameModel ??= SceneManager.inst.starter?.gameModel
         return this._gameModel
     }
 
-    set gameModel(value: IGameModel) {
+    set gameModel(value: Nullable<IGameModel>) {
         this._gameModel = value
     }
 
@@ -523,7 +524,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
     protected eventGuestTip() {
         // let value: string = LocalStorage.getItem(Player.inst.gameId + "_demo")
         // if (Player.inst.isGuest && !value) {
-        if (Player.inst.isGuest && !Player.inst.urlParam.debug) {
+        if (Player.inst.isGuest && !Player.inst.urlParam?.debug) {
             PromptWindow.inst.showTip(
                 {msg: LibStr.PROMPT_GUEST, obj: {cancelName: getString(LibStr.OK)}, callback: this.runEvent.bind(this)}
             )
@@ -580,7 +581,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
     /** 显示引导页 默认不显示引导页 */
     protected showGuide() {
         let obj = GameConfigKit.gameRes()
-        if (obj.guide) {// 如果存在引导页配置  默认使用全屏展示
+        if (obj?.guide) {// 如果存在引导页配置  默认使用全屏展示
             this.loadFillImage(obj.guide)
             return true
         }
@@ -600,11 +601,11 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
         this.guideSprite.onClick(this, () => {
             index++
             if (index >= urls.length) {
-                this.guideSprite.dispose()
-                this.guideSprite = null
+                this.guideSprite?.dispose()
+                this.guideSprite = undefined
                 this.runEvent()
             } else {
-                this.guideSprite.url = urls[index]
+                if (this.guideSprite) this.guideSprite.url = urls[index]
             }
         })
         this.guideSprite.url = urls[index]

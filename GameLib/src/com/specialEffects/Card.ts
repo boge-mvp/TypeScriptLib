@@ -4,21 +4,21 @@ import ELabel = tsCore.ELabel;
 export class Card extends ELabel {
 
     /** 卡牌的id */
-    code: number
+    code!: number
     /** 卡牌面值 */
-    value: number
+    value!: number
     /** 卡牌名字 */
-    nameCard: string
+    nameCard!: string
     /** 卡牌花色 */
-    suit: number
+    suit!: number
     /** 卡牌花色名字 */
-    _suitName: string
+    _suitName!: string
     /** 初始化X */
-    initX: number
+    initX!: number
     /** 初始化Y */
-    initY: number
+    initY!: number
     /** XY偏移量 */
-    offset: number
+    offset!: number
     /** 偏移倍数 */
     offsetMultiple: number = 0
     /** 中心点 */

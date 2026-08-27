@@ -4,6 +4,8 @@ import {GameModel} from "./GameModel"
 import {BaseSlotGameData} from "./BaseSlotGameData";
 import {ActionLib} from "../ActionLib";
 import {Player} from "../Player";
+import {IScrollStrategy, ScrollConfig, ScrollStrategyType} from "./strategy/ISlotScrollStrategy";
+import {SlotScrollStrategyFactory} from "./strategy/SlotScrollStrategyFactory";
 
 export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> extends GameModel<T> {
 
@@ -14,9 +16,13 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
      */
     protected lotteryData: SlotLotteryData[] = []
     /** 缓动的缓存 */
-    protected tweenList: Tween[]
+    protected tweenList: Tween[] = []
     /** 完成动画数量 */
-    protected completeCount: number
+    protected completeCount!: number
+    /** 当前滚动策略 */
+    protected _scrollStrategy: Nullable<IScrollStrategy> = null
+    /** 滚动配置 */
+    protected _scrollConfig: ScrollConfig = {}
     /**
      * 是否是向上滚动的 一般开始的位置都是顶部
      * @default false
@@ -33,7 +39,7 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
      */
     WILD = 12
     /** 满足2个就可以连上的线否则至少3个才可以连线,存放图片id */
-    protected smallPrize = []
+    protected smallPrize: number[] = []
     /** 滚动列表展示行数 默认3行 */
     rowNum = 3
     /** 滚动列表展示列数 默认5列 */
@@ -46,7 +52,6 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
 
     constructor() {
         super()
-        this.tweenList = []
     }
 
     /**
@@ -63,7 +68,7 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
     }
 
     /** 获取指定位置的列表 */
-    getRollList(index) {
+    getRollList(index: number) {
         return this.listRolls[index]
     }
 
@@ -78,6 +83,7 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
 
     /** 立即停止开奖动画 */
     stopTween() {
+        this._scrollStrategy?.slamStop()
         if (this.tweenList.length == 0) {
             this.rollComplete()
             return
@@ -127,7 +133,7 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
      * @param list
      * @protected
      */
-    protected getItemHeight(list: GList) {
+    getItemHeight(list: GList) {
         return list.getChildAt(0).height
     }
 
@@ -137,7 +143,7 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
      * @param isTurboMode 是否快速播放
      * @return 运行时长
      */
-    protected abstract getDuration(index: number, isTurboMode: boolean): number
+    abstract getDuration(index: number, isTurboMode: boolean): number
 
     /**
      * 获取 Tween 运行延迟
@@ -145,7 +151,7 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
      * @param isTurboMode 是否快速播放
      * @return 延迟值
      */
-    protected abstract getDelay(index: number, isTurboMode: boolean): number
+    abstract getDelay(index: number, isTurboMode: boolean): number
 
     /**
      * 判断此列表是否需要滚动
@@ -153,7 +159,7 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
      * @param index 位置
      * @return true 继续滚动  false 停止滚动
      */
-    protected isRunList(list: GList, index: number) {
+    isRunList(list: GList, index: number) {
         return true
     }
 
@@ -205,7 +211,7 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
             return
         }
         if (this.gameData.isFreeModel && this.gameData.freeCount > 0) { //如果在特殊场景里面
-            Laya.timer.once(this.delayNextRound, this, function () {
+            Laya.timer.once(this.delayNextRound, this, () => {
                 this.sendAction(ActionLib.GAME_START)
             })
             return
@@ -370,10 +376,35 @@ export abstract class SlotModel<T extends BaseSlotGameData = BaseSlotGameData> e
         return index % this.colNum
     }
 
+    /**
+     * 设置滚动策略
+     * @param type 策略类型
+     * @param config 可选配置
+     */
+    setScrollStrategy(type: ScrollStrategyType, config?: ScrollConfig): void {
+        this._scrollStrategy?.dispose()
+        this._scrollStrategy = SlotScrollStrategyFactory.create(type)
+        if (config) this._scrollConfig = {...this._scrollConfig, ...config}
+    }
+
+    /** 更新滚动配置 */
+    updateScrollConfig(config: Partial<ScrollConfig>): void {
+        this._scrollConfig = {...this._scrollConfig, ...config}
+    }
+
+    /** 获取当前策略 */
+    getScrollStrategy(): Nullable<IScrollStrategy> {
+        return this._scrollStrategy
+    }
+
     override dispose() {
-        while (this.tweenList.length > 0) {
-            this.tweenList.shift().clear()
-        }
+        this._scrollStrategy?.dispose()
+        this._scrollStrategy = null
+        this.tweenList.removeAll(value => {
+                value.clear()
+                return true
+            }
+        )
         super.dispose()
     }
 

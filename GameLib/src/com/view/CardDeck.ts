@@ -12,14 +12,14 @@ export class CardDeck extends BaseView {
 
     static NAME: string = "CardDeck"
 
-    private load: GLoader
+    private load!: GLoader
     /** 在数组中的位置 */
-    pos: number
+    pos!: number
     static CREATE_FUI_URL = "//gameCommon/CardDeck"
 
     protected override onConstruct() {
         super.onConstruct();
-        this.load = this.getChild("n0").asLoader
+        this.load = this.getChild("n0")!.asLoader
         this.scaleX = this.scaleY = .9
     }
 
@@ -29,18 +29,20 @@ export class CardDeck extends BaseView {
         let offsetX = this.plusMinus(Math.random() * 90 + 30)
         let delay = i * 2
 
-        Tween.to(this, {x: offsetX, y: -z}, 200, null, Handler.create(this, completeHandler), delay)
-
-        Laya.timer.once(100 + delay, this, function () {
-            this.parent.setChildIndex(this, i)
-        })
-
-        function completeHandler() {
+        const completeHandler = ()=> {
             Tween.to(this, {x: -z, y: -z}, 200)
             Laya.timer.once(200, this, function () {
                 runFun(func, i)
             })
         }
+
+        Tween.to(this, {x: offsetX, y: -z}, 200, null, Handler.create(this, completeHandler), delay)
+
+        Laya.timer.once(100 + delay, this,  ()=> {
+            this.parent.setChildIndex(this, i)
+        })
+
+
     }
 
     private plusMinus(value: number): number {
@@ -54,6 +56,7 @@ export class CardDeck extends BaseView {
 
     revert() {
         Tween.clearAll(this)
+        // @ts-ignore
         this.load.url = null
         this.removeFromParent()
     }

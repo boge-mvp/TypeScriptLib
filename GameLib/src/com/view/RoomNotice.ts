@@ -8,16 +8,16 @@ import GComponent = fgui.GComponent
  */
 export class RoomNotice extends GComponent {
 
-    private loader: GLoader
-    private userName: GTextField
-    private money: GTextField
+    private loader!: GLoader
+    private userName!: GTextField
+    private money!: GTextField
 
     protected override onConstruct() {
         super.onConstruct();
 
-        this.loader = this.getChild("n1").asLoader
-        this.userName = this.getChild("n2").asTextField
-        this.money = this.getChild("n3").asTextField
+        this.loader = this.getChild("n1")!.asLoader
+        this.userName = this.getChild("n2")!.asTextField
+        this.money = this.getChild("n3")!.asTextField
 
     }
 

@@ -4,21 +4,21 @@ import MathKit = tsCore.MathKit;
 export class RotationUtils {
 
     /** 当前速度 */
-    private speed: number
+    private speed!: number
     /** 加速度 */
-    private addSpeed: number
+    private addSpeed!: number
     /** 要被旋转的对象 */
-    private comp: fgui.GObject
+    private comp!: fgui.GObject
     /** 总的角位移 */
-    private rotationTotal: number
+    private rotationTotal!: number
     /** 最终停止的位置 */
-    private runEndIndex: number
+    private runEndIndex!: number
     /** 旋转结束后调用函数 */
-    private endCall: ParamHandler
+    private endCall?: ParamHandler
     /** 转动开始消弱后调用函数 */
-    private proCall: ParamHandler
+    private proCall?: ParamHandler
     /** 缓动 */
-    private tween: Laya.Tween
+    private tween?: Laya.Tween
 
     /**
      * 速度最大值
@@ -97,7 +97,7 @@ export class RotationUtils {
      * @param isClockwise 是否是顺时针方向转动
      *
      */
-    private roll(comp: fgui.GObject, runEndIndex: number, callback: ParamHandler, proCall: ParamHandler, isFrame: boolean, isClockwise: boolean) {
+    private roll(comp: fgui.GObject, runEndIndex: number, callback: ParamHandler, proCall?: ParamHandler, isFrame?: boolean, isClockwise?: boolean) {
         this.comp = comp
         this.endCall = callback
         this.proCall = proCall
@@ -133,14 +133,14 @@ export class RotationUtils {
         let rt = this.rotationTotal - this.rotationTotal / 3
         if (rt <= this.comp.rotation) {
             runFun(this.proCall)
-            this.proCall = null
+            this.proCall = undefined
         }
     }
 
     private onRollEndHandler() {
-        this.tween = null
+        this.tween = undefined
         runFun(this.endCall)
-        this.endCall = null
+        this.endCall = undefined
     }
 
     private runHandler() {
@@ -149,7 +149,7 @@ export class RotationUtils {
             this.speed = 2 * this.maxSpeed - this.speed;//最大速度超范围后修正回来!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!关键
             this.addSpeed = -this.addSpeed
             runFun(this.proCall)
-            this.proCall = null
+            this.proCall = undefined
         }
 
         this.speed += this.addSpeed
@@ -165,9 +165,9 @@ export class RotationUtils {
     /** 销毁动画 */
     diapose() {
         this.tween?.clear()
-        this.tween = null
-        this.endCall = null
-        this.proCall = null
+        this.tween = undefined
+        this.endCall = undefined
+        this.proCall = undefined
         if (this.comp) Laya.Tween.clearAll(this.comp)
         Laya.timer.clear(this, this.runHandler)
     }
@@ -175,9 +175,9 @@ export class RotationUtils {
     /** 立即停止到结束为止 */
     stop() {
         this.tween?.complete()
-        this.tween = null
-        this.endCall = null
-        this.proCall = null
+        this.tween = undefined
+        this.endCall = undefined
+        this.proCall = undefined
         if (this.comp) Tween.clearAll(this.comp)
         Laya.timer.clear(this, this.runHandler)
     }

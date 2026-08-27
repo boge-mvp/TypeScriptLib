@@ -6,7 +6,7 @@ import {GameConfigKit} from "../kit/GameConfigKit";
 
 export class NoticeView extends BaseView {
 
-    private richText: fgui.GRichTextField
+    private richText!: fgui.GRichTextField
     private tempX = 0
     /** 是否在滚动 */
     private isRun = false
@@ -21,7 +21,7 @@ export class NoticeView extends BaseView {
 
     protected override onInit() {
         super.onInit()
-        this.richText = this.getChild("n1").asCom.getChild("n1").asRichTextField
+        this.richText = this.getChild("n1")!.asCom.getChild("n1")!.asRichTextField
         this.tempX = this.richText.x
     }
 

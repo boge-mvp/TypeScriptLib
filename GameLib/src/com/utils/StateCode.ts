@@ -22,7 +22,7 @@ export class StateCode {
      */
     static getShowMessage(data?: HttpResponse) {
         if (!data) return getString(LibStr.NET_ERROR)
-        if (data.message?.length > 0) {
+        if (data.message && data.message.length > 0) {
             return data.message
         } else if (data.msg?.length > 0) {
             return data.msg
@@ -34,7 +34,7 @@ export class StateCode {
      * 显示错误信息
      * @param code 错误代号
      */
-    static getInfo(code: number) {
+    static getInfo(code?: number) {
         let content: string
         switch (code) {
             case HttpCode.LOGIN_INVALIDITY: // 未登陆，请先登陆
@@ -64,13 +64,13 @@ export class StateCode {
      * @param code 执行错误代码
      * @param msg 提示文案或具有错误信息的object *.msg *.message
      */
-    static execute(code: number, msg: string | any = null) {
+    static execute(code?: number, msg?: string | any) {
         switch (code) {
             case HttpCode.OK:
                 return false
             case HttpCode.LOGIN_INVALIDITY:// 请登录
                 Log.debug("StateCode.execute() " + HttpCode.LOGIN_INVALIDITY)
-                if (Player.inst.urlParam.isJumpPage()) {
+                if (Player.inst.urlParam?.isJumpPage()) {
                     JSUtils.login()
                     return true
                 }
@@ -84,9 +84,9 @@ export class StateCode {
                     if (Player.inst.gameId == -1) {
                         LocalStorage.removeItem("token")
                         LocalStorage.removeItem("userData")
-                        Player.inst.token = null
-                        if (Player.inst.urlParam.isJumpPage()) {
-                            Player.inst.urlParam.clearJumpPage()
+                        Player.inst.token = undefined
+                        if (Player.inst.urlParam?.isJumpPage()) {
+                            Player.inst.urlParam?.clearJumpPage()
 //								SceneManager.inst.enterGame()
 //								return
                         }
@@ -94,7 +94,7 @@ export class StateCode {
                     } else {
                         SceneManager.inst.logout()
                     }
-                }, null, {cancelName: getString(LibStr.OK)})
+                }, undefined, {cancelName: getString(LibStr.OK)})
                 return true
             case HttpCode.GAME_PAUSE:// 游戏暂停中
                 Log.debug("StateCode.execute() 8003")

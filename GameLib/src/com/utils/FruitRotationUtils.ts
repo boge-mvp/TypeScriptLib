@@ -22,22 +22,22 @@ export class FruitRotationUtils {
     /** 当前跑动圈数 */
     protected currentRunCount = 0
     /** 跑动是否结束了 */
-    protected isRunEnd: boolean
+    protected isRunEnd!: boolean
     /** 奖励 */
-    protected awards = []
+    protected awards: any[] = []
     /** 顺时针方向跑动 */
-    protected catapultDirection: boolean
+    protected catapultDirection?: boolean
     /** 预选位置偏移量 */
     private preselectionOffset = 4
 
     /** 运行调用函数 */
-    private runCallback: ParamHandler
+    private runCallback?: ParamHandler
     /** 选定阶段调用函数 */
-    private selectedCallback: ParamHandler
+    private selectedCallback?: ParamHandler
     /** 结束调用函数 */
-    private playRunSlotEndCallback: ParamHandler
+    private playRunSlotEndCallback?: ParamHandler
     /** 结束调用函数 */
-    private runEndCallback: ParamHandler
+    private runEndCallback?: ParamHandler
     /** 舞台对象 */
     private fruit: IFruit
 

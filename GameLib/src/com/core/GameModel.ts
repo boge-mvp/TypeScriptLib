@@ -35,20 +35,20 @@ export class GameModel<T extends IGameData = BaseGameData> extends EProxy implem
      * @deprecated
      * @see SceneManager.inst.starter.baseScene
      */
-    protected _gameScene: IGameScene
+    protected _gameScene?: IGameScene
     /**
      * @deprecated
      * @see SceneManager.inst.starter.gameServlet
      */
-    protected _gameServlet: IGameServlet
+    protected _gameServlet?: IGameServlet
     /** 游戏番号 */
-    protected _gameCode: number
+    protected _gameCode!: number
     /** 原始音乐备份 */
     protected musicBack: any
     /** 大厅model
      * @deprecated
      */
-    private _homeModel: IHomeModel
+    private _homeModel?: IHomeModel
     /** 当前屏幕方向 */
     gameScreenType = Stage.SCREEN_VERTICAL
     /** 任务 */
@@ -87,7 +87,7 @@ export class GameModel<T extends IGameData = BaseGameData> extends EProxy implem
         this.addSocketEvent(Cmd.SOCKET_SHOW_NOTICE, this.onNotice.bind(this))
     }
 
-    private onNotice(obj) {
+    private onNotice(obj: { data: any[]; }) {
         let notice = this.getView(NoticeView)
         if (notice) (<NoticeView>notice).showText(obj.data)
     }
@@ -191,7 +191,7 @@ export class GameModel<T extends IGameData = BaseGameData> extends EProxy implem
         if (StringUtil.isEmpty(configName)) return
         let loadObj = GameConfigKit.gameRes(configName)
         if (loadObj) {
-            let fuiName: string
+            let fuiName: Nullable<string>
             let res = loadObj.res
             for (let k = 0; k < res.length; k++) {
                 fuiName = res[k].url
@@ -200,7 +200,7 @@ export class GameModel<T extends IGameData = BaseGameData> extends EProxy implem
                     break
                 }
             }
-
+            if (!fuiName) return
             let pack = UIPackage.getByName(fuiName)
             if (pack) UIPackage.removePackage(pack.id)
             AssetsLoader.checkBranch(res)
@@ -284,12 +284,12 @@ export class GameModel<T extends IGameData = BaseGameData> extends EProxy implem
         Log.debug("focusGame")
     }
 
-    get gameScene(): BaseScene {
-        return SceneManager.inst.starter.baseScene
+    get gameScene(): Nullable<BaseScene> {
+        return SceneManager.inst.starter?.baseScene
     }
 
-    get gameServlet(): GameServlet {
-        return SceneManager.inst.starter.gameServlet
+    get gameServlet(): Nullable<GameServlet> {
+        return SceneManager.inst.starter?.gameServlet
     }
 
     /**

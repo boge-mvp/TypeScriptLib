@@ -14,7 +14,7 @@ import Browser = Laya.Browser;
 export class AnalyticsManager {
 
     /** 开启数据统计 */
-    public static isOpenAnalytics = true
+    public static isOpenAnalytics: Nullable<boolean> = true
 
     /** 打开了一个游戏 */
     static openGame() {
@@ -36,7 +36,7 @@ export class AnalyticsManager {
      */
     static sendGameAnalysis(eventAction: string, eventLabel?: string) {
         // 获取当前的游戏配置
-        let gameName = GameConfigKit.gameNameCanonical(null, "_")?.toLowerCase()
+        let gameName = GameConfigKit.gameNameCanonical(undefined, "_")?.toLowerCase()
         if (gameName) {
             eventLabel ??= Player.inst.isGuest ? "demo" : "cash"
             AnalyticsManager.send(gameName + "_" + eventAction, eventLabel)
@@ -76,7 +76,7 @@ export class AnalyticsManager {
      */
     static ga(type: gaType, category: string, action: string, label: string, value?: string) {
         this.isOpenAnalytics = ConfigKit.get("openAnalytics")
-        if (Player.inst.urlParam.debug) {
+        if (Player.inst.urlParam?.debug) {
             const encoder = new TextEncoder()
             const categoryLen = encoder.encode(category).length
             const actionLen = encoder.encode(action).length
@@ -84,11 +84,11 @@ export class AnalyticsManager {
             Log.debug(`category=${categoryLen} action=${actionLen} label=${labelLen}`)
         }
         if (this.isOpenAnalytics && !Browser.onLayaRuntime) {
-            if (window.ga) {
+            if (ConfigKit.get("ga")) {
                 ga('send', type, category, action, label)
             }
             value ??= label
-            if (window.gtag) {
+            if (ConfigKit.get("gtag")) {
                 gtag(type, action, {
                     event_category: category,
                     event_label: label,

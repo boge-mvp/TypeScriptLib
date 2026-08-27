@@ -13,20 +13,20 @@ import DateUtils = tsCore.DateUtils;
 export class ActivityButton extends EButton {
 
     private tempValue = 0
-    private clickInvalid: boolean
-    callback: ParamHandler
-    private contentText: GTextField
+    private clickInvalid?: boolean
+    callback?: ParamHandler
+    private contentText?: GTextField
     /** 当没有优惠卷使用的时候 是否自动隐藏 */
     isAutoHide = true
     /** 自定义更新文字显示 */
-    updateText: ParamHandler
+    updateText?: ParamHandler
 
     protected override onConstruct() {
         super.onConstruct();
         this.draggable = false
 
         if (this.getChild("n10")) {
-            this.contentText = this.getChild("n10").asTextField
+            this.contentText = this.getChild("n10")?.asTextField
         } else {
             this.contentText = this._titleObject.asTextField
         }
@@ -71,10 +71,12 @@ export class ActivityButton extends EButton {
      */
     setCorner(value: number) {
         this.tempValue = value
-        if (value > 0) {
-            this.contentText.text = getString(LibStr.USE_IN_GIFT, value)
-        } else {
-            this.contentText.text = getString(LibStr.NOT_GIFT)
+        if (this.contentText) {
+            if (value > 0) {
+                this.contentText.text = getString(LibStr.USE_IN_GIFT, value)
+            } else {
+                this.contentText.text = getString(LibStr.NOT_GIFT)
+            }
         }
         if (this.isAutoHide) this.visible = value > 0
     }
@@ -162,8 +164,8 @@ export class ActivityButton extends EButton {
     }
 
     private onDragStart() {
-        if (SceneManager.inst.starter.baseScene.promptTip)
-            SceneManager.inst.starter.baseScene.promptTip.hide()
+        if (SceneManager.inst.scene?.promptTip)
+            SceneManager.inst.scene.promptTip.hide()
     }
 
 }

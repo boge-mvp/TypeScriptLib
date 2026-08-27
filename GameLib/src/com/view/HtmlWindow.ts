@@ -21,15 +21,16 @@ export class HtmlWindow extends fgui.Window implements IRecord {
 
     private static _instance: HtmlWindow
     static CREATE_FUI_URL = "//common/HtmlWindow"
+
     static get inst() {
         this._instance ??= new HtmlWindow
         return this._instance
     }
 
-    private closeHandler: ParamHandler
+    private closeHandler?: ParamHandler
     /** 页面名字 */
-    private htmlText: GTextField
-    private btn: GButton
+    private htmlText?: GTextField
+    private btn?: GButton
 
     private obj: any = {
         "aboutus.html": "About us",
@@ -40,10 +41,10 @@ export class HtmlWindow extends fgui.Window implements IRecord {
         "a": ""
     }
 
-    private tempX: number
-    private tempY: number
+    private tempX!: number
+    private tempY!: number
     /** 加载动画控制器 */
-    private loadMovieClip: Controller
+    private loadMovieClip?: Controller
 
     protected override onInit() {
 
@@ -53,11 +54,11 @@ export class HtmlWindow extends fgui.Window implements IRecord {
         this.contentPane.addRelation(GRoot.inst, RelationType.Size)
         this.loadMovieClip = this.contentPane.getController("c1")
 
-        this.btn = this.contentPane.getChild("n1").asButton
-        this.htmlText = this.contentPane.getChild("n5").asTextField
+        this.btn = this.contentPane.getChild("n1")?.asButton
+        this.htmlText = this.contentPane.getChild("n5")?.asTextField
 
         this.contentPane.setSize(GRoot.inst.width, GRoot.inst.height)
-        this.btn.onClick(this, this.hide)
+        this.btn?.onClick(this, this.hide)
 
     }
 
@@ -80,10 +81,11 @@ export class HtmlWindow extends fgui.Window implements IRecord {
      */
     openHtml(url: string, full = false, closeHandler?: ParamHandler) {
         this.closeHandler = closeHandler
-        HistoryManager.addHistory(null, this)
+        HistoryManager.addHistory(undefined, this)
         this.show()
         App.inst.sendAction(ActionLib.GAME_UPDATE_DEFAULT_SCREEN)
-        this.loadMovieClip.selectedIndex = 0
+        if (this.loadMovieClip)
+            this.loadMovieClip.selectedIndex = 0
 
         // 是否要使用  默认的  url
         let isHtmlUrl: boolean = !url.startsWith("http")
@@ -128,17 +130,20 @@ export class HtmlWindow extends fgui.Window implements IRecord {
      */
     showTip(url: string, full = false, closeHandler?: ParamHandler) {
         this.closeHandler = closeHandler
-        HistoryManager.addHistory(null, this)
+        HistoryManager.addHistory(undefined, this)
         this.show()
         App.inst.sendAction(ActionLib.GAME_UPDATE_DEFAULT_SCREEN)
 
-        this.loadMovieClip.selectedIndex = 0
+        if (this.loadMovieClip) {
+            this.loadMovieClip.selectedIndex = 0
+        }
 
         // 是否要使用  默认的  url
         let isHtmlUrl: boolean = !url.startsWith("http")
 
         if (!Render.isConchApp) {
-            this.btn.visible = this.htmlText.visible = !full
+            if (this.btn) this.btn.visible = !full
+            if (this.htmlText) this.htmlText.visible = !full
 
             let webElement = Browser.getElementById("webId")
             if (!webElement) {
@@ -177,7 +182,8 @@ export class HtmlWindow extends fgui.Window implements IRecord {
             }
 
             let loadEnd = () => {
-                this.loadMovieClip.selectedIndex = 1
+                if (this.loadMovieClip)
+                    this.loadMovieClip.selectedIndex = 1
                 Log.debug("loadComplete")
             }
 
@@ -190,7 +196,10 @@ export class HtmlWindow extends fgui.Window implements IRecord {
             }
 
             if (!full) {
-                let tempH = (this.btn.y + this.btn.height + this.btn.y)
+                let tempH = 0
+                if(this.btn)
+                    tempH = (this.btn.y + this.btn.height + this.btn.y)
+
                 webElement.style.height = ((GRoot.inst.height - tempH) * this.tempY) + "px"
                 webElement.style.top = (tempH * this.tempY) + "px"
             }

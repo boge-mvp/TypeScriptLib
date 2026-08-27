@@ -34,21 +34,21 @@ export class LoadingWindow extends BaseView {
         this.inst?.show(index, headText)
     }
 
-    private headText: string
-    private loader: GLoader
-    private mesText: GTextField
+    private headText!: string
+    private loader?: GLoader
+    private mesText?: GTextField
     /** 当前进度 */
     private tempValue = 0
-    private dian: number
+    private dian!: number
 
-    private controller: Controller
+    private controller?: Controller
 
     protected override onInit() {
 
         this.controller = this.getController("c1")
 
-        this.loader = this.getChild("n0").asLoader
-        this.mesText = this.getChild("n1").asTextField
+        this.loader = this.getChild("n0")?.asLoader
+        this.mesText = this.getChild("n1")?.asTextField
 
         // this.visible = false
     }
@@ -74,15 +74,18 @@ export class LoadingWindow extends BaseView {
     changeView(index = 0, headText?: string) {
         headText ??= getString(LibStr.LOADING).split(".").join("")
         this.headText = headText
-        this.controller.selectedIndex = index
-        this.mesText.text = ""
+        if (this.controller)
+            this.controller.selectedIndex = index
+        if (this.mesText)
+            this.mesText.text = ""
 //		loaderUrl("init_atlas_evpb2.jpg")
         Laya.timer.clear(this, this.changeHandler)
         Laya.timer.loop(500, this, this.changeHandler)
     }
 
     private changeHandler() {
-        this.mesText.text = this.getMsg() + this.tempValue + "%"
+        if (this.mesText) if (this.mesText)
+            this.mesText.text = this.getMsg() + this.tempValue + "%"
         this.dian++
         if (this.dian > 3) {
             this.dian = 0
@@ -100,7 +103,8 @@ export class LoadingWindow extends BaseView {
         const temp = LoadingWindow.getProgress(value, tempCount, totalCount)
         if (this._instance) {
             this._instance.tempValue = temp
-            this._instance.mesText.text = this._instance.getMsg() + temp.toFixed(2) + "%"
+            if (this._instance.mesText)
+                this._instance.mesText.text = this._instance.getMsg() + temp.toFixed(2) + "%"
         }
         JSUtils.progress(temp)
     }
@@ -126,7 +130,8 @@ export class LoadingWindow extends BaseView {
      */
     showError(value: string) {
         Laya.timer.clear(this, this.changeHandler)
-        this.mesText.text = value
+        if (this.mesText)
+            this.mesText.text = value
     }
 
     private getMsg() {
@@ -143,7 +148,8 @@ export class LoadingWindow extends BaseView {
 
     /** 替换加载图片 */
     loaderUrl(url: string) {
-        this.loader.url = url
+        if (this.loader)
+            this.loader.url = url
     }
 
     hide() {

@@ -9,9 +9,9 @@ export class Deck<T extends Card = Card> {
     /** 已经完成了动画个数 */
     private completeNum = 0
     /** 是否正在运行动画 */
-    private isRun: boolean
+    private isRun?: boolean
 
-    private handler: ParamHandler
+    private handler?: ParamHandler
 
     createCard() {
         for (let i = 0; i < 54; i++) {
@@ -34,7 +34,7 @@ export class Deck<T extends Card = Card> {
      * @param sort 是否对卡片进行排序，默认为true。如果为true，则按照卡片的code属性降序排序。
      * @param onceComplete 在每个卡片动画完成时调用的回调函数，默认为undefined。接收一个参数card，表示当前完成动画的卡片。
      */
-    sort(handler: ParamHandler = null, sort = true, onceComplete?: (card: T) => void) {
+    sort(handler?: ParamHandler, sort = true, onceComplete?: (card: T) => void) {
         // 判断是否已经执行过排序，如果执行过则不再执行
         if (this.isRun) return
         this.isRun = true  // 标记为正在执行排序

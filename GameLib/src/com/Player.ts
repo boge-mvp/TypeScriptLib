@@ -52,26 +52,26 @@ export class Player {
      */
     userId = 110
     /** 客户端生成的唯一ID */
-    uuid: string
+    uuid?: string
     /** 用户身份码 */
     token?: string
     /** 手机号 */
-    mobile: string
+    mobile?: string
     /** 设备号 */
-    device: string
+    device?: string
     /** url参数 */
-    urlParam: UrlParam
+    urlParam?: UrlParam
     /** 游戏数据 */
-    gameData: IGameData
+    gameData?: IGameData
     /**
      * 游戏类型  id
      * @default -1
      */
     gameId = -1
     /** 游戏名字 */
-    gameName: string
+    gameName: Nullable<string>
     /** 游戏名字 首字母小写 */
-    simpleName: string
+    simpleName?: string
     /**
      *  是否是web端口
      *  @default true
@@ -80,19 +80,19 @@ export class Player {
      */
     isWeb = true
     /** 1=>投注中，2=>计算中，3=>开奖  4=>收取金币  5=>比分中 */
-    private _status: number
+    private _status?: number
     /** 游戏发布版本号 */
     codeVersion = 1
     /** 当前app游戏发布版本号 */
     currentAppVersion = 1
     /** 是否是游客模式 */
-    isGuest: boolean
+    isGuest?: boolean
     /** 游客数据 */
-    private _guestModel: IGuestModel
+    private _guestModel?: IGuestModel
     /** 项目数据 */
-    data: IData
+    data!: IData
     /** 登录接口 */
-    login: ILogin
+    login?: ILogin
     /**
      * 用户持有的优惠劵
      **/
@@ -100,10 +100,10 @@ export class Player {
     /** 缓存上一次网络请求返回数据 */
     resultData: any
     /** 解析的传入游戏的参数 */
-    parseParam: ExecuteData
+    parseParam?: ExecuteData
     // 大奖参数
     /** 用户拥有的奖金池  */
-    jackpotData = []
+    jackpotData: any[] = []
     /** 用户的真实投注 */
     userReallyBet = 0
     /** 每次投注达到多少 就可以获得刮刮卡 */
@@ -112,7 +112,7 @@ export class Player {
     gamePool = random(1000, 99999)
     /** 获得奖励的次数 */
     jackpotCount = 0
-    private playCountCache: { count: number, time: number }
+    private playCountCache!: { count: number, time: number }
 
     private initPlayCount() {
         const time = Browser.now()
@@ -168,7 +168,7 @@ export class Player {
      * 获取游客模式的优惠券
      */
     getGuestCoupons(): Coupons[] {
-        return window["guestCoupons"] || []
+        return ConfigKit.get("guestCoupons") || []
     }
 
     /**
@@ -247,7 +247,8 @@ export class Player {
      * 判断当前游戏可以使用的优惠券
      */
     getCanUseCoupon() {
-        let betValue = Player.inst.gameData.getTotalBetMoney()
+        let betValue = Player.inst.gameData?.getTotalBetMoney()
+        if (!betValue) return false
         let arr = Player.inst.getCouponGame()
         for (let i = 0; i < arr.length; i++) {
             const useObj = arr[i]
@@ -290,7 +291,7 @@ export class Player {
 
     /** 1=>投注中，2=>计算中，3=>开奖  4=>收取金币  5=>比分中 */
     get status() {
-        return this._status
+        return this._status || 0
     }
 
     /**
@@ -307,7 +308,7 @@ export class Player {
         }
     }
 
-    get guestModel(): IGuestModel {
+    get guestModel(): Nullable<IGuestModel> {
         return this._guestModel;
     }
 
@@ -321,7 +322,7 @@ export class Player {
      * @return
      */
     getDevice() {
-        let device: string
+        let device: Nullable<string>
         if (Render.isConchApp) {
             device = Player.inst.device
         } else {
@@ -353,10 +354,10 @@ export class Player {
      * 获取当前国家的货币单位(大写)
      */
     getCurrencyUnit() {
-        let currencyMap = ConfigKit.get("currencyUnit")
+        let currencyMap = ConfigKit.get<any>("currencyUnit")
         let unit = ""
-        if (currencyMap) {
-            let country = this.data.getCountry(this.urlParam)
+        if (currencyMap && this.urlParam) {
+            let country = this.data.getCountry(this.urlParam) || ""
             if (!StringUtil.isEmpty(country)) {
                 unit = currencyMap[country]
             }

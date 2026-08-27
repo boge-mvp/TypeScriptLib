@@ -8,9 +8,11 @@ export interface IGameScene {
     /** 新一局游戏开始 */
     startGame(): void
 
-    /** 获取游戏逻辑类 */
-
-    gameModel: IGameModel
+    /**
+     * 获取游戏逻辑类
+     *
+     */
+    gameModel: Nullable<IGameModel>
 
 
 }

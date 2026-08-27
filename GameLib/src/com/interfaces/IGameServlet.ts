@@ -24,7 +24,7 @@ export interface IGameServlet {
     initComplete(): void
 
     /** 获取游戏逻辑类 */
-    gameModel: IGameModel
+    gameModel: Nullable<IGameModel>
 
     /** 设置游戏逻辑类 */
 

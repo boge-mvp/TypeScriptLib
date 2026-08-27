@@ -45,7 +45,7 @@ export class AssetsLoader implements IFormatPath {
     static CONFIG_RES_NAME = "resConfig.xml"
 
     /** 资源配置文件名 */
-    static DEFAULT_INIT_RES_NAME = null
+    static DEFAULT_INIT_RES_NAME?: string
     /**
      * 公共组件的配置信息
      * @property packageName 包名字 UIPackage.getByName(commonRes.packageName) this.addPackage(commonRes.packageName)
@@ -69,14 +69,14 @@ export class AssetsLoader implements IFormatPath {
      * 配置这个属性的时候 configName 必须有，而packageName 可以自动根据数组中的数据url的后缀等于 UIConfig.packageFileExtension 进行推断出来
      *
      */
-    commonRes: { packageName?: string, configName: string } = null
+    commonRes?: { packageName?: string, configName: string }
 
     /** 下载成功 */
-    private handler: ParamHandler
+    private handler?: ParamHandler
     /** 下载失败 */
-    private errorHandler: ParamHandler
+    private errorHandler?: ParamHandler
     /** 加载对象 */
-    private loadObj: ResConfig
+    private loadObj?: ResConfig
     /** 是否是http  */
     readonly httpProtocol = Browser.window.location.protocol == "http:"
     private runLoads: LoadRes[] = []
@@ -101,7 +101,7 @@ export class AssetsLoader implements IFormatPath {
      *
      * })
      */
-    customLoader: ParamHandler
+    customLoader?: ParamHandler
     /**
      * 自定义扩展加载资源处理
      *  @example
@@ -114,7 +114,7 @@ export class AssetsLoader implements IFormatPath {
      *
      * })
      */
-    customLoaderRes: ParamHandler
+    customLoaderRes?: ParamHandler
 
     /**
      * 加载路径格式化
@@ -152,7 +152,7 @@ export class AssetsLoader implements IFormatPath {
         let resConfigUrl = AssetsLoader.CONFIG_RES_NAME + (Render.isConchApp ? "" : "?v=" + Browser.now())
         ELoader.loader.load(resConfigUrl,
             Laya.Handler.create(this, this.loadXMLComplete, [complete, errorHandler, resConfigUrl]),
-            null, Loader.XML)
+            undefined, Loader.XML)
     }
 
     private loadXMLComplete(complete: ParamHandler, errorHandler: ParamHandler, resConfigUrl: string, source: XMLDocument) {
@@ -174,22 +174,24 @@ export class AssetsLoader implements IFormatPath {
      * @param handler
      */
     loadMain(handler: ParamHandler) {
-        let loadXmlComplete = () => {
-            if (StringUtil.isEmpty(AssetsLoader.DEFAULT_INIT_RES_NAME)) {
-                runFun(handler)
-            } else {
-                // init 资源加载
-                let loads: LoadRes[] = Browser.window[AssetsLoader.DEFAULT_INIT_RES_NAME]
-                ELoader.loader.load(loads, Laya.Handler.create(this, loadBaseComplete, [loads]))
-            }
-        }
-
         let loadErrorHandler = () => {
             ELoader.loader.clearUnLoaded()
             AnalyticsManager.sendGameAnalysis("loader_main_res_error")
             if (!Render.isConchApp) JSUtils.alert(getString(LibStr.NET_ERROR))
             JSUtils.gameClose()
             AppManager.gameRestart()
+        }
+
+        let loadXmlComplete = () => {
+            if (StringUtil.isEmpty(AssetsLoader.DEFAULT_INIT_RES_NAME)) {
+                runFun(handler)
+            } else {
+                // init 资源加载
+                let loads = ConfigKit.get<LoadRes[]>(AssetsLoader.DEFAULT_INIT_RES_NAME)
+                if (loads)
+                    ELoader.loader.load(loads, Laya.Handler.create(this, loadBaseComplete, [loads]))
+                else loadErrorHandler()
+            }
         }
 
         let loadBaseComplete = (loads: LoadRes[], success: boolean) => {
@@ -224,7 +226,7 @@ export class AssetsLoader implements IFormatPath {
      * @param handler
      * @param assets
      */
-    loadCommon(handler: ParamHandler, assets: LoadRes[] = null) {
+    loadCommon(handler: ParamHandler, assets?: LoadRes[]) {
         if (!assets) {
             assets = []
             // 公共资源
@@ -249,7 +251,7 @@ export class AssetsLoader implements IFormatPath {
 //                AppManager.showLoadingPro(pro, 2, 4)
                 LoadingWindow.updateMsg(pro, 2, 4)
             } else {
-                if (Player.inst.urlParam.isJumpPage()) {
+                if (Player.inst.urlParam?.isJumpPage()) {
                     LoadingWindow.updateMsg(pro, 2, 4)
                 } else {
                     LoadingWindow.updateMsg(pro, 2, 2)
@@ -297,7 +299,7 @@ export class AssetsLoader implements IFormatPath {
                 return
             }
             const jsCode = AssetProxy.inst.getRes(jsName)
-            UtilKit.loadScript(jsCode, true, Render.isConchApp ? null : URL.formatURL(jsName))
+            UtilKit.loadScript(jsCode, true, Render.isConchApp ? undefined : URL.formatURL(jsName))
             ELoader.loader.clearRes(jsName)
             runFun(handler)
         }
@@ -316,7 +318,7 @@ export class AssetsLoader implements IFormatPath {
 //            AppManager.showLoadingPro(pro, 3, 4)
             LoadingWindow.updateMsg(pro, 3, 4)
         } else {
-            if (Player.inst.urlParam.isJumpPage()) {
+            if (Player.inst.urlParam?.isJumpPage()) {
                 LoadingWindow.updateMsg(pro, 3, 4)
             } else {
                 LoadingWindow.updateMsg(pro, 1, 1)
@@ -363,7 +365,7 @@ export class AssetsLoader implements IFormatPath {
         }
 
         if (this.commonRes) {
-            let gameCommonRes: LoadRes[] = ConfigKit.get(this.commonRes.configName)
+            let gameCommonRes = ConfigKit.get<LoadRes[]>(this.commonRes.configName)
             if (gameCommonRes) {
                 const exte = "." + UIConfig.packageFileExtension
                 const loadRes = gameCommonRes.find(value => value.url.endsWith(exte))
@@ -452,7 +454,7 @@ export class AssetsLoader implements IFormatPath {
             return Utils.getFileExtension(value.url) === "sk" && value.type === "spine"
                 && (temp = value.url.replace(".sk", ".png")) !== null
                 && array.findIndex(function (value) {
-                    return value === temp
+                    return value.url === temp
                 }) === -1
         })
         const spines = data.filter(function (value, index, array) {
@@ -531,7 +533,7 @@ export class AssetsLoader implements IFormatPath {
 //            AppManager.showLoadingPro(pro, 4, 4)
             LoadingWindow.updateMsg(pro, 4, 4)
         } else {
-            if (Player.inst.urlParam.isJumpPage()) {
+            if (Player.inst.urlParam?.isJumpPage()) {
                 LoadingWindow.updateMsg(pro, 4, 4)
             } else {
                 LoadingWindow.updateMsg(pro, 1, 1)
@@ -556,7 +558,7 @@ export class AssetsLoader implements IFormatPath {
             }
         }
 
-        if (!this.addPackages(this.loadObj.res)) {
+        if (this.loadObj && !this.addPackages(this.loadObj.res)) {
             this.loadErrorHandler()
             return
         }
@@ -621,11 +623,12 @@ export class AssetsLoader implements IFormatPath {
      */
     parseUrl(xmlDocument: XMLDocument) {
         if (Render.isConchApp) return
-        let chills = xmlDocument.lastChild.childNodes
+        let childs = xmlDocument.lastChild?.childNodes
         let child: any
         let url: string
-        for (let i = 0; i < chills.length; i++) {
-            child = chills[i]
+        const len = childs?.length || 0
+        for (let i = 0; i < len; i++) {
+            child = childs![i]
             url = child.getAttribute("url")
             if (url.endsWith(".js") && !url.endsWith(".min.js")) {
                 Laya.URL.version[StringUtil.replace(url, ".js", ".min.js")] = child.getAttribute("crc")
@@ -642,27 +645,30 @@ export class AssetsLoader implements IFormatPath {
      */
     mergeXml(xml: XMLDocument, xml2: XMLDocument) {
         let root = xml.lastChild as Element
-        let element2 = xml2.lastChild.childNodes
+        let element2 = xml2.lastChild?.childNodes
         let tempName
         let isExist = false
         let addElement: Element[] = []
         let itemElement: Element
-        for (let i = 0; i < element2.length; i++) {
+        const len = element2?.length || 0
+        for (let i = 0; i < len; i++) {
             isExist = false
-            itemElement = element2[i] as Element
+            itemElement = element2![i] as Element
             if (itemElement.nodeType == 1) { // 只检查 Element
                 tempName = itemElement.getAttribute("name")
-                let xmlList = xml.getElementsByName(tempName)
-                if (xmlList.length > 0) {
-                    if (itemElement.textContent == xmlList[0].textContent) {
-                        Log.debug("xml-languages: name=" + tempName + " repeat")
+                if (tempName) {
+                    let xmlList = xml.getElementsByName(tempName)
+                    if (xmlList.length > 0) {
+                        if (itemElement.textContent == xmlList[0].textContent) {
+                            Log.debug("xml-languages: name=" + tempName + " repeat")
+                        } else {
+                            // 发现有个存在一样的
+                            Log.warn("xml-languages: name=" + tempName + " repeat," +
+                                " content=" + xmlList[0].textContent + ", content2=" + itemElement.textContent)
+                        }
                     } else {
-                        // 发现有个存在一样的
-                        Log.warn("xml-languages: name=" + tempName + " repeat," +
-                            " content=" + xmlList[0].textContent + ", content2=" + itemElement.textContent)
+                        addElement.push(itemElement)
                     }
-                } else {
-                    addElement.push(itemElement)
                 }
             } else {
                 addElement.push(itemElement)

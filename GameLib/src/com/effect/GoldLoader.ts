@@ -12,9 +12,9 @@ import BezierCurves = tsCore.BezierCurves;
 export class GoldLoader extends mixinExt(BezierCurves, GLoader) {
 
     static readonly NAME = "GoldLoaderPool"
-    private _timeLine: TimeLine
-    private playEndCallback: ParamHandler
-    private labelCallback: (label: string) => void
+    private _timeLine?: TimeLine
+    private playEndCallback?: ParamHandler
+    private labelCallback?: (label: string) => void
     private playEndRecover = false
 
     /**
@@ -51,6 +51,7 @@ export class GoldLoader extends mixinExt(BezierCurves, GLoader) {
         this.setScale(1, 1)
         this.alpha = 1
         this.visible = true
+        // @ts-ignore
         this.icon = null
         Pool.recover(GoldLoader.NAME, this)
     }

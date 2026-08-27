@@ -7,7 +7,7 @@ import {LibStr} from "../LibStr"
 export class GlobalWaiting extends GComponent {
 
     /** 显示内容 */
-    private messageText: GTextField
+    private messageText?: GTextField
 
     protected override onConstruct() {
         super.onConstruct();
@@ -19,12 +19,13 @@ export class GlobalWaiting extends GComponent {
     private onInit() {
         // this.getChild("n0")
         // this.getChild("n1").asMovieClip
-        this.messageText = this.getChild("n2").asTextField
+        this.messageText = this.getChild("n2")?.asTextField
     }
 
     override set text(value: string) {
         value ??= getString(LibStr.LOADING)
-        this.messageText.text = value
+        if (this.messageText)
+            this.messageText.text = value
     }
 
 }
