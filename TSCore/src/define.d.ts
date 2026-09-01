@@ -361,9 +361,9 @@ declare interface String {
 
     /**
      * 移除字符串中所有的空白字符（包括空格、制表符、换行符等）
-     * @returns 移除了所有空白字符的新字符串，如果输入为 null 或 undefined 则返回 null
+     * @returns 移除了所有空白字符的新字符串
      */
-    removeAllWhitespace(): Nullable<string>
+    removeAllWhitespace(): string
 
     /**
      * 将字符串转换为布尔值

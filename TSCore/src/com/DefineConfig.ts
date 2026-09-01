@@ -13,7 +13,7 @@ import {EDrawTextureCmd} from "./extends/EDrawTextureCmd"
 import {SoundUtils} from "./utils/SoundUtils";
 import {Log} from "./Log";
 import {ETexture} from "./extends/ETexture";
-import {EUIFactory} from "./uifactory/EUIFactory";
+import {UIFactory} from "./uifactory/UIFactory";
 import {IBaseElementConfig} from "./uifactory/IBaseElementConfig";
 import {IGraphConfig} from "./uifactory/IGraphConfig";
 import {IIconConfig} from "./uifactory/IIconConfig";
@@ -415,7 +415,7 @@ export class DefineConfig {
                         this._container = new Laya.Sprite();
                         this._displayObject.addChild(this._container);
                     }
-                    this._scrollPane = EUIFactory.createScrollPanel(this, scrollType ?? fgui.ScrollType.Vertical)
+                    this._scrollPane = UIFactory.createScrollPanel(this, scrollType ?? fgui.ScrollType.Vertical)
                 } else this.setupOverflow(overflowType)
             }
         })

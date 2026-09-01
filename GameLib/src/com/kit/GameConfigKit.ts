@@ -59,14 +59,17 @@ export class GameConfigKit {
     /**
      * 根据游戏名获取游戏id 如果不存在返回-1
      * @param [name=undefined]
+     * @param [ignoreCase=true] 是否忽略名字大小写
      */
-    static gameCode(name?: Nullable<string>) {
+    static gameCode(name?: Nullable<string>, ignoreCase: boolean = true) {
         name ??= Player.inst.gameName
         name ??= GameConfigKit.gameNameCanonical()
         const config = GameConfigKit.gameConfig()
         if (name && config) {
+            const targetName = ignoreCase ? name.removeAllWhitespace().toLowerCase() : name.removeAllWhitespace()
             for (const key in config) {
-                if (config[key].removeAllWhitespace() == name) {
+                const configName = ignoreCase ? config[key].removeAllWhitespace().toLowerCase() : config[key].removeAllWhitespace()
+                if (configName == targetName) {
                     return parseInt(key)
                 }
             }
@@ -77,9 +80,9 @@ export class GameConfigKit {
     /**
      * 获取游戏配置数据
      * @param [name=undefined] 游戏名字,如果不传，将获取当前打开游戏名字
-     * @param [ignoreCase=false] 是否忽略名字大小写
+     * @param [ignoreCase=true] 是否忽略名字大小写
      */
-    static gameRes(name?: Nullable<string>, ignoreCase: boolean = false): Nullable<ResConfig> {
+    static gameRes(name?: Nullable<string>, ignoreCase: boolean = true): Nullable<ResConfig> {
         name ??= Player.inst.gameName
         name ??= GameConfigKit.gameNameCanonical()
 
@@ -97,7 +100,20 @@ export class GameConfigKit {
                 }
             }
         }
-        return ignoreCase ? ConfigKit.get(name) || ConfigKit.get(name.toLowerCase()) : ConfigKit.get(name)
+        if (!ignoreCase) {
+            return ConfigKit.get(name)
+        }
+        let res: Nullable<ResConfig> = ConfigKit.get(name) || ConfigKit.get(name.toLowerCase())
+        if (!res && typeof window !== "undefined") {
+            const lowerName = name.toLowerCase()
+            for (const key in window) {
+                if (key.toLowerCase() === lowerName) {
+                    res = Reflect.get(window, key)
+                    break
+                }
+            }
+        }
+        return res
     }
 
 }

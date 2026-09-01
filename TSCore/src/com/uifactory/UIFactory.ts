@@ -8,7 +8,7 @@ import Handler = Laya.Handler;
 import ToolSet = fgui.ToolSet;
 import GComponent = fgui.GComponent;
 import {EPanel} from "./EPanel";
-import {EList} from "./EList";
+import {PureList} from "./PureList";
 import {IBaseElementConfig} from "./IBaseElementConfig";
 import {IButtonConfig} from "./IButtonConfig";
 import {IElementConfig} from "./IElementConfig";
@@ -28,7 +28,7 @@ import {IViewConfig} from "./IViewConfig";
  * （vertical/horizontal 流 + alignItems/justifyContent + 百分比定位）、
  * 反射式滚动容器激活（去 fgui 编辑器资源包依赖）。
  */
-export class EUIFactory {
+export class UIFactory {
 
     private static customCreators: {
         [type: string]: (elData: IElementConfig, containerW: number, containerH: number) => fgui.GObject
@@ -38,7 +38,7 @@ export class EUIFactory {
      * 注册自定义元件类型创建器，实现业务元件在 UI 工厂的零侵入扩展
      */
     public static registerCreator(type: string, creator: (elData: IElementConfig, containerW: number, containerH: number) => fgui.GObject) {
-        EUIFactory.customCreators[type] = creator;
+        UIFactory.customCreators[type] = creator;
     }
 
     /**
@@ -51,29 +51,29 @@ export class EUIFactory {
     static createElement<T extends fgui.GObject>(elData: IElementConfig, containerW: number, containerH: number): T {
         let node: Nullable<T> = null;
         // 优先匹配自定义注册的类型创建器 (type -> function)
-        if (EUIFactory.customCreators[elData.type]) {
-            node = EUIFactory.customCreators[elData.type](elData, containerW, containerH) as T;
+        if (UIFactory.customCreators[elData.type]) {
+            node = UIFactory.customCreators[elData.type](elData, containerW, containerH) as T;
         } else {
             if (elData.type === "text") {
                 if (elData.isUbb === true) {
-                    node = EUIFactory.createRichTextField(elData) as unknown as T;
+                    node = UIFactory.createRichTextField(elData) as unknown as T;
                 } else {
-                    node = EUIFactory.createText(elData) as unknown as T;
+                    node = UIFactory.createText(elData) as unknown as T;
                 }
             } else if (elData.type === "icon") {
-                node = EUIFactory.createIcon(elData) as unknown as T;
+                node = UIFactory.createIcon(elData) as unknown as T;
             } else if (elData.type === "graph") {
-                node = EUIFactory.createGraph(elData) as unknown as T;
+                node = UIFactory.createGraph(elData) as unknown as T;
             } else if (elData.type === "panel") {
-                node = EUIFactory.createPanel(elData, containerW, containerH) as unknown as T;
+                node = UIFactory.createPanel(elData, containerW, containerH) as unknown as T;
             } else if (elData.type === "list") {
-                node = EUIFactory.createList(elData, containerW, containerH) as unknown as T;
+                node = UIFactory.createList(elData, containerW, containerH) as unknown as T;
             } else if (elData.type === "button") {
-                node = EUIFactory.createButton(elData) as unknown as T;
+                node = UIFactory.createButton(elData) as unknown as T;
             }
         }
         if (node && elData.graphics && elData.graphics.length > 0) {
-            EUIFactory.applyGraphics(node, elData.graphics);
+            UIFactory.applyGraphics(node, elData.graphics);
         }
         return node as T;
     }
@@ -85,7 +85,7 @@ export class EUIFactory {
     static createRichTextField(elData: ITextConfig): fgui.GRichTextField {
         const textNode = new GRichTextField()
         textNode.ubbEnabled = true
-        EUIFactory.createTextField(elData, textNode)
+        UIFactory.createTextField(elData, textNode)
         return textNode
     }
 
@@ -94,7 +94,7 @@ export class EUIFactory {
      */
     static createText(elData: ITextConfig): fgui.GBasicTextField {
         const textNode = new GBasicTextField()
-        EUIFactory.createTextField(elData, textNode)
+        UIFactory.createTextField(elData, textNode)
         return textNode
     }
 
@@ -272,7 +272,7 @@ export class EUIFactory {
      * 支持 Flow 换行、分页以及单行单列排列，利用 itemRenderer 闭包回调在运行期递归向子项填充 Elements 渲染
      */
     static createList(elData: IListConfig, containerW: number, containerH: number): fgui.GComponent {
-        const listNode = new EList();
+        const listNode = new PureList();
 
         if (elData.name) listNode.name = elData.name;
 
@@ -298,7 +298,7 @@ export class EUIFactory {
         elData.width = elData.width || containerW
         elData.height = elData.height || containerH
 
-        EUIFactory.fillPanel(listNode, elData)
+        UIFactory.fillPanel(listNode, elData)
 
         const initW = elData.width || containerW || listNode.width;
         const initH = elData.height || listNode.height;
@@ -339,15 +339,15 @@ export class EUIFactory {
                 itemData.width = itemData.width || elData.itemWidth
                 itemData.height = itemData.height || elData.itemHeight
                 if (itemData.type === "panel" || itemData.type === "list") {
-                    EUIFactory.fillPanel(itemObj, itemData);
+                    UIFactory.fillPanel(itemObj, itemData);
                     if (itemData.graphics && itemData.graphics.length > 0) {
-                        EUIFactory.applyGraphics(itemObj, itemData.graphics);
+                        UIFactory.applyGraphics(itemObj, itemData.graphics);
                     }
                 } else {
                     itemObj.sourceWidth = itemData.width || 0;
                     itemObj.sourceHeight = itemData.height || 0;
                     itemObj.setSize(itemData.width || 0, itemData.height || 0);
-                    const childNode = EUIFactory.createElement(itemData, itemData.width || 0, itemData.height || 0);
+                    const childNode = UIFactory.createElement(itemData, itemData.width || 0, itemData.height || 0);
                     if (childNode) itemObj.addChild(childNode);
                 }
             }
@@ -388,7 +388,7 @@ export class EUIFactory {
         if (elData.name) btnNode.name = elData.name;
 
         // --- 子元件创建与定位（走标准 fillPanel 流程） ---
-        EUIFactory.fillPanel(btnNode, elData);
+        UIFactory.fillPanel(btnNode, elData);
 
         // --- button 自身变换 ---
         const scaleX = elData.scaleX !== undefined ? elData.scaleX : (elData.scale !== undefined ? elData.scale : 1);
@@ -420,7 +420,7 @@ export class EUIFactory {
         panelNode.setScale(scaleX, scaleY);
         elData.width = elData.width || containerW
         elData.height = elData.height || containerH
-        EUIFactory.fillPanel(panelNode, elData);
+        UIFactory.fillPanel(panelNode, elData);
         const pX = elData.pivotX !== undefined ? elData.pivotX : 0;
         const pY = elData.pivotY !== undefined ? elData.pivotY : 0;
         panelNode.rotation = elData.rotation !== undefined ? elData.rotation : 0;
@@ -497,7 +497,7 @@ export class EUIFactory {
 
         for (let i = 0; i < childElements.length; i++) {
             const childData = childElements[i];
-            const childNode = EUIFactory.createElement<fgui.GObject>(childData, childData.width || 0, childData.height || 0);
+            const childNode = UIFactory.createElement<fgui.GObject>(childData, childData.width || 0, childData.height || 0);
             if (childNode) {
                 panelNode.addChild(childNode);
                 childNodes.push(childNode);
@@ -631,7 +631,7 @@ export class EUIFactory {
             const childNode = childNodes[i];
             if (childNode) {
                 flowState.index = i;
-                const posInfo = EUIFactory.setupElementPosition(childNode, childData, initW, initH, elData, flowState);
+                const posInfo = UIFactory.setupElementPosition(childNode, childData, initW, initH, elData, flowState);
 
                 // 建立子元件与父面板（panelNode）的对齐跟随关联关系
                 const layout = childData.layout || {};

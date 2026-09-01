@@ -108,7 +108,7 @@ String.prototype.substringsBetween = function (open: string, close: string) {
 }
 
 String.prototype.remove = function (value: string) {
-    return this?.replace(value, "")
+    return this.replace(value, "")
 }
 
 String.prototype.removeAll = function (value: string) {
@@ -118,11 +118,11 @@ String.prototype.removeAll = function (value: string) {
 }
 
 String.prototype.removeAllWhitespace = function () {
-    return this?.replace(/\s/g, "")
+    return this.replace(/\s/g, "")
 }
 
 String.prototype.toBoolean = function () {
-    return this?.trim()?.length > 0 && !this.equalsAnyIgnore("false", "0")
+    return this.trim()?.length > 0 && !this.equalsAnyIgnore("false", "0")
 }
 
 String.prototype.toInt = function () {
