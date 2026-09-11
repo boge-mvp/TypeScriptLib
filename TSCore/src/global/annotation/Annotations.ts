@@ -9,10 +9,14 @@ function getBean<T>(name?: string | { new(): T }): T {
 }
 
 /**
- * Lazy装饰器工厂函数
+ * Lazy 属性装饰器工厂
  * 用于延迟初始化类的属性，仅在属性值首次被访问时执行初始化
+ * 初始化完成后属性会被固化为只读值（writable: false）
  *
- * @param {() => T} callback 一个无参数的回调函数，用于生成属性的值
+ * ### 生效前提：
+ * - 无特殊前提，任意类的属性均可使用
+ *
+ * @param {() => T} callback 一个无参数的回调函数，用于生成属性的值（this 指向类实例）
  */
 function Lazy<T>(callback: () => T): any {
     return function (targetPrototype: any, propertyKey: string): PropertyDescriptor {
@@ -36,8 +40,11 @@ function Lazy<T>(callback: () => T): any {
 }
 
 /**
- * 使用CallLater装饰器来延迟执行方法
- * 这个装饰器会修改方法的执行方式，使其在当前逻辑帧结束后执行
+ * CallLater 方法装饰器
+ * 延迟执行被装饰的方法，使其在当前逻辑帧结束后执行（复用 Laya.timer.callLater）
+ *
+ * ### 生效前提：
+ * - 被装饰的必须是方法，不能是属性或其他类型
  *
  * @param targetPrototype 被装饰的类的原型
  * @param propertyKey 被装饰的方法的名称
@@ -53,10 +60,13 @@ function CallLater(targetPrototype: any, propertyKey: string, descriptor: Proper
 }
 
 /**
- * 使用CallDelay装饰器来延迟执行方法
- * 这个装饰器会修改方法的执行方式，使其在指定的毫秒数后执行
+ * CallDelay 方法装饰器工厂
+ * 延迟执行被装饰的方法，使其在指定的毫秒数后执行（复用 Laya.timer.once）
  *
- * @param num 延迟的毫秒数
+ * ### 生效前提：
+ * - 被装饰的必须是方法，不能是属性或其他类型
+ *
+ * @param num 延迟的毫秒数；传入 RandomTimer 实例则每次执行时在 [min,max] 区间取随机延迟
  * @returns 返回一个装饰器，用于装饰方法
  */
 function CallDelay(num: number | RandomTimer) {
@@ -74,10 +84,13 @@ function CallDelay(num: number | RandomTimer) {
 }
 
 /**
- * 使用CallDelayByFrame装饰器来延迟执行方法
- * 这个装饰器会修改方法的执行方式，使其在指定的帧数后执行
+ * CallDelayByFrame 方法装饰器工厂
+ * 延迟执行被装饰的方法，使其在指定的帧数后执行（复用 Laya.timer.frameOnce）
  *
- * @param num 延迟的帧数
+ * ### 生效前提：
+ * - 被装饰的必须是方法，不能是属性或其他类型
+ *
+ * @param num 延迟的帧数；传入 RandomTimer 实例则每次执行时在 [min,max] 区间取随机帧数
  * @returns 返回一个装饰器，用于装饰方法
  */
 function CallDelayByFrame(num: number | RandomTimer) {
@@ -96,7 +109,11 @@ function CallDelayByFrame(num: number | RandomTimer) {
 
 
 /**
+ * AppMain 类装饰器
  * 设置应用程序的主类
+ *
+ * ### 生效前提：
+ * - 需要在应用入口调用 runApplication()，主类才会被实例化并启动整个依赖注入流程
  *
  * @param value - 一个构造函数类型，用于创建实现IRunApplication接口的应用实例
  *                该构造函数可以接受任意数量和类型的参数
@@ -108,9 +125,23 @@ function AppMain(value: { new(...args: any[]): IRunApplication }) {
 
 
 /**
- * 组件装饰器函数，用于创建和配置组件类
+ * Component 类装饰器（装饰器工厂，支持直接 @Component 调用）
+ * 用于创建和配置组件类，是依赖注入体系的核心入口
+ *
+ * ### 生效方式：
+ * - 默认（不传或传空字符串）：应用启动时自动实例化，并以 "class:name 元数据 || 类名" 为 key
+ *   注册进 Bean 池（首字母大写与小写两种形式同时注册）
+ * - 传 `null`、`false` 或 `{isJoinBean:false}`：替换为代理类，不注册进 Bean 池、
+ *   应用启动时也不会自动实例化；但手动 new 时仍会初始化 @Actions/@OnResize/@Timer* 等事件绑定
+ * - 传 `{autoInit:false}`：启动时不自动实例化，但手动 new 的实例会注册进 Bean 池
+ * - 传 `{createUi:"ui://..."}`：启动时通过 fgui.UIPackage.createObjectFromURL 创建实例
+ * - 多个组件按 `order` 升序创建，值越小越先初始化，默认 0
+ *
+ * ### 生效前提：
+ * - 传入的 Bean 名称为空白字符串时不会报错，会自动回退为按类名注册
+ *
  * @template T 限制为构造函数类型
- * @param {string | T | ComponentData} value - 组件标识符或目标构造函数。默认使用类名 首字母大小写都有.值如果是`null`、`false`或`{isJoinBean:false}`,将不会自动初始化和添加到依赖管理器中.
+ * @param {string | T | ComponentData} value - 组件标识符(Bean名称)、目标构造函数或组件配置
  * @returns any 返回装饰后的类。
  */
 function Component<T extends { new(...args: any[]): {} }>(value: string | false | T | ComponentData = "") {
@@ -147,21 +178,24 @@ function Component<T extends { new(...args: any[]): {} }>(value: string | false 
 }
 
 /**
- * 资源注入装饰器，用于自动解析并绑定 Bean 实例到类属性上。
+ * Resource 属性装饰器（装饰器工厂，支持直接 @Resource 调用）
+ * 自动解析并绑定 Bean 实例到类属性上
+ * 首次访问属性时从全局 Bean 池查找，命中后将值固化到当前实例的同名属性上
  *
  * ### 支持以下写法：
  * - `@Resource`                         // 直接装饰属性，使用属性名作为 Bean 名称
  * - `@Resource()`                       // 与无括号写法等效
  * - `@Resource("customName")`           // 使用指定名称查找 Bean
  *
- * ### 使用说明：
- * - 该装饰器只能用在被 `@Component` 注解管理的类中。
- * - 在类初始化时，会自动从全局 Bean 池中查找对应名称或类型的 Bean，并将其赋值给目标属性。
- * - 如果找到对应的 Bean，则会在当前实例上定义一个同名属性，并将 Bean 实例赋值给它。
+ * ### 生效前提：
+ * - 目标属性必须有类型注解（依赖编译期 design:type 元数据，需启用 emitDecoratorMetadata），
+ *   否则抛出 Error: "class type null"
+ * - 待注入的 Bean 必须已注册进全局 Bean 池（通常由 @Component 或 App.addBean 注册），
+ *   否则属性值为 undefined
  *
  * ### 注意事项：
- * - 目标属性必须有类型注解（TypeScript 编译时元数据需要）
- * - 如果找不到对应的 Bean，返回值为 undefined，不会抛出异常。
+ * - 找不到对应的 Bean 时不会抛异常，仅打印警告日志
+ * - 默认以属性名（首字母小写约定）查找，与 @Component 默认注册的首字母双形式 Bean 匹配
  *
  * ### 示例代码：
  * ```
@@ -231,14 +265,17 @@ function _Resource(name: Nullable<string>, targetPrototype: any, propertyKey: st
                 return bean
             }
         }
-    } else throw Error("class type null")
+    } else throw Error(`[@Resource] Property "${propertyKey}" on class "${targetPrototype.constructor.name}" is missing type metadata (design:type). Declare an explicit type for the property and make sure emitDecoratorMetadata is enabled in tsconfig.json`)
 }
 
 /**
- * @BindThis 装饰器，用于自动绑定类方法中的this上下文
+ * BindThis 方法装饰器
+ * 自动绑定类方法的 this 上下文到类实例，方法内的 this 不会因调用方式不同而改变
+ * 首次访问时生成绑定后的函数并固化到类实例上
  *
- * 当一个方法被`@BindThis`装饰器装饰时，该方法会被自动绑定到类的实例上
- * 这意味着在该方法内部，this将始终指向类的实例，而不会因为函数的调用方式不同而改变
+ * ### 生效前提：
+ * - 被装饰的必须是方法，不能是属性或其他类型
+ *
  * @throws {TypeError} 如果装饰的不是方法，抛出类型错误
  */
 function BindThis<T extends Function>(targetPrototype: any, propertyKey: string, descriptor: TypedPropertyDescriptor<T>) {
@@ -303,8 +340,13 @@ let appRunListeners: tsCore.IAppRunListener[] = []
 let readyFunction: Nullable<Map<any, Function[]>>
 
 /**
- * {@link Ready} 注解的方法会在所有bean都初始化完成、
- * 应用完全启动后才被调用，适用于需要访问完整应用上下文的初始化逻辑。
+ * Ready 方法装饰器
+ * 被注解的方法会在所有 Bean 都初始化完成、应用完全启动后才被调用，
+ * 适用于需要访问完整应用上下文的初始化逻辑，且整个生命周期内只会执行一次
+ *
+ * ### 生效前提：
+ * - 所在类必须由框架自动实例化才会触发（即被 @Component 默认方式管理，或作为 @AppMain 主类）
+ * - 被装饰的必须是方法，不能是属性或其他类型
  */
 function Ready(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     if (!descriptor || (typeof descriptor.value !== 'function')) {
@@ -317,7 +359,16 @@ function Ready(target: any, propertyKey: string, descriptor: PropertyDescriptor)
 }
 
 /**
- * Bean装饰器，标记类方法为返回Bean实例的方法。
+ * Bean 方法装饰器
+ * 标记类方法为返回 Bean 实例的方法
+ * 应用启动（runApplication）时方法被调用一次，返回值以【方法名】为 key 注册进全局 Bean 池，
+ * 可通过 getBean("方法名") 或 @Resource 获取
+ *
+ * ### 生效前提：
+ * - 被装饰的必须是方法，不能是属性或其他类型
+ * - 方法必须声明**显式的返回类型**（依赖编译期 returntype 元数据，需启用 emitDecoratorMetadata），
+ *   否则抛出 Error: "class type null"
+ *
  * @param target - 类的原型。
  * @param propertyKey - 属性键名。
  * @param descriptor - 属性描述符。
@@ -328,8 +379,8 @@ function Bean(target: any, propertyKey: string, descriptor: PropertyDescriptor) 
     }
     const returnTarget = Reflect.getMetadata("design:returntype", target, propertyKey)
     if (returnTarget) {
-        beanClassFunction.set(propertyKey, descriptor.value)
-    } else throw Error("class type null")
+            beanClassFunction.set(propertyKey, descriptor.value)
+        } else throw Error(`[@Bean] Method "${propertyKey}" on class "${target.constructor.name}" is missing return type metadata (design:returntype). Declare an explicit return type for the method and make sure emitDecoratorMetadata is enabled in tsconfig.json`)
 }
 
 /**
@@ -351,7 +402,7 @@ function Bean(target: any, propertyKey: string, descriptor: PropertyDescriptor) 
  *
  * ### 注意事项：
  * - 被装饰的必须是方法，不能是属性或其他类型
- * - 方法的参数类型信息通过反射获取，需要在 tsconfig.json 中启用 emitDecoratorMetadata
+ * - 事件监听器在组件实例化时按类名匹配注册，因此必须配合 @Component 使用才会生效
  *
  * ### 示例代码：
  * ```
@@ -387,10 +438,12 @@ function Actions(action: number | string, group?: string, order?: number) {
 }
 
 /**
- * 监听屏幕大小变化 (resize) 装饰器
+ * OnResize 方法装饰器
+ * 监听屏幕大小变化（Laya.Event.RESIZE），屏幕尺寸改变时自动调用被装饰的方法
  *
- * 当一个类方法被 `@OnResize` 装饰后，每当屏幕大小发生变化（Laya.Event.RESIZE 触发）时，该方法都会被自动调用。
- * 该装饰器只能用于在 `@Component` 标记的类中。
+ * ### 生效前提：
+ * - 只能用在被 `@Component` 注解管理的类中（组件实例化时按类名匹配注册）
+ * - 被装饰的必须是方法，不能是属性或其他类型
  */
 function OnResize(targetPrototype: any, propertyKey: string, descriptor: PropertyDescriptor) {
     if (!descriptor || (typeof descriptor.value !== 'function')) {
@@ -401,11 +454,13 @@ function OnResize(targetPrototype: any, propertyKey: string, descriptor: Propert
 }
 
 /**
- * 点击事件装饰器
+ * ClickOn 方法装饰器（装饰器工厂，支持直接 @ClickOn 调用）
+ * 在FGUI的GObject上注册点击事件 Laya.Event.CLICK 监听，将事件委托给被装饰的方法处理
+ * 可指定子节点名称，将点击事件绑定到指定子组件上
  *
- * 该装饰器用于在FGUI的GObject上注册点击事件`Laya.Event.CLICK`监听，并将事件委托给特定的方法处理
- * 它会将相关信息（如类名、方法、事件名称、子节点名称和参数）推送到全局事件函数列表中
- * 并劫持GObject的constructFromResource方法以注册组件事件代理
+ * ### 生效前提：
+ * - 被装饰的类必须继承自 fgui.GObject（或其子类），否则装饰器不生效（仅输出 debug 日志）
+ * - 被装饰的必须是方法，不能是属性或其他类型
  *
  * @param childName 子节点名称，可选
  * @param args 附加参数，可选
@@ -426,10 +481,12 @@ function ClickOn(childName?: string | any, args?: string | any[]) {
 }
 
 /**
- * 通用事件监听装饰器
+ * EventOn 方法装饰器工厂
+ * 通用事件监听装饰器，为FGUI的GObject动态添加任意类型的事件监听（区别于 ClickOn 仅限点击）
  *
- * 该装饰器允许开发者为FGUI的GObject动态添加各种事件监听，而不仅仅是点击事件
- * 它的工作原理类似于ClickOn装饰器，主要区别在于监听的事件类型可以自定义
+ * ### 生效前提：
+ * - 被装饰的类必须继承自 fgui.GObject（或其子类），否则装饰器不生效（仅输出 debug 日志）
+ * - 被装饰的必须是方法，不能是属性或其他类型
  *
  * @param eventName 要监听的事件名称
  * @param childName 子节点名称，可选
@@ -695,8 +752,13 @@ function runApplication<T>(classTarget?: { new(...args: any[]): T }): T {
 
     if (readyFunction) {
         readyFunction.forEach((value, key) => {
+            // key 为类原型，须用其构造函数按类名查找 Bean 实例，否则 thisArg 恒为 undefined
             // @ts-ignore
-            const thisArg = tsCore.App.inst.getBean(key)
+            const thisArg = tsCore.App.inst.getBean(key.constructor)
+            if (!thisArg) {
+                // @ts-ignore
+                tsCore.Log.warn(`[Ready] No bean instance found for class "${key.constructor.name}", @Ready methods will be invoked with this=undefined`)
+            }
             value.forEach(value1 => value1.call(thisArg))
         })
 

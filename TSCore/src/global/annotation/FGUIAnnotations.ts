@@ -1,8 +1,15 @@
 /**
- * FGui装饰器用于简化FGUI组件的访问
- * 它通过名称字符串来定位和返回FGUI组件、控制器或过渡动画
- * @param name 组件的名称路径，使用点号分隔
+ * Fgui 属性装饰器工厂
+ * 简化FGUI组件的访问：通过名称字符串来定位并返回FGUI组件、控制器或过渡动画
+ * 首次访问命中后将值固化为只读属性；未命中时返回 null 并打印警告
  *
+ * ### 生效前提：
+ * - 装饰的类必须继承自 fgui.GComponent（内部通过 this.getChild/getController/getTransition 查找）
+ * - 属性类型必须是 fgui.GObject / fgui.Controller / fgui.Transition 或其子类
+ *   （按编译期 design:type 元数据分派查找方式，需启用 emitDecoratorMetadata），
+ *   否则永远返回 null 并在每次访问时打印警告
+ *
+ * ### 示例代码：
  * ```
  * // 假设你有一个组件类 MyComponent，它继承自 fgui.GComponent
  * class MyComponent extends fgui.GComponent {
@@ -42,6 +49,7 @@
  *     }
  * }
  * ```
+ * @param name 组件的名称路径，使用点号分隔
  */
 function Fgui(name: string): any {
     return function (targetPrototype: any, propertyKey: string) {
@@ -120,13 +128,20 @@ function fguiFindChild(target: fgui.GComponent, childs: string[]) {
 }
 
 /**
- * 定时循环执行装饰器
- * 用于装饰类方法，使其按照指定间隔循环执行
+ * TimerLoop 方法装饰器工厂
+ * 定时循环执行装饰器，使被装饰的方法按照指定时间间隔循环执行
  *
- * 该装饰器只能用在被 `@Component` 注解管理的类中。
+ * ### 生效前提：
+ * - 只能用在被 `@Component` 注解管理的类中（组件实例化时按类名匹配注册任务）
+ * - 所在类必须继承自 fgui.GObject（任务目标为显示对象，依赖可见性检查）
+ * - 被装饰的必须是方法，不能是属性或其他类型
+ *
+ * ### 执行条件：
+ * - 默认仅当目标组件挂载在显示列表且可见（parent 存在、alpha > 0、internalVisible2）时才会执行
+ * - custom 返回 true 时忽略 interval 时间间隔立即尝试执行，但仍受上述可见性条件约束（非强制执行）
  *
  * @param interval - 执行间隔时间(毫秒)
- * @param custom - 自定义执行条件函数，当该函数返回 true 时任务会无视默认的可见性检查而强制执行
+ * @param custom - 自定义调度条件函数，返回 true 时忽略时间间隔，见"执行条件"说明
  * @returns function - 装饰器函数
  *
  * ```
@@ -160,11 +175,20 @@ function TimerLoop(interval: number, custom?: () => boolean) {
 }
 
 /**
+ * TimerFrameLoop 方法装饰器工厂
+ * 定时(按帧)循环执行装饰器，使被装饰的方法按照指定帧数间隔循环执行（每 frame 帧触发一次）
  *
- * 该装饰器只能用在被 `@Component` 注解管理的类中。
+ * ### 生效前提：
+ * - 只能用在被 `@Component` 注解管理的类中（组件实例化时按类名匹配注册任务）
+ * - 所在类必须继承自 fgui.GObject（任务目标为显示对象，依赖可见性检查）
+ * - 被装饰的必须是方法，不能是属性或其他类型
  *
- * @borrows TimerLoop as TimerFrameLoop
+ * ### 执行条件：
+ * - 与 @TimerLoop 一致：默认仅当目标组件在显示列表且可见时才会执行；
+ *   custom 返回 true 时忽略帧数间隔立即尝试执行（仍受可见性约束）
  *
+ * @param frame - 执行间隔帧数
+ * @param custom - 自定义调度条件函数
  */
 function TimerFrameLoop(frame: number, custom?: () => boolean) {
     return function (targetProperty: any, propertyKey: string, descriptor: PropertyDescriptor) {
