@@ -19,7 +19,7 @@ jobs:
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 9 # Use latest pnpm version
+          version: 10 # 与本地锁文件生成环境 (pnpm 10) 保持一致
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
