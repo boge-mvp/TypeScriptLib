@@ -6,7 +6,6 @@ import GLoader = fgui.GLoader;
 import LoaderFillType = fgui.LoaderFillType;
 import Handler = Laya.Handler;
 import ToolSet = fgui.ToolSet;
-import GComponent = fgui.GComponent;
 import {EPanel} from "./EPanel";
 import {PureList} from "./PureList";
 import {IBaseElementConfig} from "./IBaseElementConfig";
@@ -15,11 +14,11 @@ import {IElementConfig} from "./IElementConfig";
 import {IGraphConfig} from "./IGraphConfig";
 import {IGraphicsCmdConfig} from "./IGraphicsCmdConfig";
 import {IIconConfig} from "./IIconConfig";
-import {ILayoutConfig} from "./ILayoutConfig";
 import {IListConfig} from "./IListConfig";
 import {IPanelConfig} from "./IPanelConfig";
 import {ITextConfig} from "./ITextConfig";
 import {IViewConfig} from "./IViewConfig";
+
 /**
  * 纯代码 FGUI 组件工厂
  *
@@ -29,6 +28,25 @@ import {IViewConfig} from "./IViewConfig";
  * 反射式滚动容器激活（去 fgui 编辑器资源包依赖）。
  */
 export class UIFactory {
+
+    /** 资源基础路径前缀，用于 gameUI.json 等相对路径资源的目录定位 */
+    static resBasePath: string = ""
+
+    /**
+     * 资源 URL 前缀处理：为相对路径自动拼接 resBasePath 前缀
+     * 绝对路径（http://、//、ui://）和颜色值（#、rgb）不拼接
+     */
+    static formatResUrl(url: string): string {
+        if (url && UIFactory.resBasePath
+            && !url.startsWith("http")
+            && !url.startsWith("//")
+            && !url.startsWith("ui://")
+            && !url.startsWith("#")
+            && !url.startsWith("rgb")) {
+            return UIFactory.resBasePath + url
+        }
+        return url
+    }
 
     private static customCreators: {
         [type: string]: (elData: IElementConfig, containerW: number, containerH: number) => fgui.GObject
@@ -217,7 +235,7 @@ export class UIFactory {
                 }
             }
         })
-        iconNode.url = Laya.URL.formatURL(elData.url)
+        iconNode.url = Laya.URL.formatURL(UIFactory.formatResUrl(elData.url))
         return iconNode
     }
 
@@ -976,7 +994,9 @@ export class UIFactory {
             if (!item || typeof item !== "object") continue;
             const cmd = item.cmd;
             const args = [...(item.args || [])];
-
+            if ((cmd === "loadImage" || cmd === "drawImage") && typeof args[0] === "string") {
+                args[0] = UIFactory.formatResUrl(args[0])
+            }
             if (typeof g[cmd] === "function") {
                 g[cmd](...args);
             } else {
