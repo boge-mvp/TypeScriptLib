@@ -35,13 +35,10 @@
     "webp",
     "version_info.txt",
     "index.js",
-    "packNpmLib.js",
     "lib",
     "typescript-parse.js",
-    "ast-dependencies-parse.js",
     "reserved.js",
     "types.js",
-    "monkey-path.js",
     "rollup-plugin-rename.js",
     "rollup-plugin-decorators.js",
     "rollup-plugin-generics.js"

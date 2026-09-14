@@ -14,6 +14,10 @@ export class LanguageUtils {
     private _elementCache = new Map<string, Element>()
     /** 存储存在重复 name 的项，用于在检索时抛出 duplicate items 异常 */
     private _duplicateNames = new Set<string>()
+    /** 运行时替换文案覆盖表（key 已按 ignoreCase 规范化），检索优先于语言包 */
+    private _overrides = new Map<string, string>()
+    /** 已删除的文案key黑名单（key 已按 ignoreCase 规范化），命中后语言包原文永远不可见 */
+    private _removedKeys = new Set<string>()
     /**
      * 忽略大小写
      * @default true
@@ -72,6 +76,31 @@ export class LanguageUtils {
     }
 
     /**
+     * 根据key直接替换文案
+     * 覆盖语言包中该key对应的文案；key 在语言包中不存在时同样生效（新增）
+     * 若该key此前已被删除，重新设置后将再次生效
+     * @param key 文案的key（语言包的 id/name）
+     * @param value 替换后的文案
+     */
+    setStr(key: string, value: string) {
+        const k = this.ignoreCase ? key.toLowerCase() : key
+        this._removedKeys.delete(k)
+        this._overrides.set(k, value)
+    }
+
+    /**
+     * 根据key删除已有的文案
+     * 删除该key的全部文案来源：包括代码中 setStr 添加的覆盖值与语言包中的原文
+     * 删除后 getStr / getStringArray 永远获取不到该key的文案
+     * @param key 文案的key
+     */
+    removeStr(key: string) {
+        const k = this.ignoreCase ? key.toLowerCase() : key
+        this._overrides.delete(k)
+        this._removedKeys.add(k)
+    }
+
+    /**
      * 返回对应的语言
      * @see LibStr
      * @param str key
@@ -80,6 +109,8 @@ export class LanguageUtils {
         if (typeof (str) == "number") {
             str = str + ""
         }
+        const override = this._overrides.get(this.ignoreCase ? str.toLowerCase() : str)
+        if (override !== undefined) return this.__convert(override)
         let element = this.getElement(str)
         if (element?.nodeName == "array") {
             const arr: Element[] = []
@@ -117,6 +148,9 @@ export class LanguageUtils {
     getElement(str: string) {
         if (this.xml) {
             const key = this.ignoreCase ? str.toLowerCase() : str
+            if (this._removedKeys.has(key)) {
+                return null
+            }
             if (this._duplicateNames.has(key)) {
                 throw new Error("Language configuration has duplicate items：" + str)
             }
@@ -130,7 +164,10 @@ export class LanguageUtils {
 
     private __getStr(element: Nullable<Element>) {
         if (!element) return null
-        let content = element.textContent
+        return this.__convert(element.textContent)
+    }
+
+    private __convert(content: any) {
         if (this.customConvert) content = runFun(this.customConvert, content)
         return this.replaceLang(content)
     }
