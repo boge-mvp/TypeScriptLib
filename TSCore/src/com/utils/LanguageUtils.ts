@@ -79,25 +79,53 @@ export class LanguageUtils {
      * 根据key直接替换文案
      * 覆盖语言包中该key对应的文案；key 在语言包中不存在时同样生效（新增）
      * 若该key此前已被删除，重新设置后将再次生效
+     * 当该key指向的语言项同时存在 id 与 name 两个键时，两个键将同步替换为新文案
      * @param key 文案的key（语言包的 id/name）
      * @param value 替换后的文案
      */
     setStr(key: string, value: string) {
         const k = this.ignoreCase ? key.toLowerCase() : key
-        this._removedKeys.delete(k)
-        this._overrides.set(k, value)
+        for (const alias of this.__aliasesOf(k)) {
+            this._removedKeys.delete(alias)
+            this._overrides.set(alias, value)
+        }
     }
 
     /**
      * 根据key删除已有的文案
      * 删除该key的全部文案来源：包括代码中 setStr 添加的覆盖值与语言包中的原文
      * 删除后 getStr / getStringArray 永远获取不到该key的文案
+     * 当该key指向的语言项同时存在 id 与 name 两个键时，将连同另一个键一并彻底删除
      * @param key 文案的key
      */
     removeStr(key: string) {
         const k = this.ignoreCase ? key.toLowerCase() : key
-        this._overrides.delete(k)
-        this._removedKeys.add(k)
+        for (const alias of this.__aliasesOf(k)) {
+            this._overrides.delete(alias)
+            this._removedKeys.add(alias)
+        }
+    }
+
+    /**
+     * 解析key所指向语言项的全部同源别名键（同一Element的 id/name）
+     * 仅当缓存中该别名确实解析回同一Element时才纳入，避免误伤重名/被覆盖的其他语言项
+     * key 不在语言包缓存中时视为独立键，仅返回其自身
+     */
+    private __aliasesOf(key: string): string[] {
+        const element = this._elementCache.get(key)
+        if (!element) return [key]
+        const aliases: string[] = []
+        const id = element.getAttribute("id")
+        if (id) {
+            const k = this.ignoreCase ? id.toLowerCase() : id
+            if (this._elementCache.get(k) === element && !aliases.includes(k)) aliases.push(k)
+        }
+        const name = element.getAttribute("name")
+        if (name) {
+            const k = this.ignoreCase ? name.toLowerCase() : name
+            if (this._elementCache.get(k) === element && !aliases.includes(k)) aliases.push(k)
+        }
+        return aliases.length ? aliases : [key]
     }
 
     /**
