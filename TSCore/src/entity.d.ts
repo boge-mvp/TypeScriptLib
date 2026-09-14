@@ -222,6 +222,14 @@ declare type ComponentData = {
 }
 
 /**
+ * @Component 装饰器配置阶段参数类型
+ * 所有字段均可省略，装饰器执行时会自动回填：
+ * - key 未配置时回退为 "class:name 元数据 || 类名"（此时 keyIgnoreCase 默认置 true）
+ * - classTarget 固定回填为被装饰的类本身
+ */
+declare type ComponentOptions = Partial<ComponentData>
+
+/**
  * 事件处理的绑定数据
  */
 declare type ActionsData = {

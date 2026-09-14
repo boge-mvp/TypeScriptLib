@@ -141,17 +141,18 @@ function AppMain(value: { new(...args: any[]): IRunApplication }) {
  * - 传入的 Bean 名称为空白字符串时不会报错，会自动回退为按类名注册
  *
  * @template T 限制为构造函数类型
- * @param {string | T | ComponentData} value - 组件标识符(Bean名称)、目标构造函数或组件配置
+ * @param {string | T | ComponentOptions} value - 组件标识符(Bean名称)、目标构造函数或组件配置
+ *                                               （对象配置的所有字段均可省略，见 ComponentOptions）
  * @returns any 返回装饰后的类。
  */
-function Component<T extends { new(...args: any[]): {} }>(value: string | false | T | ComponentData = "") {
+function Component<T extends { new(...args: any[]): {} }>(value: string | false | T | ComponentOptions = "") {
     let decorator: any = function (classTarget: T) {
         if (value == null || value == false) {
             return proxyClass(classTarget)
         }
         let data: ComponentData = {classTarget: classTarget, key: ""}
         if (typeof value === "object") {
-            data = value
+            Object.assign(data, value)
             value = classTarget
         }
         data.isJoinBean ??= true
@@ -161,7 +162,7 @@ function Component<T extends { new(...args: any[]): {} }>(value: string | false 
         data.autoInit ??= true
         if (typeof value === "string" && value.trim().length > 0) {
             data.key = value
-        } else {
+        } else if (!data.key) {
             data.key = Reflect.getMetadata("class:name", classTarget) || classTarget.name
             data.keyIgnoreCase = true
         }

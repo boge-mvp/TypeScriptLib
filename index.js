@@ -20,7 +20,7 @@ const { namespaceAssign, namespaceConverge } = require("./lib/namespace-wrap")
 const astDependencies = require("./lib/ast-dependencies")
 
 // 4. 通用工具库
-const { clean, log, writeFile, createDirectory } = require("./lib/util")
+const { clean, log, writeFile, createDirectory, findFilesSync, expandGlobSync, globMatch } = require("./lib/util")
 const webp = require("./webp/ToWebp")
 
 const _webp = new webp.Webp()
@@ -54,5 +54,8 @@ module.exports = {
     clean,
     log,
     writeFile,
-    createDirectory
+    createDirectory,
+    findFilesSync,
+    expandGlobSync,
+    globMatch
 }
