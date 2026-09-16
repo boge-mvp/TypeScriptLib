@@ -4,6 +4,7 @@ node_modules
 /TSCore/bin/temp/
 /GameLib/bin/temp/
 *.tgz
+*.zip
 demo
 .rollup.cache
 .gemini/
