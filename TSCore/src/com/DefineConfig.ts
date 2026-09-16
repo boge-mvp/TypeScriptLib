@@ -454,12 +454,16 @@ export class DefineConfig {
                     if (config.startsWith("#") || config.startsWith("rgb")) {
                         this.displayObject.graphics.drawRect(0, 0, initW, initH, config)
                     } else {
-                        this.displayObject.graphics.loadImage(Laya.URL.formatURL(UIFactory.formatResUrl(config)), 0, 0, initW, initH)
+                        let tex = UIFactory.getFguiTexture(config)
+                        if (tex == null) this.displayObject.graphics.loadImage(Laya.URL.formatURL(UIFactory.formatResUrl(config)), 0, 0, initW, initH)
+                        else this.displayObject.graphics.drawTexture(tex, 0, 0, initW, initH)
                     }
                 } else if (typeof config === "object") {
                     if ("type" in config) {
                         if (config.type === "icon") {
-                            this.displayObject.graphics.loadImage(Laya.URL.formatURL(UIFactory.formatResUrl(config.url)), 0, 0, initW, initH)
+                            let tex = UIFactory.getFguiTexture(config.url)
+                            if (tex == null) this.displayObject.graphics.loadImage(Laya.URL.formatURL(UIFactory.formatResUrl(config.url)), 0, 0, initW, initH)
+                            else this.displayObject.graphics.drawTexture(tex, 0, 0, initW, initH)
                         } else if (config.type === "graph") {
                             const graphBg = config as IGraphConfig;
                             const w = initW || graphBg.width || this.width

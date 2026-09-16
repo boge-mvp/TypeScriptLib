@@ -48,6 +48,19 @@ export class UIFactory {
         return url
     }
 
+    /**
+     * 将 fgui 包资源地址解析为可直接绘制的 Laya 纹理 <br/>
+     * 地址无论带不带 ui: 前缀都会先强制规范化为 ui://（见 formatFguiUrl），
+     * 再经 fgui.UIPackage 取出包内图片资产；仅当资产确为 Laya.Texture 时返回，
+     * 未命中（地址实为物理路径）返回 null，由调用方回退 Laya 原生加载
+     */
+    static getFguiTexture(url?: string): Nullable<Laya.Texture> {
+        if (!url) return null
+        if (!url.startsWith("ui:")) url ="ui://" + url
+        const asset = fgui.UIPackage.getItemAssetByURL(url)
+        return asset instanceof Laya.Texture ? asset : null
+    }
+
     private static customCreators: {
         [type: string]: (elData: IElementConfig, containerW: number, containerH: number) => fgui.GObject
     } = {};
