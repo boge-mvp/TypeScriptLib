@@ -71,7 +71,7 @@ export class SocketClient extends Laya.EventDispatcher {
      * 尝试创建连接（检查最大重连次数限制）
      */
     createConnect() {
-        if (this.connectTimes <= 0) {
+        if (this.connectTimes > this.MAX_CONNECT_TIMES) {
             return
         }
         this.connect()
@@ -167,6 +167,7 @@ export class SocketClient extends Laya.EventDispatcher {
      */
     onOpen() {
         Log.debug("GameSocket.openHandler()")
+        this.connectTimes = 0
         this.auth()
         this.event(Laya.Event.OPEN)
     }
@@ -176,7 +177,7 @@ export class SocketClient extends Laya.EventDispatcher {
      * 减少剩余重连次数并增加下次重连延迟
      */
     protected reconnect() {
-        --this.connectTimes
+        this.connectTimes++
         this.reconnectDelay *= 2
         if (this.isActive) this.createConnect()
     }
@@ -221,7 +222,7 @@ export class SocketClient extends Laya.EventDispatcher {
      * 主动关闭连接
      */
     close() {
-        this.connectTimes = this.MAX_CONNECT_TIMES
+        this.connectTimes = 0
         this.reconnectDelay = this.RECONNECT_DELAY
         if (Laya.Render.isConchApp && !StringUtil.isEmpty(SocketClient.SOCKET_CLASS_PATH)) {
             this.socket?.call("close")

@@ -28,8 +28,7 @@
 ```
 
 **为什么禁止 Laya 原生对象创建 UI：**
-- FGUI 拥有独立的显示列表、坐标缩放适配（GRoot/关联 Relation）、命中测试与事件体系；Laya 原生对象游离在该体系之外，混用会导致分辨率适配失效、层级互斥、点击命中行为不一致、滚动容器裁剪失效等隐蔽问题；
-- UIFactory 全链路（含矢量绘制 `graphics`）均落到 FGUI 管辖的显示对象上，统一托管、统一适配。
+- FGUI 拥有独立的显示列表、坐标缩放适配（GRoot/关联 Relation），物理适配更为健全；Laya 原生对象游离在该体系之外，混用会导致分辨率适配失效、层级互斥、点击物理命中行为不一致等隐蔽问题。
 
 ---
 
@@ -68,13 +67,13 @@
 
 ## 三、快速上手
 
-最小可运行示例——一个含标题、说明文本、按钮的面板：
+最小可运行示例——一个充分考虑多端防变形适配、使用百分比宽度和弹性排布的面板：
 
 ```typescript
 const panel = UIFactory.createPanel({
     type: "panel",
-    width: 600,
-    height: 400,
+    width: 0.8,  // 占屏幕宽度的 80%（多端自适应，防拉伸变形）
+    height: 0.6, // 占屏幕高度的 60%
     layoutType: "vertical",
     justifyContent: "center",
     alignItems: "center",
@@ -96,8 +95,8 @@ const panel = UIFactory.createPanel({
         {
             type: "button",
             name: "closeBtn",
-            width: 200,
-            height: 60,
+            width: 0.3, // 占面板宽度的 30%，百分比自适应宽度
+            height: 60,  // 高度可以维持特定像素，以支持单行文本高度安全
             elements: [
                 {
                     type: "text",
@@ -115,7 +114,7 @@ fgui.GRoot.inst.addChild(panel)
 
 要点：
 - 容器型元素（panel/list/button）通过 `elements` 递归声明子级；
-- 子级未写死 `x/y` 时，按父容器 `layoutType` 流式排布，未参与流的轴向由 `alignItems` 对齐；
+- 子级未写绝对 `x/y` 时，按父容器 `layoutType` 流式排布，未参与流的轴向由 `alignItems` 对齐；
 - `name` 是运行期寻址标识（`getChild("closeBtn")`）。
 
 ---
@@ -127,14 +126,14 @@ fgui.GRoot.inst.addChild(panel)
 | 字段 | 类型 | 默认 | 说明 |
 |---|---|---|---|
 | `name` | string | — | 唯一命名标识，供 `getChild` 寻址 |
-| `width` / `height` | number | 0 | 固定像素宽/高；不配或 0 则自适应/自动撑开 |
+| `width` / `height` | number | 0 | 推荐使用百分比（如 `0.8` 代表 `80%`，值为 `0~1`），或 `0`/不配代表自适应；尽量避免固定像素，防止在不统一显示屏下拉伸变形 |
 | `scale` | number | 1 | 整体缩放（等同同时设 scaleX/scaleY） |
 | `scaleX` / `scaleY` | number | 1 | 轴向缩放（负值为镜像） |
 | `pivotX` / `pivotY` | number | 0 | 锚点坐标百分比（0~1），旋转与位移基准 |
 | `asAnchor` | boolean | false | true 时 x/y 代表轴心点位置而非左上角 |
 | `alpha` | number | 1 | 不透明度（0~1） |
 | `rotation` | number | 0 | 旋转角度（0~360 度） |
-| `x` / `y` | number | — | 绝对像素坐标（配置后忽略 layout 排版） |
+| `x` / `y` | number | — | 绝对像素坐标。辅助定位手段，在自适应自适应流中**不作为首选**。仅在绝对粒子挂载、特殊微调或运行期特定动画原点对齐时克制配置 |
 | `layout` | ILayoutConfig | — | 弹性对齐与百分比定位（见 5.2） |
 | `position` | `"absolute"` | — | 脱离父容器流式布局，不受 alignItems/justifyContent 影响 |
 | `graphics` | IGraphicsCmdConfig[] | — | 矢量绘图指令组（见 4.7） |
@@ -219,7 +218,7 @@ fgui.GRoot.inst.addChild(panel)
 | `listLayout` | SingleColumn/SingleRow/FlowHorizontal/FlowVertical/Pagination | SingleColumn | 排列布局 |
 | `lineGap` | number | 10 | 行间距 |
 | `columnGap` | number | 10 | 列间距 |
-| `itemWidth` / `itemHeight` | number | — | 强制规定子项格子物理宽/高 |
+| `itemWidth` / `itemHeight` | number | — | 强制规定子项格子物理宽/高（当使用百分比或自适应子项时，此项不推荐显式配置固定数值） |
 | `align` | left/center/right | — | 列表整体水平对齐 |
 | `verticalAlign` | top/middle/bottom | — | 列表整体垂直对齐 |
 | `items` | IPanelConfig[] | [] | 静态数据子项（itemRenderer 递归填充） |
@@ -266,12 +265,26 @@ fgui.GRoot.inst.addChild(panel)
 
 ## 五、布局系统
 
+### 5.0 响应式设计原则：多端自适应与防拉伸变形铁律（最高优先级）
+
+> **设计背景（AI 必须时刻牢记）**：
+> 当前各种物理显示终端（平板、折叠屏、不同纵横比的全面屏手机）的屏幕规格极不统一。
+> 纯代码 UI 的首要前提就是**防止界面发生拉伸、挤压、变形或重叠**。
+> 为此，我们应遵守以下多智能体（Agents）自洽的定位约束：
+
+1. **优先使用相对坐标与百分比定位**：
+   - 优先通过在 `layout` 中配置 `leftPercent` / `rightPercent` / `topPercent` / `bottomPercent`（值为 `0~1` 比例值）来进行相对定位，使图元随屏幕占比弹性缩放。
+   - 绝对像素定位 `x` / `y` 在常规响应式界面中**不作为首选**。仅作为悬浮气泡、粒子发射位置等特定点物理对齐或精细动画微调时的辅助手段。
+2. **百分比宽高与行/列权重分配**：
+   - 面板、子容器等推荐基于界面或父容器比例定义百分比宽度和百分比高度（如 `width: 0.8`）。
+   - 在多列、多行等网格/流式排布元素中，子项宽高推荐根据其在该行或该列中占据的**权重百分比（如 `0.3` / `0.5`）**，利用流式引擎（`layoutType: "horizontal"`、`justifyContent: "space-between"`）完成完美适配，彻底防止变形和挤压。
+
 ### 5.1 定位优先级决策链（setupElementPosition）
 
 每个子元素的坐标按以下优先级决策（高优先命中后忽略低优先）：
 
-1. **绝对坐标最高**：配置了 `x` / `y` → 直接使用物理坐标；
-2. **百分比定位次之**：`layout.leftPercent/rightPercent/topPercent/bottomPercent` → 按容器内容区比例换算（如 `x = contentW × (1 - rightPercent) - elW`）；
+1. **绝对坐标（辅助手段）**：配置了 `x` / `y` → 直接使用物理坐标微调；
+2. **百分比定位（自适应首选）**：`layout.leftPercent/rightPercent/topPercent/bottomPercent` → 按容器内容区比例换算（如 `x = contentW × (1 - rightPercent) - elW`）；
 3. **对齐模式最低**：`layout.alignX/alignY` + `offsetX/offsetY` 像素微调。
 
 ### 5.2 layout 弹性对齐配置（ILayoutConfig）
@@ -427,7 +440,7 @@ Laya.stage.addChild(...)   // UI 内容直接挂 Laya 舞台
 
 ## 十一、综合完整示例
 
-设置面板：graph 背景 + 纵向流（标题/横向工具行/横向流图标列表）+ 装饰图形：
+设置面板：矢量背景 + 纵向弹性流式布局（标题/横向工具行/百分比权重自适应列表）+ 底部响应式装饰图形。**完美自适应多端，防止拉伸变形**：
 
 ```typescript
 UIFactory.resBasePath = "res/gameui/"
@@ -435,11 +448,11 @@ UIFactory.resBasePath = "res/gameui/"
 const panel = UIFactory.createPanel({
     type: "panel",
     name: "settingsPanel",
-    width: 800,
-    height: 600,
+    width: 0.85,  // 占屏幕宽度的 85%（多端自适应缩放，防变形）
+    height: 0.75, // 占屏幕高度的 75%
     background: {
         type: "graph",
-        width: 800, height: 600,
+        width: 1, height: 1, // 占满父容器 (100% 宽高)
         fillColor: "#1a1a2e",
         lineColor: "#4e4e7a",
         lineSize: 2,
@@ -449,7 +462,7 @@ const panel = UIFactory.createPanel({
     padding: { top: 40, bottom: 40, left: 40, right: 40 },
     gap: 24,
     elements: [
-        // 标题：横向流居中
+        // 标题：横向流自适应居中
         {
             type: "panel",
             height: 60,
@@ -463,7 +476,7 @@ const panel = UIFactory.createPanel({
                 fontSize: 36, bold: true,
             }],
         },
-        // 工具行：横向流 + 交叉轴居中 + 弹性间隔
+        // 工具行：横向流 + 交叉轴自适应居中 + 弹性两端分布
         {
             type: "panel",
             height: 56,
@@ -476,12 +489,13 @@ const panel = UIFactory.createPanel({
                 {
                     type: "button",
                     name: "logoutBtn",
-                    width: 140, height: 48,
+                    width: 0.25, // 占工具栏总宽度的 25%，流式内比例自适应
+                    height: 48,
                     elements: [{ type: "text", text: "退出", fontSize: 22, layout: { alignX: "center", alignY: "middle" } }],
                 },
             ],
         },
-        // 图标列表：横向流自动折行
+        // 图标列表：横向流自动折行，子项按列权重定义百分比宽度，自适应任何屏幕宽高比
         {
             type: "list",
             name: "iconList",
@@ -490,21 +504,22 @@ const panel = UIFactory.createPanel({
             lineGap: 16, columnGap: 16,
             items: [1, 2, 3, 4, 5, 6].map(i => ({
                 type: "panel",
-                width: 160, height: 120,
+                width: 0.3, // 占列表宽度的 30%（即每行自动弹性分三列，行列权重完美适配）
+                height: 120,
                 background: { type: "graph", fillColor: "#2a2a4a", cornerRadius: 12 },
                 elements: [{
                     type: "icon",
                     url: `icon_${i}.png`,
-                    width: 96, height: 96,
+                    width: 0.6, height: 0.8, // 占子项宽高的百分比，绝不拉伸
                     layout: { alignX: "center", alignY: "middle" },
                 }],
             })),
         },
-        // 底部装饰线（graphics 指令）
+        // 底部装饰线：矢量绘图，拉伸不失真
         {
             type: "graph",
             height: 4,
-            width: 720,
+            width: 1, // 100% 宽度自适应
             graphics: [{ cmd: "drawLine", args: [0, 2, 720, 2, "#4e4e7a", 2] }],
         },
     ],
@@ -514,6 +529,47 @@ fgui.GRoot.inst.addChild(panel)
 ```
 
 示例覆盖：背景嵌套 graph、UBB 富文本、justifyContent 三态、flexWrap 折行列表、graphics 指令、百分比/对齐定位、padding —— 可作为业务界面的配置模板直接扩展。
+
+---
+
+## 十一、实战踩坑与高频约束安全守则
+
+在真实工程与高密度动态业务场景中，以下 8 类问题最为高频，请务必在编写纯代码 UI 配置时对照自查：
+
+### 1. 滚动视口（overflow: 2）严禁直接子节点使用居中 layout
+- **冲突根因**：ScrollPane 视口滚动会动态修改视口偏移，而 `layout: { alignX: "center", alignY: "middle" }` 会在 FGUI 底层绑定 `Center_Center` 关联。当滚动或容器尺寸变动时，两者相互拉扯，导致内容在视口中剧烈抖动或跳回中心。
+- **规范要求**：滚动视口的直接子节点**必须使用常规流式布局（如 layoutType: "vertical"）或纯绝对坐标（x/y）**；若局部模块确需居中，必须包裹在内层定宽定高容器中，由内层容器居中子节点。
+- **引擎诊断**：UIFactory 已内置控制台警告拦截，发现滚动直接子级配置居中 layout 时会主动打印 `[UIFactory.warn]` 报警。
+
+### 2. 多行流式布局（flexWrap: true）必须显式指定容器宽度
+- **排版原理**：引擎计算折行换行阈值完全依赖容器可用宽度（`width - padding.left - padding.right`）。若容器未显式设置 `width`，引擎无法推导单行折行终点，会导致子节点全挤在第一行或高度推算失真。
+- **规范要求**：使用 `layoutType: "horizontal"` 配合 `flexWrap: true` 时，**父容器必须提供显式 width**；高度无需指定，引擎会自动虚拟推演所有折行并撑开总高度（高度自适应）。同时子项切勿配置垂直居中 `alignY: "middle"` 相对绑定。
+
+### 3. 多行与长文本必须配置明确的 width 边界
+- **排版原理**：FGUI 文本在未配置 `width` 时默认为 `AutoSizeType.Both`（单行向右无限延展）。虽然 UIFactory 会自动将 `\n` 转义为 `<br/>`，但如果文本缺失宽度限制，普通长文案永远不会自然折行。
+- **规范要求**：凡是动态文案、多行提示或段落文本，**必须显式声明 `width`**，使其切换为 `AutoSizeType.Height`（固定宽度、高度随文本自动撑开）。
+
+### 4. 高密度微图元（如密集粒子/发光光点矩阵）禁止打散平铺
+- **架构模式**：超过 50 个密集型微小小图元（如点阵网格、散落金币粒子）若全部作为平级节点丢在根面板，会导致根面板的 DisplayList 和坐标脏标记更新负担剧增，影响二次布局效率。
+- **规范要求**：必须将其封装为独立的“原子级微容器（Sub-Panel）”，让微图元在独立面板内部完成局部相对定位，根级仅持有一个子容器节点。
+
+### 5. WebGL 叠加混合模式（blendMode = "lighter"）高亮底色防过曝
+- **图形管线原理**：`lighter` 属于加法混合（Additive Blending：$RGB_{final} = RGB_{src} + RGB_{dst}$）。当底部背景已经是高亮黄色或纯白底时，加法混合会导致颜色迅速过饱和冲顶为全白纯色块，丧失金币或光效的内部纹理细节。
+- **规范要求**：在亮色底图上使用高光或发光特效时，应优先采用 `normal`（透明度混合）配合高饱和度半透明材质；或在特效下方垫一层半透明暗调遮罩（Alpha 0.3~0.5 黑色/深棕底），再施加 `lighter`。
+
+### 6. 动效粒子发射物理参数（初速度与摩擦阻尼）衰减调控
+- **视觉动力学**：粒子初速度过大（如单帧位移 > 30px）且缺乏阻尼空气摩擦力时，粒子会在最初 2~3 帧直接飞出用户视网膜聚焦区，呈现“凭空消失/闪烁断层”的不良体感。
+- **规范要求**：初速度建议设定在中速区间（8~16px/帧），并配置每帧 0.92~0.96 的平滑阻尼摩擦因数衰减；对于重力喷溅效果，需配置合理的向下加速度，形成饱满的抛物线弧度。
+
+### 7. 弹跳/震屏补间动画必须设置中心轴心点（Pivot）
+- **引擎坐标机制**：FGUI 组件默认轴心点为左上角 `(pivotX: 0, pivotY: 0)`。在此状态下直接执行缩放弹跳（Scale 1.0 -> 1.2），元素会沿着左上角向右下方膨胀，造成视觉中心大幅偏移错位。
+- **规范要求**：凡是作为动效主体、受击震动、缩放弹出窗口的主节点，必须在配置中显式声明 `pivotX: 0.5, pivotY: 0.5, asAnchor: true`，确保缩放与旋转严格以几何中心为基准。
+
+### 8. 位图字（BitmapFont）动态数值滚动必须锁定单行与留白防抖
+- **排版边界防护**：滚动数值在位数跳变（如从 999 变为 1000）或不同字符等宽差异时，文本宽度会发生动态跳跃；若未限制宽度，极易导致触发自动折行变成两行，破坏数字显示。
+- **规范要求**：
+  1. 动态滚动数值必须显式配置 `singleLine: true`，彻底阻断任何异常折行；
+  2. 宽度预留必须基于最高位可能数值额外预留 15%~20% 的排版安全冗余宽度，防止局部边缘字形截断。
 
 ---
 

@@ -168,6 +168,9 @@ export class UIFactory {
             textNode.autoSize = fgui.AutoSizeType.Height
         } else {
             textNode.autoSize = fgui.AutoSizeType.Both
+            if (!elData.singleLine && elData.text && (elData.text.length > 40 || elData.text.indexOf("\n") !== -1)) {
+                console.warn(`[UIFactory] 文本组件 "${elData.name || "text"}" 包含较长文案或换行符，但未配置 width，已默认采用 AutoSizeType.Both（单行无限横向延伸），如需自动折行请声明 width。`);
+            }
         }
 
         if (elData.stroke) {
@@ -515,6 +518,11 @@ export class UIFactory {
         const isVerticalFlow = elData.layoutType === "vertical";
         const isHorizontalFlow = elData.layoutType === "horizontal";
 
+        const padTop = elData.padding?.top ?? 0;
+        const padBottom = elData.padding?.bottom ?? 0;
+        const padLeft = elData.padding?.left ?? 0;
+        const padRight = elData.padding?.right ?? 0;
+
         // ==========================================
         // 【第一轮大循环：Measure & Instantiate】
         // 职责：一并完成所有子节点的创建，并同步测算出主轴上的 totalW / totalH 总占位
@@ -525,6 +533,16 @@ export class UIFactory {
         let maxChildH = 0;
         let maxChildW = 0;
         let flowChildCount = 0;
+
+        // flexWrap 虚拟折行测量状态
+        let wrapCurrentX = padLeft;
+        let wrapCurrentRowMaxH = 0;
+        let wrapTotalH = 0;
+        let wrapHasItemInRow = false;
+        const maxLineWidth = (initW > 0 ? initW : 0) - padRight;
+        if (isHorizontalFlow && elData.flexWrap && maxLineWidth <= padLeft) {
+            console.warn(`[UIFactory] flexWrap 折行容器 "${elData.name || "panel"}" 未配置明确 width 且缺少有效宽度参考，无法准确推算折行阈值，建议显式配置 width。`);
+        }
 
         for (let i = 0; i < childElements.length; i++) {
             const childData = childElements[i];
@@ -551,6 +569,26 @@ export class UIFactory {
                         const offsetX = layout.offsetX || 0;
                         const gapValue = (i > 0 && elData.gap !== undefined) ? elData.gap : 0;
                         totalW += offsetX + gapValue + elW;
+                    } else if (isHorizontalFlow && elData.flexWrap) {
+                        const offsetX = layout.offsetX || 0;
+                        const offsetY = layout.offsetY || 0;
+                        const gapValue = (wrapHasItemInRow && elData.gap !== undefined) ? elData.gap : 0;
+                        const projectedX = wrapCurrentX + offsetX + gapValue + elW;
+                        const currentItemH = offsetY + elH;
+
+                        if (wrapHasItemInRow && projectedX > maxLineWidth && maxLineWidth > padLeft) {
+                            // 触发折行：累加上一行行高及行间距
+                            const rowGap = elData.gap ?? 0;
+                            wrapTotalH += wrapCurrentRowMaxH + rowGap;
+                            wrapCurrentRowMaxH = currentItemH;
+                            wrapCurrentX = padLeft + offsetX + elW;
+                        } else {
+                            wrapCurrentX = wrapCurrentX + offsetX + gapValue + elW;
+                            if (currentItemH > wrapCurrentRowMaxH) {
+                                wrapCurrentRowMaxH = currentItemH;
+                            }
+                            wrapHasItemInRow = true;
+                        }
                     }
 
                     if (elH > maxChildH) maxChildH = elH;
@@ -561,18 +599,19 @@ export class UIFactory {
             }
         }
 
+        if (wrapHasItemInRow) {
+            wrapTotalH += wrapCurrentRowMaxH;
+        }
+
         // ==========================================
         // 【预计算父容器缺失尺寸（两遍布局：Measure → Layout）】
         // 若父容器无显式高度/宽度，根据子节点测量值预计算，确保 setupElementPosition 拿到正确的 W
         // ==========================================
-        const padTop = elData.padding?.top ?? 0;
-        const padBottom = elData.padding?.bottom ?? 0;
-        const padLeft = elData.padding?.left ?? 0;
-        const padRight = elData.padding?.right ?? 0;
-
         if (!elData.height) {
             if (isVerticalFlow && totalH > 0) {
                 initH = totalH + padTop + padBottom;
+            } else if (isHorizontalFlow && elData.flexWrap && wrapTotalH > 0) {
+                initH = wrapTotalH + padTop + padBottom;
             } else if (isHorizontalFlow && maxChildH > 0) {
                 initH = maxChildH + padTop + padBottom;
             }
@@ -699,13 +738,23 @@ export class UIFactory {
                     }
                 }
 
-                // 主轴关系智能隔离：如果是垂直流式布局，主轴是垂直方向，禁止在 Y 轴上建立父级跟随对齐关系
-                if (!isVerticalFlow || isAbsolute) {
+                // 主轴关系智能隔离：
+                // 1. 如果是垂直流式布局，主轴是垂直方向，禁止在 Y 轴上建立父级跟随对齐关系
+                // 2. 如果是水平折行流 (flexWrap)，各行的 Y 坐标由折行流式状态机独立控制，禁止与父容器建立居中/靠底等垂直跟随关系
+                const isFlexWrapFlow = isHorizontalFlow && !!elData.flexWrap;
+                if ((!isVerticalFlow && !isFlexWrapFlow) || isAbsolute) {
                     if (alignY === "bottom" || layout.bottomPercent !== undefined) {
                         childNode.addRelation(panelNode, fgui.RelationType.Bottom_Bottom);
                     } else if (alignY === "middle") {
                         childNode.addRelation(panelNode, fgui.RelationType.Middle_Middle);
                     }
+                } else if (isFlexWrapFlow && !isAbsolute && (alignY === "middle" || alignY === "bottom" || layout.bottomPercent !== undefined)) {
+                    console.warn(`[UIFactory] flexWrap 换行流子项 "${childData.name || i}" 检测到垂直跟随对齐设置 (${alignY || "percent"})，已自动忽略与父容器的 RelationType 关联，由换行流式行高接管，避免多行重叠。`);
+                }
+
+                // 诊断警告：滚动视口 (overflow: 2) 与居中对齐冲突提示
+                if (panelNode.scrollPane && !isAbsolute && (alignX === "center" || alignY === "middle")) {
+                    console.warn(`[UIFactory] 滚动容器 "${panelNode.name || "panel"}" 的子项 "${childData.name || i}" 配置了居中对齐 (alignX/alignY)，存在与 ScrollPane 滚动位移冲突的风险，建议改用流式对齐或绝对像素。`);
                 }
 
                 // 流式兄弟关系（Top_Bottom / Left_Right）

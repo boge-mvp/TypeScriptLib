@@ -19,11 +19,11 @@
 
 ## 二、 纯代码界面构建：技术选型决策铁律
 
-在编写界面和交互逻辑时，必须严格遵守以下三级优先级决策链，**严禁越级与直接创建 Laya 原生对象**：
+在编写界面和交互逻辑时，必须严格遵守以下三级优先级决策链，**严禁直接创建 Laya 原生 UI 对象挂载到外部**：
 
 ```
-                           需要创建 UI 元素 / 组件
-                                      │
+                            需要创建 UI 元素 / 组件
+                                       │
           ┌───────────────────────────┴───────────────────────────┐
   ① 优先命中：属于 text/icon/graph/panel/list/button？     ② 兜底：属于进度条/滑条/输入框/动效/控制器？
           │                                                       │
@@ -33,11 +33,11 @@
    （自动执行流式布局、两遍测量与对齐）                            （保持在 FGUI 命名空间，与工厂产物混排）
           │                                                       │
           └───────────────────────────┬───────────────────────────┘
-                                      │
-                                      ▼
-                        ❌【 绝对红线禁令（严禁触碰） 】❌
-                     禁止：new Laya.Sprite() / Text() / Image()
-                     禁止：直接将 Laya 原生显示对象 addChild 到 Stage
+                                       │
+                                       ▼
+                         ❌【 绝对红线禁令（严禁触碰） 】❌
+                      禁止：new Laya.Sprite() / Text() / Image()
+                      禁止：直接将 Laya 原生显示对象 addChild 到 Stage
 ```
 
 ### 为什么必须封杀 Laya 原生 UI 对象：
@@ -54,28 +54,35 @@
 - 在该框架环境下，**`fgui.GRoot.inst` 的实例化和舞台挂载已由底座框架自动托管**（在生命周期 `onEngine` 中执行）。
 - **业务层绝对禁止**调用 `attachTo` 或手动将 GRoot `addChild` 到 Laya 舞台，直接使用 `fgui.GRoot.inst.addChild(view)` 即可！
 
-### 2. 配置化面板构建范例
+### 2. 核心布局设计思想（Agents 必须时刻牢记）
+- **多端防变形自适应原则**：如今设备屏幕（平板、折叠屏、各种全面屏）尺寸各不统一。在纯代码 UI 构建中，**不首选写死物理像素尺寸大小，也绝不首选绝对定位坐标**，其根本目的在于防止界面在缩放时被拉伸、挤压、变形或错位。
+- **相对定位与百分比首选**：无条件优先配置 `layout` 的 `leftPercent` / `topPercent` 等百分比定位，使元素按屏幕占比伸缩。
+- **百分比宽高与权重分配**：推荐使用基于父容器或界面比例的百分比大小（如 `width: 0.8`）。多列或多行的布局子项宽高推荐根据其所在的行、列所占据的**权重百分比（如 `0.3` / `0.5`）**，配合流式布局（`layoutType`）和 `justifyContent` 弹性分配，杜绝变形。
+- **x / y 的辅助地位**：绝对属性 `x / y` 是底层的合法物理坐标，但不推荐作为自适应定位的首选。常用于绝对粒子挂载、气泡弹出微调或动画运行期的精细偏移校正等辅助场景。
+
+### 3. 配置化面板构建范例
 ```javascript
 // 全局设置资源相对路径前缀（会自动为 icon url 和 graphics loadImage 补全前缀）
 UIFactory.resBasePath = "res/gameui/";
 
-// 使用 UIFactory 创建一个垂直流、交叉轴居中、含标题和按钮的面板
+// 使用 UIFactory 创建一个垂直流、交叉轴居中、多端响应式防变形自适应的面板
 const settingsPanel = UIFactory.createPanel({
     type: "panel",
     name: "mainPanel",
-    width: 600,
-    height: 400,
+    width: 0.8,  // 占屏幕宽度的 80%（多端自适应，防拉伸变形）
+    height: 0.6, // 占屏幕高度切割的 60%
     background: {
         type: "graph",
+        width: 1, height: 1, // 100% 占满父容器，不写死固定值
         fillColor: "#1a1a2e",
         lineColor: "#4e4e7a",
         lineSize: 2,
-        cornerRadius: 16, // 四角相同
+        cornerRadius: 16,
     },
     layoutType: "vertical",
-    justifyContent: "center", // 主轴居中
+    justifyContent: "center", // 主轴自适应居中
     alignItems: "center",     // 交叉轴居中
-    gap: 20,                  // 元素间距
+    gap: 20,                  // 元素流式间距
     padding: { top: 30, bottom: 30, left: 40, right: 40 }, // 安全内边距
     elements: [
         {
@@ -95,8 +102,8 @@ const settingsPanel = UIFactory.createPanel({
         {
             type: "button",
             name: "closeBtn",
-            width: 180,
-            height: 50,
+            width: 0.3, // 占父面板宽度的 30%（百分比自适应，杜绝拉伸）
+            height: 50,  // 高度可结合单行文本高度设固定安全值
             elements: [
                 {
                     type: "text",
@@ -120,21 +127,21 @@ fgui.GRoot.inst.addChild(settingsPanel);
 由于 Spine 动画节点（`Laya.SpineSkeleton`）属于原生 Laya 对象，为了遵循 FGUI 管辖链路和适配规则，必须使用 **`GGraph` 矢量占位符作为媒介** 进行完美的宿主挂载。
 
 ### 1. 第一步：在 UIFactory 配置中声明占位符
-在创建界面的 JSON 配置树中，在特定位置摆放一个宽高的类型为 `"graph"` 的矢量元素：
+在创建界面的 JSON 配置树中，在特定位置摆放一个宽高的类型为 `"graph"` 的百分比尺寸占位符：
 ```javascript
 const mainView = UIFactory.createPanel({
     type: "panel",
-    width: 800,
-    height: 600,
-    background: { type: "graph", fillColor: "#0b0b16" },
+    width: 0.85,  // 自适应 85% 屏幕宽
+    height: 0.75, // 自适应 75% 屏幕高
+    background: { type: "graph", fillColor: "#0b0b16", cornerRadius: 12 },
     elements: [
-        // 声明一个专门用来装载角色 Spine 动画的 Graph 占位符
+        // 声明一个百分比宽高的 Graph 占位符，自适应外部组件尺寸
         {
             type: "graph",
             name: "role_spine_holder",
-            width: 200,
-            height: 200,
-            // 采用对齐定位，居中并向下偏移
+            width: 0.25, // 占面板宽度的 25%
+            height: 0.35, // 占面板高度的 35%
+            // 采用相对对齐定位，居中并向上弹性微调
             layout: { alignX: "center", alignY: "bottom", offsetY: -50 }
         }
     ]
@@ -156,7 +163,7 @@ holder.setNativeObject(heroSpine);
 
 // 4. 【坐标系轴心纠偏】
 // FGUI 占位符的 Pivot 默认在左上角 (0,0)，而 Spine 动画的轴心默认在骨骼根部（常在脚底中心）
-// 为使 Spine 精准立在 holder 的正下方中心，需微调其相对偏移坐标：
+// 为使 Spine 精准立在 holder 的正下方中心，需微调其相对偏移坐标（此处使用 x/y 做辅助原点对齐微调）：
 heroSpine.x = holder.width / 2; // 水平居中
 heroSpine.y = holder.height;    // 脚底与 holder 底部重合
 ```
@@ -236,7 +243,7 @@ magicCircle.play();
 // 将粒子安全设为 GGraph 宿主节点
 effectHolder.setNativeObject(magicCircle);
 
-// 粒子锚定在占位区域的中心点
+// 粒子锚定在占位区域的中心点（利用 x/y 进行粒子中心原点对齐微调）
 magicCircle.x = effectHolder.width / 2;
 magicCircle.y = effectHolder.height / 2;
 ```
@@ -251,12 +258,12 @@ magicCircle.y = effectHolder.height / 2;
 ```javascript
 const decoratedBox = UIFactory.createElement({
     type: "graph",
-    width: 400,
-    height: 100,
+    width: 0.5,  // 占父级 50% 宽，拉伸自适应
+    height: 100, // 高度保持固定微调
     graphics: [
         // 指令一：清除画布
         { cmd: "clear", args: [] },
-        // 指令二：画一条高对比度装饰线：[x1, y1, x2, y2, color, lineWidth]
+        // 指令二：画一条渐变装饰线：[x1, y1, x2, y2, color, lineWidth]
         { cmd: "drawLine", args: [10, 50, 390, 50, "#00ffcc", 3] },
         // 指令三：画两个发光的几何圆点
         { cmd: "drawCircle", args: [10, 50, 6, "#00ffcc"] },
@@ -307,6 +314,9 @@ function safelyDestroyUI(panelInstance, spineInstance, particleInstance) {
 | 检查项 | 错误写法范例 (❌) | 正确规范写法 (✅) |
 | :--- | :--- | :--- |
 | **GObject初始化** | `fgui.GRoot.inst.attachTo(...)` <br>（导致多头挂载/不兼容报错） | **无需且禁止调用**。<br>底座托管自挂载，直接使用 `addChild()` 即可。 |
+| **界面自适应** | 配置绝对像素 `width: 800, height: 600`，使屏幕在平板/宽屏下因比例变动被拉伸变形 | 优先配置 **`width: 0.8, height: 0.6` 等基于屏幕占比的百分比宽高**。 |
+| **行列权重分配** | 在流式网格或列表里，给每个卡牌子项写死固定像素宽度 | 结合 `FlowHorizontal` 将子项宽度设为 **`0.3` 等百分比权重比例** 实现响应式换行分布。 |
+| **绝对定位属性** | 任何时候都直接使用绝对坐标 `x / y` 定位 UI 元素 | **x / y 不推荐首选**。首选 `layout` 的 `leftPercent` 百分比定位，**x / y 仅克制作为动画原点或粒子挂点等微调辅助**。 |
 | **界面实例** | `new fgui.GComponent()` 后手动创建文本和图片进行拼装 | 直接采用 **`UIFactory.createPanel` 声明式 JSON 配置**，流式排列。 |
 | **红线禁令** | `const sprite = new Laya.Sprite()` 并 `GRoot.inst.addChild(sprite)` | **绝对红线**！绝不允许原生对象挂 GRoot，必须通过 `GGraph.setNativeObject` 媒介桥接。 |
 | **位置漂移** | 认为 `spineAnim.y = 0` 会和占位符顶端对齐 | 纠正轴心位移：`spineAnim.x = holder.width / 2; spineAnim.y = holder.height;` |
