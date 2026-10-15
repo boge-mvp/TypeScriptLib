@@ -140,6 +140,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
      * @param component 获取活动按钮的父组件
      * @param isOpenDrag 是否开启拖动(默认true)
      * @param isAutoHide 当没有优惠卷使用的时候 是否自动隐藏(默认true)
+     * @deprecated 活动就现在已经剥离到 bottom中初始化了
      */
     protected initActivityMenu(component: GComponent, isOpenDrag = true, isAutoHide = true) {
         this.activityBtn = <ActivityButton>component.getChild("coupons")
@@ -544,7 +545,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
             }
             giftOpenTimer = parseFloat(giftOpenTimerStr)
             if (!DateUtils.isSameDay(giftOpenTimer, Browser.now())) {
-                this.activityHandler()
+                this.sendAction(ActionLib.GAME_ACTIVITY_WINDOW_SHOW)
                 LocalStorage.setItem("giftOpenTimer" + Player.inst.gameId, Browser.now() + "")
             } else {
                 this.runEvent()
