@@ -208,13 +208,19 @@ export class SocketClient extends Laya.EventDispatcher {
 
     /**
      * 发送数据到服务器
+     * 底层 WebSocket 非 OPEN(1) 状态时静默跳过（Firefox onopen 延迟派发场景防 InvalidStateError 崩溃）
      * @param data 要发送的数据对象
      */
     send(data: any) {
         if (Laya.Render.isConchApp && !StringUtil.isEmpty(SocketClient.SOCKET_CLASS_PATH)) {
             this.socket?.call("send", JSON.stringify(data))
         } else {
-            this.socket?.send(JSON.stringify(data))
+            const ws = this.socket?._socket
+            if (ws && ws.readyState === 1) {
+                this.socket.send(JSON.stringify(data))
+            } else {
+                Log.debug("SocketClient.send skipped, readyState = " + ws?.readyState)
+            }
         }
     }
 
