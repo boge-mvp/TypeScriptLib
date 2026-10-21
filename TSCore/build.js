@@ -22,7 +22,8 @@ async function main() {
     }, {
         js: {
             namespace: project,
-            isMinify: true
+            isMinify: true,
+            tslib: true
         },
         dts: {
             namespace: project,

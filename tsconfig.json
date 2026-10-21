@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    // 编译后的 JavaScript 代码的目标版本
-    "target": "es2015",
+    // 编译后的 JavaScript 代码的目标版本（esnext：async/await、?.、?? 等全部原生输出，产物零 helper 依赖）
+    "target": "es6",
     // 生成 .d.ts 定义文件
     "declaration": true,
     // 去除注释
