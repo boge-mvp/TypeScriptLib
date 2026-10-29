@@ -14,6 +14,13 @@ LayaAir 游戏开发框架（npm 包 `@boge-mvp/game-lib`，发布于 GitHub Pac
 - `npm run pack` — build + npm pack；`npm run build:demo` — demo 示例工程
 - 改 TSCore 源码后根目录 `bin/tsCore.d.ts` 不会立即刷新，需完整 `npm run build`（packResources 阶段）
 
+## Demo 与 Web 页面测试约定
+
+- **严禁私起外部 HTTP 服务**：禁止编写或通过终端拉起临时 Node.js / Python 等静态服务（如 `http-server`）。
+- **强制复用 IDEA 内置 Web 服务**：Demo HTML 页面（如 `demo/loader/bin/index.html` 或 `demo/slot/bin/index.html`）的测试与浏览器访问，必须 100% 依托 IntelliJ IDEA 原生内置 Web 服务（端口 `63342`），测试链接统一规范为：
+  `http://localhost:63342/TypeScriptLib/<相对路径>`（例如 `http://localhost:63342/TypeScriptLib/demo/loader/bin/index.html`）。
+- **IDE 源码打开**：优先通过 IDEA 原生打开功能（或 MCP `open_file_in_editor`）直接调起编辑器查看。
+
 ## 验证基线
 
 - 无独立测试套件；**构建成功即唯一闭环标准**（`build:tscore` 输出 95 js / 95 dts 零报错为基线）

@@ -604,8 +604,30 @@ declare type LoadRes = {
     /** 加载进度 0-1（加载器运行时填充） */
     progress?: number
 
+    /** 单文件当前加载进度 0-1（并发加权计算使用） */
+    progressRatio?: number
+
+    /** 是否支持流式进度追踪 */
+    hasStreamProgress?: boolean
+
     group?: string
 
+}
+
+/**
+ * 单文件实时加载进度信息
+ */
+declare type SingleProgressInfo = {
+    /** 当前触发进度更新的文件地址 */
+    url: string
+    /** 该文件当前已加载字节数（若无法获取则为估算/0） */
+    loadedBytes?: number
+    /** 该文件总字节数（若后端未提供 Content-Length 则为 0/未定义） */
+    totalBytes?: number
+    /** 该文件当前完成度比例 (0.0 ~ 1.0) */
+    ratio: number
+    /** 该文件在总进度计算中所占的权重 */
+    weight: number
 }
 
 /**

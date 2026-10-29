@@ -106,43 +106,212 @@ export class ELoader {
 
     private loadAssets(arr: (string | LoadRes)[], complete?: Handler, progress?: Handler, type?: string, priority = 1, cache = true, group?: string) {
         let itemCount = arr.length
+        if (itemCount === 0) {
+            progress?.runWith([1, undefined])
+            complete?.runWith(true)
+            return
+        }
+
         let loadedCount = 0
         let totalSize = 0
         let items: LoadRes[] = []
         let success = true
+        let lastDispatchedTotal = 0
+
         for (let i = 0; i < itemCount; i++) {
             let item = arr[i]
             if (typeof item === "string") item = {url: item, type: type, size: 1, priority: priority, progress: 0}
-            if (!item.size) item.size = 1
+            if (!item.size || item.size <= 0) item.size = 1
             item.progress = 0
+            item.progressRatio = 0
             totalSize += item.size
             items.push(item)
-            let progressHandler = progress ? Handler.create(null, loadProgress, [item], false) : undefined
-            let completeHandler = (complete || progress) ? Handler.create(null, loadComplete, [item]) : undefined
-            this.load(item.url, completeHandler, progressHandler, item.type, item.priority || 1, cache, item.group || group, false, item.useWorkerLoader)
+        }
+
+        for (let i = 0; i < itemCount; i++) {
+            let item = items[i]
+            let progressHandler = progress ? Handler.create(null, (val: number, loaded?: number, total?: number) => {
+                dispatchProgress(item, val, loaded, total)
+            }, undefined, false) : undefined
+
+            let completeHandler = Handler.create(null, (content?: any) => {
+                loadComplete(item, content)
+            })
+
+            if (this.canUseStreamImage(item)) {
+                this.loadStreamImage(item, completeHandler, progressHandler, cache)
+            } else {
+                this.load(item.url, completeHandler, progressHandler, item.type, item.priority || 1, cache, item.group || group, false, item.useWorkerLoader)
+            }
+        }
+
+        function dispatchProgress(item: LoadRes, ratio: number, loadedBytes?: number, totalBytes?: number) {
+            if (!progress) return
+            let safeRatio = Math.min(1, Math.max(item.progressRatio || 0, ratio))
+            item.progressRatio = safeRatio
+            item.progress = safeRatio
+
+            let currentTotalWeighted = 0
+            for (let j = 0; j < items.length; j++) {
+                let it = items[j]
+                currentTotalWeighted += (it.size ?? 1) * (it.progressRatio ?? 0)
+            }
+            let totalVal = totalSize > 0 ? (currentTotalWeighted / totalSize) : 0
+            totalVal = Math.max(lastDispatchedTotal, Math.min(1, totalVal))
+            lastDispatchedTotal = totalVal
+
+            let singleInfo: SingleProgressInfo = {
+                url: item.url,
+                loadedBytes: loadedBytes,
+                totalBytes: totalBytes,
+                ratio: safeRatio,
+                weight: item.size ?? 1
+            }
+            progress.runWith([totalVal, singleInfo])
         }
 
         function loadComplete(item: LoadRes, content?: any) {
             loadedCount++
-            item.progress = 1
+            dispatchProgress(item, 1)
             if (!content) success = false
             if (loadedCount === itemCount) {
+                if (progress && lastDispatchedTotal < 1) {
+                    progress.runWith([1, undefined])
+                }
                 complete?.runWith(success)
             }
         }
+    }
 
-        function loadProgress(item: LoadRes, value: number) {
-            if (progress) {
-                item.progress = value
-                let num = 0
-                for (let j = 0; j < items.length; j++) {
-                    let item1 = items[j]
-                    num += (item1.size ?? 1) * (item1.progress ?? 0)
-                }
-                let v = num / totalSize
-                progress.runWith(v)
+    /**
+     * 判断当前环境与资源是否可以使用流式图片加载（用于获得更平滑的单文件分包加载进度）
+     */
+    canUseStreamImage(item: LoadRes): boolean {
+        // ConchApp (Android 官方 C++ 运行时) 不支持 Web Blob / URL.createObjectURL，直通原生加载管线
+        if (typeof Laya !== "undefined" && (Laya as any).Render && (Laya as any).Render.isConchApp) {
+            return false
+        }
+        if (typeof window === "undefined" || typeof XMLHttpRequest === "undefined" || typeof Blob === "undefined" || !window.URL || !window.URL.createObjectURL) {
+            return false
+        }
+        let isImg = item.type === Loader.IMAGE
+        if (!isImg && !item.type) {
+            let u = item.url ? item.url.split("?")[0].toLowerCase() : ""
+            if (u.endsWith(".png") || u.endsWith(".jpg") || u.endsWith(".jpeg") || u.endsWith(".webp")) {
+                isImg = true
             }
         }
+        return isImg
+    }
+
+    /**
+     * Web 环境下使用 XMLHttpRequest (Blob) 流式加载图片以捕获实时分包进度，并注入 Laya 缓存
+     */
+    private loadStreamImage(item: LoadRes, complete: Handler, progress?: Handler, cache = true) {
+        let resInfo = this._infoPool.length ? this._infoPool.pop()! : new ResInfo()
+        resInfo.url = item.url
+        resInfo.type = item.type || Loader.IMAGE
+        resInfo.cache = cache
+        resInfo.ignoreCache = false
+        resInfo.originalUrl = item.url
+        resInfo.complete = complete
+        resInfo.progress = progress
+        resInfo.priority = item.priority || 1
+        resInfo.useIndex = 0
+
+        ELoader.loader.formatURL(resInfo)
+        const finalUrl = resInfo.url.replace(/\{host}/g, window.location.host)
+        const requestUrl = Laya.URL.formatURL(finalUrl)
+
+        let cached = Loader.getRes(finalUrl) || Loader.getRes(requestUrl) || (item.url ? Loader.getRes(item.url) : null)
+        if (cached) {
+            progress?.runWith([1, 0, 0])
+            complete.runWith(cached)
+            this._infoPool.push(resInfo)
+            return
+        }
+
+        let xhr = new XMLHttpRequest()
+        xhr.open("GET", requestUrl, true)
+        xhr.responseType = "blob"
+
+        xhr.onprogress = (event: ProgressEvent) => {
+            if (event.lengthComputable && event.total > 0) {
+                let ratio = event.loaded / event.total
+                progress?.runWith([ratio, event.loaded, event.total])
+            }
+        }
+
+        let hasHandled = false
+        let fallbackToLaya = () => {
+            if (hasHandled) return
+            hasHandled = true
+            this._infoPool.push(resInfo)
+            this.load(item.url, complete, progress, item.type, item.priority || 1, cache, item.group, true, item.useWorkerLoader)
+        }
+
+        xhr.onload = () => {
+            if (hasHandled) return
+            if (xhr.status === 200 || xhr.status === 0) {
+                let blob = xhr.response
+                if (!blob) {
+                    fallbackToLaya()
+                    return
+                }
+                let blobUrl = window.URL.createObjectURL(blob)
+                let htmlImg = new Image()
+                htmlImg.crossOrigin = ""
+                htmlImg.onload = () => {
+                    window.URL.revokeObjectURL(blobUrl)
+                    if (hasHandled) return
+                    hasHandled = true
+                    try {
+                        let tex2d = new Laya.Texture2D(htmlImg.width, htmlImg.height, 1, false, false)
+                        tex2d.loadImageSource(htmlImg, true)
+                        tex2d._setCreateURL(finalUrl)
+                        let texture = new Laya.Texture(tex2d)
+                        texture.url = finalUrl
+                        if (cache) {
+                            let urlsToCache = [finalUrl, requestUrl, resInfo.originalUrl, item.url]
+                            let cachedKeys: { [key: string]: boolean } = {}
+                            for (let u of urlsToCache) {
+                                if (u) {
+                                    let formatted = Laya.URL.formatURL(u)
+                                    if (!cachedKeys[formatted] && !Loader.loadedMap[formatted]) {
+                                        cachedKeys[formatted] = true
+                                        Loader.cacheRes(u, texture)
+                                    }
+                                }
+                            }
+                        }
+                        progress?.runWith([1, blob.size, blob.size])
+                        complete.runWith(texture)
+                    } catch (e) {
+                        Log.debug("StreamImage create Texture failed, fallback: " + e)
+                        fallbackToLaya()
+                    } finally {
+                        this._infoPool.push(resInfo)
+                    }
+                }
+                htmlImg.onerror = () => {
+                    window.URL.revokeObjectURL(blobUrl)
+                    fallbackToLaya()
+                }
+                htmlImg.src = blobUrl
+            } else {
+                fallbackToLaya()
+            }
+        }
+
+        xhr.onerror = () => {
+            fallbackToLaya()
+        }
+
+        xhr.ontimeout = () => {
+            fallbackToLaya()
+        }
+
+        xhr.send()
     }
 
     private _load(resInfo: ResInfo) {
@@ -236,14 +405,16 @@ export class ELoader {
             }
             this.baseUrls = ELoader.checkBaseUrl(cleanUrl);
         }
-        if (this.baseUrls) {
+        if (this.baseUrls && this.baseUrls.length > 0) {
             let index = resInfo.useIndex
             if (this.baseUrls.length <= index) {
                 index = 0
             }
             let basePath = this.baseUrls[index]
-            basePath = StringUtil.replace(basePath, "{host}", window.location.host)
-            Laya.URL.basePath = basePath
+            if (basePath) {
+                basePath = StringUtil.replace(basePath, "{host}", window.location.host)
+                Laya.URL.basePath = basePath
+            }
         }
     }
 

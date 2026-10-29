@@ -98,13 +98,27 @@ export class LoadingWindow extends BaseView {
      * @param tempCount 当前加载进度模块 1 开始
      * @param totalCount 总共要加载的模块数
      */
-    static updateMsg(value: number, tempCount = 1, totalCount = 1) {
+    /**
+     * 更新进度
+     * @param value
+     * @param tempCount
+     * @param totalCount
+     * @param singleInfo 单文件加载进度信息
+     */
+    static updateMsg(value: number, tempCount = 1, totalCount = 1, singleInfo?: SingleProgressInfo) {
 //			trace("LoadingWindow.updateMsg(vlaue)", value+"%")
         const temp = LoadingWindow.getProgress(value, tempCount, totalCount)
         if (this._instance) {
             this._instance.tempValue = temp
-            if (this._instance.mesText)
-                this._instance.mesText.text = this._instance.getMsg() + temp.toFixed(2) + "%"
+            if (this._instance.mesText) {
+                let suffix = ""
+                if (singleInfo && singleInfo.totalBytes && singleInfo.loadedBytes) {
+                    let loadedMb = (singleInfo.loadedBytes / 1048576).toFixed(1)
+                    let totalMb = (singleInfo.totalBytes / 1048576).toFixed(1)
+                    suffix = ` (${loadedMb}M/${totalMb}M)`
+                }
+                this._instance.mesText.text = this._instance.getMsg() + temp.toFixed(2) + "%" + suffix
+            }
         }
         JSUtils.progress(temp)
     }

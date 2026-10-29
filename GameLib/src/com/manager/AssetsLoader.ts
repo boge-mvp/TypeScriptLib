@@ -245,16 +245,16 @@ export class AssetsLoader implements IFormatPath {
             AppManager.gameRestart()
         }
 
-        function progressCommonHandler(data: number) {
+        function progressCommonHandler(data: number, singleInfo?: SingleProgressInfo) {
             let pro = parseInt(data * 100 + "")
             if (Render.isConchApp) {
 //                AppManager.showLoadingPro(pro, 2, 4)
-                LoadingWindow.updateMsg(pro, 2, 4)
+                LoadingWindow.updateMsg(pro, 2, 4, singleInfo)
             } else {
                 if (Player.inst.urlParam?.isJumpPage()) {
-                    LoadingWindow.updateMsg(pro, 2, 4)
+                    LoadingWindow.updateMsg(pro, 2, 4, singleInfo)
                 } else {
-                    LoadingWindow.updateMsg(pro, 2, 2)
+                    LoadingWindow.updateMsg(pro, 2, 2, singleInfo)
                 }
             }
         }
@@ -312,16 +312,16 @@ export class AssetsLoader implements IFormatPath {
 
     }
 
-    private loadJsProgress(e: number) {
+    private loadJsProgress(e: number, singleInfo?: SingleProgressInfo) {
         let pro = Utils.parseInt(e * 100 + "")
         if (Render.isConchApp) {
 //            AppManager.showLoadingPro(pro, 3, 4)
-            LoadingWindow.updateMsg(pro, 3, 4)
+            LoadingWindow.updateMsg(pro, 3, 4, singleInfo)
         } else {
             if (Player.inst.urlParam?.isJumpPage()) {
-                LoadingWindow.updateMsg(pro, 3, 4)
+                LoadingWindow.updateMsg(pro, 3, 4, singleInfo)
             } else {
-                LoadingWindow.updateMsg(pro, 1, 1)
+                LoadingWindow.updateMsg(pro, 1, 1, singleInfo)
             }
         }
     }
@@ -522,7 +522,7 @@ export class AssetsLoader implements IFormatPath {
         }
     }
 
-    private progressComplete(e: number) {
+    private progressComplete(e: number, singleInfo?: SingleProgressInfo) {
         let pro = parseInt(e * 100 + "")
         if (LoadingWindow.inst == null) {
             const tempValue = LoadingWindow.getProgress(pro, 4, 4)
@@ -531,12 +531,12 @@ export class AssetsLoader implements IFormatPath {
         }
         if (Render.isConchApp) {
 //            AppManager.showLoadingPro(pro, 4, 4)
-            LoadingWindow.updateMsg(pro, 4, 4)
+            LoadingWindow.updateMsg(pro, 4, 4, singleInfo)
         } else {
             if (Player.inst.urlParam?.isJumpPage()) {
-                LoadingWindow.updateMsg(pro, 4, 4)
+                LoadingWindow.updateMsg(pro, 4, 4, singleInfo)
             } else {
-                LoadingWindow.updateMsg(pro, 1, 1)
+                LoadingWindow.updateMsg(pro, 1, 1, singleInfo)
             }
         }
     }
