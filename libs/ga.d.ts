@@ -2,8 +2,9 @@ declare function ga(command: string, hitType: string, eventCategory: string, eve
 
 declare function ga(command: CommandType | string, hitType: HitType | string, data: EventType | ExceptionType | TimingType): void
 
-declare function gtag(hitType: string, data: string, args?: { [key: string]: string });
+declare function gtag(hitType: GtagType, data: any, args?: { [key: string]: string });
 
+declare type GtagType = "config" | "event" | "set" | "get" | "consent" | "js"
 declare type CommandType = "set" | "send" | "create"
 declare type HitType = "event" | "exception" | "timing"
 

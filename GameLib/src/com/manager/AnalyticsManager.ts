@@ -89,7 +89,7 @@ export class AnalyticsManager {
             }
             value ??= label
             if (ConfigKit.get("gtag")) {
-                gtag(type, action, {
+                gtag("event", action, {
                     event_category: category,
                     event_label: label,
                     value
