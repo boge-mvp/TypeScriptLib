@@ -28,18 +28,18 @@ export class JSUtils {
     }
 
     /** 进入登录界面 /login */
-    static login() {
-        JSUtils.openPage("/login")
+    static login(isCloseGame = true) {
+        JSUtils.openPage("/login", isCloseGame)
     }
 
     /** 充值 /deposit */
-    static deposit() {
-        JSUtils.openPage("/deposit")
+    static deposit(isCloseGame = true) {
+        JSUtils.openPage("/deposit", isCloseGame)
     }
 
     /** 进入刮刮卡 /jackpot */
-    static jackpot() {
-        JSUtils.openPage("/jackpot")
+    static jackpot(isCloseGame = true) {
+        JSUtils.openPage("/jackpot", isCloseGame)
     }
 
     /** 关闭游戏
