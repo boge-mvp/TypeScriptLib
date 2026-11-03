@@ -29,6 +29,16 @@ import {ILoadSoundFilter} from "../interfaces/IGame";
 import {ResUtils} from "../utils/ResUtils";
 
 /**
+ * 紧凑型版本哈希映射表
+ */
+export interface ICompactVersionConfig {
+    /** 配置文件生成时间戳 */
+    generatedTime?: number
+    /** 各资源路径对应的哈希值 */
+    [path: string]: string | number | undefined
+}
+
+/**
  * 资源管理类
  */
 export class AssetsLoader implements IFormatPath {
@@ -41,8 +51,9 @@ export class AssetsLoader implements IFormatPath {
     }
 
     static readonly ma = Browser.now()
-    /** 资源配置文件名 */
-    static CONFIG_RES_NAME = "resConfig.xml"
+
+    /** 配置文件生成时间戳 */
+    generatedTime: number = 0
 
     /** 资源配置文件名 */
     static DEFAULT_INIT_RES_NAME?: string
@@ -144,28 +155,23 @@ export class AssetsLoader implements IFormatPath {
     }
 
     /**
-     * 加载版本控制文件
-     * @param complete
-     * @param errorHandler
+     * 解析紧凑型 JSON 资源哈希配置，并注册到 Laya.URL.version
+     * @param jsonConfig 紧凑型键值对数据
      */
-    loadVersionXML(complete: ParamHandler, errorHandler: ParamHandler) {
-        let resConfigUrl = AssetsLoader.CONFIG_RES_NAME + (Render.isConchApp ? "" : "?v=" + Browser.now())
-        ELoader.loader.load(resConfigUrl,
-            Laya.Handler.create(this, this.loadXMLComplete, [complete, errorHandler, resConfigUrl]),
-            undefined, Loader.XML)
-    }
-
-    private loadXMLComplete(complete: ParamHandler, errorHandler: ParamHandler, resConfigUrl: string, source: XMLDocument) {
-        if (!source) {
-            runFun(errorHandler)
-            return
+    parseVersionJson(jsonConfig: ICompactVersionConfig | Record<string, string | number | undefined>) {
+        if (Render.isConchApp || !jsonConfig) return
+        if (typeof jsonConfig.generatedTime === "number") {
+            this.generatedTime = jsonConfig.generatedTime
         }
-        ELoader.loader.clearRes(resConfigUrl)
-        this.parseUrl(source)
-        if (this.customLoader) {
-            runFun(this.customLoader, complete, errorHandler)
-        } else {
-            runFun(complete)
+        for (const url in jsonConfig) {
+            if (url === "generatedTime") continue
+            const hash = jsonConfig[url]
+            if (hash === undefined || hash === null || hash === "") continue
+            const hashStr = String(hash)
+            if (url.endsWith(".js") && !url.endsWith(".min.js")) {
+                Laya.URL.version[StringUtil.replace(url, ".js", ".min.js")] = hashStr
+            }
+            Laya.URL.version[url] = hashStr
         }
     }
 
@@ -182,7 +188,7 @@ export class AssetsLoader implements IFormatPath {
             AppManager.gameRestart()
         }
 
-        let loadXmlComplete = () => {
+        let loadInitComplete = () => {
             if (StringUtil.isEmpty(AssetsLoader.DEFAULT_INIT_RES_NAME)) {
                 runFun(handler)
             } else {
@@ -207,17 +213,11 @@ export class AssetsLoader implements IFormatPath {
             runFun(handler)
         }
 
-        if (AssetsLoader.CONFIG_RES_NAME) {
-            this.loadVersionXML(loadXmlComplete, loadErrorHandler)
+        if (this.customLoader) {
+            runFun(this.customLoader, loadInitComplete, loadErrorHandler)
         } else {
-            if (this.customLoader) {
-                runFun(this.customLoader, loadXmlComplete, loadErrorHandler)
-            } else {
-                loadXmlComplete()
-            }
+            loadInitComplete()
         }
-
-
     }
 
 
