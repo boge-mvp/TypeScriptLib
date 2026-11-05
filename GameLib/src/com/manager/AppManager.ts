@@ -30,7 +30,7 @@ export class AppManager {
      * @param callback
      *
      */
-    static enterFeedback(sData: { eventName: string, eventValue?: string }, callback: Function) {
+    static enterFeedback(sData: { eventName: string, eventValue?: string } | any, callback: Function = this.nullFun) {
         if (AppManager.callIOS("reportFbEmpEvent", {eventName: sData.eventName, eventValue: sData.eventValue})) return
         if (Browser.onLayaRuntime)
             this.LP_enterFeedback(JSON.stringify(sData), callback)

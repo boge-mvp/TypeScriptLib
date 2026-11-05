@@ -94,12 +94,6 @@ export class LoadingWindow extends BaseView {
 
     /**
      * 更新进度
-     * @param value 当前模块进度值
-     * @param tempCount 当前加载进度模块 1 开始
-     * @param totalCount 总共要加载的模块数
-     */
-    /**
-     * 更新进度
      * @param value
      * @param tempCount
      * @param totalCount

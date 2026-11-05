@@ -14,7 +14,7 @@ import Browser = Laya.Browser;
 export class AnalyticsManager {
 
     /** 开启数据统计 */
-    public static isOpenAnalytics: Nullable<boolean> = true
+    static isOpenAnalytics: Nullable<boolean> = true
 
     /** 打开了一个游戏 */
     static openGame() {
@@ -33,13 +33,14 @@ export class AnalyticsManager {
      * 发送游戏事件
      * @param eventAction 互动类型 (默认会添加 _)
      * @param eventLabel 事件标签
+     * @param eventParams
      */
-    static sendGameAnalysis(eventAction: string, eventLabel?: string) {
+    static sendGameAnalysis(eventAction: string, eventLabel?: string, eventParams?: Gtag.ControlParams | Gtag.EventParams | Gtag.CustomParams) {
         // 获取当前的游戏配置
         let gameName = GameConfigKit.gameNameCanonical(undefined, "_")?.toLowerCase()
         if (gameName) {
             eventLabel ??= Player.inst.isGuest ? "demo" : "cash"
-            AnalyticsManager.send(gameName + "_" + eventAction, eventLabel)
+            AnalyticsManager.send(gameName + "_" + eventAction, eventLabel, eventParams)
         } else {
             Log.warn("sendGameAnalysis : gameId=" + Player.inst.gameId + " not exist")
         }
@@ -49,21 +50,10 @@ export class AnalyticsManager {
      * 向Google Analytics 发送事件
      * @param eventAction 事件操作
      * @param eventLabel  事件标签
+     * @param eventParams
      */
-    static send(eventAction: string, eventLabel = "") {
-        AnalyticsManager.ga("event", "game" + (Environment.active == EnvType.DEV ? "_dev" : ""), eventAction, eventLabel)
-    }
-
-    /**
-     * 向Google Analytics 发送用户用时
-     * @param timingVar 用于标识要记录的变量
-     * @param timingValue 向 Google Analytics（分析）报告的，以毫秒为单位的历时时间（例如 20）。
-     *
-     */
-    static sendTiming(timingVar: string, timingValue: number) {
-        this.isOpenAnalytics = ConfigKit.get("openAnalytics")
-        if (Browser.onLayaRuntime && this.isOpenAnalytics)
-            AppManager.enterInvite({eventName: timingVar, eventValue: timingValue}, AppManager.nullFun)
+    static send(eventAction: string, eventLabel = "", eventParams?: Gtag.ControlParams | Gtag.EventParams | Gtag.CustomParams) {
+        AnalyticsManager.gtagEvent("game" + (Environment.active == EnvType.DEV ? "_dev" : ""), eventAction, eventLabel, eventParams)
     }
 
     /**
@@ -72,36 +62,50 @@ export class AnalyticsManager {
      * @param category
      * @param action
      * @param label
-     * @param value
+     * @param params 附加键值对参数
+     * @deprecated
      */
-    static ga(type: gaType, category: string, action: string, label: string, value?: string) {
-        this.isOpenAnalytics = ConfigKit.get("openAnalytics")
-        if (Player.inst.urlParam?.debug) {
-            const encoder = new TextEncoder()
-            const categoryLen = encoder.encode(category).length
-            const actionLen = encoder.encode(action).length
-            const labelLen = encoder.encode(label).length
-            Log.debug(`category=${categoryLen} action=${actionLen} label=${labelLen}`)
-        }
-        if (this.isOpenAnalytics && !Browser.onLayaRuntime) {
-            if (ConfigKit.get("ga")) {
-                ga('send', type, category, action, label)
-            }
-            value ??= label
+    static ga(type: any, category: string, action: string, label: string, params?: Record<string, any>) {
+        if (AnalyticsManager.isEnableAnalytics() && !Browser.onLayaRuntime) {
             if (ConfigKit.get("gtag")) {
-                gtag("event", action, {
+                const eventParams: Record<string, any> = {
                     event_category: category,
                     event_label: label,
-                    value
-                })
+                    ...params
+                }
+                gtag("event", action, eventParams)
             }
         }
         if (this.isOpenAnalytics && Browser.onLayaRuntime)
             AppManager.enterFeedback({eventName: action, eventValue: label}, AppManager.nullFun)
     }
 
-    // static ga("event", category: string, action: string, label: string | number)
+    static gtagConfig(targetId: string, config?: Gtag.ControlParams | Gtag.EventParams | Gtag.ConfigParams | Gtag.CustomParams) {
+        if (AnalyticsManager.isEnableAnalytics()) gtag("config", targetId, config)
+    }
+
+    static gtagEvent(eventCategory: string, eventName: string, eventValue: string, eventParams?: Gtag.ControlParams | Gtag.EventParams | Gtag.CustomParams) {
+        if (AnalyticsManager.isEnableAnalytics()) {
+            if (Browser.onLayaRuntime) {
+                AppManager.enterFeedback({eventName: eventName, eventValue: eventValue})
+            } else {
+                const params: Gtag.ControlParams | Gtag.EventParams | Gtag.CustomParams = {
+                    event_category: eventCategory,
+                    event_label: eventValue,
+                    ...eventParams
+                }
+                if (!params["send_to"]) {
+                    const ids = dataLayer.find((it) => it[0] == "config")
+                    if (ids && ids[1]) params["send_to"] = ids[1]
+                }
+                gtag("event", eventName, params)
+            }
+        }
+    }
+
+    static isEnableAnalytics() {
+        this.isOpenAnalytics ??= ConfigKit.get("openAnalytics")
+        return this.isOpenAnalytics ?? false
+    }
 
 }
-
-declare type gaType = "pageview" | "event" | "timing" | "social" | "screenview" | "transaction" | "item" | "exception"
