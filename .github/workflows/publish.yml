@@ -9,7 +9,7 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
+      contents: write # Required to create release and upload release assets
       packages: write # Required to publish to GitHub Packages
 
     steps:
@@ -62,4 +62,46 @@ jobs:
           fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Archive build artifacts
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          echo "Packaging npm tarball..."
+          pnpm pack --pack-destination .
+          mv boge-mvp-game-lib-*.tgz "game-lib-${VERSION}.tgz"
+
+          echo "Creating ZIP archive of build artifacts..."
+          FILES_TO_ZIP=(
+            bin dist assets webp lib
+            index.js package.json
+            types.js reserved.js typescript-parse.js
+            rollup-plugin-rename.js rollup-plugin-decorators.js rollup-plugin-generics.js
+          )
+          if [ -f "README.md" ]; then FILES_TO_ZIP+=(README.md); fi
+          if [ -f "version_info.txt" ]; then FILES_TO_ZIP+=(version_info.txt); fi
+          zip -r "game-lib-${VERSION}.zip" "${FILES_TO_ZIP[@]}"
+
+      - name: Create GitHub Release and upload assets
+        run: |
+          VERSION=${GITHUB_REF_NAME#v}
+          EXTRA_ARGS=()
+          if [[ "$VERSION" == *"-"* ]]; then
+            EXTRA_ARGS+=(--prerelease)
+          fi
+
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME already exists, uploading assets..."
+            gh release upload "$GITHUB_REF_NAME" "game-lib-${VERSION}.zip" "game-lib-${VERSION}.tgz" --clobber
+          else
+            echo "Creating release $GITHUB_REF_NAME..."
+            gh release create "$GITHUB_REF_NAME" \
+              --title "$GITHUB_REF_NAME" \
+              --generate-notes \
+              "${EXTRA_ARGS[@]}" \
+              "game-lib-${VERSION}.zip" \
+              "game-lib-${VERSION}.tgz"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
