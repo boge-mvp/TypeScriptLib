@@ -231,7 +231,7 @@ export class DefineConfig {
      * @internal
      */
     private static defineFairy() {
-
+        if (!fgui || !fgui.GRoot) return
         Object.defineProperty(GRoot.prototype, "playOneShotSound", {
             value: function (url: string, volumeScale?: number) {
                 if (fgui.ToolSet.startsWith(url, "ui://"))
@@ -543,6 +543,7 @@ export class DefineConfig {
             }
         })
 
+        if (!Laya.HTMLDivElement) return
         //修复单行文本对齐异常
         Object.defineProperty(Laya.HTMLDivElement.prototype, "_updateGraphic", {
             value: function () {
@@ -635,6 +636,7 @@ export class DefineConfig {
      * @internal
      */
     private static defineSkeleton() {
+        if (!Laya.Skeleton) return
         Object.defineProperty(Laya.Skeleton.prototype, "getAniIndexByName", {
             value: function (name: string) {
                 let index = -1
@@ -770,7 +772,7 @@ export class DefineConfig {
      * @internal
      */
     private static defineSpineSkeleton() {
-
+        if (!Laya.SpineTempletBase) return
         Object.defineProperties(Laya.SpineTempletBase.prototype, {
             loadResUrl: {
                 value: null,
