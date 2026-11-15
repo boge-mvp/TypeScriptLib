@@ -2,6 +2,118 @@ import {IGraphicsCmdConfig} from "./IGraphicsCmdConfig";
 import {ILayoutConfig} from "./ILayoutConfig";
 
 /**
+ * Gear 补间缓动通用配置
+ */
+export interface IGearTweenConfig {
+    /** 切页时是否执行平滑补间动画，默认为 false */
+    tween?: boolean;
+    /** 缓动持续时间（秒），默认为 0.3 */
+    duration?: number;
+    /** 缓动方程类型（对应 FGUI EaseType 数字枚举，如 4: QuadOut） */
+    easeType?: number;
+    /** 延迟触发时间（秒），默认为 0 */
+    delay?: number;
+}
+
+/**
+ * 位置随控制器页面联动配置 (GearXY)
+ */
+export interface IGearXYConfig extends IGearTweenConfig {
+    /** 绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器 */
+    controller?: string;
+    /** 各页面对应的坐标配置，键为页面名称，值为坐标对象 */
+    pages: Record<string, { x: number; y: number; px?: number; py?: number }>;
+}
+
+/**
+ * 尺寸与缩放随控制器页面联动配置 (GearSize)
+ */
+export interface IGearSizeConfig extends IGearTweenConfig {
+    /** 绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器 */
+    controller?: string;
+    /** 各页面对应的宽高与缩放配置，键为页面名称 */
+    pages: Record<string, { width?: number; height?: number; scaleX?: number; scaleY?: number; scale?: number }>;
+}
+
+/**
+ * 透明度、旋转与可交互性随控制器页面联动配置 (GearLook)
+ */
+export interface IGearLookConfig extends IGearTweenConfig {
+    /** 绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器 */
+    controller?: string;
+    /** 各页面对应的视觉属性配置，键为页面名称 */
+    pages: Record<string, { alpha?: number; rotation?: number; grayed?: boolean; touchable?: boolean }>;
+}
+
+/**
+ * 文本或边框颜色随控制器页面联动配置 (GearColor)
+ */
+export interface IGearColorConfig {
+    /** 绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器 */
+    controller?: string;
+    /** 各页面对应的颜色配置，键为页面名称 */
+    pages: Record<string, { color?: string; strokeColor?: string }>;
+    /** 是否开启颜色平滑过渡动画 (默认 false) */
+    tween?: boolean;
+    /** 动画过渡时长 (秒，默认 0.3) */
+    duration?: number;
+    /** 缓动算法类型 (参考 fgui.EaseType) */
+    easeType?: number;
+}
+
+/**
+ * 文本内容随控制器页面联动配置 (GearText)
+ */
+export interface IGearTextConfig {
+    /** 绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器 */
+    controller?: string;
+    /** 各页面对应的文本内容，键为页面名称 */
+    pages: Record<string, string>;
+}
+
+/**
+ * 图标/图片地址随控制器页面联动配置 (GearIcon)
+ */
+export interface IGearIconConfig {
+    /** 绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器 */
+    controller?: string;
+    /** 各页面对应的图标 URL 地址，键为页面名称 */
+    pages: Record<string, string>;
+}
+
+/**
+ * 动画组件播放状态随控制器页面联动配置 (GearAnimation)
+ */
+export interface IGearAnimationConfig {
+    /** 绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器 */
+    controller?: string;
+    /** 各页面对应的动画状态，键为页面名称 */
+    pages: Record<string, { playing?: boolean; frame?: number }>;
+}
+
+/**
+ * 复合多条件显隐随控制器联动配置 (GearDisplay2)
+ */
+export interface IGearDisplay2Config {
+    /** 绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器 */
+    controller?: string;
+    /** 在控制器的哪些页面下显示 */
+    pages: string[];
+    /** 判定条件：0 表示 AND（必须同时满足），1 表示 OR（满足其一即可显示） */
+    condition?: 0 | 1;
+}
+
+/**
+ * 字体大小随控制器页面联动配置 (GearFontSize)
+ */
+export interface IGearFontSizeConfig {
+    /** 绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器 */
+    controller?: string;
+    /** 各页面对应的字号大小（像素），键为页面名称 */
+    pages: Record<string, number>;
+}
+
+/**
  * 界面所有可视化元组件的通用基础物理排版尺寸与定位配置（基类）
  */
 export type IBaseElementConfig = {
@@ -41,4 +153,29 @@ export type IBaseElementConfig = {
     y?: number;
     /** 定位模式: "absolute" 表示脱离父容器流式布局，不受 alignItems/justifyContent 影响 */
     position?: "absolute";
+    /** 控制器页面显隐状态绑定（GearDisplay：指定在控制器的哪些页面下保持可见） */
+    gearDisplay?: {
+        /** 绑定的控制器名称，缺省时自动匹配父容器名为 "button" 的控制器或首个可用控制器 */
+        controller?: string;
+        /** 在控制器的哪些页面下显示（页面名称列表，如 ["up", "down"]） */
+        pages: string[];
+    };
+    /** 位置随控制器联动 (GearXY) */
+    gearXY?: IGearXYConfig;
+    /** 尺寸与缩放随控制器联动 (GearSize) */
+    gearSize?: IGearSizeConfig;
+    /** 视觉外观（透明/旋转/置灰）随控制器联动 (GearLook) */
+    gearLook?: IGearLookConfig;
+    /** 颜色随控制器联动 (GearColor) */
+    gearColor?: IGearColorConfig;
+    /** 文本随控制器联动 (GearText) */
+    gearText?: IGearTextConfig;
+    /** 图标随控制器联动 (GearIcon) */
+    gearIcon?: IGearIconConfig;
+    /** 动画状态随控制器联动 (GearAnimation) */
+    gearAnimation?: IGearAnimationConfig;
+    /** 复合条件显隐随控制器联动 (GearDisplay2) */
+    gearDisplay2?: IGearDisplay2Config;
+    /** 字体大小随控制器联动 (GearFontSize) */
+    gearFontSize?: IGearFontSizeConfig;
 };

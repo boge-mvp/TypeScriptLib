@@ -1,12 +1,18 @@
+import {IControllerConfig} from "./IControllerConfig";
 import {IElementConfig} from "./IElementConfig";
 import {IGraphConfig} from "./IGraphConfig";
 import {IIconConfig} from "./IIconConfig";
 import {IPaddingConfig} from "./IPaddingConfig";
+import {ITransitionConfig} from "./ITransitionConfig";
 
 /**
- * 容器视图通用配置（背景、子级、滚动、流式布局）
+ * 容器视图通用配置（背景、子级、滚动、流式布局、控制器与动效）
  */
 export type IViewConfig = {
+    /** 容器挂载的控制器列表（支持多页面状态机与单选组控制） */
+    controllers?: IControllerConfig[];
+    /** 容器挂载的动效列表（支持补间动画与自动播放） */
+    transitions?: ITransitionConfig[];
     /** 面板背景：可以是纯图片 URL、也可以是嵌套的 icon/graph 元素配置 */
     background?: string | IIconConfig | IGraphConfig;
     /** 面板内部嵌套的一维层级 Elements 子级元件列表 */

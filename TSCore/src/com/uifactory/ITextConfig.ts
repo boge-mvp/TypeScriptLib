@@ -34,4 +34,8 @@ export type ITextConfig = IBaseElementConfig & {
     strokeColor?: string;
     /** 是否启用 UBB 语法富文本解析 (同时会自动将 "\n" 转换为 "<br/>") */
     isUbb?: boolean;
+    /** 是否为可交互输入文本框 (实例化 fgui.GTextInput) */
+    isInput?: boolean;
+    /** 输入框提示文案 (promptText) */
+    promptText?: string;
 };

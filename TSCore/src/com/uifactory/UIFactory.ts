@@ -1,505 +1,253 @@
-import GBasicTextField = fgui.GBasicTextField;
-import GTextField = fgui.GTextField;
-import GRichTextField = fgui.GRichTextField;
-import ScrollType = fgui.ScrollType;
-import GLoader = fgui.GLoader;
-import LoaderFillType = fgui.LoaderFillType;
-import Handler = Laya.Handler;
-import ToolSet = fgui.ToolSet;
-import {EPanel} from "./EPanel";
-import {PureList} from "./PureList";
-import {IBaseElementConfig} from "./IBaseElementConfig";
+import { IElementConfig } from "./IElementConfig";
+import { IGraphConfig } from "./IGraphConfig";
+import { IIconConfig } from "./IIconConfig";
+import { ITextConfig } from "./ITextConfig";
 import {IButtonConfig} from "./IButtonConfig";
-import {IElementConfig} from "./IElementConfig";
-import {IGraphConfig} from "./IGraphConfig";
-import {IGraphicsCmdConfig} from "./IGraphicsCmdConfig";
-import {IIconConfig} from "./IIconConfig";
 import {IListConfig} from "./IListConfig";
-import {IPanelConfig} from "./IPanelConfig";
-import {ITextConfig} from "./ITextConfig";
-import {IViewConfig} from "./IViewConfig";
+import {PureList} from "./PureList";
+import {IControllerConfig} from "./IControllerConfig";
+import { UIFactoryTransitions } from "./UIFactoryTransitions";
+import { IBaseElementConfig } from "./IBaseElementConfig";
+import { IViewConfig } from "./IViewConfig";
+import { UIFactoryGears } from "./UIFactoryGears";
+import {UIFactoryLayout} from "./UIFactoryLayout";
+import {UIFactoryExtensions} from "./UIFactoryExtensions";
+import {UIFactoryPipeline} from "./UIFactoryPipeline";
+import { IGraphicsCmdConfig } from "./IGraphicsCmdConfig";
+import {ITransitionConfig, TransitionActionType } from "./ITransitionConfig";
+import { IPanelConfig } from "./IPanelConfig";
+import { EPanel } from "./EPanel";
 
-/**
- * 纯代码 FGUI 组件工厂
- *
- * 基于结构化配置（IElementConfig 体系）在运行期创建整套 FGUI 界面：
- * 文本/图片/矢量图形/面板/列表/按钮多态路由、弹性流式布局引擎
- * （vertical/horizontal 流 + alignItems/justifyContent + 百分比定位）、
- * 反射式滚动容器激活（去 fgui 编辑器资源包依赖）。
- */
+export type ElementCreator<T extends IElementConfig = IElementConfig, R extends fgui.GObject = fgui.GObject> =
+    (elData: T, containerW: number, containerH: number) => R;
+
 export class UIFactory {
 
-    /** 资源基础路径前缀，用于 gameUI.json 等相对路径资源的目录定位 */
-    static resBasePath: string = ""
+    public static resBasePath: string = "";
+    public static customCreators: Record<string, ElementCreator<any, any>> = {};
 
-    /**
-     * 资源 URL 前缀处理：为相对路径自动拼接 resBasePath 前缀
-     * 绝对路径（http://、//、ui://）和颜色值（#、rgb）不拼接
-     */
-    static formatResUrl(url: string): string {
-        if (url && UIFactory.resBasePath
-            && !url.startsWith("http")
-            && !url.startsWith("//")
-            && !url.startsWith("ui://")
-            && !url.startsWith("#")
-            && !url.startsWith("rgb")) {
-            return UIFactory.resBasePath + url
+    public static formatResUrl(url: string): string {
+        if (url && UIFactory.resBasePath && !url.startsWith("http://") && !url.startsWith("https://") && !url.startsWith(UIFactory.resBasePath)) {
+            return UIFactory.resBasePath + url;
         }
-        return url
+        return url;
     }
 
-    /**
-     * 将 fgui 包资源地址解析为可直接绘制的 Laya 纹理 <br/>
-     * 地址无论带不带 ui: 前缀都会先强制规范化为 ui://（见 formatFguiUrl），
-     * 再经 fgui.UIPackage 取出包内图片资产；仅当资产确为 Laya.Texture 时返回，
-     * 未命中（地址实为物理路径）返回 null，由调用方回退 Laya 原生加载
-     */
-    static getFguiTexture(url?: string): Nullable<Laya.Texture> {
-        if (!url) return null
-        if (!url.startsWith("ui:")) url ="ui://" + url
-        const asset = fgui.UIPackage.getItemAssetByURL(url)
-        return asset instanceof Laya.Texture ? asset : null
-    }
-
-    private static customCreators: {
-        [type: string]: (elData: IElementConfig, containerW: number, containerH: number) => fgui.GObject
-    } = {};
-
-    /**
-     * 注册自定义元件类型创建器，实现业务元件在 UI 工厂的零侵入扩展
-     */
-    public static registerCreator(type: string, creator: (elData: IElementConfig, containerW: number, containerH: number) => fgui.GObject) {
+    public static registerCreator<T extends IElementConfig, R extends fgui.GObject>(
+        type: string,
+        creator: ElementCreator<T, R>
+    ): void {
         UIFactory.customCreators[type] = creator;
     }
 
-    /**
-     * 元件多态工厂核心路由：根据配置中的 type 类型，自动派发并路由分流到特定的 UI 创建器中
-     * @param elData 待解析的单个元件配置
-     * @param containerW 外部容器的参考像素宽度
-     * @param containerH 外部容器的参考像素高度
-     * @returns 返回初始化完毕的具体多态 FGUI 节点实例
-     */
-    static createElement<T extends fgui.GObject>(elData: IElementConfig, containerW: number, containerH: number): T {
-        let node: Nullable<T> = null;
-        // 优先匹配自定义注册的类型创建器 (type -> function)
+    public static createElement<T extends fgui.GObject = fgui.GObject>(
+        elData: IElementConfig,
+        containerW: number,
+        containerH: number
+    ): Nullable<T> {
+        let node: Nullable<fgui.GObject> = null;
+
         if (UIFactory.customCreators[elData.type]) {
-            node = UIFactory.customCreators[elData.type](elData, containerW, containerH) as T;
+            node = UIFactory.customCreators[elData.type](elData, containerW, containerH);
         } else {
-            if (elData.type === "text") {
-                if (elData.isUbb === true) {
-                    node = UIFactory.createRichTextField(elData) as unknown as T;
-                } else {
-                    node = UIFactory.createText(elData) as unknown as T;
+            // 严格对齐官方步骤：纯实例化阶段，不提前灌入 text / url
+            node = UIFactoryPipeline.instantiateNode(elData);
+            if (node) {
+                // 统一分流前置赋值 (setup_beforeAdd)
+                UIFactoryPipeline.setup_beforeAdd(node, elData);
+
+                // 若为复合容器类型，级联构建内部
+                if (elData.type === "panel" && (node instanceof fgui.GComponent)) {
+                    UIFactory.fillPanel(node, elData as IPanelConfig);
+                } else if (elData.type === "button" && (node instanceof fgui.GButton)) {
+                    UIFactory.fillPanel(node, elData as IButtonConfig);
+                } else if (elData.type === "list" && (node instanceof fgui.GList)) {
+                    const lConf = elData as IListConfig;
+                    if (lConf.defaultItem) node.defaultItem = lConf.defaultItem;
+                    if (lConf.listLayout) node.layout = fgui.ListLayoutType[lConf.listLayout];
+                    if (lConf.lineGap !== undefined) node.lineGap = lConf.lineGap;
+                    if (lConf.columnGap !== undefined) node.columnGap = lConf.columnGap;
+                    if (lConf.autoResizeItem !== undefined) node.autoResizeItem = lConf.autoResizeItem;
+                    UIFactory.fillPanel(node, lConf);
                 }
-            } else if (elData.type === "icon") {
-                node = UIFactory.createIcon(elData) as unknown as T;
-            } else if (elData.type === "graph") {
-                node = UIFactory.createGraph(elData) as unknown as T;
-            } else if (elData.type === "panel") {
-                node = UIFactory.createPanel(elData, containerW, containerH) as unknown as T;
-            } else if (elData.type === "list") {
-                node = UIFactory.createList(elData, containerW, containerH) as unknown as T;
-            } else if (elData.type === "button") {
-                node = UIFactory.createButton(elData) as unknown as T;
             }
         }
-        if (node && elData.graphics && elData.graphics.length > 0) {
+
+        if (node && elData.graphics) {
             UIFactory.applyGraphics(node, elData.graphics);
         }
-        return node as T;
+
+        return node as Nullable<T>;
     }
 
-    /**
-     * 工厂函数：基于配置数据创建富文本对象 (GRichTextField)
-     * 并强制启用 UBB 富文本语法解析，自动换行解析
-     */
-    static createRichTextField(elData: ITextConfig): fgui.GRichTextField {
-        const textNode = new GRichTextField()
-        textNode.ubbEnabled = true
-        UIFactory.createTextField(elData, textNode)
-        return textNode
+    public static createText(elData: ITextConfig): fgui.GTextField {
+        return UIFactory.createElement<fgui.GTextField>(elData, 0, 0)!;
     }
 
-    /**
-     * 工厂函数：基于配置数据创建普通文本对象 (GBasicTextField)
-     */
-    static createText(elData: ITextConfig): fgui.GBasicTextField {
-        const textNode = new GBasicTextField()
-        UIFactory.createTextField(elData, textNode)
-        return textNode
+    public static createRichTextField(elData: ITextConfig): fgui.GRichTextField {
+        return UIFactory.createElement<fgui.GRichTextField>({ ...elData, isUbb: true }, 0, 0)!;
     }
 
-    /**
-     * 核心公共装配函数：统一为 FGUI 各种多态文本组件（普通/富文本）注入字体、行距、描边及对齐等参数
-     * @param elData 静态或动态映射来的文本配置数据
-     * @param textNode 待装饰的 FGUI 文本底层组件实例
-     */
-    static createTextField(elData: ITextConfig, textNode: GTextField) {
-
-        if (elData.name) textNode.name = elData.name;
-
-        const initW = elData.width || 0
-        const initH = elData.height || 0
-
-        const scaleX = elData.scaleX !== undefined ? elData.scaleX : (elData.scale !== undefined ? elData.scale : 1)
-        const scaleY = elData.scaleY !== undefined ? elData.scaleY : (elData.scale !== undefined ? elData.scale : 1)
-        textNode.setScale(scaleX, scaleY)
-
-        const pX = elData.pivotX !== undefined ? elData.pivotX : 0
-        const pY = elData.pivotY !== undefined ? elData.pivotY : 0
-        textNode.setPivot(pX, pY, elData.asAnchor)
-        textNode.rotation = elData.rotation !== undefined ? elData.rotation : 0
-
-        textNode.fontSize = elData.fontSize || 20
-        textNode.color = elData.color || "#ffffff"
-        textNode.align = elData.align || "left"
-        textNode.valign = elData.valign || "middle"
-        textNode.leading = elData.leading || 4
-        textNode.letterSpacing = elData.letterSpacing || 0
-        textNode.underline = elData.underline === true
-        textNode.italic = elData.italic === true
-        textNode.bold = elData.bold === true
-        textNode.singleLine = elData.singleLine === true
-        textNode.setSize(initW, initH)
-
-        if (initW > 0 && initH > 0) {
-            textNode.autoSize = fgui.AutoSizeType.None
-        } else if (initW > 0) {
-            textNode.autoSize = fgui.AutoSizeType.Height
-        } else {
-            textNode.autoSize = fgui.AutoSizeType.Both
-            if (!elData.singleLine && elData.text && (elData.text.length > 40 || elData.text.indexOf("\n") !== -1)) {
-                console.warn(`[UIFactory] 文本组件 "${elData.name || "text"}" 包含较长文案或换行符，但未配置 width，已默认采用 AutoSizeType.Both（单行无限横向延伸），如需自动折行请声明 width。`);
-            }
-        }
-
-        if (elData.stroke) {
-            textNode.stroke = elData.stroke
-            textNode.strokeColor = elData.strokeColor || "#000000"
-        }
-        let text = elData.text || ""
-        if (textNode instanceof fgui.GRichTextField && textNode.ubbEnabled) {
-            text = ToolSet.encodeHTML(text)
-            text = text.replace(/\n/g, "<br/>")
-        }
-        textNode.text = text
-        textNode.ensureSizeCorrect()
+    public static createTextInput(elData: ITextConfig): fgui.GTextInput {
+        return UIFactory.createElement<fgui.GTextInput>({ ...elData, isInput: true }, 0, 0)!;
     }
 
-    /**
-     * 工厂函数：创建并初始化 FGUI 图像装载器 (GLoader)
-     * 支持指定宽高缩放、旋转锚点、加载外部物理 URL 以及装配九宫格 (sizeGrid)
-     */
-    static createIcon(elData: IIconConfig): fgui.GLoader {
-        const iconNode = new GLoader()
-
-        if (elData.name) iconNode.name = elData.name;
-
-        const initW = elData.width || 80
-        const initH = elData.height || 80
-        iconNode.setSize(initW, initH)
-
-        if (elData.clip) {
-            iconNode.displayObject.scrollRect = new Laya.Rectangle(0, 0, initW, initH);
-        }
-
-        const scaleX = elData.scaleX !== undefined ? elData.scaleX : (elData.scale !== undefined ? elData.scale : 1)
-        const scaleY = elData.scaleY !== undefined ? elData.scaleY : (elData.scale !== undefined ? elData.scale : 1)
-        iconNode.setScale(scaleX, scaleY)
-
-        iconNode.align = "center"
-        iconNode.verticalAlign = "middle"
-
-        if (elData.fill !== undefined) {
-            if (typeof elData.fill === "number") {
-                iconNode.fill = elData.fill;
-            } else {
-                const fillMap: { [key: string]: number } = {
-                    "none": LoaderFillType.None,
-                    "scale": LoaderFillType.Scale,
-                    "scalematchheight": LoaderFillType.ScaleMatchHeight,
-                    "scalematchwidth": LoaderFillType.ScaleMatchWidth,
-                    "scalefree": LoaderFillType.ScaleFree,
-                    "scalenoborder": LoaderFillType.ScaleNoBorder
-                };
-                const fillStr = String(elData.fill).toLowerCase();
-                iconNode.fill = fillMap[fillStr] !== undefined ? fillMap[fillStr] : LoaderFillType.None;
-            }
-        } else {
-            iconNode.fill = LoaderFillType.None;
-        }
-
-        const pX = elData.pivotX !== undefined ? elData.pivotX : 0
-        const pY = elData.pivotY !== undefined ? elData.pivotY : 0
-        iconNode.setPivot(pX, pY, elData.asAnchor)
-        iconNode.rotation = elData.rotation !== undefined ? elData.rotation : 0
-
-        iconNode.on(Laya.Event.COMPLETE, this, function () {
-            const tex = iconNode.content?.texture
-            if (tex) {
-                let sizeChanged = false;
-                if (!elData.width) {
-                    iconNode.width = tex.width;
-                    sizeChanged = true;
-                }
-                if (!elData.height) {
-                    iconNode.height = tex.height;
-                    sizeChanged = true;
-                }
-                if (sizeChanged && iconNode.parent) {
-                    iconNode.parent.ensureBoundsCorrect();
-                }
-            }
-        })
-        iconNode.url = Laya.URL.formatURL(UIFactory.formatResUrl(elData.url))
-        return iconNode
+    public static createIcon(elData: IIconConfig): fgui.GLoader {
+        return UIFactory.createElement<fgui.GLoader>(elData, 0, 0)!;
     }
 
-    /**
-     * 工厂函数：基于 FGUI 绘制能力在运行期动态绘制矢量几何图形 (GGraph)
-     * 支持边框线宽、边框颜色、内部纯色填充、以及极为灵活的多度圆角数组解析
-     */
-    static createGraph(elData: IGraphConfig): fgui.GGraph {
-        const graphNode = new fgui.GGraph()
-
-        if (elData.name) graphNode.name = elData.name;
-
-        const initW = elData.width || 0
-        const initH = elData.height || 0
-        graphNode.setSize(initW, initH)
-
-        const scaleX = elData.scaleX !== undefined ? elData.scaleX : (elData.scale !== undefined ? elData.scale : 1)
-        const scaleY = elData.scaleY !== undefined ? elData.scaleY : (elData.scale !== undefined ? elData.scale : 1)
-        graphNode.setScale(scaleX, scaleY)
-
-        const pX = elData.pivotX !== undefined ? elData.pivotX : 0
-        const pY = elData.pivotY !== undefined ? elData.pivotY : 0
-        graphNode.setPivot(pX, pY, elData.asAnchor)
-        graphNode.rotation = elData.rotation !== undefined ? elData.rotation : 0
-
-        const lineSize = elData.lineSize !== undefined ? elData.lineSize : 0
-        const lineColor = elData.lineColor || null
-        const fillColor = elData.fillColor || null
-        graphNode.alpha = elData.alpha !== undefined ? elData.alpha : 1
-
-        let cornerRadius: undefined | number[] = elData.cornerRadius as number[] | undefined;
-        if (cornerRadius !== undefined) {
-            if (!Array.isArray(cornerRadius)) {
-                cornerRadius = [cornerRadius]
-            }
-            const len = cornerRadius.length
-            if (len > 4) {
-                cornerRadius.length = 4
-            } else {
-                for (let i = 0; i < 4 - len; i++) {
-                    cornerRadius.push(len == 1 ? cornerRadius[0] : 0)
-                }
-            }
-        }
-        // 引擎声明 fillColor/lineColor 为必填 string，实际透传 Laya Graphics 支持 null（不绘制）
-        graphNode.drawRect(lineSize, lineColor as string, fillColor as string, cornerRadius)
-        return graphNode
+    public static createGraph(elData: IGraphConfig): fgui.GGraph {
+        return UIFactory.createElement<fgui.GGraph>(elData, 0, 0)!;
     }
 
-    /**
-     * 动态列表/网格渲染引擎：基于 FGUI List 机制实现高密度、高性能的滚动网格/列表装配
-     * 支持 Flow 换行、分页以及单行单列排列，利用 itemRenderer 闭包回调在运行期递归向子项填充 Elements 渲染
-     */
-    static createList(elData: IListConfig, containerW: number, containerH: number): fgui.GComponent {
-        const listNode = new PureList();
-
-        if (elData.name) listNode.name = elData.name;
-
-        const layoutStr = elData.listLayout || "SingleColumn";
-        let listLayout = fgui.ListLayoutType.SingleColumn;
-        if (layoutStr === "SingleRow") {
-            listLayout = fgui.ListLayoutType.SingleRow;
-        } else if (layoutStr === "FlowHorizontal") {
-            listLayout = fgui.ListLayoutType.FlowHorizontal;
-        } else if (layoutStr === "FlowVertical") {
-            listLayout = fgui.ListLayoutType.FlowVertical;
-        } else if (layoutStr === "Pagination") {
-            listLayout = fgui.ListLayoutType.Pagination;
-        }
-        listNode.layout = listLayout;
-        const internal = listNode as unknown as Record<string, unknown>;
-        internal["_layout"] = listLayout;
-
-        const scaleX = elData.scaleX !== undefined ? elData.scaleX : (elData.scale !== undefined ? elData.scale : 1);
-        const scaleY = elData.scaleY !== undefined ? elData.scaleY : (elData.scale !== undefined ? elData.scale : 1);
-        listNode.setScale(scaleX, scaleY);
-
-        elData.width = elData.width || containerW
-        elData.height = elData.height || containerH
-
-        UIFactory.fillPanel(listNode, elData)
-
-        const initW = elData.width || containerW || listNode.width;
-        const initH = elData.height || listNode.height;
-        listNode.setSize(initW, initH);
-
-        const pX = elData.pivotX !== undefined ? elData.pivotX : 0;
-        const pY = elData.pivotY !== undefined ? elData.pivotY : 0;
-        listNode.setPivot(pX, pY, elData.asAnchor);
-
-        listNode.rotation = elData.rotation !== undefined ? elData.rotation : 0;
-
-        internal["_lineGap"] = elData.lineGap !== undefined ? elData.lineGap : 10;
-        internal["_columnGap"] = elData.columnGap !== undefined ? elData.columnGap : 10;
-        internal["_autoResizeItem"] = elData.autoResizeItem !== undefined ? elData.autoResizeItem : false;
-        if (elData.lineCount !== undefined) {
-            if (layoutStr === "Pagination" || layoutStr === "FlowVertical") {
-                internal["_lineCount"] = elData.lineCount;
-            }
-        }
-        if (elData.columnCount !== undefined) {
-            if (layoutStr === "FlowHorizontal" || layoutStr === "Pagination") {
-                internal["_columnCount"] = elData.columnCount;
-            }
-        }
-        if (elData.align) {
-            internal["_align"] = elData.align;
-        }
-        if (elData.verticalAlign) {
-            internal["_verticalAlign"] = elData.verticalAlign;
-        }
-
-        const items = elData.items || [];
-
-        listNode.itemRenderer = Handler.create(this, function (idx: number, itemObj: fgui.GComponent) {
-            itemObj.removeChildren();
-            const itemData = items[idx];
-            if (itemData) {
-                itemData.width = itemData.width || elData.itemWidth
-                itemData.height = itemData.height || elData.itemHeight
-                if (itemData.type === "panel" || itemData.type === "list") {
-                    UIFactory.fillPanel(itemObj, itemData);
-                    if (itemData.graphics && itemData.graphics.length > 0) {
-                        UIFactory.applyGraphics(itemObj, itemData.graphics);
-                    }
-                } else {
-                    itemObj.sourceWidth = itemData.width || 0;
-                    itemObj.sourceHeight = itemData.height || 0;
-                    itemObj.setSize(itemData.width || 0, itemData.height || 0);
-                    const childNode = UIFactory.createElement(itemData, itemData.width || 0, itemData.height || 0);
-                    if (childNode) itemObj.addChild(childNode);
-                }
-            }
-        }, null, false);
-
-        listNode.setBoundsChangedFlag();
-
-        listNode.numItems = items.length;
-
-        return listNode;
+    public static createList(elData: IListConfig, containerW: number, containerH: number): fgui.GList {
+        return UIFactory.createElement<fgui.GList>(elData, containerW, containerH)!;
     }
 
-    /**
-     * 工厂函数：创建并初始化 FGUI 按钮组件 (GButton)
-     * 支持资源皮肤与无皮肤纯代码两种模式（通过 elements 结构化配置子元件）
-     */
-    static createButton(elData: IButtonConfig): fgui.GButton {
-        let btnNode: fgui.GButton;
-
-        if (elData.skin) {
-            btnNode = fgui.UIPackage.createObjectFromURL(Laya.URL.formatURL(elData.skin)) as fgui.GButton;
-            const initW = elData.width || btnNode.width || 120;
-            const initH = elData.height || btnNode.height || 50;
-            btnNode.setSize(initW, initH);
-        } else {
-            btnNode = createUI(fgui.GButton, function (this: fgui.GButton) {
-                const initW = elData.width || 120;
-                const initH = elData.height || 50;
-                this.setSize(initW, initH);
-                // 无皮肤纯代码按钮必须启用整块矩形命中：GComponent 默认 opaque=false 时
-                // displayObject.mouseThrough=true，自身矩形不参与命中，而子级 GGraph 的
-                // 矢量 hitArea（HitArea.hit=graphics）在 Laya 下 contains 恒为 false，
-                // 会导致按钮完全无法点击。opaque=true 即编辑器导出组件的标准命中形态。
-                this.opaque = true;
-            });
-        }
-
-        if (elData.name) btnNode.name = elData.name;
-
-        // --- 子元件创建与定位（走标准 fillPanel 流程） ---
-        UIFactory.fillPanel(btnNode, elData);
-
-        // --- button 自身变换 ---
-        const scaleX = elData.scaleX !== undefined ? elData.scaleX : (elData.scale !== undefined ? elData.scale : 1);
-        const scaleY = elData.scaleY !== undefined ? elData.scaleY : (elData.scale !== undefined ? elData.scale : 1);
-        btnNode.setScale(scaleX, scaleY);
-
-        const pX = elData.pivotX !== undefined ? elData.pivotX : 0;
-        const pY = elData.pivotY !== undefined ? elData.pivotY : 0;
-        btnNode.setPivot(pX, pY, elData.asAnchor);
-        btnNode.rotation = elData.rotation !== undefined ? elData.rotation : 0;
-
-        btnNode.setBoundsChangedFlag()
-        return btnNode;
+    public static createButton(elData: IButtonConfig): fgui.GButton {
+        return UIFactory.createElement<fgui.GButton>(elData, 0, 0)!;
     }
 
-    /**
-     * 外部面板创建网关：实例化全新的 EPanel 子面板，并对其装配缩放、旋转锚点并分发填充
-     * @param elData 子面板的层级配置数据
-     * @param containerW 外部容器的参考像素宽度
-     * @param containerH 外部容器的参考像素高度
-     * @returns 返回完全初始化并填充嵌套子级完毕的子面板容器组件
-     */
-    static createPanel(elData: IPanelConfig, containerW: number, containerH: number): EPanel {
-        const panelNode = new EPanel();
-        if (elData.name) panelNode.name = elData.name;
-
-        const scaleX = elData.scaleX !== undefined ? elData.scaleX : (elData.scale !== undefined ? elData.scale : 1);
-        const scaleY = elData.scaleY !== undefined ? elData.scaleY : (elData.scale !== undefined ? elData.scale : 1);
-        panelNode.setScale(scaleX, scaleY);
-        elData.width = elData.width || containerW
-        elData.height = elData.height || containerH
-        UIFactory.fillPanel(panelNode, elData);
-        const pX = elData.pivotX !== undefined ? elData.pivotX : 0;
-        const pY = elData.pivotY !== undefined ? elData.pivotY : 0;
-        panelNode.rotation = elData.rotation !== undefined ? elData.rotation : 0;
-        panelNode.setPivot(pX, pY, elData.asAnchor);
-        panelNode.setBoundsChangedFlag()
-        return panelNode;
+    public static createPanel(elData: IPanelConfig, containerW?: number, containerH?: number): fgui.GComponent {
+        const node = UIFactory.createElement<fgui.GComponent>(elData, containerW || 0, containerH || 0)!;
+        if (elData.x !== undefined) node.x = elData.x;
+        if (elData.y !== undefined) node.y = elData.y;
+        return node;
     }
 
-    /**
-     * 反射式底层构建：在运行期纯代码物理装配 FGUI 内部滚动面板 (ScrollPane)
-     * 解决去 fgui 编辑器资源包依赖后，代码动态托管 ScrollView 交互的问题
-     * @param owner 拥有该滚动层的主容器组件
-     * @param scrollType 滚动方向："Horizontal" (横向) | "Vertical" (纵向) | "Both" (双向)
-     * @param touchEnabled 是否启用手势触控以及滚轮交互 (默认 true)
-     * @returns 返回装配完毕并具有回弹阻尼的滚动窗口实例
-     */
-    static createScrollPanel(owner: fgui.GComponent, scrollType: ScrollType, touchEnabled: boolean = true): fgui.ScrollPane {
-        const scrollPane = new fgui.ScrollPane(owner)
+    public static createScrollPanel(owner: fgui.GComponent, scrollType: fgui.ScrollType, touchEnabled: boolean = true): fgui.ScrollPane {
+        const scrollPane = new fgui.ScrollPane(owner);
         const internal = scrollPane as unknown as {
-            _scrollType: fgui.ScrollType
-            _maskContainer: { scrollRect: Laya.Rectangle | null }
-        }
-        internal._scrollType = scrollType
+            _scrollType: fgui.ScrollType;
+            _maskContainer: { scrollRect: Laya.Rectangle | null };
+        };
+        internal._scrollType = scrollType;
         internal._maskContainer.scrollRect = new Laya.Rectangle();
-        scrollPane.touchEffect = touchEnabled
-        scrollPane.mouseWheelEnabled = touchEnabled
-        scrollPane.bouncebackEffect = true
-        scrollPane.setSize(owner.width, owner.height)
-        return scrollPane
+        scrollPane.touchEffect = touchEnabled;
+        scrollPane.mouseWheelEnabled = touchEnabled;
+        scrollPane.bouncebackEffect = true;
+        scrollPane.setSize(owner.width, owner.height);
+        return scrollPane;
+    }
+
+    public static createController(config: IControllerConfig, owner?: fgui.GComponent): fgui.Controller {
+        const ctrl = new fgui.Controller();
+        if (config.name) ctrl.name = config.name;
+
+        if (config.pages && Array.isArray(config.pages)) {
+            for (const p of config.pages) {
+                ctrl.addPage(p);
+            }
+        }
+
+        if (config.actions && Array.isArray(config.actions)) {
+            const rawCtrl = ctrl as any;
+            if (!rawCtrl._actions) rawCtrl._actions = [];
+            for (const actConf of config.actions) {
+                if (actConf.type === "playTransition" && fgui.PlayTransitionAction) {
+                    const action = new fgui.PlayTransitionAction();
+                    action.transitionName = actConf.transitionName;
+                    action.playTimes = actConf.playTimes !== undefined ? actConf.playTimes : 1;
+                    action.delay = actConf.delay || 0;
+                    action.stopOnExit = !!actConf.stopOnExit;
+                    if (actConf.fromPage && Array.isArray(actConf.fromPage)) {
+                        action.fromPage = actConf.fromPage.map(p => {
+                            const pid = ctrl.getPageIdByName(p);
+                            return pid ? pid : p;
+                        });
+                    }
+                    if (actConf.toPage && Array.isArray(actConf.toPage)) {
+                        action.toPage = actConf.toPage.map(p => {
+                            const pid = ctrl.getPageIdByName(p);
+                            return pid ? pid : p;
+                        });
+                    }
+                    rawCtrl._actions.push(action);
+                }
+            }
+        }
+
+        if (owner) {
+            owner.addController(ctrl);
+        }
+
+        const targetIndex = config.selectedIndex !== undefined ? config.selectedIndex :
+            (config.selectedPage ? (ctrl as any)._pageNames.indexOf(config.selectedPage) : 0);
+        const safeIndex = targetIndex >= 0 ? targetIndex : 0;
+
+        if (ctrl.parent) {
+            ctrl.selectedIndex = safeIndex;
+        } else {
+            (ctrl as any)._selectedIndex = safeIndex;
+        }
+
+        return ctrl;
+    }
+
+    public static createTransition(config: ITransitionConfig, owner: fgui.GComponent): fgui.Transition {
+        return UIFactoryTransitions.createTransition(config, owner);
+    }
+
+    public static mapActionType(type: TransitionActionType | number): number {
+        return UIFactoryTransitions.mapActionType(type);
+    }
+
+    public static fillTransitionValue(actionType: number, source: any, target: any): void {
+        UIFactoryTransitions.fillTransitionValue(actionType, source, target);
+    }
+
+    public static setupElementPosition(
+        node: fgui.GObject,
+        elData: IElementConfig,
+        containerW: number,
+        containerH: number,
+        parentData?: IBaseElementConfig & IViewConfig,
+        flowState?: any
+    ): { targetX: number; targetY: number; elW: number; elH: number; } {
+        return UIFactoryLayout.setupElementPosition(node, elData, containerW, containerH, parentData, flowState);
+    }
+
+    public static setupElementGears(childNode: fgui.GObject, childData: IElementConfig, panelNode: fgui.GComponent, index: number): void {
+        UIFactoryGears.setupElementGears(childNode, childData, panelNode, index);
+    }
+
+    public static setupComponentExtension(panelNode: fgui.GComponent, elData: IBaseElementConfig & IViewConfig): void {
+        UIFactoryExtensions.setupComponentExtension(panelNode, elData);
+    }
+
+    public static applyGraphics(node: fgui.GObject, graphicsConfig: IGraphicsCmdConfig[]): void {
+        if (!graphicsConfig || !Array.isArray(graphicsConfig) || !node || !node.displayObject) return;
+        const g = node.displayObject.graphics as unknown as Record<string, Function>;
+        if (!g) return;
+        for (const item of graphicsConfig) {
+            if (!item || typeof item !== "object") continue;
+            const cmd = item.cmd;
+            const args = [...(item.args || [])];
+            if ((cmd === "loadImage" || cmd === "drawImage") && typeof args[0] === "string") {
+                args[0] = UIFactory.formatResUrl(args[0]);
+            }
+            if (typeof g[cmd] === "function") {
+                g[cmd](...args);
+            } else {
+                console.warn(`Laya.Graphics 不支持方法: ${cmd}`);
+            }
+        }
     }
 
     /**
-     * 面板填充渲染核心：为指定的 fgui.GComponent 容器填充多态背景 (支持纯图片 URL、嵌套 Icon/Graph/Text 对象)
-     * 并在该面板内部递归遍历、创建、自适应对齐装配子级 Elements 元素列表，并校正自适应高度
-     * @param panelNode 需要填充承载内容的目标 FGUI 容器组件
-     * @param elData 面板或列表项的层级配置数据
+     * FGUI 官方五阶段标准初始管线协调器
      */
-    static fillPanel(panelNode: fgui.GComponent, elData: IBaseElementConfig & IViewConfig) {
+    public static fillPanel(panelNode: fgui.GComponent, elData: IBaseElementConfig & IViewConfig): void {
+        const rawPanel = panelNode as any;
+        rawPanel["_buildingDisplayList"] = true;
+
         let initW = elData.width || panelNode.width || 0;
         let initH = elData.height || panelNode.height || 0;
 
-        panelNode.sourceWidth = initW
-        panelNode.sourceHeight = initH
-        panelNode.initWidth = initW
-        panelNode.initHeight = initH
+        panelNode.sourceWidth = initW;
+        panelNode.sourceHeight = initH;
+        panelNode.initWidth = initW;
+        panelNode.initHeight = initH;
         panelNode.setSize(initW, initH);
 
         if (elData.padding) {
@@ -509,7 +257,17 @@ export class UIFactory {
             panelNode.margin.right = elData.padding.right ?? 0;
         }
 
-        panelNode.setupScrollPanel(elData.overflow, elData.scrollType);
+        let overflowVal: any = elData.overflow;
+        if (typeof overflowVal === "string") {
+            overflowVal = (fgui.OverflowType as any)[overflowVal.charAt(0).toUpperCase() + overflowVal.slice(1).toLowerCase()] ?? overflowVal;
+        }
+        panelNode.setupScrollPanel(overflowVal, elData.scrollType);
+
+        if (elData.controllers && elData.controllers.length > 0) {
+            for (const ctrlData of elData.controllers) {
+                UIFactory.createController(ctrlData, panelNode);
+            }
+        }
 
         const childElements = elData.elements || [];
         let panelMaxHeight = elData.height || 0;
@@ -523,10 +281,6 @@ export class UIFactory {
         const padLeft = elData.padding?.left ?? 0;
         const padRight = elData.padding?.right ?? 0;
 
-        // ==========================================
-        // 【第一轮大循环：Measure & Instantiate】
-        // 职责：一并完成所有子节点的创建，并同步测算出主轴上的 totalW / totalH 总占位
-        // ==========================================
         const childNodes: Nullable<fgui.GObject>[] = [];
         let totalH = 0;
         let totalW = 0;
@@ -534,24 +288,23 @@ export class UIFactory {
         let maxChildW = 0;
         let flowChildCount = 0;
 
-        // flexWrap 虚拟折行测量状态
         let wrapCurrentX = padLeft;
         let wrapCurrentRowMaxH = 0;
         let wrapTotalH = 0;
         let wrapHasItemInRow = false;
         const maxLineWidth = (initW > 0 ? initW : 0) - padRight;
-        if (isHorizontalFlow && elData.flexWrap && maxLineWidth <= padLeft) {
-            console.warn(`[UIFactory] flexWrap 折行容器 "${elData.name || "panel"}" 未配置明确 width 且缺少有效宽度参考，无法准确推算折行阈值，建议显式配置 width。`);
-        }
 
+        // =========================================================================
+        // 【官方 Phase 1: setup_beforeAdd 离散化构建】
+        // 严格锁定 _underConstruct = true，在排版与齿轮未就绪前杜绝任何误触
+        // =========================================================================
         for (let i = 0; i < childElements.length; i++) {
             const childData = childElements[i];
             const childNode = UIFactory.createElement<fgui.GObject>(childData, childData.width || 0, childData.height || 0);
             if (childNode) {
-                panelNode.addChild(childNode);
+                // 官方生命周期保护：进入构建保护期
+                (childNode as any)["_underConstruct"] = true;
                 childNodes.push(childNode);
-
-                // 子组件有 position:absolute 表示绝对定位，不参与流布局累加
                 const childIsAbsolute = childData.position === "absolute";
                 if (!childIsAbsolute) {
                     flowChildCount++;
@@ -577,7 +330,6 @@ export class UIFactory {
                         const currentItemH = offsetY + elH;
 
                         if (wrapHasItemInRow && projectedX > maxLineWidth && maxLineWidth > padLeft) {
-                            // 触发折行：累加上一行行高及行间距
                             const rowGap = elData.gap ?? 0;
                             wrapTotalH += wrapCurrentRowMaxH + rowGap;
                             wrapCurrentRowMaxH = currentItemH;
@@ -603,10 +355,6 @@ export class UIFactory {
             wrapTotalH += wrapCurrentRowMaxH;
         }
 
-        // ==========================================
-        // 【预计算父容器缺失尺寸（两遍布局：Measure → Layout）】
-        // 若父容器无显式高度/宽度，根据子节点测量值预计算，确保 setupElementPosition 拿到正确的 W
-        // ==========================================
         if (!elData.height) {
             if (isVerticalFlow && totalH > 0) {
                 initH = totalH + padTop + padBottom;
@@ -624,19 +372,21 @@ export class UIFactory {
             }
         }
 
-
         panelNode.sourceWidth = initW;
         panelNode.sourceHeight = initH;
         panelNode.initWidth = initW;
         panelNode.initHeight = initH;
         panelNode.setSize(initW, initH);
 
-        // ==========================================
-        // 【常数步骤：O(1) 计算对齐原点】
-        // ==========================================
+        for (let i = 0; i < childNodes.length; i++) {
+            const childNode = childNodes[i];
+            if (childNode) {
+                panelNode.addChild(childNode);
+            }
+        }
+
         let startOffsetY = 0;
         let startOffsetX = 0;
-
         const justifyContent = elData.justifyContent;
         let perGapSpaceX = 0;
         let perGapSpaceY = 0;
@@ -645,49 +395,36 @@ export class UIFactory {
                 const availableH = initH - padTop - padBottom;
                 const freeSpaceH = availableH - totalH;
                 if (freeSpaceH > 0) {
-                    if (justifyContent === "center") {
-                        startOffsetY = freeSpaceH / 2;
-                    } else if (justifyContent === "flex-end") {
-                        startOffsetY = freeSpaceH;
-                    } else if (justifyContent === "space-between" && flowChildCount > 1) {
-                        perGapSpaceY = freeSpaceH / (flowChildCount - 1);
-                    } else if (justifyContent === "space-around" && flowChildCount > 0) {
-                        perGapSpaceY = freeSpaceH / flowChildCount;
-                        startOffsetY = perGapSpaceY / 2;
-                    } else if (justifyContent === "space-evenly" && flowChildCount > 0) {
-                        perGapSpaceY = freeSpaceH / (flowChildCount + 1);
-                        startOffsetY = perGapSpaceY;
+                    if (justifyContent === "center") startOffsetY = freeSpaceH / 2;
+                    else if (justifyContent === "flex-end") startOffsetY = freeSpaceH;
+                    else if (justifyContent === "space-between" && flowChildCount > 1) perGapSpaceY = freeSpaceH / (flowChildCount - 1);
+                    else if (justifyContent === "space-around" && flowChildCount > 0) {
+                        const unit = freeSpaceH / flowChildCount;
+                        startOffsetY = unit / 2;
+                        perGapSpaceY = unit;
                     }
                 }
-            } else if (isHorizontalFlow && initW > 0 && !elData.flexWrap) {
+            } else if (isHorizontalFlow && !elData.flexWrap && initW > 0) {
                 const availableW = initW - padLeft - padRight;
                 const freeSpaceW = availableW - totalW;
                 if (freeSpaceW > 0) {
-                    if (justifyContent === "center") {
-                        startOffsetX = freeSpaceW / 2;
-                    } else if (justifyContent === "flex-end") {
-                        startOffsetX = freeSpaceW;
-                    } else if (justifyContent === "space-between" && flowChildCount > 1) {
-                        perGapSpaceX = freeSpaceW / (flowChildCount - 1);
-                    } else if (justifyContent === "space-around" && flowChildCount > 0) {
-                        perGapSpaceX = freeSpaceW / flowChildCount;
-                        startOffsetX = perGapSpaceX / 2;
-                    } else if (justifyContent === "space-evenly" && flowChildCount > 0) {
-                        perGapSpaceX = freeSpaceW / (flowChildCount + 1);
-                        startOffsetX = perGapSpaceX;
+                    if (justifyContent === "center") startOffsetX = freeSpaceW / 2;
+                    else if (justifyContent === "flex-end") startOffsetX = freeSpaceW;
+                    else if (justifyContent === "space-between" && flowChildCount > 1) perGapSpaceX = freeSpaceW / (flowChildCount - 1);
+                    else if (justifyContent === "space-around" && flowChildCount > 0) {
+                        const unit = freeSpaceW / flowChildCount;
+                        startOffsetX = unit / 2;
+                        perGapSpaceX = unit;
                     }
                 }
             }
         }
 
-        // ==========================================
-        // 【阶段三】定位与关系建立（坐标计算已移交 setupElementPosition）
-        // ==========================================
         const flowState = {
-            accumulatedX: startOffsetX,
-            accumulatedY: startOffsetY,
-            perGapSpaceX: perGapSpaceX,
-            perGapSpaceY: perGapSpaceY,
+            accumulatedX: padLeft + startOffsetX,
+            accumulatedY: padTop + startOffsetY,
+            perGapSpaceX,
+            perGapSpaceY,
             lastNode: null as Nullable<fgui.GObject>,
             currentRowMaxHeight: 0,
             index: 0
@@ -696,376 +433,107 @@ export class UIFactory {
         let minChildY = Infinity;
         let minChildX = Infinity;
 
+        // =========================================================================
+        // 【官方 Phase 2: setupRelations 排版定位与关系装配】
+        // =========================================================================
         for (let i = 0; i < childElements.length; i++) {
             const childData = childElements[i];
             const childNode = childNodes[i];
             if (childNode) {
                 flowState.index = i;
                 const posInfo = UIFactory.setupElementPosition(childNode, childData, initW, initH, elData, flowState);
+                flowState.lastNode = childNode;
 
-                // 建立子元件与父面板（panelNode）的对齐跟随关联关系
                 const layout = childData.layout || {};
-                let alignX = layout.alignX;
-                if (childData.x === undefined && layout.leftPercent === undefined && layout.rightPercent === undefined && alignX === undefined) {
-                    if (isVerticalFlow && elData.alignItems) {
-                        if (elData.alignItems === "center") {
-                            alignX = "center";
-                        } else if (elData.alignItems === "flex-end") {
-                            alignX = "right";
-                        }
+                const alignX = layout.alignX;
+                const alignY = layout.alignY;
+                const isFlexWrapFlow = isHorizontalFlow && elData.flexWrap && childData.position !== "absolute";
+
+                if (layout.leftPercent !== undefined || alignX === "center" || alignX === "right") {
+                    let relTypeX = fgui.RelationType.Left_Left;
+                    if (alignX === "center") relTypeX = fgui.RelationType.Center_Center;
+                    else if (alignX === "right") relTypeX = fgui.RelationType.Right_Right;
+                    childNode.addRelation(panelNode, relTypeX);
+                }
+
+                if (!isFlexWrapFlow) {
+                    if (layout.topPercent !== undefined || alignY === "middle" || alignY === "bottom") {
+                        let relTypeY = fgui.RelationType.Top_Top;
+                        if (alignY === "middle") relTypeY = fgui.RelationType.Middle_Middle;
+                        else if (alignY === "bottom") relTypeY = fgui.RelationType.Bottom_Bottom;
+                        childNode.addRelation(panelNode, relTypeY);
                     }
                 }
 
-                let alignY = layout.alignY;
-                if (childData.y === undefined && layout.topPercent === undefined && layout.bottomPercent === undefined && alignY === undefined) {
-                    if (isHorizontalFlow && elData.alignItems) {
-                        if (elData.alignItems === "center") {
-                            alignY = "middle";
-                        } else if (elData.alignItems === "flex-end") {
-                            alignY = "bottom";
-                        }
-                    }
-                }
-
-                const isAbsolute = childData.position === "absolute";
-
-                // 主轴关系智能隔离：如果是水平流式布局，主轴是水平方向，禁止在 X 轴上建立父级跟随对齐关系
-                if (!isHorizontalFlow || isAbsolute) {
-                    if (alignX === "right" || layout.rightPercent !== undefined) {
-                        childNode.addRelation(panelNode, fgui.RelationType.Right_Right);
-                    } else if (alignX === "center") {
-                        childNode.addRelation(panelNode, fgui.RelationType.Center_Center);
-                    }
-                }
-
-                // 主轴关系智能隔离：
-                // 1. 如果是垂直流式布局，主轴是垂直方向，禁止在 Y 轴上建立父级跟随对齐关系
-                // 2. 如果是水平折行流 (flexWrap)，各行的 Y 坐标由折行流式状态机独立控制，禁止与父容器建立居中/靠底等垂直跟随关系
-                const isFlexWrapFlow = isHorizontalFlow && !!elData.flexWrap;
-                if ((!isVerticalFlow && !isFlexWrapFlow) || isAbsolute) {
-                    if (alignY === "bottom" || layout.bottomPercent !== undefined) {
-                        childNode.addRelation(panelNode, fgui.RelationType.Bottom_Bottom);
-                    } else if (alignY === "middle") {
-                        childNode.addRelation(panelNode, fgui.RelationType.Middle_Middle);
-                    }
-                } else if (isFlexWrapFlow && !isAbsolute && (alignY === "middle" || alignY === "bottom" || layout.bottomPercent !== undefined)) {
-                    console.warn(`[UIFactory] flexWrap 换行流子项 "${childData.name || i}" 检测到垂直跟随对齐设置 (${alignY || "percent"})，已自动忽略与父容器的 RelationType 关联，由换行流式行高接管，避免多行重叠。`);
-                }
-
-                // 诊断警告：滚动视口 (overflow: 2) 与居中对齐冲突提示
-                if (panelNode.scrollPane && !isAbsolute && (alignX === "center" || alignY === "middle")) {
-                    console.warn(`[UIFactory] 滚动容器 "${panelNode.name || "panel"}" 的子项 "${childData.name || i}" 配置了居中对齐 (alignX/alignY)，存在与 ScrollPane 滚动位移冲突的风险，建议改用流式对齐或绝对像素。`);
-                }
-
-                // 流式兄弟关系（Top_Bottom / Left_Right）
-                if (isVerticalFlow && !isAbsolute && flowState.lastNode) {
-                    childNode.addRelation(flowState.lastNode, fgui.RelationType.Top_Bottom);
-                }
-                if (isHorizontalFlow && !isAbsolute && flowState.lastNode) {
-                    childNode.addRelation(flowState.lastNode, fgui.RelationType.Left_Right);
-                }
-                if (!isAbsolute) {
-                    flowState.lastNode = childNode;
-                }
-
-                // 刷新面板实际物理内容边界（高度和宽度）
-                const actualBottom = childNode.y + posInfo.elH;
-                if (actualBottom > panelMaxHeight) {
-                    panelMaxHeight = actualBottom;
-                }
-                const actualRight = childNode.x + posInfo.elW;
-                if (actualRight > panelMaxWidth) {
-                    panelMaxWidth = actualRight;
-                }
-
-                if (childNode.y < minChildY) {
-                    minChildY = childNode.y;
-                }
-                if (childNode.x < minChildX) {
-                    minChildX = childNode.x;
-                }
+                const actualBottom = posInfo.targetY + posInfo.elH;
+                const actualRight = posInfo.targetX + posInfo.elW;
+                if (actualBottom > panelMaxHeight) panelMaxHeight = actualBottom;
+                if (actualRight > panelMaxWidth) panelMaxWidth = actualRight;
+                if (childNode.y < minChildY) minChildY = childNode.y;
+                if (childNode.x < minChildX) minChildX = childNode.x;
             }
         }
 
-        // 处理高度自动撑开
+        // =========================================================================
+        // 【官方 Phase 3: setup_afterAdd 统一分流内容注入与齿轮装配】
+        // 集中在 UIFactoryPipeline.setup_afterAdd 中，灌入真实内容 text/url 并解除构建锁
+        // =========================================================================
+        for (let i = 0; i < childElements.length; i++) {
+            const childData = childElements[i];
+            const childNode = childNodes[i];
+            if (childNode) {
+                UIFactoryPipeline.setup_afterAdd(childNode, childData, panelNode, i, UIFactory.setupElementGears);
+            }
+        }
+
         const finalMaxHeight = panelMaxHeight + panelNode.margin.top + panelNode.margin.bottom;
-        // [自愈算法] 绝对布局下，若最顶端子元件贴顶（其 y 小于 padTop），智能补偿 padding.top
-        if (!isVerticalFlow && !elData.height && minChildY < Infinity) {
-            if (minChildY > 0) {
-                panelMaxHeight + minChildY;
-            }
+        if (!isVerticalFlow && !elData.height && minChildY < Infinity && minChildY > 0) {
+            panelMaxHeight + minChildY;
         }
-        if (finalMaxHeight > panelNode.height && !elData.height) {
+        // 自动撑高容器高度：当子元件实际撑开的内容高度超出显式声明的高度时，必须自动撑大容器高度；若显式声明了滚动容器，则保持固定视口高度由 scrollPane 处理滚动
+        if (finalMaxHeight > panelNode.height && (!elData.height || !panelNode.scrollPane)) {
             panelNode.height = finalMaxHeight;
         }
 
-        // 处理宽度自动撑开
         const finalMaxWidth = panelMaxWidth + panelNode.margin.left + panelNode.margin.right;
-        // [自愈算法] 绝对布局下，若最左侧子元件贴边（其 x 小于 padLeft），智能补偿 padding.left
-        if (!isHorizontalFlow && !elData.width && minChildX < Infinity) {
-            if (minChildX > 0) {
-                panelMaxWidth + minChildX;
-            }
+        if (!isHorizontalFlow && !elData.width && minChildX < Infinity && minChildX > 0) {
+            panelMaxWidth + minChildX;
         }
         if (finalMaxWidth > panelNode.width && !elData.width) {
             panelNode.width = finalMaxWidth;
         }
 
         if (elData.background) {
-            panelNode.drawBackground(elData.background)
+            panelNode.drawBackground(elData.background);
+        }
+
+        if (elData.transitions && elData.transitions.length > 0) {
+            for (const transData of elData.transitions) {
+                UIFactory.createTransition(transData, panelNode);
+            }
+        }
+
+        // =========================================================================
+        // 【官方 Phase 4: constructExtension 高级组件扩展类装配】
+        // =========================================================================
+        UIFactory.setupComponentExtension(panelNode, elData);
+
+        // =========================================================================
+        // 【官方 Phase 5: finalize 闭环终态激活】
+        // 按照官方 GComponent 顺序：解除显示列表构建锁 -> 运行控制器 -> 提交显示树
+        // =========================================================================
+        rawPanel["_buildingDisplayList"] = false;
+
+        if (typeof (panelNode as any).applyAllControllers === "function") {
+            (panelNode as any).applyAllControllers();
+        }
+
+        if (typeof rawPanel["buildNativeDisplayList"] === "function") {
+            rawPanel["buildNativeDisplayList"]();
+        }
+
+        if (typeof rawPanel["setBoundsChangedFlag"] === "function") {
+            rawPanel["setBoundsChangedFlag"]();
         }
     }
-
-    /**
-     * 【物理定位与弹性排版核心引擎】
-     * 职责：
-     *   在运行时动态计算并装配 FGUI 元件在宿主容器中的真实像素坐标。本方法是无资源包依赖动态排版的核心，
-     *   支持绝对坐标配置、容器百分比自适应（Left/Right/Top/Bottom 百分比）及对齐模式（左中右、顶中底）叠加物理偏移量。
-     *
-     * 优先级决策链（Priority Decision Chain）：
-     *   1. 绝对定位优先级最高：若配置中直接提供了物理 `x` 或 `y` 坐标，直接使用该物理坐标，忽略任何自适应 `layout` 属性。
-     *   2. 相对百分比定位次之：若 `layout` 声明了百分比（如 `leftPercent` 或 `rightPercent`），则按照容器尺寸进行浮点比例换算。
-     *   3. 经典对齐模式最低：若以上皆无，则通过 `alignX`/`alignY` 对齐模式，结合物理偏移量 `offsetX`/`offsetY` 换算具体像素。
-     *
-     * 缩放校准（Scale Correction）防漂移模型：
-     *   FGUI 中由于部分元件可能存在镜像（ScaleX = -1）或在不同分辨率下被局部缩放，若直接使用原始 width/height 会导致
-     *   定位原点大范围漂移。此处通过 Math.abs(scale) 强制校准其真实占位物理尺寸：
-     *     真实物理宽 (elW) = 原始宽 (node.width) * |node.scaleX|
-     *     真实物理高 (elH) = 原始高 (node.height) * |node.scaleY|
-     *
-     * 物理排版换算公式：
-     *   - 靠右百分比：x = containerW * (1 - rightPercent) - elW  (从右边界向左倒扣百分比并扣除组件物理宽度)
-     *   - 右对齐偏移：x = containerW - elW - offsetX            (自右边缘向内扣除组件宽度与额外物理偏移量)
-     *   - 居中对齐偏移：x = (containerW - elW) / 2 + offsetX     (居中对齐基准线，叠加物理微调位移)
-     *
-     * @param node 待定位的目标 FGUI 组件节点
-     * @param elData 元件的定位排版原始配置数据
-     * @param containerW 父容器的当前物理像素参考宽度
-     * @param containerH 父容器的当前物理像素参考高度
-     * @param parentData 宿主父容器的排版与内边距配置字典（用以获取父级排布属性及内边距扣除）
-     * @param flowState 流式布局累加状态
-     * @returns 返回计算所得的真实物理空间坐标及组件占位尺寸数据，供给一维流向后续级联累加
-     */
-    static setupElementPosition(
-        node: fgui.GObject,
-        elData: IElementConfig,
-        containerW: number,
-        containerH: number,
-        parentData?: IBaseElementConfig & IViewConfig,
-        flowState?: {
-            accumulatedX: number;
-            accumulatedY: number;
-            perGapSpaceX?: number;
-            perGapSpaceY?: number;
-            lastNode: Nullable<fgui.GObject>;
-            currentRowMaxHeight: number;
-            index: number;
-        }
-    ): { targetX: number; targetY: number; elW: number; elH: number; } {
-        // [步骤 1] 提取和获取元件的布局配置字典，默认回退为空对象，避免空指针崩溃
-        const layout = elData.layout || {};
-        const parentLayoutType = parentData?.layoutType;
-        const parentAlignItems = parentData?.alignItems;
-        const isVerticalFlow = parentLayoutType === "vertical";
-        const isHorizontalFlow = parentLayoutType === "horizontal";
-        const isPositionAbsolute = elData.position === "absolute";
-
-        // [运行时冲突强拦截] 校验 layout 属性中单轴定位的互斥红线
-        const hasLeftPct = layout.leftPercent !== undefined;
-        const hasRightPct = layout.rightPercent !== undefined;
-        const hasAlignX = layout.alignX !== undefined;
-        if ((hasLeftPct || hasRightPct) && hasAlignX) {
-            throw new Error(`[LayoutError] Element '${node.name || "unnamed"}' has conflicting layout properties! Horizontal percentage positioning (leftPercent or rightPercent) and absolute horizontal alignment (alignX) cannot be configured at the same time!`);
-        }
-
-        const hasTopPct = layout.topPercent !== undefined;
-        const hasBottomPct = layout.bottomPercent !== undefined;
-        const hasAlignY = layout.alignY !== undefined;
-        if ((hasTopPct || hasBottomPct) && hasAlignY) {
-            throw new Error(`[LayoutError] Element '${node.name || "unnamed"}' has conflicting layout properties! Vertical percentage positioning (topPercent or bottomPercent) and absolute vertical alignment (alignY) cannot be configured at the same time!`);
-        }
-
-        // [步骤 2] 获取元件轴向缩放比的绝对值，计算乘积以得到真实的宿主物理占位尺寸（防负比例镜像偏移）
-        const scaleX = node.scaleX !== undefined ? Math.abs(node.scaleX) : 1;
-        const scaleY = node.scaleY !== undefined ? Math.abs(node.scaleY) : 1;
-        const elW = node.width * scaleX;
-        const elH = node.height * scaleY;
-
-        let targetX = 0;
-        let targetY = 0;
-
-        // 提取父级内边距偏移 (IPaddingConfig)
-        const parentPadding = parentData?.padding;
-        const padTop = parentPadding?.top ?? 0;
-        const padBottom = parentPadding?.bottom ?? 0;
-        const padLeft = parentPadding?.left ?? 0;
-        const padRight = parentPadding?.right ?? 0;
-
-        const contentW = containerW - padLeft - padRight;
-        const contentH = containerH - padTop - padBottom;
-
-        // 物理隔离：如果父容器开启了滚动，FGUI 的 ScrollPane 会自动使用 margin 缩进内容，
-        // 此时子元件在滚动容器中的坐标定位偏置应设为 0，防止双重 padding 推开。
-        const applyPadLeft = 0;
-        const applyPadTop = 0;
-
-        // [步骤 3] 排版定位核心判定 (主轴流式 + 交叉轴对齐)
-
-        // 判定主轴/交叉轴：流式布局中，主轴由 flowState 累加控制，交叉轴由对齐逻辑控制
-        // isPositionAbsolute: 子元件自身有 absolute → 不参与流式累加，走交叉轴对齐
-        const hasFlow = !!flowState && !isPositionAbsolute;
-        const isMainAxisX = hasFlow && isHorizontalFlow;
-        const isMainAxisY = hasFlow && isVerticalFlow;
-        const isFlexWrapY = hasFlow && isHorizontalFlow && parentData?.flexWrap;
-
-        // ==========================================
-        // 3.1 水平方向位置精确换算 (targetX)
-        // ==========================================
-        if (isMainAxisX && flowState) {
-            // (a) 主轴流式累加（横向流 X 轴）
-            const offsetX = layout.offsetX || 0;
-            let gapValue = (flowState.index > 0 && parentData?.gap !== undefined) ? parentData.gap : 0;
-            gapValue += (flowState.index > 0) ? (flowState.perGapSpaceX || 0) : 0;
-
-            // flexWrap 换行检测
-            if (parentData?.flexWrap && flowState.lastNode) {
-                const projectedX = flowState.accumulatedX + offsetX + gapValue + elW;
-                const maxW = containerW - padRight;
-                if (projectedX > maxW) {
-                    const rowGap = parentData.gap ?? 0;
-                    flowState.accumulatedY += flowState.currentRowMaxHeight + rowGap;
-                    flowState.currentRowMaxHeight = 0;
-                    flowState.accumulatedX = padLeft;
-                    flowState.lastNode = null;
-                    gapValue = 0;
-                }
-            }
-
-            targetX = flowState.accumulatedX + offsetX + gapValue;
-            if (!isPositionAbsolute) flowState.accumulatedX = targetX + elW;
-        } else {
-            // (b) 交叉轴对齐 / 绝对定位
-            if (elData.x !== undefined) {
-                targetX = elData.x;
-            } else {
-                let alignX = layout.alignX;
-                if (layout.leftPercent === undefined && layout.rightPercent === undefined && alignX === undefined) {
-                    if (parentLayoutType === "vertical" && parentAlignItems) {
-                        if (parentAlignItems === "center") {
-                            alignX = "center";
-                        } else if (parentAlignItems === "flex-end") {
-                            alignX = "right";
-                        } else {
-                            alignX = "left";
-                        }
-                    }
-                }
-                if (alignX === undefined) {
-                    alignX = "left";
-                }
-
-                if (layout.leftPercent !== undefined) {
-                    targetX = applyPadLeft + (contentW - elW) * layout.leftPercent;
-                } else if (layout.rightPercent !== undefined) {
-                    targetX = applyPadLeft + (contentW - elW) * (1 - layout.rightPercent);
-                } else {
-                    const offsetX = layout.offsetX || 0;
-                    if (alignX === "left") {
-                        targetX = applyPadLeft + offsetX;
-                    } else if (alignX === "right") {
-                        targetX = contentW > 0 ? (applyPadLeft + contentW - elW + offsetX) : (applyPadLeft + offsetX);
-                    } else if (alignX === "center") {
-                        targetX = contentW > 0 ? (applyPadLeft + (contentW - elW) / 2 + offsetX) : (applyPadLeft + offsetX);
-                    }
-                }
-            }
-        }
-
-        // ==========================================
-        // 3.2 垂直方向位置精确换算 (targetY)
-        // ==========================================
-        if (isMainAxisY && flowState) {
-            // (a) 主轴流式累加（纵向流 Y 轴）
-            const offsetY = layout.offsetY || 0;
-            let gapValue = (flowState.index > 0 && parentData?.gap !== undefined) ? parentData.gap : 0;
-            gapValue += (flowState.index > 0) ? (flowState.perGapSpaceY || 0) : 0;
-            targetY = flowState.accumulatedY + offsetY + gapValue;
-            if (!isPositionAbsolute) flowState.accumulatedY = targetY + elH;
-        } else if (isFlexWrapY && flowState) {
-            // (b) flexWrap 行 Y（横向流换行的 Y 由流控制）
-            targetY = flowState.accumulatedY + (layout.offsetY || 0);
-            const currentElHeight = (layout.offsetY || 0) + elH;
-            if (currentElHeight > flowState.currentRowMaxHeight) {
-                flowState.currentRowMaxHeight = currentElHeight;
-            }
-        } else {
-            // (c) 交叉轴对齐 / 绝对定位
-            if (elData.y !== undefined) {
-                targetY = elData.y;
-            } else {
-                let alignY = layout.alignY;
-                if (layout.topPercent === undefined && layout.bottomPercent === undefined && alignY === undefined) {
-                    if (parentLayoutType === "horizontal" && parentAlignItems) {
-                        if (parentAlignItems === "center") {
-                            alignY = "middle";
-                        } else if (parentAlignItems === "flex-end") {
-                            alignY = "bottom";
-                        } else {
-                            alignY = "top";
-                        }
-                    }
-                }
-                if (alignY === undefined) {
-                    alignY = "top";
-                }
-
-                if (layout.topPercent !== undefined) {
-                    targetY = applyPadTop + (contentH - elH) * layout.topPercent;
-                } else if (layout.bottomPercent !== undefined) {
-                    targetY = applyPadTop + (contentH - elH) * (1 - layout.bottomPercent);
-                } else {
-                    const offsetY = layout.offsetY || 0;
-                    if (alignY === "top") {
-                        targetY = applyPadTop + offsetY;
-                    } else if (alignY === "bottom") {
-                        targetY = contentH > 0 ? (applyPadTop + contentH - elH + offsetY) : (applyPadTop + offsetY);
-                    } else if (alignY === "middle") {
-                        targetY = contentH > 0 ? (applyPadTop + (contentH - elH) / 2 + offsetY) : (applyPadTop + offsetY);
-                    }
-                }
-            }
-        }
-
-        // [步骤 4] 物理应用与返回
-        // 1. 调用 FGUI 官方 API 刷新该节点的容器像素坐标，触发 Laya 物理渲染刷新
-        node.setXY(targetX, targetY);
-        // 2. 返回计算所得的关键定位数据集，供给上层 vertical / flow 排版流作为累加基准
-        return {targetX, targetY, elW, elH};
-    }
-
-    /**
-     * 将高内聚、强类型安全的矢量绘图指令按顺序应用于指定节点的 Laya.Graphics 上
-     * @param node 目标 FGUI 元件节点
-     * @param graphicsConfig 矢量绘图指令数组
-     */
-    public static applyGraphics(node: fgui.GObject, graphicsConfig: IGraphicsCmdConfig[]): void {
-        if (!graphicsConfig || !Array.isArray(graphicsConfig) || !node || !node.displayObject) return;
-        const g = node.displayObject.graphics as unknown as Record<string, Function>;
-        if (!g) return;
-        for (const item of graphicsConfig) {
-            if (!item || typeof item !== "object") continue;
-            const cmd = item.cmd;
-            const args = [...(item.args || [])];
-            if ((cmd === "loadImage" || cmd === "drawImage") && typeof args[0] === "string") {
-                args[0] = UIFactory.formatResUrl(args[0])
-            }
-            if (typeof g[cmd] === "function") {
-                g[cmd](...args);
-            } else {
-                console.warn(`Laya.Graphics 不支持方法: ${cmd}`);
-            }
-        }
-    }
-
-
 }
