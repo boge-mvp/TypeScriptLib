@@ -12,6 +12,14 @@ export type IListConfig = IBaseElementConfig & IViewConfig & {
     defaultItem?: string;
     /** 列表项排列布局 */
     listLayout?: "SingleColumn" | "SingleRow" | "FlowHorizontal" | "FlowVertical" | "Pagination";
+    /** 列表单选/多选交互模式 ("Single" | "Multiple" | "Multiple_SingleClick" | "None" 或数字) */
+    selectionMode?: number | "Single" | "Multiple" | "Multiple_SingleClick" | "None";
+    /** 初始默认选中的子项索引 (默认为 -1 或 0) */
+    selectedIndex?: number;
+    /** 双向绑定的选择状态控制器 (名称或 Controller 实例) */
+    selectionController?: string | fgui.Controller;
+    /** 双向绑定的滚动分页控制器 (名称或 Controller 实例，挂载至 scrollPane.pageController) */
+    pageController?: string | fgui.Controller;
     /** 行间距 */
     lineGap?: number;
     /** 列间距 */

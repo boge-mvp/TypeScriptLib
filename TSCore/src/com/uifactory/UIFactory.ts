@@ -17,6 +17,14 @@ import { ITransitionConfig, TransitionActionType } from "./ITransitionConfig";
 import { IPanelConfig } from "./IPanelConfig";
 import { ISliderConfig } from "./ISliderConfig";
 import { IProgressBarConfig } from "./IProgressBarConfig";
+import { IGroupConfig } from "./IGroupConfig";
+import { ILabelConfig } from "./ILabelConfig";
+import { IComboBoxConfig } from "./IComboBoxConfig";
+import { IScrollBarConfig } from "./IScrollBarConfig";
+import { ITreeConfig } from "./ITreeConfig";
+import { IMovieClipConfig } from "./IMovieClipConfig";
+import { ILoader3DConfig } from "./ILoader3DConfig";
+import { IImageConfig } from "./IImageConfig";
 
 /**
  * 自定义组件创建器函数类型
@@ -125,14 +133,30 @@ export class UIFactory {
                     UIFactory.fillPanel(node, elData as ISliderConfig);
                 } else if (elData.type === "progressbar" && (node instanceof fgui.GProgressBar)) {
                     UIFactory.fillPanel(node, elData as IProgressBarConfig);
+                } else if (elData.type === "label" && (node instanceof fgui.GLabel)) {
+                    UIFactory.fillPanel(node, elData as ILabelConfig);
+                } else if (elData.type === "combobox" && (node instanceof fgui.GComboBox)) {
+                    UIFactory.fillPanel(node, elData as IComboBoxConfig);
+                } else if (elData.type === "scrollbar" && (node instanceof fgui.GScrollBar)) {
+                    UIFactory.fillPanel(node, elData as IScrollBarConfig);
+                } else if (elData.type === "tree" && (node instanceof fgui.GTree)) {
+                    UIFactory.fillPanel(node, elData as ITreeConfig);
                 } else if (elData.type === "list" && (node instanceof fgui.GList)) {
                     const lConf = elData as IListConfig;
                     if (lConf.defaultItem) node.defaultItem = lConf.defaultItem;
                     if (lConf.listLayout) node.layout = fgui.ListLayoutType[lConf.listLayout];
+                    if (lConf.selectionMode !== undefined) {
+                        node.selectionMode = typeof lConf.selectionMode === "string"
+                            ? (fgui.ListSelectionMode[lConf.selectionMode] ?? fgui.ListSelectionMode.Single)
+                            : lConf.selectionMode;
+                    }
                     if (lConf.lineGap !== undefined) node.lineGap = lConf.lineGap;
                     if (lConf.columnGap !== undefined) node.columnGap = lConf.columnGap;
                     if (lConf.autoResizeItem !== undefined) node.autoResizeItem = lConf.autoResizeItem;
                     UIFactory.fillPanel(node, lConf);
+                    if (lConf.selectedIndex !== undefined && lConf.selectedIndex >= 0) {
+                        node.selectedIndex = lConf.selectedIndex;
+                    }
                 }
             }
         }
@@ -216,6 +240,88 @@ export class UIFactory {
      */
     public static createButton(elData: IButtonConfig): fgui.GButton {
         return UIFactory.createElement<fgui.GButton>(elData, 0, 0)!;
+    }
+
+    /**
+     * 创建逻辑与排版组容器组件 (fgui.GGroup)
+     *
+     * @param elData 组配置对象 (含 layout、excludeInvisibles 等)
+     * @returns 实例化的 GGroup 对象
+     */
+    public static createGroup(elData: IGroupConfig): fgui.GGroup {
+        return UIFactory.createElement<fgui.GGroup>(elData, 0, 0)!;
+    }
+
+    /**
+     * 创建标准复合标签组件 (fgui.GLabel)
+     *
+     * @param elData 标签配置对象 (含 title、icon、titleColor 等)
+     * @returns 实例化的 GLabel 对象
+     */
+    public static createLabel(elData: ILabelConfig): fgui.GLabel {
+        return UIFactory.createElement<fgui.GLabel>(elData, 0, 0)!;
+    }
+
+    /**
+     * 创建原生下拉菜单组件 (fgui.GComboBox)
+     *
+     * @param elData 下拉选框配置对象 (含 items、values、selectionController 等)
+     * @returns 实例化的 GComboBox 对象
+     */
+    public static createComboBox(elData: IComboBoxConfig): fgui.GComboBox {
+        return UIFactory.createElement<fgui.GComboBox>(elData, 0, 0)!;
+    }
+
+    /**
+     * 创建原生独立滚动条组件 (fgui.GScrollBar)
+     *
+     * @param elData 滚动条配置对象
+     * @returns 实例化的 GScrollBar 对象
+     */
+    public static createScrollBar(elData: IScrollBarConfig): fgui.GScrollBar {
+        return UIFactory.createElement<fgui.GScrollBar>(elData, 0, 0)!;
+    }
+
+    /**
+     * 创建原生树形组件 (fgui.GTree)
+     *
+     * @param elData 树形配置对象
+     * @param containerW 容器宽度
+     * @param containerH 容器高度
+     * @returns 实例化的 GTree 对象
+     */
+    public static createTree(elData: ITreeConfig, containerW?: number, containerH?: number): fgui.GTree {
+        return UIFactory.createElement<fgui.GTree>(elData, containerW || 0, containerH || 0)!;
+    }
+
+    /**
+     * 创建原生序列帧动画组件 (fgui.GMovieClip)
+     *
+     * @param elData 序列帧动画配置对象
+     * @returns 实例化的 GMovieClip 对象
+     */
+    public static createMovieClip(elData: IMovieClipConfig): fgui.GMovieClip {
+        return UIFactory.createElement<fgui.GMovieClip>(elData, 0, 0)!;
+    }
+
+    /**
+     * 创建原生 3D / Spine 渲染加载器 (fgui.GLoader3D)
+     *
+     * @param elData 3D加载器配置对象
+     * @returns 实例化的 GLoader3D 对象
+     */
+    public static createLoader3D(elData: ILoader3DConfig): fgui.GLoader3D {
+        return UIFactory.createElement<fgui.GLoader3D>(elData, 0, 0)!;
+    }
+
+    /**
+     * 创建原生轻量图片组件 (fgui.GImage)
+     *
+     * @param elData 图片配置对象
+     * @returns 实例化的 GImage 对象
+     */
+    public static createImage(elData: IImageConfig): fgui.GImage {
+        return UIFactory.createElement<fgui.GImage>(elData, 0, 0)!;
     }
 
     /**
@@ -467,6 +573,17 @@ export class UIFactory {
                 panelNode.margin.right = elData.padding.right ?? 0;
             }
             panelNode.setupScrollPanel(overflowVal, elData.scrollType);
+            if (elData.pageController && panelNode.scrollPane) {
+                let targetCtrl: Nullable<fgui.Controller> = null;
+                if (typeof elData.pageController === "string") {
+                    targetCtrl = panelNode.getController(elData.pageController);
+                } else {
+                    targetCtrl = elData.pageController;
+                }
+                if (targetCtrl) {
+                    panelNode.scrollPane.pageController = targetCtrl;
+                }
+            }
         }
 
         if (elData.controllers && elData.controllers.length > 0) {

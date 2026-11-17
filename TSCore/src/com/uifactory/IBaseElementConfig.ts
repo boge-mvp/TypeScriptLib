@@ -182,6 +182,8 @@ export type IBaseElementConfig = {
     gearDisplay2?: IGearDisplay2Config;
     /** 字体大小随控制器联动 (GearFontSize) */
     gearFontSize?: IGearFontSizeConfig;
+    /** 所属的 GGroup 组名称，在同一直接父容器内自动归属于对应 GGroup 元件 */
+    group?: string;
     /**
      * FGUI 原生关联系统配置 (Relations)
      * 支持将自身与容器、父级或同级兄弟组件建立自动联动 (如左左、左右、右右、顶顶、高宽拉伸等)

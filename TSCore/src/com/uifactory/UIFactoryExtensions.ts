@@ -40,7 +40,7 @@ export class UIFactoryExtensions {
                 if (bCtrl) btn["_buttonController"] = bCtrl;
             }
             if (btn["_buttonController"] && typeof btn["setState"] === "function") {
-                btn["setState"](fgui.GButton.UP);
+                btn["setState"](btn.selected ? fgui.GButton.DOWN : fgui.GButton.UP);
             }
 
             // 补齐 FGUI 原生事件监听（模拟 constructExtension，确保纯代码 GButton 具备原生交互能力）
@@ -139,6 +139,24 @@ export class UIFactoryExtensions {
                 const iconChild = panelNode.getChild("icon");
                 if (iconChild) panelNode["_iconObject"] = iconChild;
             }
+        }
+        // 5. GScrollBar 扩展类装配
+        else if (fgui.GScrollBar && panelNode instanceof fgui.GScrollBar) {
+            panelNode["_grip"] = panelNode.getChild("grip");
+            panelNode["_bar"] = panelNode.getChild("bar");
+            panelNode["_arrowButton1"] = panelNode.getChild("arrow1");
+            panelNode["_arrowButton2"] = panelNode.getChild("arrow2");
+
+            if (panelNode["_grip"]) {
+                panelNode["_grip"].on(Laya.Event.MOUSE_DOWN, panelNode, panelNode["__gripMouseDown"]);
+            }
+            if (panelNode["_arrowButton1"]) {
+                panelNode["_arrowButton1"].on(Laya.Event.MOUSE_DOWN, panelNode, panelNode["__arrowButton1Click"]);
+            }
+            if (panelNode["_arrowButton2"]) {
+                panelNode["_arrowButton2"].on(Laya.Event.MOUSE_DOWN, panelNode, panelNode["__arrowButton2Click"]);
+            }
+            panelNode.on(Laya.Event.MOUSE_DOWN, panelNode, panelNode["__barMouseDown"]);
         }
     }
 }

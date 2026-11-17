@@ -52,7 +52,7 @@
 
 ## 三、 UIFactory 元素配置与声明式范式
 
-### 3.1 元素多态路由表
+### 3.1 元素多态路由表 (官方 19 大原生组件对齐)
 
 | type 配置值 | 产出 FGUI 对象 | 创建函数 | 典型适用场景 |
 |---|---|---|---|
@@ -62,8 +62,18 @@
 | `"icon"` | `fgui.GLoader` | `createIcon` | 远程/本地图片与图标装载 |
 | `"graph"` | `fgui.GGraph` | `createGraph` | 矩形/圆角底板、装饰线条与几何图形 |
 | `"panel"` | `EPanel` (GComponent) | `createPanel` | 弹性容器面板（支持递归嵌套子元素） |
-| `"list"` | `PureList` (GList) | `createList` | 虚拟化无限循环滚动列表/网格 |
+| `"list"` | `PureList` (GList) | `createList` | 虚拟化无限循环滚动列表/网格 (支持 selectionController) |
 | `"button"` | `fgui.GButton` | `createButton` | 具有按压反馈、Checkbox 勾选或 Radio 单选能力的按钮 |
+| `"slider"` | `fgui.GSlider` | `createSlider` | 原生滑动条 (bar + grip 拖拽手柄 + title) |
+| `"progressbar"` | `fgui.GProgressBar` | `createProgressBar` | 原生进度指示条 (bar + title) |
+| `"group"` | `fgui.GGroup` | `createGroup` | 逻辑与排版分组，子元件配置 `group` 自动归属 |
+| `"label"` | `fgui.GLabel` | `createLabel` | 官方标准复合标签，支持内置 title 与 icon |
+| `"combobox"` | `fgui.GComboBox` | `createComboBox` | 原生下拉菜单选框，支持双向绑定 selectionController |
+| `"scrollbar"` | `fgui.GScrollBar` | `createScrollBar` | 原生独立滚动条 (grip + bar + arrow1/arrow2) |
+| `"tree"` | `fgui.GTree` | `createTree` | 原生树形组件 (继承 GList，支持多级缩进与展开折叠) |
+| `"movieclip"` | `fgui.GMovieClip` | `createMovieClip` | 原生序列帧动画播放组件 (frame/timeScale/playing) |
+| `"loader3d"` | `fgui.GLoader3D` | `createLoader3D` | 原生 3D 模型与 Spine 骨骼渲染装载器 |
+| `"image"` | `fgui.GImage` | `createImage` | 原生静态图片组件 (支持翻转与多种 fillMethod 环形填充) |
 
 ---
 
@@ -90,6 +100,16 @@
 | `gearIcon` | GearIcon (7) | 图标与资源纹理路径映射 | `gearIcon: { controller: "modeCtrl", pages: { viewA: "icon_a.png", viewB: "icon_b.png" } }` |
 | `gearDisplay2` | GearDisplay2 (8) | 复合多条件布尔逻辑求值（AND 且 / OR 或） | `gearDisplay2: { controller: "subCtrl", pages: ["page1"], condition: 1 }` (1=OR, 0=AND) |
 | `gearFontSize` | GearFontSize (9) | 文本字号跨阶跳变 | `gearFontSize: { controller: "modeCtrl", pages: { viewA: 14, viewB: 20 } }` |
+
+### 4.3 声明式属性控制 (Gears) 优先于命令式代码赋值（核心思想）
+
+> **设计准则**：在控制器切页驱动界面内容变化时，**严禁在 TS 业务代码中手写循环或事件回调去手动修改组件属性**（例如手动 `btn.title = "xxx"`、`graph.fillColor = "#..."`、`panel.visible = false` 等）。
+> **必须 100% 优先使用官方属性控制 (Gears)**：
+> 1. **文案切换**：使用 `gearText`，由控制器自动替换文本；
+> 2. **颜色切换**：使用 `gearColor`，由控制器自动切换矢量填充色与描边色；
+> 3. **显隐排版**：使用 `gearDisplay` / `gearDisplay2`，由控制器自动管理渲染树节点的挂载与剔除；
+> 4. **位移与缩放**：使用 `gearXY` / `gearSize`，由控制器自动执行平滑补间动画；
+> 5. **列表与下拉双向绑定**：在 `GList` 与 `GComboBox` 上直接声明 `selectionController` 与 `pageController`，选中项切换与控制器状态双向自动联动，零手写胶水代码！
 
 ---
 

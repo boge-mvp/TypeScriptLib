@@ -3,13 +3,23 @@ import { ITextConfig } from "./ITextConfig";
 import { IGraphConfig } from "./IGraphConfig";
 import { IIconConfig } from "./IIconConfig";
 import { IButtonConfig } from "./IButtonConfig";
+import { IListConfig } from "./IListConfig";
+import { IGroupConfig } from "./IGroupConfig";
+import { ILabelConfig } from "./ILabelConfig";
+import { IComboBoxConfig } from "./IComboBoxConfig";
+import { IScrollBarConfig } from "./IScrollBarConfig";
+import { ITreeConfig } from "./ITreeConfig";
+import { IMovieClipConfig } from "./IMovieClipConfig";
+import { ILoader3DConfig } from "./ILoader3DConfig";
+import { IImageConfig } from "./IImageConfig";
 import { EPanel } from "./EPanel";
 import { PureList } from "./PureList";
 import { UIFactory } from "./UIFactory";
 
 /**
  * UIFactory 构建管线原子执行器
- * 严格按照官方 FGUI (setup_beforeAdd / setup_afterAdd) 的两阶段离散时序执行属性赋值与内容灌入
+ *
+ * 严格按照官方 FGUI (setup_beforeAdd / setup_afterAdd) 的两阶段离散时序执行属性赋值与内容灌入。
  */
 export class UIFactoryPipeline {
 
@@ -55,6 +65,22 @@ export class UIFactoryPipeline {
                 return new fgui.GSlider();
             case "progressbar":
                 return new fgui.GProgressBar();
+            case "group":
+                return new fgui.GGroup();
+            case "label":
+                return new fgui.GLabel();
+            case "combobox":
+                return new fgui.GComboBox();
+            case "scrollbar":
+                return new fgui.GScrollBar();
+            case "tree":
+                return new fgui.GTree();
+            case "movieclip":
+                return new fgui.GMovieClip();
+            case "loader3d":
+                return new fgui.GLoader3D();
+            case "image":
+                return new fgui.GImage();
             default:
                 return null;
         }
@@ -101,7 +127,7 @@ export class UIFactoryPipeline {
             node.height = elData.height;
         }
 
-        // 2. 根据组件类型执行各自的 setup_beforeAdd (完全对齐子类 setup_beforeAdd 源码)
+        // 2. 根据组件类型执行各自的 setup_beforeAdd (完全对齐官方子类 setup_beforeAdd 源码)
         if (node instanceof fgui.GTextField) {
             const tConf = elData as ITextConfig;
             const hasW = tConf.width !== undefined && tConf.width > 0;
@@ -122,31 +148,12 @@ export class UIFactoryPipeline {
             if (tConf.valign) node.valign = tConf.valign;
             if (tConf.leading) node.leading = tConf.leading;
             if (tConf.letterSpacing) node.letterSpacing = tConf.letterSpacing;
-            if (tConf.underline) node.underline = tConf.underline;
-            if (tConf.italic) node.italic = tConf.italic;
-            if (tConf.bold) node.bold = tConf.bold;
-            if (tConf.stroke && tConf.strokeColor) {
-                node.strokeColor = tConf.strokeColor;
-                node.stroke = tConf.stroke;
-            }
+            if (tConf.underline !== undefined) node.underline = tConf.underline;
+            if (tConf.italic !== undefined) node.italic = tConf.italic;
+            if (tConf.bold !== undefined) node.bold = tConf.bold;
+            if (tConf.stroke !== undefined) node.stroke = tConf.stroke;
+            if (tConf.strokeColor) node.strokeColor = tConf.strokeColor;
 
-            // GTextInput 特有 beforeAdd 属性 (对齐 GTextInput.setup_beforeAdd)
-            if (node instanceof fgui.GTextInput) {
-                if (tConf.promptText !== undefined) {
-                    node.promptText = tConf.promptText;
-                }
-                node.editable = true;
-            }
-
-            // 【排版高度保障】：在 beforeAdd 阶段预先填入文本并计算真实渲染尺寸
-            if (tConf.text) {
-                const rawText = tConf.text.replace(/\\n/g, "\n");
-                if (node instanceof fgui.GRichTextField) {
-                    node.text = rawText.replace(/\n/g, "<br/>");
-                } else {
-                    node.text = rawText;
-                }
-            }
             // 文本排版排空拦截：直接强制执行 typeset，确保 autoSize 为 Height/Both 时即刻计算出真实的 textHeight！
             if (node["_textField"]) {
                 node["_textField"]["typeset"]();
@@ -168,18 +175,23 @@ export class UIFactoryPipeline {
                 node.drawRect(lineSize, lineColor, fillColor);
             }
         } else if (node instanceof fgui.GLoader) {
-            // 对齐 GLoader.setup_beforeAdd (第 7729 行)
             const iConf = elData as IIconConfig;
-            if (iConf.fill) {
-                const fillMap: Record<string, number> = {
-                    none: fgui.LoaderFillType.None,
-                    scale: fgui.LoaderFillType.Scale,
-                    scaleMatchHeight: fgui.LoaderFillType.ScaleMatchHeight,
-                    scaleMatchWidth: fgui.LoaderFillType.ScaleMatchWidth,
-                    scaleFree: fgui.LoaderFillType.ScaleFree,
-                    scaleNoBorder: fgui.LoaderFillType.ScaleNoBorder
-                };
-                node.fill = fillMap[iConf.fill] ?? fgui.LoaderFillType.None;
+            if (iConf.fill !== undefined) {
+                if (typeof iConf.fill === "string") {
+                    const fillMap: Record<string, number> = {
+                        none: fgui.LoaderFillType.None,
+                        scale: fgui.LoaderFillType.Scale,
+                        scalematchheight: fgui.LoaderFillType.ScaleMatchHeight,
+                        scalematchwidth: fgui.LoaderFillType.ScaleMatchWidth,
+                        scalefree: fgui.LoaderFillType.ScaleFree,
+                        scalenoborder: fgui.LoaderFillType.ScaleNoBorder
+                    };
+                    node.fill = fillMap[iConf.fill.toLowerCase()] ?? fgui.LoaderFillType.None;
+                } else {
+                    node.fill = iConf.fill;
+                }
+            } else if (iConf.width && iConf.height) {
+                node.fill = fgui.LoaderFillType.ScaleFree;
             }
             if (iConf.shrinkOnly !== undefined) node.shrinkOnly = iConf.shrinkOnly;
             if (iConf.autoSize !== undefined) node.autoSize = iConf.autoSize;
@@ -214,6 +226,63 @@ export class UIFactoryPipeline {
                     ...(bConf.controllers || [])
                 ];
             }
+        } else if (node instanceof fgui.GGroup) {
+            const grpConf = elData as IGroupConfig;
+            if (grpConf.groupLayout !== undefined) {
+                if (typeof grpConf.groupLayout === "string") {
+                    const lMap: Record<string, number> = { none: 0, horizontal: 1, vertical: 2 };
+                    node.layout = lMap[grpConf.groupLayout.toLowerCase()] ?? 0;
+                } else {
+                    node.layout = grpConf.groupLayout;
+                }
+            }
+            if (grpConf.lineGap !== undefined) node.lineGap = grpConf.lineGap;
+            if (grpConf.columnGap !== undefined) node.columnGap = grpConf.columnGap;
+            if (grpConf.excludeInvisibles !== undefined) node.excludeInvisibles = grpConf.excludeInvisibles;
+            if (grpConf.autoSizeDisabled !== undefined) node.autoSizeDisabled = grpConf.autoSizeDisabled;
+            if (grpConf.mainGridIndex !== undefined) node.mainGridIndex = grpConf.mainGridIndex;
+            if (grpConf.mainGridMinSize !== undefined) node.mainGridMinSize = grpConf.mainGridMinSize;
+        } else if (node instanceof fgui.GImage) {
+            const imgConf = elData as IImageConfig;
+            if (imgConf.color) node.color = imgConf.color;
+            if (imgConf.flip !== undefined) node.flip = imgConf.flip;
+            if (imgConf.fillMethod !== undefined) node.fillMethod = imgConf.fillMethod;
+            if (imgConf.fillOrigin !== undefined) node.fillOrigin = imgConf.fillOrigin;
+            if (imgConf.fillClockwise !== undefined) node.fillClockwise = imgConf.fillClockwise;
+            if (imgConf.fillAmount !== undefined) node.fillAmount = imgConf.fillAmount;
+        } else if (node instanceof fgui.GMovieClip) {
+            const mcConf = elData as IMovieClipConfig;
+            if (mcConf.color) node.color = mcConf.color;
+            if (mcConf.timeScale !== undefined) node.timeScale = mcConf.timeScale;
+            if (mcConf.playing !== undefined) node.playing = mcConf.playing;
+            if (mcConf.frame !== undefined) node.frame = mcConf.frame;
+        } else if (node instanceof fgui.GLoader3D) {
+            const l3dConf = elData as ILoader3DConfig;
+            if (l3dConf.color) node.color = l3dConf.color;
+            if (l3dConf.animationName) node.animationName = l3dConf.animationName;
+            if (l3dConf.skinName) node.skinName = l3dConf.skinName;
+            if (l3dConf.playing !== undefined) node.playing = l3dConf.playing;
+            if (l3dConf.loop !== undefined) node.loop = l3dConf.loop;
+            if (l3dConf.frame !== undefined) node.frame = l3dConf.frame;
+        } else if (node instanceof fgui.GTree) {
+            const treeConf = elData as ITreeConfig;
+            if (treeConf.indent !== undefined) node.indent = treeConf.indent;
+            if (treeConf.clickToExpand !== undefined) node.clickToExpand = treeConf.clickToExpand;
+            if (treeConf.treeNodeRender) node.treeNodeRender = treeConf.treeNodeRender;
+            if (treeConf.treeNodeWillExpand) node.treeNodeWillExpand = treeConf.treeNodeWillExpand;
+        } else if (node instanceof fgui.GComboBox) {
+            const cbConf = elData as IComboBoxConfig;
+            if (cbConf.visibleItemCount !== undefined) node.visibleItemCount = cbConf.visibleItemCount;
+            if (cbConf.titleColor) node.titleColor = cbConf.titleColor;
+            if (cbConf.titleFontSize) node.titleFontSize = cbConf.titleFontSize;
+            if (cbConf.popupDirection !== undefined) {
+                if (typeof cbConf.popupDirection === "string") {
+                    const pMap: Record<string, number> = { auto: 0, up: 1, down: 2 };
+                    node.popupDirection = pMap[cbConf.popupDirection.toLowerCase()] ?? 0;
+                } else {
+                    node.popupDirection = cbConf.popupDirection;
+                }
+            }
         }
     }
 
@@ -223,8 +292,9 @@ export class UIFactoryPipeline {
      * 对应官方 GObject.setup_afterAdd 阶段：
      * 1. 此时节点已加入父级层级树（child.parent 已确立），且已完成尺寸测量与 RelationType 关系绑定；
      * 2. 安全灌入真实可变内容：文本内容的 text/promptText、图标图片的 url、按钮的 title/icon/selectedTitle/selectedIcon 及关联控制器；
-     * 3. 集中调度装配全系 10 大 Gears 状态机；
-     * 4. 安全解除构建保护锁：`node["_underConstruct"] = false`，组件正式投入运行。
+     * 3. 归属组 (group) 绑定：若声明了 group 属性，自动连接到父容器中的 GGroup 组对象；
+     * 4. 集中调度装配全系 10 大 Gears 状态机；
+     * 5. 安全解除构建保护锁：`node["_underConstruct"] = false`，组件正式投入运行。
      *
      * @param node 已加入显示列表的目标 FGUI 对象
      * @param elData 声明式元素配置对象
@@ -271,12 +341,12 @@ export class UIFactoryPipeline {
             if (bConf.selectedIcon) node.selectedIcon = bConf.selectedIcon;
             if (bConf.titleColor) node.titleColor = bConf.titleColor;
             if (bConf.titleFontSize) node.titleFontSize = bConf.titleFontSize;
+            if (bConf.selected !== undefined) node.selected = bConf.selected;
 
             // 对齐 GButton.setup_afterAdd 第 3858~3860 行：关联单选组或切页控制器
             if (bConf.relatedController) {
                 let targetCtrl: Nullable<fgui.Controller> = null;
                 if (typeof bConf.relatedController === "string") {
-                    // 优先从直接父级查找，找不到则向上级父容器查找
                     let curP: Nullable<fgui.GComponent> = parentNode;
                     while (curP) {
                         targetCtrl = curP.getController(bConf.relatedController);
@@ -291,16 +361,124 @@ export class UIFactoryPipeline {
                     if (bConf.pageId) {
                         const page = targetCtrl.getPageIdByName ? targetCtrl.getPageIdByName(bConf.pageId) : bConf.pageId;
                         node.relatedPageId = page || bConf.pageId;
+                    }
+                    if (bConf.selected !== undefined) {
+                        node.selected = bConf.selected;
+                    } else if (node.relatedPageId && targetCtrl.selectedPageId) {
                         node.selected = (node.relatedPageId === targetCtrl.selectedPageId);
                     }
                 }
             }
         }
+        // 4. GLabel 内容注入 (对齐 GLabel.setup_afterAdd)
+        else if (node instanceof fgui.GLabel) {
+            const lConf = elData as ILabelConfig;
+            if (lConf.title) node.title = lConf.title;
+            if (lConf.icon) node.icon = UIFactory.formatResUrl(lConf.icon);
+            if (lConf.titleColor) node.titleColor = lConf.titleColor;
+            if (lConf.titleFontSize) node.titleFontSize = lConf.titleFontSize;
+            if (lConf.color) node.color = lConf.color;
+            if (lConf.editable !== undefined) node.editable = lConf.editable;
+        }
+        // 5. GComboBox 选项数据与选择控制器注入 (对齐 GComboBox.setup_afterAdd)
+        else if (node instanceof fgui.GComboBox) {
+            const cbConf = elData as IComboBoxConfig;
+            if (cbConf.items) node.items = cbConf.items;
+            if (cbConf.values) node.values = cbConf.values;
+            if (cbConf.icons) node.icons = cbConf.icons.map(u => UIFactory.formatResUrl(u));
+            if (cbConf.selectedIndex !== undefined) node.selectedIndex = cbConf.selectedIndex;
+            if (cbConf.value !== undefined) node.value = cbConf.value;
 
-        // 3. 集中装配齿轮 Gears
+            if (cbConf.selectionController) {
+                let targetCtrl: Nullable<fgui.Controller> = null;
+                if (typeof cbConf.selectionController === "string") {
+                    let curP: Nullable<fgui.GComponent> = parentNode;
+                    while (curP) {
+                        targetCtrl = curP.getController(cbConf.selectionController);
+                        if (targetCtrl) break;
+                        curP = curP.parent as fgui.GComponent;
+                    }
+                } else {
+                    targetCtrl = cbConf.selectionController;
+                }
+                if (targetCtrl) {
+                    node.selectionController = targetCtrl;
+                }
+            }
+        }
+        // 6. GList / GTree 属性控制器与分页控制器双向绑定
+        else if (node instanceof fgui.GList) {
+            const listConf = elData as IListConfig;
+            if (listConf.selectionController) {
+                let targetCtrl: Nullable<fgui.Controller> = null;
+                if (typeof listConf.selectionController === "string") {
+                    let curP: Nullable<fgui.GComponent> = parentNode;
+                    while (curP) {
+                        targetCtrl = curP.getController(listConf.selectionController);
+                        if (targetCtrl) break;
+                        curP = curP.parent as fgui.GComponent;
+                    }
+                } else {
+                    targetCtrl = listConf.selectionController;
+                }
+                if (targetCtrl) {
+                    node.selectionController = targetCtrl;
+                }
+            }
+            if (listConf.pageController && node.scrollPane) {
+                let targetCtrl: Nullable<fgui.Controller> = null;
+                if (typeof listConf.pageController === "string") {
+                    let curP: Nullable<fgui.GComponent> = parentNode;
+                    while (curP) {
+                        targetCtrl = curP.getController(listConf.pageController);
+                        if (targetCtrl) break;
+                        curP = curP.parent as fgui.GComponent;
+                    }
+                } else {
+                    targetCtrl = listConf.pageController;
+                }
+                if (targetCtrl) {
+                    node.scrollPane.pageController = targetCtrl;
+                }
+            }
+        }
+        // 7. GMovieClip 资源注入
+        else if (node instanceof fgui.GMovieClip) {
+            const mcConf = elData as IMovieClipConfig;
+            if (mcConf.url) {
+                node.url = UIFactory.formatResUrl(mcConf.url);
+            }
+        }
+        // 8. GLoader3D 资源注入
+        else if (node instanceof fgui.GLoader3D) {
+            const l3dConf = elData as ILoader3DConfig;
+            if (l3dConf.url) {
+                node.url = UIFactory.formatResUrl(l3dConf.url);
+            }
+        }
+        // 9. GImage 资源注入
+        else if (node instanceof fgui.GImage) {
+            const imgConf = elData as IImageConfig;
+            if (imgConf.url) {
+                const tex = UIFactory.getFguiTexture(imgConf.url);
+                if (tex && node.image) {
+                    node.image.texture = tex;
+                }
+            }
+        }
+
+        // 10. 组关联绑定 (对齐 GObject.setup_afterAdd 第 1562~1564 行)
+        if (elData.group && parentNode) {
+            const grp = parentNode.getChild(elData.group);
+            if (grp instanceof fgui.GGroup) {
+                node.group = grp;
+            }
+        }
+
+        // 11. 集中装配齿轮 Gears
         setupGearsFunc(node, elData, parentNode, index);
 
-        // 4. 官方生命周期保护期结束，解除锁定
+        // 12. 官方生命周期保护期结束，解除锁定
         node["_underConstruct"] = false;
     }
 }

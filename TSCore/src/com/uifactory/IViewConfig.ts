@@ -27,6 +27,8 @@ export type IViewConfig = {
     padding?: IPaddingConfig;
     /** 面板内容的滚动方式 (0 - 横向, 1 - 纵向, 2 - 双向) */
     scrollType?: number;
+    /** 滚动容器双向绑定的分页控制器 (名称或 Controller 实例，挂载至 scrollPane.pageController) */
+    pageController?: string | fgui.Controller;
     /** 容器溢出裁剪状态 (0 - Visible, 1 - Hidden, 2 - Scroll) */
     overflow?: number;
     /**
