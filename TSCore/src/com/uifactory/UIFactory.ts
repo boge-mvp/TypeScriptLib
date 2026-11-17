@@ -94,6 +94,37 @@ export class UIFactory {
     }
 
     /**
+     * 跨端安全的网络数据请求器 (100% 兼容 Laya加速器 ConchApp、移动微端、小游戏与标准 Web 浏览器)
+     *
+     * 优先采用 Laya.HttpRequest 发起网络请求，完美规避 LayaNative (ConchApp) 环境下无 window.fetch 的致命缺陷。
+     *
+     * @param url 目标资源地址
+     * @param responseType 期望返回的数据格式 ("arraybuffer" | "json" | "text")
+     * @returns 响应数据 Promise (ArrayBuffer 或 JSON 对象)
+     */
+    public static requestData(url: string, responseType: "arraybuffer" | "json" | "text" = "text"): Promise<any> {
+        return new Promise((resolve, reject) => {
+            if (typeof Laya !== "undefined" && Laya.HttpRequest) {
+                const hr = new Laya.HttpRequest();
+                hr.once(Laya.Event.COMPLETE, null, () => {
+                    resolve(hr.data);
+                });
+                hr.once(Laya.Event.ERROR, null, (err: any) => {
+                    reject(new Error(`[UIFactory] Laya.HttpRequest 请求失败: ${url} (错误: ${err})`));
+                });
+                hr.send(url, null, "get", responseType);
+            } else if (typeof fetch !== "undefined") {
+                fetch(url).then(resp => {
+                    if (!resp.ok) throw new Error(`HTTP error ${resp.status}`);
+                    return responseType === "arraybuffer" ? resp.arrayBuffer() : (responseType === "json" ? resp.json() : resp.text());
+                }).then(resolve).catch(reject);
+            } else {
+                reject(new Error("[UIFactory] 当前环境既不支持 Laya.HttpRequest 也不支持 fetch！"));
+            }
+        });
+    }
+
+    /**
      * 一次性异步加载 UI 布局合包文件并自动注入内存注册表
      *
      * 支持明文 JSON 合包与紧凑压缩/加密的二进制合包：
@@ -117,16 +148,11 @@ export class UIFactory {
         }
 
         const fullUrl = UIFactory.formatResUrl(finalUrl);
-        const resp = await fetch(fullUrl);
-        if (!resp.ok) {
-            throw new Error(`[UIFactory] 加载 UI 布局合包失败: ${finalUrl} (HTTP ${resp.status})`);
-        }
-
         const isBinary = !finalUrl.endsWith(".json");
         let bundle: IUILayoutBundle;
 
         if (isBinary) {
-            const arrayBuf = await resp.arrayBuffer();
+            const arrayBuf = await UIFactory.requestData(fullUrl, "arraybuffer") as ArrayBuffer;
             const uint8 = new Uint8Array(arrayBuf);
 
             // 提取文件头协议: [12 字节 GCM IV] + [16 字节 AuthTag] + [加密的 Deflate 密文]
@@ -152,7 +178,7 @@ export class UIFactory {
                 combinedCipher
             );
 
-            // 无损 Deflate 解压
+            // 无损 Deflate 解压 (优先原生 DecompressionStream，其次 Zlib.RawInflate，兜底 Laya.Byte)
             let jsonStr = "";
             if (typeof DecompressionStream !== "undefined") {
                 const ds = new DecompressionStream("deflate-raw");
@@ -160,14 +186,24 @@ export class UIFactory {
                 jsonStr = await new Response(decompressedStream).text();
             } else if (typeof Zlib !== "undefined" && Zlib.RawInflate) {
                 const inflater = new Zlib.RawInflate(new Uint8Array(decryptedBuf));
-                jsonStr = new TextDecoder().decode(inflater.decompress());
-            } else {
+                const decompressedBytes = inflater.decompress();
+                if (typeof TextDecoder !== "undefined") {
+                    jsonStr = new TextDecoder().decode(decompressedBytes);
+                } else if (typeof Laya !== "undefined" && Laya.Byte) {
+                    const lb = new Laya.Byte(decompressedBytes.buffer);
+                    jsonStr = lb.readUTFBytes();
+                }
+            } else if (typeof TextDecoder !== "undefined") {
                 jsonStr = new TextDecoder().decode(decryptedBuf);
+            } else if (typeof Laya !== "undefined" && Laya.Byte) {
+                const lb = new Laya.Byte(decryptedBuf);
+                jsonStr = lb.readUTFBytes();
             }
 
             bundle = JSON.parse(jsonStr) as IUILayoutBundle;
         } else {
-            bundle = await resp.json() as IUILayoutBundle;
+            const jsonOrData = await UIFactory.requestData(fullUrl, "json");
+            bundle = (typeof jsonOrData === "string" ? JSON.parse(jsonOrData) : jsonOrData) as IUILayoutBundle;
         }
 
         if (typeof Laya !== "undefined" && Laya.Loader && typeof Laya.Loader.cacheRes === "function") {
