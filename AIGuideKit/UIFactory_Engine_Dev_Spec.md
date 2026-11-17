@@ -72,6 +72,10 @@
 ### 4. 严禁私自改动官方库源码
 - **红线**：所有针对 FGUI 遗漏特性（如 GearColor 平滑过渡、GGraph 描边色控制）的增强，必须在 `TSCore/src/com/uifactory/` 的包装层实现，严禁修改 `template/fairygui.js` 或 `template/laya.core.js`！
 
+### 5. Controllers 与 Transitions 根节点声明规则与校验机制
+- **架构规则**：一个 UI 页面配置文件中，`controllers` 与 `transitions` 仅允许在 Root 根节点声明。
+- **校验防御壳**：引擎在 `UIFactory.validateLayoutConfig` 与构建工具 `bundleLayouts` 中内置了自动验证逻辑。若在非 Root 子节点（且未标记 `src` 外部组件）中检测到 `controllers` 或 `transitions`，统一抛出标准英文异常进行阻断，引导开发者将子模块拆分为独立 JSON 文件并通过 `src` 外部引用。
+
 ---
 
 ## 四、 闭环验证基线
@@ -79,6 +83,6 @@
 每次对引擎进行任何代码变更或重构后，必须严格执行以下构建与回归测试：
 
 1. **核心库增量构建**：
-   在根目录执行 `npm run build:tscore`，确保输出 104 个 js / 104 个 dts，且严格 0 报错；
+   在根目录执行 `npm run build:tscore`，确保输出 113 个 js / 113 个 dts，且严格 0 报错；
 2. **自动化端到端测试断言**：
    运行 `node scratch/test_full_demo_features.js`，确保全系 10 大齿轮、单选互斥、多选复选、滑动条与动效工作台自动化断言 100% 成功，浏览器控制台错误严格为 0。

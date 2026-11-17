@@ -64,6 +64,56 @@ export class UIFactory {
     public static bundleKey: string = "TypeScriptLib_UIFactory_2026_Key";
 
     /**
+     * Validates that "controllers" and "transitions" are only defined on the root node of a layout configuration.
+     * Sub-modules requiring independent state machines must be extracted into separate JSON components and referenced via "src".
+     *
+     * @param config The layout panel configuration (IPanelConfig)
+     * @param pagePath The path or identifier of the layout being validated
+     * @throws Error when controllers or transitions are found on non-root nodes
+     */
+    public static validateLayoutConfig(config: IPanelConfig, pagePath: string = "root"): void {
+        if (!config || !config.elements || !Array.isArray(config.elements)) return;
+
+        const checkChild = (node: IElementConfig, pathTrace: string) => {
+            if (!node) return;
+            // If child references an external component via src, its own file has its own root node
+            if (node.src) return;
+
+            const anyNode = node as any;
+            const isButtonControllerOnly = node.type === "button" &&
+                Array.isArray(anyNode.controllers) &&
+                anyNode.controllers.length === 1 &&
+                anyNode.controllers[0].name === "button";
+
+            if (Array.isArray(anyNode.controllers) && anyNode.controllers.length > 0 && !isButtonControllerOnly) {
+                throw new Error(
+                    `[UIFactory] Invalid layout in "${pagePath}": "controllers" cannot be defined on non-root node "${pathTrace}" (name: "${node.name || 'unnamed'}", type: "${node.type}"). ` +
+                    `Controllers must only be declared on the root node of a layout JSON. If a sub-module requires an independent controller, extract it into a separate JSON file and reference it via "src".`
+                );
+            }
+
+            if (Array.isArray(anyNode.transitions) && anyNode.transitions.length > 0) {
+                throw new Error(
+                    `[UIFactory] Invalid layout in "${pagePath}": "transitions" cannot be defined on non-root node "${pathTrace}" (name: "${node.name || 'unnamed'}", type: "${node.type}"). ` +
+                    `Transitions must only be declared on the root node of a layout JSON. If a sub-module requires an independent transition, extract it into a separate JSON file and reference it via "src".`
+                );
+            }
+
+            if (anyNode.elements && Array.isArray(anyNode.elements)) {
+                for (let i = 0; i < anyNode.elements.length; i++) {
+                    const child = anyNode.elements[i];
+                    checkChild(child, `${pathTrace} -> elements[${i}](${child.name || child.type})`);
+                }
+            }
+        };
+
+        for (let i = 0; i < config.elements.length; i++) {
+            const rootChild = config.elements[i];
+            checkChild(rootChild, `elements[${i}](${rootChild.name || rootChild.type})`);
+        }
+    }
+
+    /**
      * 注册独立页面/组件布局配置，使其可通过 src="路径" 在任意其他页面中直接引用
      *
      * @param pathKey 页面配置文件的标准相对路径 (如 "res/layout/header.json")
@@ -71,6 +121,7 @@ export class UIFactory {
      */
     public static registerLayout(pathKey: string, config: IPanelConfig): void {
         const normalized = pathKey.replace(/\\/g, "/");
+        UIFactory.validateLayoutConfig(config, normalized);
         UIFactory.registeredLayouts[normalized] = config;
     }
 
@@ -89,6 +140,7 @@ export class UIFactory {
         for (const [key, conf] of Object.entries(dict)) {
             if (!conf) continue;
             const normalized = key.replace(/\\/g, "/");
+            UIFactory.validateLayoutConfig(conf, normalized);
             UIFactory.registeredLayouts[normalized] = conf;
         }
     }
@@ -601,6 +653,7 @@ export class UIFactory {
      * @returns 实例化的 GComponent 对象
      */
     public static createPanel(elData: IPanelConfig, containerW?: number, containerH?: number): fgui.GComponent {
+        UIFactory.validateLayoutConfig(elData, elData.name || "panel");
         const node = UIFactory.createElement<fgui.GComponent>(elData, containerW || 0, containerH || 0)!;
         if (elData.x !== undefined) node.x = elData.x;
         if (elData.y !== undefined) node.y = elData.y;

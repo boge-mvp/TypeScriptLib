@@ -93,10 +93,11 @@ mode: all
 
 ## 3. 编码红线与质量原则
 
-1. **直接父容器层级铁律（Direct-Parent Scoping Law）**：
-   - FGUI 官方架构中，**Controller 必须声明在受控元素的直接父容器上**，严禁跨层级隔代绑定齿轮；
-   - **Radio 单选组直接父级规范**：配置 `mode: "Radio"` 的按钮必须与其兄弟单选按钮共同放置在持有该控制器的直接父容器中；
-   - 严禁在底层 `UIFactoryGears` 中编写向上递归爬树查找控制器的逻辑，必须依靠官方原生的 `parent.applyController(c) -> child.handleControllerChanged(c)` 树状调用。
+1. **控制器与动效根节点声明规则 (Root-Only Declaration Rule)**：
+   - 在单个 JSON 页面配置中，`controllers` 与 `transitions` **必须且只能在 Root 根节点声明**，严禁在页面内部的子节点（如嵌套子 panel、row 容器、group 等）中声明；
+   - **子模块独立状态机解耦规范**：若子模块需要独立的控制器或动效，必须将其抽离为独立的 JSON 配置文件，并在父页面中通过 `"src": "res/layout/xxx.json"` 进行外部引用；
+   - **双层校验防御壳**：引擎在 `UIFactory.validateLayoutConfig` 与编译工具 `bundleLayouts` 中内置了自动验证，违规时统一抛出标准英文异常；
+   - **直接父容器层级规则**：FGUI 官方架构中，Controller 由直接父容器（Root 根节点）持有，严禁在底层 `UIFactoryGears` 中编写向上递归爬树查找控制器的逻辑，必须依靠官方原生的 `parent.applyController(c) -> child.handleControllerChanged(c)` 树状调用。
 2. **声明式 Gears 优先于命令式胶水代码铁律**：
    - 界面所有动态文案、底色切换、位移补间与显隐逻辑**必须 100% 声明式写在 JSON 配置的 Gears 中**（`gearDisplay`, `gearXY`, `gearSize`, `gearLook`, `gearColor`, `gearAnimation`, `gearText`, `gearIcon`, `gearDisplay2`, `gearFontSize`）；
    - **绝对禁止在 TS 业务代码中手写命令式属性赋值与变色胶水逻辑**（例如手动 `btn.title = ...`、`bg.drawRect(...)`、`badge.alpha = ...` 等）；业务代码只允许作为只读观察者监听 `ctrl.on(fgui.Events.STATE_CHANGED)`。

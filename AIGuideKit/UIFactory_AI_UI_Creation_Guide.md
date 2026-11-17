@@ -79,12 +79,18 @@
 
 ## 四、 页面状态机 (Controller) 与齿轮联动 (Gears) 规范
 
-### 4.1 控制器与齿轮直接父子层级铁律（Direct-Parent Scoping Law）
+### 4.1 控制器 (Controllers) 与动效 (Transitions) 的根节点声明规则 (Root-Only Declaration Rule)
 
-> **最高约束**：在 FGUI 官方架构中，**Controller 必须声明在受控元素的直接父容器（Parent Panel）上**！
-> 严禁跨层级隔代绑定齿轮。当直接父容器上的控制器发生页面切换时，父容器会自动调用原生的 `applyController(c) -> child.handleControllerChanged(c)`，毫秒级精准驱动子元件，零死锁、零事件竞争！
+在 FairyGUI 架构中，控制器（GController）与动效（Transition）属于组件（GComponent）级别的核心属性：
+1. **单页面根节点唯一性**：在单个 JSON 页面配置文件中，`controllers` 与 `transitions` **必须且只能在 Root 根节点声明**；
+2. **子节点禁止内联声明**：页面内部的子节点（如嵌套的子 panel、row 容器、group 等）禁止直接内联声明 `controllers` 或 `transitions`；
+3. **子模块独立状态机解耦规范**：若页面的某个子模块需要拥有独立的控制器（例如独立的单选组或子状态机）或专属动效，**应将其抽离为独立的 JSON 配置文件（自治组件），并在父页面中通过 `"src": "res/layout/xxx.json"` 进行外部引用**。每个独立组件在自身根节点上合法声明其属性。
 
-### 4.2 全系 10 大 Gears 状态机配置总表
+### 4.2 控制器与齿轮直接父子层级规则（Direct-Parent Scoping）
+
+在 FGUI 官方架构中，**Controller 必须声明在受控元素的直接父容器（Parent Panel）上**。当直接父容器上的控制器发生页面切换时，父容器会自动调用原生的 `applyController(c) -> child.handleControllerChanged(c)`，毫秒级精准驱动子元件。由于单页面内控制器只存在于 Root 根节点，因此直接受根控制器驱动的子元件应当是该根容器的直接子元素。
+
+### 4.3 全系 10 大 Gears 状态机配置总表
 
 每个子元件均可在配置中声明以下齿轮，随直接父级控制器的页面切换自动执行状态迁移：
 
