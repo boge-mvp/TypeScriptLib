@@ -5,6 +5,7 @@ const { buildLibrary } = require("./lib/build-library")
 const { rollupPack } = require("./lib/rollup-pack")
 const { compile } = require("./lib/ts-compile")
 const { packResources, removeTemp } = require("./packNpmLib")
+const { bundleLayouts } = require("./lib/bundle-layouts")
 
 // 2. 专用 Rollup 插件与 AST 转换器
 const rollupRename = require("./rollup-plugin-rename")
@@ -32,6 +33,7 @@ module.exports = {
     compile,
     packResources,
     removeTemp,
+    bundleLayouts,
 
     // ======== 插件与转换器 ========
     rollupRename,

@@ -57,27 +57,29 @@ export class UIFactory {
     /** 已注册的自定义元件创建器字典表，键为元素类型 type */
     public static customCreators: Record<string, ElementCreator<any, any>> = {};
 
-    /** 已注册的外部独立页面/组件布局配置字典表，支持通过名称或路径寻址 */
+    /** 已注册的外部独立页面/组件布局配置字典表，支持通过标准路径寻址 */
     public static registeredLayouts: Record<string, IPanelConfig> = {};
 
+    /** UI 布局合包的默认对称加密密钥 (支持商业项目全局覆盖) */
+    public static bundleKey: string = "TypeScriptLib_UIFactory_2026_Key";
+
     /**
-     * 注册独立页面/组件布局配置，使其可通过 src="名称或URL" 在任意其他页面中直接引用
+     * 注册独立页面/组件布局配置，使其可通过 src="路径" 在任意其他页面中直接引用
      *
-     * @param urlOrName 页面模板的唯一引用标识（如 "res/layout/header.json" 或 "MyHeader"）
+     * @param pathKey 页面配置文件的标准相对路径 (如 "res/layout/header.json")
      * @param config 声明式容器布局配置
      */
-    public static registerLayout(urlOrName: string, config: IPanelConfig): void {
-        UIFactory.registeredLayouts[urlOrName] = config;
+    public static registerLayout(pathKey: string, config: IPanelConfig): void {
+        const normalized = pathKey.replace(/\\/g, "/");
+        UIFactory.registeredLayouts[normalized] = config;
     }
 
     /**
      * 批量导入并注册布局合集包 (UI Layout Bundle)
      *
-     * 自动为合包中的每个页面建立多别名索引：
-     * 1. 原始路径键名（如 "res/layout/header.json"）；
-     * 2. 纯短组件名称（如从路径自动提取的 "header"）；
-     * 3. 规范化的相对路径；
-     * 极大方便业务代码与外部组件通过 src 随意寻址。
+     * 核心规范：
+     * 100% 采用标准相对路径作为 Key (如 "res/layout/header.json")，绝无短名别名污染，
+     * 组件内部引用统一写精确路径 (如 src: "res/layout/header.json")，做到路径唯一确定。
      *
      * @param bundle 包含 layouts 字典的合集包对象，或直接传入页面映射字典
      */
@@ -86,37 +88,92 @@ export class UIFactory {
         const dict = ("layouts" in bundle && typeof bundle.layouts === "object") ? bundle.layouts : (bundle as Record<string, IPanelConfig>);
         for (const [key, conf] of Object.entries(dict)) {
             if (!conf) continue;
-            UIFactory.registeredLayouts[key] = conf;
             const normalized = key.replace(/\\/g, "/");
             UIFactory.registeredLayouts[normalized] = conf;
-            const lastSlash = normalized.lastIndexOf("/");
-            const fileName = lastSlash >= 0 ? normalized.substring(lastSlash + 1) : normalized;
-            const dotIdx = fileName.lastIndexOf(".");
-            const shortName = dotIdx >= 0 ? fileName.substring(0, dotIdx) : fileName;
-            if (shortName && !UIFactory.registeredLayouts[shortName]) {
-                UIFactory.registeredLayouts[shortName] = conf;
-            }
         }
     }
 
     /**
      * 一次性异步加载 UI 布局合包文件并自动注入内存注册表
      *
-     * 生产级推荐：仅需发起 1 次 HTTP 请求即可获取整个游戏的全部 UI 布局，零碎片开销。
+     * 支持明文 JSON 合包与紧凑压缩/加密的二进制合包：
+     * - 若未显式提供后缀，自动联动官方 fgui.UIConfig.packageFileExtension (默认 "bin" 或 "fui")；
+     * - 若文件为二进制格式，自动提取文件头 12 字节 IV 与 16 字节 AuthTag，执行 AES-GCM 原生解密与 Deflate 解压；
+     * - 解压还原后毫秒级注册至内存字典，全流程零碎片请求开销。
      *
-     * @param bundleUrl 合包文件地址 (例如 "res/ui_bundle.json")
+     * @param bundleUrl 合包文件地址 (例如 "res/ui_bundle" 或 "res/ui_bundle.bin" 或 "res/ui_bundle.fui")
+     * @param options 可选配置项（自定义密钥 key、强制扩展名 extension）
      * @returns 解析后的 IUILayoutBundle 合包数据对象
      */
-    public static async loadBundle(bundleUrl: string): Promise<IUILayoutBundle> {
-        const fullUrl = UIFactory.formatResUrl(bundleUrl);
+    public static async loadBundle(
+        bundleUrl: string,
+        options?: { key?: string; extension?: string }
+    ): Promise<IUILayoutBundle> {
+        let finalUrl = bundleUrl;
+        const hasDotExt = finalUrl.lastIndexOf(".") > finalUrl.lastIndexOf("/");
+        if (!hasDotExt) {
+            const ext = options?.extension || (fgui.UIConfig && fgui.UIConfig.packageFileExtension) || "bin";
+            finalUrl = `${finalUrl}.${ext.replace(/^\./, "")}`;
+        }
+
+        const fullUrl = UIFactory.formatResUrl(finalUrl);
         const resp = await fetch(fullUrl);
         if (!resp.ok) {
-            throw new Error(`[UIFactory] 加载 UI 布局合包失败: ${bundleUrl} (HTTP ${resp.status})`);
+            throw new Error(`[UIFactory] 加载 UI 布局合包失败: ${finalUrl} (HTTP ${resp.status})`);
         }
-        const bundle = await resp.json() as IUILayoutBundle;
+
+        const isBinary = !finalUrl.endsWith(".json");
+        let bundle: IUILayoutBundle;
+
+        if (isBinary) {
+            const arrayBuf = await resp.arrayBuffer();
+            const uint8 = new Uint8Array(arrayBuf);
+
+            // 提取文件头协议: [12 字节 GCM IV] + [16 字节 AuthTag] + [加密的 Deflate 密文]
+            const iv = uint8.slice(0, 12);
+            const tag = uint8.slice(12, 28);
+            const cipherBytes = uint8.slice(28);
+
+            // Web Crypto GCM 解密格式要求密文尾部包含 AuthTag
+            const combinedCipher = new Uint8Array(cipherBytes.length + tag.length);
+            combinedCipher.set(cipherBytes, 0);
+            combinedCipher.set(tag, cipherBytes.length);
+
+            // 派生 AES-256 密钥
+            const secret = options?.key || UIFactory.bundleKey;
+            const enc = new TextEncoder();
+            const keyHash = await crypto.subtle.digest("SHA-256", enc.encode(secret));
+            const cryptoKey = await crypto.subtle.importKey("raw", keyHash, { name: "AES-GCM" }, false, ["decrypt"]);
+
+            // 原生硬件加速解密
+            const decryptedBuf = await crypto.subtle.decrypt(
+                { name: "AES-GCM", iv, tagLength: 128 },
+                cryptoKey,
+                combinedCipher
+            );
+
+            // 无损 Deflate 解压
+            let jsonStr = "";
+            if (typeof DecompressionStream !== "undefined") {
+                const ds = new DecompressionStream("deflate-raw");
+                const decompressedStream = new Response(decryptedBuf).body!.pipeThrough(ds);
+                jsonStr = await new Response(decompressedStream).text();
+            } else if (typeof Zlib !== "undefined" && Zlib.RawInflate) {
+                const inflater = new Zlib.RawInflate(new Uint8Array(decryptedBuf));
+                jsonStr = new TextDecoder().decode(inflater.decompress());
+            } else {
+                jsonStr = new TextDecoder().decode(decryptedBuf);
+            }
+
+            bundle = JSON.parse(jsonStr) as IUILayoutBundle;
+        } else {
+            bundle = await resp.json() as IUILayoutBundle;
+        }
+
         if (typeof Laya !== "undefined" && Laya.Loader && typeof Laya.Loader.cacheRes === "function") {
-            Laya.Loader.cacheRes(bundleUrl, bundle);
+            Laya.Loader.cacheRes(finalUrl, bundle);
         }
+
         UIFactory.registerBundle(bundle);
         return bundle;
     }
