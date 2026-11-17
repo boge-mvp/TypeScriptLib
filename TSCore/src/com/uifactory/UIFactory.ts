@@ -25,6 +25,7 @@ import { ITreeConfig } from "./ITreeConfig";
 import { IMovieClipConfig } from "./IMovieClipConfig";
 import { ILoader3DConfig } from "./ILoader3DConfig";
 import { IImageConfig } from "./IImageConfig";
+import { IUILayoutBundle } from "./IUILayoutBundle";
 
 /**
  * 自定义组件创建器函数类型
@@ -67,6 +68,82 @@ export class UIFactory {
      */
     public static registerLayout(urlOrName: string, config: IPanelConfig): void {
         UIFactory.registeredLayouts[urlOrName] = config;
+    }
+
+    /**
+     * 批量导入并注册布局合集包 (UI Layout Bundle)
+     *
+     * 自动为合包中的每个页面建立多别名索引：
+     * 1. 原始路径键名（如 "res/layout/header.json"）；
+     * 2. 纯短组件名称（如从路径自动提取的 "header"）；
+     * 3. 规范化的相对路径；
+     * 极大方便业务代码与外部组件通过 src 随意寻址。
+     *
+     * @param bundle 包含 layouts 字典的合集包对象，或直接传入页面映射字典
+     */
+    public static registerBundle(bundle: IUILayoutBundle | Record<string, IPanelConfig>): void {
+        if (!bundle) return;
+        const dict = ("layouts" in bundle && typeof bundle.layouts === "object") ? bundle.layouts : (bundle as Record<string, IPanelConfig>);
+        for (const [key, conf] of Object.entries(dict)) {
+            if (!conf) continue;
+            UIFactory.registeredLayouts[key] = conf;
+            const normalized = key.replace(/\\/g, "/");
+            UIFactory.registeredLayouts[normalized] = conf;
+            const lastSlash = normalized.lastIndexOf("/");
+            const fileName = lastSlash >= 0 ? normalized.substring(lastSlash + 1) : normalized;
+            const dotIdx = fileName.lastIndexOf(".");
+            const shortName = dotIdx >= 0 ? fileName.substring(0, dotIdx) : fileName;
+            if (shortName && !UIFactory.registeredLayouts[shortName]) {
+                UIFactory.registeredLayouts[shortName] = conf;
+            }
+        }
+    }
+
+    /**
+     * 一次性异步加载 UI 布局合包文件并自动注入内存注册表
+     *
+     * 生产级推荐：仅需发起 1 次 HTTP 请求即可获取整个游戏的全部 UI 布局，零碎片开销。
+     *
+     * @param bundleUrl 合包文件地址 (例如 "res/ui_bundle.json")
+     * @returns 解析后的 IUILayoutBundle 合包数据对象
+     */
+    public static async loadBundle(bundleUrl: string): Promise<IUILayoutBundle> {
+        const fullUrl = UIFactory.formatResUrl(bundleUrl);
+        const resp = await fetch(fullUrl);
+        if (!resp.ok) {
+            throw new Error(`[UIFactory] 加载 UI 布局合包失败: ${bundleUrl} (HTTP ${resp.status})`);
+        }
+        const bundle = await resp.json() as IUILayoutBundle;
+        if (typeof Laya !== "undefined" && Laya.Loader && typeof Laya.Loader.cacheRes === "function") {
+            Laya.Loader.cacheRes(bundleUrl, bundle);
+        }
+        UIFactory.registerBundle(bundle);
+        return bundle;
+    }
+
+    /**
+     * 直接从已注册/已加载的布局合集中极速实例化一个界面容器
+     *
+     * @template T 期望返回的容器组件类型
+     * @param nameOrUrl 页面名称或注册标识 (如 "mainView" 或 "res/layout/mainView.json")
+     * @param overrides 可选的实例覆盖属性 (覆盖坐标 x/y、宽度、高度、关联 relations 等)
+     * @param containerW 可选容器基准宽度
+     * @param containerH 可选容器基准高度
+     * @returns 实例化的 GComponent 显示对象
+     */
+    public static createFromLayout<T extends fgui.GComponent = fgui.GComponent>(
+        nameOrUrl: string,
+        overrides?: Partial<IPanelConfig>,
+        containerW?: number,
+        containerH?: number
+    ): Nullable<T> {
+        const template = UIFactory.getLayout(nameOrUrl);
+        if (!template) {
+            console.error(`[UIFactory] 未找到名为 "${nameOrUrl}" 的布局配置模板！请确认是否已加载对应合集包。`);
+            return null;
+        }
+        const finalConfig: IPanelConfig = overrides ? { ...template, ...overrides } : template;
+        return UIFactory.createPanel(finalConfig, containerW, containerH) as Nullable<T>;
     }
 
     /**
