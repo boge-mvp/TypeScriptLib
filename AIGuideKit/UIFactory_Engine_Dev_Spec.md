@@ -73,8 +73,9 @@
 - **红线**：所有针对 FGUI 遗漏特性（如 GearColor 平滑过渡、GGraph 描边色控制）的增强，必须在 `TSCore/src/com/uifactory/` 的包装层实现，严禁修改 `template/fairygui.js` 或 `template/laya.core.js`！
 
 ### 5. Controllers 与 Transitions 根节点声明规则与校验机制
-- **架构规则**：一个 UI 页面配置文件中，`controllers` 与 `transitions` 仅允许在 Root 根节点声明。
-- **校验防御壳**：引擎在 `UIFactory.validateLayoutConfig` 与构建工具 `bundleLayouts` 中内置了自动验证逻辑。若在非 Root 子节点（且未标记 `src` 外部组件）中检测到 `controllers` 或 `transitions`，统一抛出标准英文异常进行阻断，引导开发者将子模块拆分为独立 JSON 文件并通过 `src` 外部引用。
+- **架构规则**：一个 UI 页面配置文件中，`controllers` 与 `transitions` 仅允许在 Root 根节点声明；根节点支持任意业务命名（不限死叫 root）。
+- **组件角色规范**：纯背景底板必须使用原生的 `type: "graph"` (GGraph)，严禁滥用空 panel 画背景；同一页面内划分功能区域必须使用原生的 `type: "group"` (GGroup)；带子节点的 panel 必须拆分为外部引用（`src`）。
+- **校验防御壳**：引擎在 `UIFactory.validateLayoutConfig` 与构建工具 `bundleLayouts` 中内置了自动验证逻辑。若在非 Root 子节点（且未标记 `src` 外部组件）中检测到 `controllers` 或 `transitions`，统一抛出标准英文异常进行阻断。
 
 ---
 
