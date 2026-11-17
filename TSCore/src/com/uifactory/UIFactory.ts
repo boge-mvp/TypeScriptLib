@@ -56,6 +56,44 @@ export class UIFactory {
     /** 已注册的自定义元件创建器字典表，键为元素类型 type */
     public static customCreators: Record<string, ElementCreator<any, any>> = {};
 
+    /** 已注册的外部独立页面/组件布局配置字典表，支持通过名称或路径寻址 */
+    public static registeredLayouts: Record<string, IPanelConfig> = {};
+
+    /**
+     * 注册独立页面/组件布局配置，使其可通过 src="名称或URL" 在任意其他页面中直接引用
+     *
+     * @param urlOrName 页面模板的唯一引用标识（如 "res/layout/header.json" 或 "MyHeader"）
+     * @param config 声明式容器布局配置
+     */
+    public static registerLayout(urlOrName: string, config: IPanelConfig): void {
+        UIFactory.registeredLayouts[urlOrName] = config;
+    }
+
+    /**
+     * 获取指定 URL 或名称的页面布局配置
+     *
+     * 寻址顺序：
+     * 1. 优先从 UIFactory.registeredLayouts 内存字典提取；
+     * 2. 其次从 Laya.loader.getRes(urlOrName) 提取已预加载的 JSON 配置；
+     * 3. 再次尝试拼接 resBasePath 后的地址寻址。
+     *
+     * @param urlOrName 页面配置文件路径或注册标识
+     * @returns 匹配的 IPanelConfig，未命中返回 null
+     */
+    public static getLayout(urlOrName?: string): Nullable<IPanelConfig> {
+        if (!urlOrName) return null;
+        if (UIFactory.registeredLayouts[urlOrName]) {
+            return UIFactory.registeredLayouts[urlOrName];
+        }
+        if (typeof Laya !== "undefined" && Laya.loader && typeof Laya.loader.getRes === "function") {
+            const res = Laya.loader.getRes(urlOrName) || Laya.loader.getRes(UIFactory.formatResUrl(urlOrName));
+            if (res && typeof res === "object") {
+                return res as IPanelConfig;
+            }
+        }
+        return null;
+    }
+
     /**
      * 规范化资源 URL 地址
      *
@@ -113,36 +151,65 @@ export class UIFactory {
         containerW: number,
         containerH: number
     ): Nullable<T> {
+        // 【官方规范：外部页面/组件引用解析 (src 属性驱动)】
+        // 若节点声明了 src 属性（例如 src: "res/layout/header.json" 或已注册的布局模板名）：
+        // 1. 父页面仅声明引用标识与自身几何位置，绝不内联子页面的内部子树；
+        // 2. 自动从缓存或注册表中提取被引用页面的纯静态配置，并与当前实例属性（覆盖位置、尺寸、关联与齿轮等）安全合并；
+        // 3. 构建完全由被引用页面的自身结构独立决定。
+        let finalData: IElementConfig = elData;
+        if (elData.src) {
+            const templateConf = UIFactory.getLayout(elData.src);
+            if (templateConf) {
+                const elAny = elData as any;
+                const tmplAny = templateConf as any;
+                finalData = {
+                    ...templateConf,
+                    ...elData,
+                    type: elData.type || templateConf.type || "panel",
+                    elements: elAny.elements || tmplAny.elements,
+                    controllers: elAny.controllers || tmplAny.controllers,
+                    transitions: elAny.transitions || tmplAny.transitions,
+                    background: elAny.background !== undefined ? elAny.background : tmplAny.background,
+                    padding: elAny.padding !== undefined ? elAny.padding : tmplAny.padding,
+                    layoutType: elAny.layoutType !== undefined ? elAny.layoutType : tmplAny.layoutType,
+                    gap: elAny.gap !== undefined ? elAny.gap : tmplAny.gap,
+                    flexWrap: elAny.flexWrap !== undefined ? elAny.flexWrap : tmplAny.flexWrap,
+                    alignItems: elAny.alignItems !== undefined ? elAny.alignItems : tmplAny.alignItems,
+                    justifyContent: elAny.justifyContent !== undefined ? elAny.justifyContent : tmplAny.justifyContent
+                } as IElementConfig;
+            }
+        }
+
         let node: Nullable<fgui.GObject> = null;
 
-        if (UIFactory.customCreators[elData.type]) {
-            node = UIFactory.customCreators[elData.type](elData, containerW, containerH);
+        if (UIFactory.customCreators[finalData.type]) {
+            node = UIFactory.customCreators[finalData.type](finalData, containerW, containerH);
         } else {
             // 严格对齐官方步骤：纯实例化阶段，不提前灌入 text / url
-            node = UIFactoryPipeline.instantiateNode(elData);
+            node = UIFactoryPipeline.instantiateNode(finalData);
             if (node) {
                 // 统一分流前置赋值 (setup_beforeAdd)
-                UIFactoryPipeline.setup_beforeAdd(node, elData);
+                UIFactoryPipeline.setup_beforeAdd(node, finalData);
 
                 // 若为复合容器类型，级联构建内部
-                if (elData.type === "panel" && (node instanceof fgui.GComponent)) {
-                    UIFactory.fillPanel(node, elData as IPanelConfig);
-                } else if (elData.type === "button" && (node instanceof fgui.GButton)) {
-                    UIFactory.fillPanel(node, elData as IButtonConfig);
-                } else if (elData.type === "slider" && (node instanceof fgui.GSlider)) {
-                    UIFactory.fillPanel(node, elData as ISliderConfig);
-                } else if (elData.type === "progressbar" && (node instanceof fgui.GProgressBar)) {
-                    UIFactory.fillPanel(node, elData as IProgressBarConfig);
-                } else if (elData.type === "label" && (node instanceof fgui.GLabel)) {
-                    UIFactory.fillPanel(node, elData as ILabelConfig);
-                } else if (elData.type === "combobox" && (node instanceof fgui.GComboBox)) {
-                    UIFactory.fillPanel(node, elData as IComboBoxConfig);
-                } else if (elData.type === "scrollbar" && (node instanceof fgui.GScrollBar)) {
-                    UIFactory.fillPanel(node, elData as IScrollBarConfig);
-                } else if (elData.type === "tree" && (node instanceof fgui.GTree)) {
-                    UIFactory.fillPanel(node, elData as ITreeConfig);
-                } else if (elData.type === "list" && (node instanceof fgui.GList)) {
-                    const lConf = elData as IListConfig;
+                if (finalData.type === "panel" && (node instanceof fgui.GComponent)) {
+                    UIFactory.fillPanel(node, finalData as IPanelConfig);
+                } else if (finalData.type === "button" && (node instanceof fgui.GButton)) {
+                    UIFactory.fillPanel(node, finalData as IButtonConfig);
+                } else if (finalData.type === "slider" && (node instanceof fgui.GSlider)) {
+                    UIFactory.fillPanel(node, finalData as ISliderConfig);
+                } else if (finalData.type === "progressbar" && (node instanceof fgui.GProgressBar)) {
+                    UIFactory.fillPanel(node, finalData as IProgressBarConfig);
+                } else if (finalData.type === "label" && (node instanceof fgui.GLabel)) {
+                    UIFactory.fillPanel(node, finalData as ILabelConfig);
+                } else if (finalData.type === "combobox" && (node instanceof fgui.GComboBox)) {
+                    UIFactory.fillPanel(node, finalData as IComboBoxConfig);
+                } else if (finalData.type === "scrollbar" && (node instanceof fgui.GScrollBar)) {
+                    UIFactory.fillPanel(node, finalData as IScrollBarConfig);
+                } else if (finalData.type === "tree" && (node instanceof fgui.GTree)) {
+                    UIFactory.fillPanel(node, finalData as ITreeConfig);
+                } else if (finalData.type === "list" && (node instanceof fgui.GList)) {
+                    const lConf = finalData as IListConfig;
                     if (lConf.defaultItem) node.defaultItem = lConf.defaultItem;
                     if (lConf.listLayout) node.layout = fgui.ListLayoutType[lConf.listLayout];
                     if (lConf.selectionMode !== undefined) {
@@ -161,8 +228,8 @@ export class UIFactory {
             }
         }
 
-        if (node && elData.graphics) {
-            UIFactory.applyGraphics(node, elData.graphics);
+        if (node && finalData.graphics) {
+            UIFactory.applyGraphics(node, finalData.graphics);
         }
 
         return node as Nullable<T>;
