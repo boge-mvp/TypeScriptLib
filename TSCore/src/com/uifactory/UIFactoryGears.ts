@@ -2,14 +2,34 @@ import { IElementConfig } from "./IElementConfig";
 
 /**
  * UIFactory 官方状态机与齿轮装配引擎
- * 100% 遵循 FairyGUI 官方二进制构建规范 (GObject.setup_afterAdd: 1566~1573 / GearBase.setup: 15430)
- * 严格基于直接父级控制器 panelNode.getController(...) 绑定，零外挂事件监听，零祖先爬树
+ *
+ * 核心规范：
+ * 1. 100% 遵循 FairyGUI 官方二进制构建规范 (GObject.setup_afterAdd / GearBase.setup)；
+ * 2. 遵守直接父级作用域铁律（Direct-Parent Scoping Law）：严格基于直接父容器 panelNode.getController(...) 绑定控制器，
+ *    零跨层级祖先爬树，零外挂事件监听，全生命周期交由 FGUI 原生的 applyController -> handleControllerChanged 驱动；
+ * 3. 支持全系 10 大 Gears 状态机：
+ *    - Gear 0: GearDisplay (显隐控制)
+ *    - Gear 1: GearXY (双轴坐标平滑移动，支持补间动画)
+ *    - Gear 2: GearSize (尺寸宽高与缩放过渡)
+ *    - Gear 3: GearLook (透明度、旋转、置灰、可触控 4维联动)
+ *    - Gear 4: GearColor (文本与矢量图形颜色/描边)
+ *    - Gear 5: GearAnimation (序列帧动画播放/定格)
+ *    - Gear 6: GearText (多语言/动态文案映射)
+ *    - Gear 7: GearIcon (资源图标/纹理路径切换)
+ *    - Gear 8: GearDisplay2 (二级条件与/或复合门控)
+ *    - Gear 9: GearFontSize (文本字号跨阶跳变)
  */
 export class UIFactoryGears {
 
     /**
      * 为子组件装配全系 FGUI Gear 状态机 (0~9 大齿轮)
-     * 对应官方 setup_afterAdd 阶段的 gear.setup(buffer) 流程
+     *
+     * 对应官方 setup_afterAdd 阶段的 gear.setup(buffer) 流程。
+     *
+     * @param childNode 待装配齿轮的目标子元件
+     * @param childData 子元件声明式配置（可能包含 gearDisplay、gearXY 等字段）
+     * @param panelNode 直接父级宿主容器
+     * @param index 子元件所在索引
      */
     public static setupElementGears(childNode: fgui.GObject, childData: IElementConfig, panelNode: fgui.GComponent, index: number): void {
         const getController = (ctrlName?: string): fgui.Controller | null => {
@@ -24,38 +44,17 @@ export class UIFactoryGears {
             return pid ? pid : pageName;
         };
 
-        // 处理按钮 relatedController 与 pageId（官方直接父级绑定）
-        if (childData.type === "button") {
-            const rawBtn = childNode as any;
-            if (childData.relatedController && typeof childData.relatedController === "string") {
-                const ctrl = getController(childData.relatedController);
-                if (ctrl) {
-                    rawBtn["_relatedController"] = ctrl;
-                    if (childData.pageId !== undefined) {
-                        rawBtn["_relatedPageId"] = mapPageNameToId(ctrl, childData.pageId);
-                    }
-                    if (childNode instanceof fgui.GButton && rawBtn["_relatedPageId"]) {
-                        (childNode as fgui.GButton).selected = (rawBtn["_relatedPageId"] === ctrl.selectedPageId);
-                    }
-                } else {
-                    console.warn(`[UIFactory] 按钮 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.relatedController}"。`);
-                }
-            }
-        }
-
         // 0. GearDisplay (显隐)
         if (childData.gearDisplay) {
-            const rawGear = (childNode as any).getGear(0);
+            const gear = childNode.getGear(0) as fgui.GearDisplay;
             const ctrl = getController(childData.gearDisplay.controller);
             if (ctrl) {
-                rawGear.controller = ctrl;
+                gear.controller = ctrl;
                 if (childData.gearDisplay.pages && Array.isArray(childData.gearDisplay.pages)) {
-                    rawGear.pages = childData.gearDisplay.pages.map(p => mapPageNameToId(ctrl, p));
+                    gear.pages = childData.gearDisplay.pages.map(p => mapPageNameToId(ctrl, p));
                 }
-                rawGear.apply();
-                if (typeof (childNode as any).checkGearDisplay === "function") {
-                    (childNode as any).checkGearDisplay();
-                }
+                gear.apply();
+                // 确保在构建期不因 checkGearDisplay 误触发，在控制器统一 applyController 时刷新
             } else {
                 console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearDisplay.controller}"。`);
             }
@@ -63,15 +62,15 @@ export class UIFactoryGears {
 
         // 1. GearXY (位移)
         if (childData.gearXY) {
-            const rawGear = (childNode as any).getGear(1);
+            const gear = childNode.getGear(1) as fgui.GearXY;
             const ctrl = getController(childData.gearXY.controller);
             if (ctrl) {
-                rawGear.controller = ctrl;
+                gear.controller = ctrl;
                 if (childData.gearXY.pages) {
                     for (const pName in childData.gearXY.pages) {
                         const val = childData.gearXY.pages[pName];
                         const pId = mapPageNameToId(ctrl, pName);
-                        rawGear["_storage"][pId] = {
+                        gear["_storage"][pId] = {
                             x: val.x || 0,
                             y: val.y || 0,
                             px: val.px !== undefined ? val.px : 0,
@@ -79,13 +78,13 @@ export class UIFactoryGears {
                         };
                     }
                 }
-                if (rawGear.tweenConfig) {
-                    rawGear.tweenConfig.tween = childData.gearXY.tween !== undefined ? childData.gearXY.tween : true;
-                    rawGear.tweenConfig.duration = childData.gearXY.duration !== undefined ? childData.gearXY.duration : 0.3;
-                    rawGear.tweenConfig.easeType = childData.gearXY.easeType !== undefined ? childData.gearXY.easeType : fgui.EaseType.QuadOut;
-                    rawGear.tweenConfig.delay = childData.gearXY.delay || 0;
+                if (gear.tweenConfig) {
+                    gear.tweenConfig.tween = childData.gearXY.tween !== undefined ? childData.gearXY.tween : true;
+                    gear.tweenConfig.duration = childData.gearXY.duration !== undefined ? childData.gearXY.duration : 0.3;
+                    gear.tweenConfig.easeType = childData.gearXY.easeType !== undefined ? childData.gearXY.easeType : fgui.EaseType.QuadOut;
+                    gear.tweenConfig.delay = childData.gearXY.delay || 0;
                 }
-                rawGear.apply();
+                gear.apply();
             } else {
                 console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearXY.controller}"。`);
             }
@@ -93,29 +92,29 @@ export class UIFactoryGears {
 
         // 2. GearSize (尺寸与缩放)
         if (childData.gearSize) {
-            const rawGear = (childNode as any).getGear(2);
+            const gear = childNode.getGear(2) as fgui.GearSize;
             const ctrl = getController(childData.gearSize.controller);
             if (ctrl) {
-                rawGear.controller = ctrl;
+                gear.controller = ctrl;
                 if (childData.gearSize.pages) {
                     for (const pName in childData.gearSize.pages) {
                         const val = childData.gearSize.pages[pName];
                         const pId = mapPageNameToId(ctrl, pName);
-                        rawGear["_storage"][pId] = {
+                        gear["_storage"][pId] = {
                             width: val.width !== undefined ? val.width : childNode.width,
                             height: val.height !== undefined ? val.height : childNode.height,
-                            scaleX: val.scaleX !== undefined ? val.scaleX : (val.scale !== undefined ? val.scale : (childNode as any).scaleX),
-                            scaleY: val.scaleY !== undefined ? val.scaleY : (val.scale !== undefined ? val.scale : (childNode as any).scaleY)
+                            scaleX: val.scaleX !== undefined ? val.scaleX : (val.scale !== undefined ? val.scale : childNode.scaleX),
+                            scaleY: val.scaleY !== undefined ? val.scaleY : (val.scale !== undefined ? val.scale : childNode.scaleY)
                         };
                     }
                 }
-                if (rawGear.tweenConfig) {
-                    rawGear.tweenConfig.tween = childData.gearSize.tween !== undefined ? childData.gearSize.tween : true;
-                    rawGear.tweenConfig.duration = childData.gearSize.duration !== undefined ? childData.gearSize.duration : 0.3;
-                    rawGear.tweenConfig.easeType = childData.gearSize.easeType !== undefined ? childData.gearSize.easeType : fgui.EaseType.QuadOut;
-                    rawGear.tweenConfig.delay = childData.gearSize.delay || 0;
+                if (gear.tweenConfig) {
+                    gear.tweenConfig.tween = childData.gearSize.tween !== undefined ? childData.gearSize.tween : true;
+                    gear.tweenConfig.duration = childData.gearSize.duration !== undefined ? childData.gearSize.duration : 0.3;
+                    gear.tweenConfig.easeType = childData.gearSize.easeType !== undefined ? childData.gearSize.easeType : fgui.EaseType.QuadOut;
+                    gear.tweenConfig.delay = childData.gearSize.delay || 0;
                 }
-                rawGear.apply();
+                gear.apply();
             } else {
                 console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearSize.controller}"。`);
             }
@@ -123,15 +122,15 @@ export class UIFactoryGears {
 
         // 3. GearLook (外观：透明度、旋转、置灰、可触控)
         if (childData.gearLook) {
-            const rawGear = (childNode as any).getGear(3);
+            const gear = childNode.getGear(3) as fgui.GearLook;
             const ctrl = getController(childData.gearLook.controller);
             if (ctrl) {
-                rawGear.controller = ctrl;
+                gear.controller = ctrl;
                 if (childData.gearLook.pages) {
                     for (const pName in childData.gearLook.pages) {
                         const val = childData.gearLook.pages[pName];
                         const pId = mapPageNameToId(ctrl, pName);
-                        rawGear["_storage"][pId] = {
+                        gear["_storage"][pId] = {
                             alpha: val.alpha !== undefined ? val.alpha : childNode.alpha,
                             rotation: val.rotation !== undefined ? val.rotation : childNode.rotation,
                             grayed: val.grayed !== undefined ? val.grayed : childNode.grayed,
@@ -139,13 +138,13 @@ export class UIFactoryGears {
                         };
                     }
                 }
-                if (rawGear.tweenConfig) {
-                    rawGear.tweenConfig.tween = childData.gearLook.tween !== undefined ? childData.gearLook.tween : true;
-                    rawGear.tweenConfig.duration = childData.gearLook.duration !== undefined ? childData.gearLook.duration : 0.3;
-                    rawGear.tweenConfig.easeType = childData.gearLook.easeType !== undefined ? childData.gearLook.easeType : fgui.EaseType.QuadOut;
-                    rawGear.tweenConfig.delay = childData.gearLook.delay || 0;
+                if (gear.tweenConfig) {
+                    gear.tweenConfig.tween = childData.gearLook.tween !== undefined ? childData.gearLook.tween : true;
+                    gear.tweenConfig.duration = childData.gearLook.duration !== undefined ? childData.gearLook.duration : 0.3;
+                    gear.tweenConfig.easeType = childData.gearLook.easeType !== undefined ? childData.gearLook.easeType : fgui.EaseType.QuadOut;
+                    gear.tweenConfig.delay = childData.gearLook.delay || 0;
                 }
-                rawGear.apply();
+                gear.apply();
             } else {
                 console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearLook.controller}"。`);
             }
@@ -153,21 +152,21 @@ export class UIFactoryGears {
 
         // 4. GearColor (颜色)
         if (childData.gearColor) {
-            const rawGear = (childNode as any).getGear(4);
+            const gear = childNode.getGear(4) as fgui.GearColor;
             const ctrl = getController(childData.gearColor.controller);
             if (ctrl) {
-                rawGear.controller = ctrl;
+                gear.controller = ctrl;
                 if (childData.gearColor.pages) {
                     for (const pName in childData.gearColor.pages) {
                         const val = childData.gearColor.pages[pName];
                         const pId = mapPageNameToId(ctrl, pName);
-                        rawGear["_storage"][pId] = {
+                        gear["_storage"][pId] = {
                             color: val.color || "#ffffff",
                             strokeColor: val.strokeColor || "#000000"
                         };
                     }
                 }
-                rawGear.apply();
+                gear.apply();
             } else {
                 console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearColor.controller}"。`);
             }
@@ -175,21 +174,21 @@ export class UIFactoryGears {
 
         // 5. GearAnimation (帧动画控制)
         if (childData.gearAnimation) {
-            const rawGear = (childNode as any).getGear(5);
+            const gear = childNode.getGear(5) as fgui.GearAnimation;
             const ctrl = getController(childData.gearAnimation.controller);
             if (ctrl) {
-                rawGear.controller = ctrl;
+                gear.controller = ctrl;
                 if (childData.gearAnimation.pages) {
                     for (const pName in childData.gearAnimation.pages) {
                         const val = childData.gearAnimation.pages[pName];
                         const pId = mapPageNameToId(ctrl, pName);
-                        rawGear["_storage"][pId] = {
+                        gear["_storage"][pId] = {
                             playing: val.playing !== undefined ? val.playing : true,
                             frame: val.frame || 0
                         };
                     }
                 }
-                rawGear.apply();
+                gear.apply();
             } else {
                 console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearAnimation.controller}"。`);
             }
@@ -197,18 +196,18 @@ export class UIFactoryGears {
 
         // 6. GearText (文本联动)
         if (childData.gearText) {
-            const rawGear = (childNode as any).getGear(6);
+            const gear = childNode.getGear(6) as fgui.GearText;
             const ctrl = getController(childData.gearText.controller);
             if (ctrl) {
-                rawGear.controller = ctrl;
+                gear.controller = ctrl;
                 if (childData.gearText.pages) {
                     for (const pName in childData.gearText.pages) {
                         const val = childData.gearText.pages[pName];
                         const pId = mapPageNameToId(ctrl, pName);
-                        rawGear["_storage"][pId] = typeof val === "string" ? val : (val.text || "");
+                        gear["_storage"][pId] = typeof val === "string" ? val : (val.text || "");
                     }
                 }
-                rawGear.apply();
+                gear.apply();
             } else {
                 console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearText.controller}"。`);
             }
@@ -216,18 +215,18 @@ export class UIFactoryGears {
 
         // 7. GearIcon (图标联动)
         if (childData.gearIcon) {
-            const rawGear = (childNode as any).getGear(7);
+            const gear = childNode.getGear(7) as fgui.GearIcon;
             const ctrl = getController(childData.gearIcon.controller);
             if (ctrl) {
-                rawGear.controller = ctrl;
+                gear.controller = ctrl;
                 if (childData.gearIcon.pages) {
                     for (const pName in childData.gearIcon.pages) {
                         const val = childData.gearIcon.pages[pName];
                         const pId = mapPageNameToId(ctrl, pName);
-                        rawGear["_storage"][pId] = typeof val === "string" ? val : (val.icon || val.url || "");
+                        gear["_storage"][pId] = typeof val === "string" ? val : (val.icon || val.url || "");
                     }
                 }
-                rawGear.apply();
+                gear.apply();
             } else {
                 console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearIcon.controller}"。`);
             }
@@ -235,20 +234,17 @@ export class UIFactoryGears {
 
         // 8. GearDisplay2 (二级条件显隐)
         if (childData.gearDisplay2) {
-            const rawGear = (childNode as any).getGear(8);
+            const gear = childNode.getGear(8) as fgui.GearDisplay2;
             const ctrl = getController(childData.gearDisplay2.controller);
             if (ctrl) {
-                rawGear.controller = ctrl;
+                gear.controller = ctrl;
                 if (childData.gearDisplay2.pages && Array.isArray(childData.gearDisplay2.pages)) {
-                    rawGear.pages = childData.gearDisplay2.pages.map(p => mapPageNameToId(ctrl, p));
+                    gear.pages = childData.gearDisplay2.pages.map(p => mapPageNameToId(ctrl, p));
                 }
                 if (childData.gearDisplay2.condition !== undefined) {
-                    rawGear.condition = childData.gearDisplay2.condition;
+                    gear.condition = childData.gearDisplay2.condition;
                 }
-                rawGear.apply();
-                if (typeof (childNode as any).checkGearDisplay === "function") {
-                    (childNode as any).checkGearDisplay();
-                }
+                gear.apply();
             } else {
                 console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearDisplay2.controller}"。`);
             }
@@ -256,18 +252,18 @@ export class UIFactoryGears {
 
         // 9. GearFontSize (字号联动)
         if (childData.gearFontSize) {
-            const rawGear = (childNode as any).getGear(9);
+            const gear = childNode.getGear(9) as fgui.GearFontSize;
             const ctrl = getController(childData.gearFontSize.controller);
             if (ctrl) {
-                rawGear.controller = ctrl;
+                gear.controller = ctrl;
                 if (childData.gearFontSize.pages) {
                     for (const pName in childData.gearFontSize.pages) {
                         const val = childData.gearFontSize.pages[pName];
                         const pId = mapPageNameToId(ctrl, pName);
-                        rawGear["_storage"][pId] = val;
+                        gear["_storage"][pId] = val;
                     }
                 }
-                rawGear.apply();
+                gear.apply();
             } else {
                 console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearFontSize.controller}"。`);
             }

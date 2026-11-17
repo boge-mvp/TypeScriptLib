@@ -14,4 +14,14 @@ export type IIconConfig = IBaseElementConfig & {
     clip?: boolean;
     /** 图片填充模式：none/scale/scalefree/scalematchheight/scalematchwidth/scalenoborder 或数字 */
     fill?: string | number;
+    /** 仅缩小不放大 */
+    shrinkOnly?: boolean;
+    /** 是否自动调整大小 */
+    autoSize?: boolean;
+    /** 水平对齐方式 */
+    align?: "left" | "center" | "right";
+    /** 垂直对齐方式 */
+    valign?: "top" | "middle" | "bottom";
+    /** 颜色值 */
+    color?: string;
 };

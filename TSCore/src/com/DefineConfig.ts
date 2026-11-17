@@ -50,6 +50,33 @@ export class DefineConfig {
             }
         })
 
+        // 修复 LayaAir 2.x 原生 HitArea 缺失对 DrawPath 命令识别的官方已知缺陷 (确保 FGUI 中使用圆角的 GGraph 具有正常点击与拾取能力)
+        if (Laya.HitArea) {
+            const orig_isHitCmd = Laya.HitArea["_isHitCmd"];
+            Laya.HitArea["_isHitCmd"] = function (x: number, y: number, cmd: any) {
+                if (cmd && cmd.cmdID === "DrawPath") {
+                    // cmd.paths 形如 [["moveTo", r0, 0], ["lineTo", w - r1, 0], ["arcTo", w, 0, w, r1, r1], ..., ["lineTo", w, h - r3], ...]
+                    // 计算出路径外接包围盒进行精准矩形测试
+                    let maxW = 0;
+                    let maxH = 0;
+                    if (cmd.paths && Array.isArray(cmd.paths)) {
+                        for (let i = 0; i < cmd.paths.length; i++) {
+                            const p = cmd.paths[i];
+                            if (p && p[0] === "arcTo") {
+                                if (p[1] > maxW) maxW = p[1];
+                                if (p[2] > maxH) maxH = p[2];
+                            }
+                        }
+                    }
+                    if (maxW > 0 && maxH > 0) {
+                        return x >= cmd.x && x <= cmd.x + maxW && y >= cmd.y && y <= cmd.y + maxH;
+                    }
+                    return false;
+                }
+                return orig_isHitCmd.call(this, x, y, cmd);
+            };
+        }
+
         Object.defineProperty(Laya.KeyBoardManager, "_addEvent", {
             value: function (type: any) {
                 windowMy?.addEventListener(type, function (e: any) {
@@ -459,19 +486,39 @@ export class DefineConfig {
                         else this.displayObject.graphics.drawTexture(tex, 0, 0, initW, initH)
                     }
                 } else if (typeof config === "object") {
-                    if ("type" in config) {
-                        if (config.type === "icon") {
-                            let tex = UIFactory.getFguiTexture(config.url)
-                            if (tex == null) this.displayObject.graphics.loadImage(Laya.URL.formatURL(UIFactory.formatResUrl(config.url)), 0, 0, initW, initH)
-                            else this.displayObject.graphics.drawTexture(tex, 0, 0, initW, initH)
-                        } else if (config.type === "graph") {
-                            const graphBg = config as IGraphConfig;
-                            const w = initW || graphBg.width || this.width
-                            const h = initH || graphBg.height || this.height
-                            const fillColor = graphBg.fillColor || null
-                            const lineSize = graphBg.lineSize
-                            const lineColor = graphBg.lineColor
-                            this.displayObject.graphics.drawRect(0, 0, w, h, fillColor, lineColor, lineSize)
+                    if ("type" in config && config.type === "icon") {
+                        let tex = UIFactory.getFguiTexture(config.url)
+                        if (tex == null) this.displayObject.graphics.loadImage(Laya.URL.formatURL(UIFactory.formatResUrl(config.url)), 0, 0, initW, initH)
+                        else this.displayObject.graphics.drawTexture(tex, 0, 0, initW, initH)
+                    } else {
+                        const graphBg = config as IGraphConfig & { color?: string };
+                        const w = initW || graphBg.width || this.width
+                        const h = initH || graphBg.height || this.height
+                        const fillColor = graphBg.fillColor || graphBg.color || null
+                        const lineSize = graphBg.lineSize || 0
+                        const lineColor = graphBg.lineColor || "#000000"
+                        const cornerRadius = graphBg.cornerRadius
+                        if (cornerRadius !== undefined) {
+                            const r = Array.isArray(cornerRadius) ? cornerRadius : [cornerRadius, cornerRadius, cornerRadius, cornerRadius]
+                            const paths = [
+                                ["moveTo", r[0], 0],
+                                ["lineTo", w - r[1], 0],
+                                ["arcTo", w, 0, w, r[1], r[1]],
+                                ["lineTo", w, h - r[3]],
+                                ["arcTo", w, h, w - r[3], h, r[3]],
+                                ["lineTo", r[2], h],
+                                ["arcTo", 0, h, 0, h - r[2], r[2]],
+                                ["lineTo", 0, r[0]],
+                                ["arcTo", 0, 0, r[0], 0, r[0]],
+                                ["closePath"]
+                            ]
+                            this.displayObject.graphics.drawPath(
+                                0, 0, paths,
+                                fillColor ? { fillStyle: fillColor } : null,
+                                lineSize > 0 ? { strokeStyle: lineColor, lineWidth: lineSize } : undefined
+                            )
+                        } else {
+                            this.displayObject.graphics.drawRect(0, 0, w, h, fillColor, lineSize > 0 ? lineColor : undefined, lineSize)
                         }
                     }
                 }

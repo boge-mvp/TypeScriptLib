@@ -116,6 +116,10 @@ declare module Laya.SoundManager {
     let _bgMusic: Nullable<string>;
 }
 
+declare module Laya.HitArea {
+    let _isHitCmd: (x: number, y: number, cmd: any) => boolean;
+}
+
 declare module Laya.Texture {
     /**
      * 创建一个功能强大的动态 Canvas 渐变纹理贴图。

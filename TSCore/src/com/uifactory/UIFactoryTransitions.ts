@@ -1,25 +1,36 @@
 import {ITransitionConfig, TransitionActionType} from "./ITransitionConfig";
 
+/**
+ * UIFactory 声明式过渡动效 (Transition) 引擎
+ *
+ * 核心特性：
+ * 1. 结构化构建：将纯 JSON 动效序列（ITransitionConfig）直接映射为 FairyGUI 原生的 fgui.Transition 对象；
+ * 2. 补间映射：支持 XY、Size、Scale、Pivot、Alpha、Rotation、Color、Shake 等 16 种动作类型；
+ * 3. 缓动与循环：无缝适配 FGUI 原生 EaseType 缓动算法与 yoyo 往返播放；
+ * 4. 自动生命周期：挂接宿主组件的 Event.DISPLAY 与 Event.UNDISPLAY 事件，实现进入舞台自动播放与离开舞台自动终止。
+ */
 export class UIFactoryTransitions {
 
     /**
      * 声明式过渡动效 (Transition) 工厂构建器
+     *
+     * @param config 动效配置对象（含 name、autoPlay、items 序列等）
+     * @param owner 宿主组件 GComponent
+     * @returns 实例化的 fgui.Transition 对象
      */
     public static createTransition(config: ITransitionConfig, owner: fgui.GComponent): fgui.Transition {
         const trans = new fgui.Transition(owner);
         trans.name = config.name || "transition";
-        trans.autoPlay = !!config.autoPlay;
-        trans.autoPlayTimes = config.autoPlayTimes !== undefined ? config.autoPlayTimes : 1;
-        trans.autoPlayDelay = config.autoPlayDelay || 0;
+        trans["_autoPlay"] = !!config.autoPlay;
+        trans["_autoPlayTimes"] = config.autoPlayTimes !== undefined ? config.autoPlayTimes : 1;
+        trans["_autoPlayDelay"] = config.autoPlayDelay || 0;
 
-        const rawOwner = owner as any;
-        if (!rawOwner._transitions) {
-            rawOwner._transitions = [];
+        if (!owner["_transitions"]) {
+            owner["_transitions"] = [];
         }
-        rawOwner._transitions.push(trans);
+        owner["_transitions"].push(trans);
 
-        const rawTrans = trans as any;
-        rawTrans._items = [];
+        trans["_items"] = [];
         let totalDuration = 0;
 
         if (config.items && Array.isArray(config.items)) {
@@ -35,12 +46,12 @@ export class UIFactoryTransitions {
                 };
 
                 const targetKey = itemConf.target || itemConf.targetId;
-                let targetNode: fgui.GObject | null = null;
+                let targetNode: Nullable<fgui.GObject> = null;
                 if (targetKey) {
                     if (typeof targetKey === "object") {
                         item.target = targetKey;
-                        item.targetId = (targetKey as any).id || "";
-                        targetNode = targetKey as fgui.GObject;
+                        item.targetId = targetKey.id || "";
+                        targetNode = targetKey;
                     } else {
                         targetNode = owner.getChild(targetKey) || owner.getChildByPath(targetKey);
                         if (targetNode) {
@@ -57,8 +68,8 @@ export class UIFactoryTransitions {
                     targetNode = owner;
                 }
 
-                const tw = itemConf.tween || itemConf.tweenConfig || (itemConf.duration !== undefined ? itemConf : null);
-                if (tw) {
+                const tw: any = itemConf.tweenConfig || (itemConf.tween || itemConf.duration !== undefined ? itemConf : null);
+                if (tw && typeof tw === "object") {
                     const duration = tw.duration !== undefined ? tw.duration : 0;
                     const ease = tw.easeType !== undefined ? tw.easeType : fgui.EaseType.QuadOut;
                     item.tweenConfig = {
@@ -69,7 +80,7 @@ export class UIFactoryTransitions {
                         endLabel: tw.endLabel || "",
                         startValue: { b1: true, b2: true },
                         endValue: { b1: true, b2: true },
-                        endHook: tw.endHook || null
+                        endHook: tw.endHook || tw.hook || null
                     };
 
                     this.fillTransitionValue(actionType, tw.startValue, item.tweenConfig.startValue);
@@ -86,33 +97,15 @@ export class UIFactoryTransitions {
                     }
                 }
 
-                rawTrans._items.push(item);
+                trans["_items"].push(item);
             }
         }
 
-        rawTrans._totalDuration = totalDuration;
+        trans["_totalDuration"] = totalDuration;
 
-        if (trans.autoPlay && owner.displayObject) {
-            if (!rawOwner.___added) {
-                rawOwner.___added = () => {
-                    if (rawOwner._transitions) {
-                        for (const t of rawOwner._transitions) {
-                            if (t.autoPlay) {
-                                t.play(null, null, null, t.autoPlayTimes, t.autoPlayDelay);
-                            }
-                        }
-                    }
-                };
-                rawOwner.___removed = () => {
-                    if (rawOwner._transitions) {
-                        for (const t of rawOwner._transitions) {
-                            t.stop(false, false);
-                        }
-                    }
-                };
-            }
-            owner.displayObject.on(Laya.Event.DISPLAY, owner, rawOwner.___added);
-            owner.displayObject.on(Laya.Event.UNDISPLAY, owner, rawOwner.___removed);
+        if (trans["_autoPlay"] && owner.displayObject) {
+            owner.displayObject.on(Laya.Event.DISPLAY, owner, owner["___added"]);
+            owner.displayObject.on(Laya.Event.UNDISPLAY, owner, owner["___removed"]);
         }
 
         return trans;
@@ -120,6 +113,9 @@ export class UIFactoryTransitions {
 
     /**
      * 将配置中的动作类型字符串/枚举映射为 FGUI 内部 ActionType 整数
+     *
+     * @param type 动效动作类型字符串（如 "xy"、"scale"、"alpha"、"shake"）或数字
+     * @returns 内部数字动作类型码 (0~16)
      */
     public static mapActionType(type: TransitionActionType | number): number {
         if (typeof type === "number") {
@@ -148,6 +144,10 @@ export class UIFactoryTransitions {
 
     /**
      * 将外部易读的参数对象注入到 FGUI TransitionValue 内部物理结构中
+     *
+     * @param actionType 内部动作类型码 (0~16)
+     * @param source 外部声明式参数对象（支持数组 [x, y] 或对象 { x, y } / { scaleX, scaleY } 等）
+     * @param target FGUI 内部 TransitionValue 存储目标对象
      */
     public static fillTransitionValue(actionType: number, source: any, target: any): void {
         if (source === undefined || source === null || !target) return;

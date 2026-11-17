@@ -10,8 +10,8 @@ export type IButtonConfig = IBaseElementConfig & IViewConfig & {
     type: "button";
     /** 按钮组件皮肤 (FGUI Package 资源路径) */
     skin?: string;
-    /** 按钮模式：0: Common(普通按钮), 1: Check(多选/开关), 2: Radio(单选按钮) */
-    mode?: number;
+    /** 按钮模式：0: Common(普通按钮), 1: Check(多选/开关), 2: Radio(单选按钮) 或字符串 "Common" | "Check" | "Radio" */
+    mode?: number | "Common" | "Check" | "Radio" | string;
     /** 按下效果：0: None(无效果), 1: Darken(变暗), 2: Scale(居中缩放) */
     downEffect?: number;
     /** 按下效果强度数值：当 downEffect=1(变暗) 时表示 RGB 缩放比例(默认 0.8)；当 downEffect=2(缩放) 时表示尺寸缩放比例(默认 0.95) */
@@ -28,10 +28,14 @@ export type IButtonConfig = IBaseElementConfig & IViewConfig & {
     selectedTitle?: string;
     /** 选中态图标路径 (Check/Radio 模式) */
     selectedIcon?: string;
+    /** 标题颜色 */
+    titleColor?: string;
+    /** 标题字号 */
+    titleFontSize?: number;
     /** 初始是否选中 (Check/Radio 模式) */
     selected?: boolean;
-    /** 联动单选控制器 (Radio 模式) */
-    relatedController?: fgui.Controller;
+    /** 联动单选控制器 (Radio 模式，可传控制器名称或实例) */
+    relatedController?: string | fgui.Controller;
     /** 关联控制器页面 ID (Radio 模式) */
     pageId?: string;
 };

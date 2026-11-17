@@ -6,6 +6,8 @@ import {IBaseElementConfig} from "./IBaseElementConfig";
 export type IGraphConfig = IBaseElementConfig & {
     /** 元素类型：固定为 "graph" */
     type: "graph";
+    /** 图形类型：0-无, 1-矩形/圆角矩形, 2-圆/椭圆, 3-多边形, 4-正多边形 (对应 FGUI 原生 GGraph) */
+    shape?: "rect" | "ellipse" | "circle";
     /** 描边线宽度 */
     lineSize?: number;
     /** 描边线条颜色值 */

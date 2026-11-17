@@ -8,6 +8,8 @@ export type ITextConfig = IBaseElementConfig & {
     type: "text";
     /** 文本显示具体内容 */
     text?: string;
+    /** 字体名称 */
+    font?: string;
     /** 字体大小 (默认 20) */
     fontSize?: number;
     /** 字体十六进制颜色值 (如: "#ffffff", "#e99e00") */

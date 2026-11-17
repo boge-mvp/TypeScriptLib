@@ -13,8 +13,14 @@ export type IViewConfig = {
     controllers?: IControllerConfig[];
     /** 容器挂载的动效列表（支持补间动画与自动播放） */
     transitions?: ITransitionConfig[];
-    /** 面板背景：可以是纯图片 URL、也可以是嵌套的 icon/graph 元素配置 */
-    background?: string | IIconConfig | IGraphConfig;
+    /** 面板背景：可以是纯图片 URL、颜色值、也可以是嵌套的 icon/graph 元素配置或背景样式简写 */
+    background?: string | IIconConfig | IGraphConfig | {
+        color?: string;
+        fillColor?: string;
+        cornerRadius?: number | number[];
+        lineSize?: number;
+        lineColor?: string;
+    };
     /** 面板内部嵌套的一维层级 Elements 子级元件列表 */
     elements?: IElementConfig[];
     /** 面板的安全内边距，主要在滚动时使用 */

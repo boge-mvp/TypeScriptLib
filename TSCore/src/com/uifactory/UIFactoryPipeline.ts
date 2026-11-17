@@ -14,8 +14,13 @@ import { UIFactory } from "./UIFactory";
 export class UIFactoryPipeline {
 
     /**
-     * 【官方步骤 1: 纯实例化】
-     * 仅调用构造函数创建空节点，绝不提前灌入 text / url / gears
+     * 【官方步骤 1: 纯实例化 (Instantiation)】
+     *
+     * 仅根据元素声明的 type 调用具体子类的构造函数创建空节点，绝不提前灌入 text / url / gears 数据。
+     * 这与 FairyGUI 官方 UIObjectFactory.newObject(type) 的设计完全一致。
+     *
+     * @param elData 声明式元素配置对象
+     * @returns 实例化的空 FGUI 组件对象，若类型无法识别则返回 null
      */
     public static instantiateNode(elData: IElementConfig): fgui.GObject | null {
         switch (elData.type) {
@@ -40,29 +45,35 @@ export class UIFactoryPipeline {
                 if (elData.skin) {
                     return fgui.UIPackage.createObjectFromURL(elData.skin) as fgui.GButton;
                 } else {
-                    const btn = new fgui.GButton();
-                    btn.opaque = true;
-                    return btn;
+                    return new fgui.GButton();
                 }
             case "panel":
                 return new EPanel();
             case "list":
                 return new PureList();
+            case "slider":
+                return new fgui.GSlider();
+            case "progressbar":
+                return new fgui.GProgressBar();
             default:
                 return null;
         }
     }
 
     /**
-     * 【官方步骤 2: setup_beforeAdd 集中分流赋值】
-     * 对应官方 setup_beforeAdd 阶段：
-     * 1. 开启保护锁 _underConstruct = true
-     * 2. 赋予基础图元、尺寸与空间变换
-     * 3. 严格禁止在此时提前赋值 text / url
+     * 【官方步骤 2: 前置初始化与分流赋值 (setup_beforeAdd)】
+     *
+     * 对应官方 GObject.setup_beforeAdd 阶段：
+     * 1. 开启构建保护锁 `_underConstruct = true`，确保后续排版调用 setXY/setSize 时不会误触发齿轮拦截；
+     * 2. 注入通用基础图元属性（alpha、rotation、visible、touchable、grayed、scale、pivot、size）；
+     * 3. 按子类分流注入各类型特有样式（文本的 autoSize/字体/颜色、图形的矩形/圆/圆角、Loader的填充模式、按钮的按压反馈与 mode）；
+     * 4. 严格禁止在此时提前赋值 text / url，杜绝引发过早排版和网络加载。
+     *
+     * @param node 刚刚实例化的空 FGUI 目标对象
+     * @param elData 声明式元素配置对象
      */
     public static setup_beforeAdd(node: fgui.GObject, elData: IElementConfig): void {
-        const rawNode = node as any;
-        rawNode["_underConstruct"] = true;
+        node["_underConstruct"] = true;
 
         // 1. 全组件通用基础属性 (对齐 GObject.setup_beforeAdd)
         if (elData.name) node.name = elData.name;
@@ -137,20 +148,22 @@ export class UIFactoryPipeline {
                 }
             }
             // 文本排版排空拦截：直接强制执行 typeset，确保 autoSize 为 Height/Both 时即刻计算出真实的 textHeight！
-            if (rawNode["_textField"]) {
-                rawNode["_textField"]["typeset"]();
-            } else if (typeof rawNode.ensureSizeCorrect === "function") {
-                rawNode.ensureSizeCorrect();
+            if (node["_textField"]) {
+                node["_textField"]["typeset"]();
+            } else if (typeof node.ensureSizeCorrect === "function") {
+                node.ensureSizeCorrect();
             }
         } else if (node instanceof fgui.GGraph) {
             const gConf = elData as IGraphConfig;
             const lineSize = gConf.lineSize || 0;
             const lineColor = gConf.lineColor || "#000000";
-            const fillColor = gConf.fillColor;
+            const fillColor = (gConf.fillColor ?? null) as unknown as string;
             const cornerRadius = gConf.cornerRadius;
-            if (cornerRadius !== undefined) {
+            if (gConf.shape === "ellipse" || gConf.shape === "circle") {
+                node.drawEllipse(lineSize, lineColor, fillColor);
+            } else if (cornerRadius !== undefined) {
                 const arr = Array.isArray(cornerRadius) ? cornerRadius : [cornerRadius, cornerRadius, cornerRadius, cornerRadius];
-                node.drawRect(lineSize, lineColor, fillColor, arr as any);
+                node.drawRect(lineSize, lineColor, fillColor, arr);
             } else {
                 node.drawRect(lineSize, lineColor, fillColor);
             }
@@ -185,11 +198,11 @@ export class UIFactoryPipeline {
                     parsedMode = bConf.mode;
                 }
             }
-            rawNode["_mode"] = parsedMode;
+            node["_mode"] = parsedMode;
             if (bConf.downEffect !== undefined) {
-                rawNode["_downEffect"] = bConf.downEffect;
+                node["_downEffect"] = bConf.downEffect;
                 if (bConf.downEffectValue !== undefined) {
-                    rawNode["_downEffectValue"] = bConf.downEffectValue;
+                    node["_downEffectValue"] = bConf.downEffectValue;
                 }
                 if (bConf.downEffect === 2) {
                     node.setPivot(0.5, 0.5, node.pivotAsAnchor);
@@ -205,9 +218,19 @@ export class UIFactoryPipeline {
     }
 
     /**
-     * 【官方步骤 3: setup_afterAdd 集中分流内容注入】
-     * 对应官方 setup_afterAdd 阶段：
-     * 此时节点已加入层级、完成布局并装配完 Relations，在此统一灌入 text / url，并解除保护锁
+     * 【官方步骤 3: 后置初始化与内容安全注入 (setup_afterAdd)】
+     *
+     * 对应官方 GObject.setup_afterAdd 阶段：
+     * 1. 此时节点已加入父级层级树（child.parent 已确立），且已完成尺寸测量与 RelationType 关系绑定；
+     * 2. 安全灌入真实可变内容：文本内容的 text/promptText、图标图片的 url、按钮的 title/icon/selectedTitle/selectedIcon 及关联控制器；
+     * 3. 集中调度装配全系 10 大 Gears 状态机；
+     * 4. 安全解除构建保护锁：`node["_underConstruct"] = false`，组件正式投入运行。
+     *
+     * @param node 已加入显示列表的目标 FGUI 对象
+     * @param elData 声明式元素配置对象
+     * @param parentNode 直接父级容器 GComponent
+     * @param index 子元件在父容器中的索引顺序
+     * @param setupGearsFunc 齿轮装配引擎回调函数
      */
     public static setup_afterAdd(
         node: fgui.GObject,
@@ -216,8 +239,6 @@ export class UIFactoryPipeline {
         index: number,
         setupGearsFunc: (childNode: fgui.GObject, childData: IElementConfig, panelNode: fgui.GComponent, index: number) => void
     ): void {
-        const rawNode = node as any;
-
         // 1. 文本内容此时才注入 (对齐 GTextField.setup_afterAdd)
         if (node instanceof fgui.GTextField) {
             const tConf = elData as ITextConfig;
@@ -229,8 +250,8 @@ export class UIFactoryPipeline {
                     node.text = rawText;
                 }
             }
-            if (typeof rawNode.ensureSizeCorrect === "function") {
-                rawNode.ensureSizeCorrect();
+            if (typeof node.ensureSizeCorrect === "function") {
+                node.ensureSizeCorrect();
             }
         }
         // 2. 外部资源 URL 此时才注入并开始加载 (对齐 GLoader.setup_afterAdd)
@@ -250,12 +271,36 @@ export class UIFactoryPipeline {
             if (bConf.selectedIcon) node.selectedIcon = bConf.selectedIcon;
             if (bConf.titleColor) node.titleColor = bConf.titleColor;
             if (bConf.titleFontSize) node.titleFontSize = bConf.titleFontSize;
+
+            // 对齐 GButton.setup_afterAdd 第 3858~3860 行：关联单选组或切页控制器
+            if (bConf.relatedController) {
+                let targetCtrl: Nullable<fgui.Controller> = null;
+                if (typeof bConf.relatedController === "string") {
+                    // 优先从直接父级查找，找不到则向上级父容器查找
+                    let curP: Nullable<fgui.GComponent> = parentNode;
+                    while (curP) {
+                        targetCtrl = curP.getController(bConf.relatedController);
+                        if (targetCtrl) break;
+                        curP = curP.parent as fgui.GComponent;
+                    }
+                } else {
+                    targetCtrl = bConf.relatedController;
+                }
+                if (targetCtrl) {
+                    node.relatedController = targetCtrl;
+                    if (bConf.pageId) {
+                        const page = targetCtrl.getPageIdByName ? targetCtrl.getPageIdByName(bConf.pageId) : bConf.pageId;
+                        node.relatedPageId = page || bConf.pageId;
+                        node.selected = (node.relatedPageId === targetCtrl.selectedPageId);
+                    }
+                }
+            }
         }
 
         // 3. 集中装配齿轮 Gears
         setupGearsFunc(node, elData, parentNode, index);
 
         // 4. 官方生命周期保护期结束，解除锁定
-        rawNode["_underConstruct"] = false;
+        node["_underConstruct"] = false;
     }
 }

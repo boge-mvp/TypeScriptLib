@@ -61,25 +61,23 @@ export interface IGearColorConfig {
     easeType?: number;
 }
 
-/**
- * 文本内容随控制器页面联动配置 (GearText)
- */
-export interface IGearTextConfig {
-    /** 绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器 */
-    controller?: string;
-    /** 各页面对应的文本内容，键为页面名称 */
-    pages: Record<string, string>;
-}
+    /** 文本內容随控制器页面联动配置 (GearText) */
+    export interface IGearTextConfig {
+        /** 绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器 */
+        controller?: string;
+        /** 各页面对应的文本内容，键为页面名称 */
+        pages: Record<string, string | { text?: string }>;
+    }
 
-/**
- * 图标/图片地址随控制器页面联动配置 (GearIcon)
- */
-export interface IGearIconConfig {
-    /** 绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器 */
-    controller?: string;
-    /** 各页面对应的图标 URL 地址，键为页面名称 */
-    pages: Record<string, string>;
-}
+    /**
+     * 图标/图片地址随控制器页面联动配置 (GearIcon)
+     */
+    export interface IGearIconConfig {
+        /** 绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器 */
+        controller?: string;
+        /** 各页面对应的图标 URL 地址，键为页面名称 */
+        pages: Record<string, string | { icon?: string; url?: string }>;
+    }
 
 /**
  * 动画组件播放状态随控制器页面联动配置 (GearAnimation)
@@ -145,6 +143,12 @@ export type IBaseElementConfig = {
     alpha?: number;
     /** 旋转角度 (0 ~ 360 度) */
     rotation?: number;
+    /** 是否可见 */
+    visible?: boolean;
+    /** 是否可交互 */
+    touchable?: boolean;
+    /** 是否置灰 */
+    grayed?: boolean;
     /** 弹性对齐与自适应百分比排版对齐定位 (优先于绝对定位属性 x/y) */
     layout?: ILayoutConfig;
     /** 绝对定位像素 X 坐标 (一旦配置该项，将忽略 layout 排版对齐) */
@@ -178,4 +182,16 @@ export type IBaseElementConfig = {
     gearDisplay2?: IGearDisplay2Config;
     /** 字体大小随控制器联动 (GearFontSize) */
     gearFontSize?: IGearFontSizeConfig;
+    /**
+     * FGUI 原生关联系统配置 (Relations)
+     * 支持将自身与容器、父级或同级兄弟组件建立自动联动 (如左左、左右、右右、顶顶、高宽拉伸等)
+     */
+    relations?: {
+        /** 目标组件名称；若不填或为 "parent" 则关联到当前直接父容器 */
+        target?: string;
+        /** 关联规则类型 (如 "Right_Right", "Left_Right", "Size", "Width", "Height", "Center_Center", "Bottom_Bottom") 或数字枚举 */
+        type: string | number;
+        /** 是否使用百分比距离 (默认 false) */
+        usePercent?: boolean;
+    }[];
 };

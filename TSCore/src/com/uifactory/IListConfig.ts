@@ -8,6 +8,8 @@ import {IViewConfig} from "./IViewConfig";
 export type IListConfig = IBaseElementConfig & IViewConfig & {
     /** 元素类型：固定为 "list" */
     type: "list";
+    /** 默认子项资源 URL */
+    defaultItem?: string;
     /** 列表项排列布局 */
     listLayout?: "SingleColumn" | "SingleRow" | "FlowHorizontal" | "FlowVertical" | "Pagination";
     /** 行间距 */

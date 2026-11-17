@@ -2,13 +2,33 @@ import { IElementConfig } from "./IElementConfig";
 import { IBaseElementConfig } from "./IBaseElementConfig";
 import { IViewConfig } from "./IViewConfig";
 
+/**
+ * UIFactory 两遍测量排版与物理定位引擎
+ *
+ * 核心特性：
+ * 1. 优先级决策链（Priority Decision Chain）：
+ *    - 绝对定位最高：若显式声明了 x 或 y，直接使用该物理坐标，忽略流式排版；
+ *    - 相对百分比定位次之：若 layout 声明了 leftPercent / topPercent 等浮点比例，按容器尺寸精确换算；
+ *    - 经典对齐模式兜底：通过 alignX / alignY 结合 offsetX / offsetY 换算物理像素。
+ * 2. 缩放校准防漂移模型（Scale Correction）：
+ *    - 计算占位空间时采用 `Math.abs(scaleX) * width` 真实物理包围盒，避免镜像（scaleX < 0）或缩放导致原点错位。
+ * 3. 弹性流式排版与折行 (Flexbox Flow & Flex Wrap)：
+ *    - 支持 horizontal / vertical 流式累计、justifyContent 主轴对齐、alignItems 交叉轴对齐与 flexWrap 自动换行。
+ */
 export class UIFactoryLayout {
 
     /**
-     * 【物理定位与弹性排版核心引擎】
-     * 职责：
-     *   在运行时动态计算并装配 FGUI 元件在宿主容器中的真实像素坐标。本方法是无资源包依赖动态排版的核心，
-     *   支持绝对坐标配置、容器百分比自适应（Left/Right/Top/Bottom 百分比）及对齐模式（左中右、顶中底）叠加物理偏移量。
+     * 【物理定位与弹性排版核心计算函数】
+     *
+     * 运行时动态计算元件在宿主容器中的目标像素坐标 (targetX, targetY) 与真实物理占用尺寸 (elW, elH)。
+     *
+     * @param node 待排版的 FGUI 显示对象
+     * @param elData 元件声明式配置
+     * @param containerW 容器计算宽度
+     * @param containerH 容器计算高度
+     * @param parentData 父容器全局配置（含 layoutType、alignItems、padding 等）
+     * @param flowState 流式排版累计状态上下文
+     * @returns 包含 targetX, targetY, elW, elH 的排版几何结果
      */
     public static setupElementPosition(
         node: fgui.GObject,
