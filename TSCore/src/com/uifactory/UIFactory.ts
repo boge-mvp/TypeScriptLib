@@ -95,6 +95,35 @@ export class UIFactory {
     }
 
     /**
+     * 解析并合并组件声明配置（自动提取并展开 src 引用的独立页面配置）
+     *
+     * @param elData 声明式元素配置
+     * @returns 深度合并了模板结构与实例覆盖属性后的完整元素配置
+     */
+    public static resolveElementConfig(elData: IElementConfig): IElementConfig {
+        if (!elData.src) return elData;
+        const templateConf = UIFactory.getLayout(elData.src);
+        if (!templateConf) return elData;
+        const elAny = elData as any;
+        const tmplAny = templateConf as any;
+        return {
+            ...templateConf,
+            ...elData,
+            type: elData.type || templateConf.type || "panel",
+            elements: elAny.elements || tmplAny.elements,
+            controllers: elAny.controllers || tmplAny.controllers,
+            transitions: elAny.transitions || tmplAny.transitions,
+            background: elAny.background !== undefined ? elAny.background : tmplAny.background,
+            padding: elAny.padding !== undefined ? elAny.padding : tmplAny.padding,
+            layoutType: elAny.layoutType !== undefined ? elAny.layoutType : tmplAny.layoutType,
+            gap: elAny.gap !== undefined ? elAny.gap : tmplAny.gap,
+            flexWrap: elAny.flexWrap !== undefined ? elAny.flexWrap : tmplAny.flexWrap,
+            alignItems: elAny.alignItems !== undefined ? elAny.alignItems : tmplAny.alignItems,
+            justifyContent: elAny.justifyContent !== undefined ? elAny.justifyContent : tmplAny.justifyContent
+        } as IElementConfig;
+    }
+
+    /**
      * 规范化资源 URL 地址
      *
      * @param url 待规范化的资源相对路径或完整 URL
@@ -659,7 +688,7 @@ export class UIFactory {
             }
         }
 
-        const childElements = elData.elements || [];
+        const childElements = (elData.elements || []).map(el => UIFactory.resolveElementConfig(el));
         let panelMaxHeight = elData.height || 0;
         let panelMaxWidth = elData.width || 0;
 
