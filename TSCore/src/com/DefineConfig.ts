@@ -525,6 +525,30 @@ export class DefineConfig {
             }
         })
 
+        // 扩展 FGUI 官方 GGraph.setProp/getProp 弥补其遗漏 OutlineColor (描边颜色) 的已知缺陷
+        if (fgui.GGraph) {
+            const orig_GGraph_setProp = fgui.GGraph.prototype.setProp;
+            Object.defineProperty(fgui.GGraph.prototype, "setProp", {
+                value: function (this: fgui.GGraph, index: number, value: any) {
+                    if (index === fgui.ObjectPropID.OutlineColor) {
+                        this["_lineColor"] = value;
+                        if (this["_type"] !== 0) this["updateGraph"]();
+                    } else {
+                        orig_GGraph_setProp.call(this, index, value);
+                    }
+                }
+            });
+            const orig_GGraph_getProp = fgui.GGraph.prototype.getProp;
+            Object.defineProperty(fgui.GGraph.prototype, "getProp", {
+                value: function (this: fgui.GGraph, index: number) {
+                    if (index === fgui.ObjectPropID.OutlineColor) {
+                        return this["_lineColor"];
+                    }
+                    return orig_GGraph_getProp.call(this, index);
+                }
+            });
+        }
+
     }
 
     /**
