@@ -5,7 +5,6 @@ node_modules
 /GameLib/bin/temp/
 *.tgz
 *.zip
-demo
 .rollup.cache
 .gemini/
 gha-creds-*.json

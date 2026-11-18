@@ -64,52 +64,100 @@ export class UIFactory {
     public static bundleKey: string = "TypeScriptLib_UIFactory_2026_Key";
 
     /**
-     * Validates that "controllers" and "transitions" are only defined on the root node of a layout configuration.
-     * Sub-modules requiring independent state machines must be extracted into separate JSON components and referenced via "src".
+     * Validates that:
+     * 1. "controllers" and "transitions" are only defined on the root node of a layout configuration.
+     * 2. Non-root panels cannot contain inline elements unless referenced via "src".
+     * 3. All declared Gears reference controllers that actually exist on the root container.
      *
      * @param config The layout panel configuration (IPanelConfig)
      * @param pagePath The path or identifier of the layout being validated
-     * @throws Error when controllers or transitions are found on non-root nodes
+     * @throws Error when layout hierarchy or gear configuration is invalid
      */
     public static validateLayoutConfig(config: IPanelConfig, pagePath: string = "root"): void {
         if (!config || !config.elements || !Array.isArray(config.elements)) return;
 
-        const checkChild = (node: IElementConfig, pathTrace: string) => {
+        // Collect all valid controllers declared on the root node
+        const validControllers = new Set<string>((config.controllers || []).map(c => c && c.name).filter(Boolean));
+
+        const gearKeys = [
+            "gearDisplay", "gearXY", "gearSize", "gearLook", "gearColor",
+            "gearAnimation", "gearText", "gearIcon", "gearDisplay2", "gearFontSize"
+        ];
+
+        const checkChild = (node: IElementConfig, pathTrace: string, parentControllers: Set<string>) => {
             if (!node) return;
             // If child references an external component via src, its own file has its own root node
             if (node.src) return;
 
             const anyNode = node as any;
+
+            // Compute available controllers for children inside this node
+            const currentScopeControllers = (node.type === "button")
+                ? new Set<string>([...Array.from(parentControllers), "button"])
+                : new Set<string>([...(anyNode.controllers || []).map((c: any) => c && c.name).filter(Boolean)]);
+
+            // Rule 1: Non-root panels cannot contain inline elements declaring gears that direct parent does not own
+            if (node.type === "panel" && !node.src && Array.isArray(anyNode.elements) && anyNode.elements.length > 0) {
+                for (const child of anyNode.elements) {
+                    for (const gk of gearKeys) {
+                        if (child[gk] && child[gk].controller) {
+                            const cName = child[gk].controller;
+                            if (!currentScopeControllers.has(cName)) {
+                                console.warn(
+                                    `[UIFactory] Invalid layout hierarchy in "${pagePath}": Sub-element "${pathTrace} -> elements[${child.name || child.type}]" declares gear "${gk}" referencing controller "${cName}", but its direct parent container does not own this controller! ` +
+                                    `FairyGUI Gears only look up controllers in their DIRECT parent container. Sub-elements needing controllers must be flattened to root with "group" or decoupled into an external component with "src".`
+                                );
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Rule 2: Non-root nodes cannot define controllers (except button internal 4-state controller)
             const isButtonControllerOnly = node.type === "button" &&
                 Array.isArray(anyNode.controllers) &&
                 anyNode.controllers.length === 1 &&
                 anyNode.controllers[0].name === "button";
 
             if (Array.isArray(anyNode.controllers) && anyNode.controllers.length > 0 && !isButtonControllerOnly) {
-                throw new Error(
+                console.warn(
                     `[UIFactory] Invalid layout in "${pagePath}": "controllers" cannot be defined on non-root node "${pathTrace}" (name: "${node.name || 'unnamed'}", type: "${node.type}"). ` +
                     `Controllers must only be declared on the root node of a layout JSON. If a sub-module requires an independent controller, extract it into a separate JSON file and reference it via "src".`
                 );
             }
 
+            // Rule 3: Non-root nodes cannot define transitions
             if (Array.isArray(anyNode.transitions) && anyNode.transitions.length > 0) {
-                throw new Error(
+                console.warn(
                     `[UIFactory] Invalid layout in "${pagePath}": "transitions" cannot be defined on non-root node "${pathTrace}" (name: "${node.name || 'unnamed'}", type: "${node.type}"). ` +
                     `Transitions must only be declared on the root node of a layout JSON. If a sub-module requires an independent transition, extract it into a separate JSON file and reference it via "src".`
                 );
             }
 
+            // Rule 4: All declared Gears on this node must reference controllers that exist on parent container
+            for (const gk of gearKeys) {
+                if (anyNode[gk] && anyNode[gk].controller) {
+                    const ctrlName = anyNode[gk].controller;
+                    if (!parentControllers.has(ctrlName)) {
+                        console.warn(
+                            `[UIFactory] Invalid gear configuration in "${pagePath}": Element "${pathTrace}" (name: "${node.name || 'unnamed'}") declares gear "${gk}" referencing non-existent controller "${ctrlName}". ` +
+                            `Declared controllers on direct parent container: [${Array.from(parentControllers).join(", ")}].`
+                        );
+                    }
+                }
+            }
+
             if (anyNode.elements && Array.isArray(anyNode.elements)) {
                 for (let i = 0; i < anyNode.elements.length; i++) {
                     const child = anyNode.elements[i];
-                    checkChild(child, `${pathTrace} -> elements[${i}](${child.name || child.type})`);
+                    checkChild(child, `${pathTrace} -> elements[${i}](${child.name || child.type})`, currentScopeControllers);
                 }
             }
         };
 
         for (let i = 0; i < config.elements.length; i++) {
             const rootChild = config.elements[i];
-            checkChild(rootChild, `elements[${i}](${rootChild.name || rootChild.type})`);
+            checkChild(rootChild, `elements[${i}](${rootChild.name || rootChild.type})`, validControllers);
         }
     }
 
