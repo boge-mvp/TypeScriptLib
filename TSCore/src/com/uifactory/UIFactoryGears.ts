@@ -152,6 +152,27 @@ export class UIFactoryGears {
 
         // 4. GearColor (颜色)
         if (childData.gearColor) {
+            // 包装层扩展 (对齐开发规范)：弥补 FGUI 官方 GGraph.setProp 遗漏 OutlineColor 的缺陷
+            if (typeof fgui !== "undefined" && fgui.GGraph && !(fgui.GGraph.prototype as any)._outlineColorInjected) {
+                (fgui.GGraph.prototype as any)._outlineColorInjected = true;
+                const originSetProp = fgui.GGraph.prototype.setProp;
+                fgui.GGraph.prototype.setProp = function (index: number, value: any) {
+                    if (index === fgui.ObjectPropID.OutlineColor) {
+                        this["_lineColor"] = value;
+                        if (this["_type"] !== 0) this["updateGraph"]();
+                    } else {
+                        originSetProp.call(this, index, value);
+                    }
+                };
+                const originGetProp = fgui.GGraph.prototype.getProp;
+                fgui.GGraph.prototype.getProp = function (index: number) {
+                    if (index === fgui.ObjectPropID.OutlineColor) {
+                        return this["_lineColor"];
+                    }
+                    return originGetProp.call(this, index);
+                };
+            }
+
             const gear = childNode.getGear(4) as fgui.GearColor;
             const ctrl = getController(childData.gearColor.controller);
             if (ctrl) {
