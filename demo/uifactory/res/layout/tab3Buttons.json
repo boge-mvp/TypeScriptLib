@@ -1,0 +1,374 @@
+{
+  "type": "panel",
+  "name": "tab3Panel",
+  "x": 236,
+  "y": 12,
+  "width": 1228,
+  "height": 646,
+  "gearDisplay": { "controller": "tabCtrl", "pages": ["tab3"] },
+  "background": { "color": "#1e293b", "cornerRadius": 8 },
+  "padding": { "left": 30, "top": 16, "right": 30, "bottom": 16 },
+  "controllers": [
+    {
+      "name": "radioGroupCtrl",
+      "pages": ["optA", "optB"],
+      "selectedIndex": 0
+    }
+  ],
+  "elements": [
+    {
+      "type": "text",
+      "text": "③ 原生 GButton 二进制规范实装 + Checkbox/Radio 互斥 + Switch 开关 + GProgressBar 实装",
+      "fontSize": 16,
+      "bold": true,
+      "color": "#f8fafc",
+      "width": 850
+    },
+    {
+      "type": "text",
+      "y": 24,
+      "text": "展示 downEffect 中心缩放与颜色联动；Checkbox 原生勾选；Radio Group 原生互斥联动；Switch 独立组件滑动；GProgressBar 动态进度实装！",
+      "fontSize": 12,
+      "color": "#94a3b8",
+      "width": 1100
+    },
+    {
+      "type": "panel",
+      "name": "scaleDarkenRow",
+      "x": 30,
+      "y": 64,
+      "width": 580,
+      "height": 50,
+      "layoutType": "horizontal",
+      "gap": 16,
+      "elements": [
+        {
+          "type": "button",
+          "name": "btnScaleDemo",
+          "width": 270,
+          "height": 46,
+          "downEffect": 2,
+          "downEffectValue": 0.90,
+          "elements": [
+            { "type": "graph", "width": 270, "height": 46, "fillColor": "#2563eb", "cornerRadius": 8 },
+            { "type": "text", "name": "title", "text": "按压反馈：中心缩放 (downEffect=2)", "width": 270, "height": 46, "align": "center", "valign": "middle", "color": "#ffffff", "bold": true, "fontSize": 12 }
+          ]
+        },
+        {
+          "type": "button",
+          "name": "btnDarkenDemo",
+          "width": 270,
+          "height": 46,
+          "downEffect": 1,
+          "downEffectValue": 0.8,
+          "elements": [
+            {
+              "type": "graph",
+              "width": 270,
+              "height": 46,
+              "fillColor": "#ffffff",
+              "lineSize": 1,
+              "lineColor": "#cbd5e1",
+              "cornerRadius": 8
+            },
+            {
+              "type": "text",
+              "name": "title",
+              "text": "按压反馈：变暗滤镜 (downEffect=1)",
+              "width": 270,
+              "height": 46,
+              "align": "center",
+              "valign": "middle",
+              "color": "#0f172a",
+              "bold": true,
+              "fontSize": 12
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "panel",
+      "name": "checkboxRow",
+      "x": 30,
+      "y": 122,
+      "width": 580,
+      "height": 44,
+      "layoutType": "horizontal",
+      "gap": 16,
+      "elements": [
+        {
+          "type": "button",
+          "name": "btnCheckStandard",
+          "width": 260,
+          "height": 38,
+          "mode": "Check",
+          "controllers": [
+            {
+              "name": "button",
+              "pages": ["up", "down", "over", "selectedOver"],
+              "selectedIndex": 3
+            }
+          ],
+          "elements": [
+            { "type": "graph", "name": "box", "width": 26, "height": 26, "x": 4, "y": 6, "fillColor": "#1e293b", "lineSize": 2, "lineColor": "#3b82f6", "cornerRadius": 4 },
+            {
+              "type": "text",
+              "name": "checkIcon",
+              "x": 6, "y": 7, "width": 24, "height": 24,
+              "text": "✔", "fontSize": 18, "bold": true, "color": "#38bdf8", "align": "center",
+              "gearDisplay": { "controller": "button", "pages": ["down", "selectedOver"] }
+            },
+            { "type": "text", "name": "title", "x": 38, "y": 10, "width": 210, "text": "复选框 (FGUI 原生 CheckBox)", "fontSize": 12, "bold": true, "color": "#ffffff" }
+          ]
+        },
+        {
+          "type": "button",
+          "name": "btnSwitchDemo",
+          "src": "res/layout/switchDemo.json",
+          "width": 260,
+          "height": 38
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "name": "radioRowGroup"
+    },
+    {
+      "type": "button",
+      "name": "btnRadioA",
+      "group": "radioRowGroup",
+      "x": 30,
+      "y": 174,
+      "width": 260,
+      "height": 38,
+      "mode": "Radio",
+      "relatedController": "radioGroupCtrl",
+      "pageId": "optA",
+      "selected": true,
+      "controllers": [
+        {
+          "name": "button",
+          "pages": ["up", "down", "over", "selectedOver"],
+          "selectedIndex": 3
+        }
+      ],
+      "elements": [
+        { "type": "graph", "name": "ring", "width": 26, "height": 26, "x": 4, "y": 6, "fillColor": "#0f172a", "lineSize": 2, "lineColor": "#a855f7", "cornerRadius": 13 },
+        {
+          "type": "graph",
+          "name": "dotA",
+          "x": 9, "y": 11, "width": 16, "height": 16,
+          "fillColor": "#c084fc", "cornerRadius": 8,
+          "gearDisplay": { "controller": "button", "pages": ["down", "selectedOver"] }
+        },
+        { "type": "text", "name": "title", "x": 38, "y": 10, "width": 210, "text": "单选 A (Standard 居中实心圆)", "fontSize": 12, "bold": true, "color": "#ffffff" }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "btnRadioB",
+      "group": "radioRowGroup",
+      "x": 306,
+      "y": 174,
+      "width": 260,
+      "height": 38,
+      "mode": "Radio",
+      "relatedController": "radioGroupCtrl",
+      "pageId": "optB",
+      "controllers": [
+        {
+          "name": "button",
+          "pages": ["up", "down", "over", "selectedOver"],
+          "selectedIndex": 0
+        }
+      ],
+      "elements": [
+        { "type": "graph", "name": "ring", "width": 26, "height": 26, "x": 4, "y": 6, "fillColor": "#0f172a", "lineSize": 2, "lineColor": "#a855f7", "cornerRadius": 13 },
+        {
+          "type": "graph",
+          "name": "dotB",
+          "x": 9, "y": 11, "width": 16, "height": 16,
+          "fillColor": "#c084fc", "cornerRadius": 8,
+          "gearDisplay": { "controller": "button", "pages": ["down", "selectedOver"] }
+        },
+        { "type": "text", "name": "title", "x": 38, "y": 10, "width": 210, "text": "单选 B (Premium 居中实心圆)", "fontSize": 12, "bold": true, "color": "#ffffff" }
+      ]
+    },
+    {
+      "type": "graph",
+      "name": "divider1",
+      "x": 30,
+      "y": 224,
+      "width": 580,
+      "height": 1,
+      "fillColor": "#334155"
+    },
+    {
+      "type": "panel",
+      "name": "progressSection",
+      "x": 30,
+      "y": 236,
+      "width": 580,
+      "height": 96,
+      "layoutType": "vertical",
+      "gap": 10,
+      "elements": [
+        { "type": "text", "text": "纯代码 GProgressBar 进度条组件实装：", "fontSize": 12, "bold": true, "color": "#38bdf8", "width": 580, "height": 18 },
+        {
+          "type": "progressbar",
+          "name": "demoProgressBar",
+          "width": 580,
+          "height": 26,
+          "value": 50,
+          "min": 0,
+          "max": 100,
+          "titleType": 0,
+          "elements": [
+            { "type": "graph", "name": "bg", "width": 580, "height": 26, "fillColor": "#1e293b", "cornerRadius": 13 },
+            { "type": "graph", "name": "bar", "width": 580, "height": 26, "fillColor": "#22c55e", "cornerRadius": 13 },
+            { "type": "text", "name": "title", "width": 580, "height": 26, "text": "50%", "fontSize": 12, "bold": true, "color": "#ffffff", "align": "center", "valign": "middle", "font": "Microsoft YaHei, Arial" }
+          ]
+        },
+        {
+          "type": "panel",
+          "name": "progressCtrlRow",
+          "width": 580,
+          "height": 30,
+          "layoutType": "horizontal",
+          "gap": 16,
+          "elements": [
+            {
+              "type": "button",
+              "name": "btnProgressAdd",
+              "width": 170,
+              "height": 30,
+              "elements": [
+                { "type": "graph", "width": 170, "height": 30, "fillColor": "#16a34a", "cornerRadius": 6 },
+                { "type": "text", "name": "title", "text": "➕ 推进进度 (+15%)", "width": 170, "height": 30, "align": "center", "valign": "middle", "color": "#ffffff", "bold": true, "fontSize": 12 }
+              ]
+            },
+            {
+              "type": "button",
+              "name": "btnProgressReset",
+              "width": 130,
+              "height": 30,
+              "elements": [
+                { "type": "graph", "width": 130, "height": 30, "fillColor": "#475569", "cornerRadius": 6 },
+                { "type": "text", "name": "title", "text": "🔄 重置为 0%", "width": 130, "height": 30, "align": "center", "valign": "middle", "color": "#ffffff", "bold": true, "fontSize": 12 }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "name": "divider2",
+      "x": 30,
+      "y": 344,
+      "width": 580,
+      "height": 1,
+      "fillColor": "#334155"
+    },
+    {
+      "type": "panel",
+      "name": "sliderSection",
+      "x": 30,
+      "y": 356,
+      "width": 580,
+      "height": 60,
+      "layoutType": "vertical",
+      "gap": 10,
+      "elements": [
+        { "type": "text", "text": "纯代码 GSlider 滑动条组件实装 (点击轨道 / 拖拽手柄)：", "fontSize": 12, "bold": true, "color": "#38bdf8", "width": 580, "height": 18 },
+        {
+          "type": "slider",
+          "name": "demoSlider",
+          "width": 580,
+          "height": 26,
+          "value": 50,
+          "min": 0,
+          "max": 100,
+          "changeOnClick": true,
+          "elements": [
+            { "type": "graph", "name": "bg", "x": 0, "y": 0, "width": 580, "height": 26, "fillColor": null },
+            { "type": "graph", "name": "track", "x": 0, "y": 9, "width": 580, "height": 8, "fillColor": "#1e293b", "cornerRadius": 4 },
+            { "type": "graph", "name": "bar", "x": 0, "y": 9, "width": 554, "height": 8, "fillColor": "#3b82f6", "cornerRadius": 4 },
+            { "type": "graph", "name": "grip", "shape": "circle", "x": 554, "y": 0, "width": 26, "height": 26, "fillColor": "#38bdf8", "lineSize": 2, "lineColor": "#ffffff" }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "graph",
+      "name": "divider3",
+      "x": 30,
+      "y": 428,
+      "width": 580,
+      "height": 1,
+      "fillColor": "#334155"
+    },
+    {
+      "type": "panel",
+      "name": "inputSection",
+      "x": 30,
+      "y": 440,
+      "width": 580,
+      "height": 36,
+      "layoutType": "horizontal",
+      "gap": 16,
+      "alignItems": "center",
+      "elements": [
+        { "type": "text", "text": "GTextInput 原生交互输入框:", "fontSize": 12, "bold": true, "color": "#38bdf8", "width": 170, "height": 20 },
+        {
+          "type": "panel",
+          "name": "inputWrapper",
+          "width": 394,
+          "height": 36,
+          "background": { "color": "#1e293b", "cornerRadius": 6, "lineSize": 1, "lineColor": "#64748b" },
+          "elements": [
+            {
+              "type": "text",
+              "name": "demoInput",
+              "isInput": true,
+              "x": 10,
+              "y": 5,
+              "width": 374,
+              "height": 26,
+              "fontSize": 13,
+              "color": "#38bdf8",
+              "text": "点击此处键入测试文字...",
+              "promptText": "请输入内容..."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "panel",
+      "name": "btnLogBoard",
+      "x": 640,
+      "y": 64,
+      "width": 560,
+      "height": 550,
+      "background": { "color": "#0f172a", "cornerRadius": 8, "lineSize": 1, "lineColor": "#334155" },
+      "elements": [
+        { "type": "text", "x": 20, "y": 16, "text": "控件实时交互日志与状态监测：", "fontSize": 14, "bold": true, "color": "#38bdf8", "width": 500 },
+        {
+          "type": "text",
+          "name": "logContent",
+          "x": 20,
+          "y": 48,
+          "width": 520,
+          "height": 480,
+          "fontSize": 12,
+          "color": "#cbd5e1",
+          "leading": 8,
+          "text": "就绪。点击左侧任意按钮、Checkbox、Radio 或 Switch 开关，实时记录事件...\n"
+        }
+      ]
+    }
+  ]
+}

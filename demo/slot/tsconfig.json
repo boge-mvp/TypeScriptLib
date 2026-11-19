@@ -1,0 +1,19 @@
+{
+  "extends": [
+    "../../tsconfig.json"
+  ],
+  "compilerOptions": {
+    "outDir": "./bin",
+    "declaration": false
+  },
+  "exclude": [
+    "bin"
+  ],
+  "include": [
+    "../../TSCore/bin/tsCore.d.ts",
+    "../../libs",
+    "../../GameLib/bin/gameLib.d.ts",
+    "**/*.ts",
+    "../../node_modules/**/*.d.ts"
+  ]
+}

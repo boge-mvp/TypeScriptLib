@@ -1,0 +1,252 @@
+{
+  "type": "panel",
+  "name": "tab6ModeBar",
+  "width": 576,
+  "height": 36,
+  "layoutType": "horizontal",
+  "gap": 8,
+  "controllers": [
+    {
+      "name": "modeCtrl",
+      "pages": [
+        "right",
+        "inside",
+        "bottom"
+      ],
+      "selected": 0
+    }
+  ],
+  "elements": [
+    {
+      "type": "button",
+      "name": "btnModeRight",
+      "width": 138,
+      "height": 34,
+      "mode": "Radio",
+      "relatedController": "modeCtrl",
+      "pageId": "right",
+      "selected": true,
+      "controllers": [
+        {
+          "name": "button",
+          "pages": [
+            "up",
+            "down",
+            "over",
+            "selectedOver"
+          ],
+          "selectedIndex": 3
+        }
+      ],
+      "elements": [
+        {
+          "type": "graph",
+          "width": 138,
+          "height": 34,
+          "fillColor": "#1e293b",
+          "lineSize": 1,
+          "lineColor": "#334155",
+          "cornerRadius": 4
+        },
+        {
+          "type": "graph",
+          "width": 138,
+          "height": 34,
+          "fillColor": "#2563eb",
+          "cornerRadius": 4,
+          "gearDisplay": {
+            "controller": "button",
+            "pages": [
+              "down",
+              "selectedOver"
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "name": "title",
+          "text": "基准: A在B右侧",
+          "width": 138,
+          "height": 34,
+          "align": "center",
+          "valign": "middle",
+          "color": "#ffffff",
+          "bold": true,
+          "fontSize": 11
+        }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "btnModeInside",
+      "width": 146,
+      "height": 34,
+      "mode": "Radio",
+      "relatedController": "modeCtrl",
+      "pageId": "inside",
+      "controllers": [
+        {
+          "name": "button",
+          "pages": [
+            "up",
+            "down",
+            "over",
+            "selectedOver"
+          ],
+          "selectedIndex": 0
+        }
+      ],
+      "elements": [
+        {
+          "type": "graph",
+          "width": 146,
+          "height": 34,
+          "fillColor": "#1e293b",
+          "lineSize": 1,
+          "lineColor": "#334155",
+          "cornerRadius": 4
+        },
+        {
+          "type": "graph",
+          "width": 146,
+          "height": 34,
+          "fillColor": "#0284c7",
+          "cornerRadius": 4,
+          "gearDisplay": {
+            "controller": "button",
+            "pages": [
+              "down",
+              "selectedOver"
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "name": "title",
+          "text": "基准: A在B内部",
+          "width": 146,
+          "height": 34,
+          "align": "center",
+          "valign": "middle",
+          "color": "#ffffff",
+          "bold": true,
+          "fontSize": 11
+        }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "btnModeBottom",
+      "width": 138,
+      "height": 34,
+      "mode": "Radio",
+      "relatedController": "modeCtrl",
+      "pageId": "bottom",
+      "controllers": [
+        {
+          "name": "button",
+          "pages": [
+            "up",
+            "down",
+            "over",
+            "selectedOver"
+          ],
+          "selectedIndex": 0
+        }
+      ],
+      "elements": [
+        {
+          "type": "graph",
+          "width": 138,
+          "height": 34,
+          "fillColor": "#1e293b",
+          "lineSize": 1,
+          "lineColor": "#334155",
+          "cornerRadius": 4
+        },
+        {
+          "type": "graph",
+          "width": 138,
+          "height": 34,
+          "fillColor": "#0d9488",
+          "cornerRadius": 4,
+          "gearDisplay": {
+            "controller": "button",
+            "pages": [
+              "down",
+              "selectedOver"
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "name": "title",
+          "text": "基准: A在B下方",
+          "width": 138,
+          "height": 34,
+          "align": "center",
+          "valign": "middle",
+          "color": "#ffffff",
+          "bold": true,
+          "fontSize": 11
+        }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "btnTogglePivot",
+      "width": 130,
+      "height": 34,
+      "mode": "Check",
+      "controllers": [
+        {
+          "name": "button",
+          "pages": [
+            "up",
+            "down",
+            "over",
+            "selectedOver"
+          ],
+          "selectedIndex": 0
+        }
+      ],
+      "elements": [
+        {
+          "type": "graph",
+          "width": 130,
+          "height": 34,
+          "fillColor": "#1e293b",
+          "lineSize": 1,
+          "lineColor": "#475569",
+          "cornerRadius": 4
+        },
+        {
+          "type": "graph",
+          "width": 130,
+          "height": 34,
+          "fillColor": "#6366f1",
+          "cornerRadius": 4,
+          "gearDisplay": {
+            "controller": "button",
+            "pages": [
+              "down",
+              "selectedOver"
+            ]
+          }
+        },
+        {
+          "type": "text",
+          "name": "title",
+          "text": "B轴心: (0,0)",
+          "width": 130,
+          "height": 34,
+          "align": "center",
+          "valign": "middle",
+          "color": "#ffffff",
+          "bold": true,
+          "fontSize": 11
+        }
+      ]
+    }
+  ]
+}

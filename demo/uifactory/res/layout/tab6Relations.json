@@ -1,0 +1,4009 @@
+{
+  "type": "panel",
+  "name": "tab6Panel",
+  "x": 236,
+  "y": 12,
+  "width": 1228,
+  "height": 646,
+  "gearDisplay": {
+    "controller": "tabCtrl",
+    "pages": [
+      "tab6"
+    ]
+  },
+  "background": {
+    "color": "#1e293b",
+    "cornerRadius": 8
+  },
+  "elements": [
+    {
+      "type": "text",
+      "x": 24,
+      "y": 14,
+      "text": "⑥ FGUI 原生关联系统 (Relations) — 25 项全矩阵 + % 百分比交互检视工作台",
+      "fontSize": 16,
+      "bold": true,
+      "color": "#f8fafc",
+      "width": 900
+    },
+    {
+      "type": "text",
+      "x": 24,
+      "y": 36,
+      "text": "左侧实时滑动 Target B 的 X / Y / 宽 / 高 / 轴心；右侧 1:1 复刻 FGUI 编辑器全部 10 行关联项与 [%] 百分比开关，支持任意多选叠加！",
+      "fontSize": 12,
+      "color": "#94a3b8",
+      "width": 1180
+    },
+    {
+      "type": "panel",
+      "name": "leftWorkbench",
+      "x": 24,
+      "y": 58,
+      "width": 576,
+      "height": 570,
+      "elements": [
+        {
+          "type": "panel",
+          "name": "sandboxStage",
+          "x": 0,
+          "y": 0,
+          "width": 576,
+          "height": 480,
+          "overflow": 1,
+          "background": {
+            "color": "#090d16",
+            "cornerRadius": 8,
+            "lineSize": 1,
+            "lineColor": "#334155"
+          },
+          "elements": [
+            {
+              "type": "text",
+              "x": 12,
+              "y": 8,
+              "text": "🟦 参照物 Target B: 🖱️点击选中显示 8 点位手柄 | 按住自由位移 | 拖拽四周 8 个手柄自由缩放",
+              "fontSize": 11,
+              "color": "#64748b",
+              "width": 552
+            },
+            {
+              "type": "panel",
+              "name": "ghostBox",
+              "x": 250,
+              "y": 85,
+              "width": 120,
+              "height": 60,
+              "background": {
+                "color": "#1e293b",
+                "cornerRadius": 4,
+                "lineSize": 1,
+                "lineColor": "#475569"
+              },
+              "alpha": 0.45,
+              "elements": [
+                {
+                  "type": "text",
+                  "text": "A 初始基准位",
+                  "width": 120,
+                  "height": 60,
+                  "align": "center",
+                  "valign": "middle",
+                  "fontSize": 10,
+                  "color": "#94a3b8",
+                  "relations": [
+                    {
+                      "target": "parent",
+                      "type": "Width"
+                    },
+                    {
+                      "target": "parent",
+                      "type": "Height"
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "targetBox",
+              "x": 70,
+              "y": 70,
+              "width": 160,
+              "height": 100,
+              "background": {
+                "color": "#1e3a8a",
+                "cornerRadius": 6,
+                "lineSize": 2,
+                "lineColor": "#38bdf8"
+              },
+              "elements": [
+                {
+                  "type": "graph",
+                  "name": "midLineH",
+                  "x": 0,
+                  "y": 49,
+                  "width": 160,
+                  "height": 1,
+                  "fillColor": "#38bdf8",
+                  "alpha": 0.4,
+                  "relations": [
+                    {
+                      "target": "parent",
+                      "type": "Width"
+                    },
+                    {
+                      "target": "parent",
+                      "type": "Middle_Middle"
+                    }
+                  ]
+                },
+                {
+                  "type": "graph",
+                  "name": "midLineV",
+                  "x": 79,
+                  "y": 0,
+                  "width": 1,
+                  "height": 100,
+                  "fillColor": "#38bdf8",
+                  "alpha": 0.4,
+                  "relations": [
+                    {
+                      "target": "parent",
+                      "type": "Height"
+                    },
+                    {
+                      "target": "parent",
+                      "type": "Center_Center"
+                    }
+                  ]
+                },
+                {
+                  "type": "text",
+                  "name": "targetLabel",
+                  "x": 0,
+                  "y": 0,
+                  "width": 160,
+                  "height": 100,
+                  "text": "Target B (参照物)\nX:70 Y:70 W:160 H:100",
+                  "align": "center",
+                  "valign": "middle",
+                  "fontSize": 11,
+                  "bold": true,
+                  "color": "#bae6fd",
+                  "relations": [
+                    {
+                      "target": "parent",
+                      "type": "Width"
+                    },
+                    {
+                      "target": "parent",
+                      "type": "Height"
+                    }
+                  ]
+                },
+                {
+                  "type": "group",
+                  "name": "handlesGroup",
+                  "visible": false
+                },
+                {
+                  "type": "panel",
+                  "name": "selectionBorder",
+                  "group": "handlesGroup",
+                  "x": -2,
+                  "y": -2,
+                  "width": 164,
+                  "height": 104,
+                  "touchable": false,
+                  "background": {
+                    "color": "",
+                    "cornerRadius": 8,
+                    "lineSize": 2,
+                    "lineColor": "#facc15"
+                  },
+                  "relations": [
+                    {
+                      "target": "parent",
+                      "type": "Width"
+                    },
+                    {
+                      "target": "parent",
+                      "type": "Height"
+                    }
+                  ]
+                },
+                {
+                  "type": "panel",
+                  "name": "handle_nw",
+                  "group": "handlesGroup",
+                  "x": -10,
+                  "y": -10,
+                  "width": 20,
+                  "height": 20,
+                  "relations": [
+                    { "target": "parent", "type": "Left_Left" },
+                    { "target": "parent", "type": "Top_Top" }
+                  ],
+                  "elements": [
+                    { "type": "graph", "x": 5, "y": 5, "width": 10, "height": 10, "fillColor": "#ffffff", "cornerRadius": 2, "lineSize": 1.5, "lineColor": "#0284c7" }
+                  ]
+                },
+                {
+                  "type": "panel",
+                  "name": "handle_n",
+                  "group": "handlesGroup",
+                  "x": 70,
+                  "y": -10,
+                  "width": 20,
+                  "height": 20,
+                  "relations": [
+                    { "target": "parent", "type": "Center_Center" },
+                    { "target": "parent", "type": "Top_Top" }
+                  ],
+                  "elements": [
+                    { "type": "graph", "x": 5, "y": 5, "width": 10, "height": 10, "fillColor": "#ffffff", "cornerRadius": 2, "lineSize": 1.5, "lineColor": "#0284c7" }
+                  ]
+                },
+                {
+                  "type": "panel",
+                  "name": "handle_ne",
+                  "group": "handlesGroup",
+                  "x": 150,
+                  "y": -10,
+                  "width": 20,
+                  "height": 20,
+                  "relations": [
+                    { "target": "parent", "type": "Right_Right" },
+                    { "target": "parent", "type": "Top_Top" }
+                  ],
+                  "elements": [
+                    { "type": "graph", "x": 5, "y": 5, "width": 10, "height": 10, "fillColor": "#ffffff", "cornerRadius": 2, "lineSize": 1.5, "lineColor": "#0284c7" }
+                  ]
+                },
+                {
+                  "type": "panel",
+                  "name": "handle_e",
+                  "group": "handlesGroup",
+                  "x": 150,
+                  "y": 40,
+                  "width": 20,
+                  "height": 20,
+                  "relations": [
+                    { "target": "parent", "type": "Right_Right" },
+                    { "target": "parent", "type": "Middle_Middle" }
+                  ],
+                  "elements": [
+                    { "type": "graph", "x": 5, "y": 5, "width": 10, "height": 10, "fillColor": "#ffffff", "cornerRadius": 2, "lineSize": 1.5, "lineColor": "#0284c7" }
+                  ]
+                },
+                {
+                  "type": "panel",
+                  "name": "handle_se",
+                  "group": "handlesGroup",
+                  "x": 150,
+                  "y": 90,
+                  "width": 20,
+                  "height": 20,
+                  "relations": [
+                    { "target": "parent", "type": "Right_Right" },
+                    { "target": "parent", "type": "Bottom_Bottom" }
+                  ],
+                  "elements": [
+                    { "type": "graph", "x": 5, "y": 5, "width": 10, "height": 10, "fillColor": "#ffffff", "cornerRadius": 2, "lineSize": 1.5, "lineColor": "#0284c7" }
+                  ]
+                },
+                {
+                  "type": "panel",
+                  "name": "handle_s",
+                  "group": "handlesGroup",
+                  "x": 70,
+                  "y": 90,
+                  "width": 20,
+                  "height": 20,
+                  "relations": [
+                    { "target": "parent", "type": "Center_Center" },
+                    { "target": "parent", "type": "Bottom_Bottom" }
+                  ],
+                  "elements": [
+                    { "type": "graph", "x": 5, "y": 5, "width": 10, "height": 10, "fillColor": "#ffffff", "cornerRadius": 2, "lineSize": 1.5, "lineColor": "#0284c7" }
+                  ]
+                },
+                {
+                  "type": "panel",
+                  "name": "handle_sw",
+                  "group": "handlesGroup",
+                  "x": -10,
+                  "y": 90,
+                  "width": 20,
+                  "height": 20,
+                  "relations": [
+                    { "target": "parent", "type": "Left_Left" },
+                    { "target": "parent", "type": "Bottom_Bottom" }
+                  ],
+                  "elements": [
+                    { "type": "graph", "x": 5, "y": 5, "width": 10, "height": 10, "fillColor": "#ffffff", "cornerRadius": 2, "lineSize": 1.5, "lineColor": "#0284c7" }
+                  ]
+                },
+                {
+                  "type": "panel",
+                  "name": "handle_w",
+                  "group": "handlesGroup",
+                  "x": -10,
+                  "y": 40,
+                  "width": 20,
+                  "height": 20,
+                  "relations": [
+                    { "target": "parent", "type": "Left_Left" },
+                    { "target": "parent", "type": "Middle_Middle" }
+                  ],
+                  "elements": [
+                    { "type": "graph", "x": 5, "y": 5, "width": 10, "height": 10, "fillColor": "#ffffff", "cornerRadius": 2, "lineSize": 1.5, "lineColor": "#0284c7" }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "followerBox",
+              "x": 250,
+              "y": 85,
+              "width": 120,
+              "height": 60,
+              "background": {
+                "color": "#065f46",
+                "cornerRadius": 6,
+                "lineSize": 2,
+                "lineColor": "#34d399"
+              },
+              "elements": [
+                {
+                  "type": "text",
+                  "name": "followerLabel",
+                  "x": 0,
+                  "y": 0,
+                  "width": 120,
+                  "height": 60,
+                  "text": "Follower A\nX:250 Y:85\nW:120 H:60",
+                  "align": "center",
+                  "valign": "middle",
+                  "fontSize": 11,
+                  "bold": true,
+                  "color": "#ecfdf5",
+                  "relations": [
+                    {
+                      "target": "parent",
+                      "type": "Width"
+                    },
+                    {
+                      "target": "parent",
+                      "type": "Height"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "panel",
+          "name": "telemetryBar",
+          "x": 0,
+          "y": 486,
+          "width": 576,
+          "height": 36,
+          "background": {
+            "color": "#0f172a",
+            "cornerRadius": 6,
+            "lineSize": 1,
+            "lineColor": "#334155"
+          },
+          "elements": [
+            {
+              "type": "text",
+              "name": "telemetryText",
+              "x": 12,
+              "y": 9,
+              "width": 552,
+              "text": "📊 实时遥测: B(70, 70, 160×90)  →  A(250, 85, 120×60) | 偏移量 Δ=(+0, +0, +0, +0)",
+              "fontSize": 12,
+              "bold": true,
+              "color": "#38bdf8"
+            }
+          ]
+        },
+        {
+          "type": "panel",
+          "name": "layoutModeRow",
+          "src": "res/layout/tab6ModeBar.json",
+          "x": 0,
+          "y": 528,
+          "width": 576,
+          "height": 36
+        }
+      ]
+    },
+    {
+      "type": "panel",
+      "name": "rightMatrixPanel",
+      "x": 616,
+      "y": 58,
+      "width": 592,
+      "height": 570,
+      "background": {
+        "color": "#0f172a",
+        "cornerRadius": 8,
+        "lineSize": 1,
+        "lineColor": "#334155"
+      },
+      "elements": [
+        {
+          "type": "text",
+          "x": 16,
+          "y": 10,
+          "text": "⚡ 一键高频关联组合预设 (也可在下方矩阵任意手动勾选 / 叠加 %)：",
+          "fontSize": 12,
+          "bold": true,
+          "color": "#38bdf8",
+          "width": 560
+        },
+        {
+          "type": "panel",
+          "name": "presetRow1",
+          "x": 16,
+          "y": 32,
+          "width": 560,
+          "height": 30,
+          "layoutType": "horizontal",
+          "gap": 6,
+          "elements": [
+            {
+              "type": "button",
+              "name": "btnPresetFollowRight",
+              "width": 108,
+              "height": 28,
+              "elements": [
+                {
+                  "type": "graph",
+                  "width": 108,
+                  "height": 28,
+                  "fillColor": "#1d4ed8",
+                  "cornerRadius": 4
+                },
+                {
+                  "type": "text",
+                  "name": "title",
+                  "text": "左->右(伴生右推)",
+                  "width": 108,
+                  "height": 28,
+                  "align": "center",
+                  "valign": "middle",
+                  "color": "#ffffff",
+                  "bold": true,
+                  "fontSize": 11
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "name": "btnPresetSize",
+              "width": 96,
+              "height": 28,
+              "elements": [
+                {
+                  "type": "graph",
+                  "width": 96,
+                  "height": 28,
+                  "fillColor": "#1d4ed8",
+                  "cornerRadius": 4
+                },
+                {
+                  "type": "text",
+                  "name": "title",
+                  "text": "宽->宽+高->高",
+                  "width": 96,
+                  "height": 28,
+                  "align": "center",
+                  "valign": "middle",
+                  "color": "#ffffff",
+                  "bold": true,
+                  "fontSize": 11
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "name": "btnPresetCenter",
+              "width": 96,
+              "height": 28,
+              "elements": [
+                {
+                  "type": "graph",
+                  "width": 96,
+                  "height": 28,
+                  "fillColor": "#1d4ed8",
+                  "cornerRadius": 4
+                },
+                {
+                  "type": "text",
+                  "name": "title",
+                  "text": "左右+上下居中",
+                  "width": 96,
+                  "height": 28,
+                  "align": "center",
+                  "valign": "middle",
+                  "color": "#ffffff",
+                  "bold": true,
+                  "fontSize": 11
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "name": "btnPresetExtH",
+              "width": 96,
+              "height": 28,
+              "elements": [
+                {
+                  "type": "graph",
+                  "width": 96,
+                  "height": 28,
+                  "fillColor": "#047857",
+                  "cornerRadius": 4
+                },
+                {
+                  "type": "text",
+                  "name": "title",
+                  "text": "左延展+右延展",
+                  "width": 96,
+                  "height": 28,
+                  "align": "center",
+                  "valign": "middle",
+                  "color": "#ffffff",
+                  "bold": true,
+                  "fontSize": 11
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "name": "btnPresetExtV",
+              "width": 96,
+              "height": 28,
+              "elements": [
+                {
+                  "type": "graph",
+                  "width": 96,
+                  "height": 28,
+                  "fillColor": "#047857",
+                  "cornerRadius": 4
+                },
+                {
+                  "type": "text",
+                  "name": "title",
+                  "text": "顶延展+底延展",
+                  "width": 96,
+                  "height": 28,
+                  "align": "center",
+                  "valign": "middle",
+                  "color": "#ffffff",
+                  "bold": true,
+                  "fontSize": 11
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "name": "btnClearRelations",
+              "width": 44,
+              "height": 28,
+              "elements": [
+                {
+                  "type": "graph",
+                  "width": 44,
+                  "height": 28,
+                  "fillColor": "#dc2626",
+                  "cornerRadius": 4
+                },
+                {
+                  "type": "text",
+                  "name": "title",
+                  "text": "清空",
+                  "width": 44,
+                  "height": 28,
+                  "align": "center",
+                  "valign": "middle",
+                  "color": "#ffffff",
+                  "bold": true,
+                  "fontSize": 11
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "panel",
+          "name": "fguiInspectorBox",
+          "x": 16,
+          "y": 68,
+          "width": 560,
+          "height": 392,
+          "background": {
+            "color": "#1e2430",
+            "cornerRadius": 6,
+            "lineSize": 1,
+            "lineColor": "#334155"
+          },
+          "elements": [
+            {
+              "type": "panel",
+              "name": "cell_Width",
+              "x": 24,
+              "y": 10,
+              "width": 134,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_Width",
+                  "x": 0,
+                  "y": 0,
+                  "width": 96,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 96,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 96,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "宽 -> 宽",
+                      "width": 96,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_Width",
+                  "x": 100,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "cell_Height",
+              "x": 204,
+              "y": 10,
+              "width": 134,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_Height",
+                  "x": 0,
+                  "y": 0,
+                  "width": 96,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 96,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 96,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "高 -> 高",
+                      "width": 96,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_Height",
+                  "x": 100,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "cell_Size",
+              "x": 380,
+              "y": 10,
+              "width": 142,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_Size",
+                  "x": 0,
+                  "y": 0,
+                  "width": 104,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 104,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 104,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "宽+高(Size)",
+                      "width": 104,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_Size",
+                  "x": 108,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "cell_Center_Center",
+              "x": 24,
+              "y": 48,
+              "width": 134,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_Center_Center",
+                  "x": 0,
+                  "y": 0,
+                  "width": 96,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 96,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 96,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "左右居中",
+                      "width": 96,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_Center_Center",
+                  "x": 100,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "cell_Middle_Middle",
+              "x": 204,
+              "y": 48,
+              "width": 134,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_Middle_Middle",
+                  "x": 0,
+                  "y": 0,
+                  "width": 96,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 96,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 96,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "上下居中",
+                      "width": 96,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_Middle_Middle",
+                  "x": 100,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "x": 18,
+              "y": 92,
+              "width": 84,
+              "text": "左 ->",
+              "align": "right",
+              "fontSize": 13,
+              "bold": true,
+              "color": "#cbd5e1"
+            },
+            {
+              "type": "panel",
+              "name": "cell_Left_Left",
+              "x": 114,
+              "y": 86,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_Left_Left",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "左",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_Left_Left",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "cell_Left_Center",
+              "x": 264,
+              "y": 86,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_Left_Center",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "中",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_Left_Center",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "cell_Left_Right",
+              "x": 414,
+              "y": 86,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_Left_Right",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "右",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_Left_Right",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "x": 18,
+              "y": 128,
+              "width": 84,
+              "text": "右 ->",
+              "align": "right",
+              "fontSize": 13,
+              "bold": true,
+              "color": "#cbd5e1"
+            },
+            {
+              "type": "panel",
+              "name": "cell_Right_Left",
+              "x": 114,
+              "y": 122,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_Right_Left",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "左",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_Right_Left",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "cell_Right_Center",
+              "x": 264,
+              "y": 122,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_Right_Center",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "中",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_Right_Center",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "cell_Right_Right",
+              "x": 414,
+              "y": 122,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_Right_Right",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "右",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_Right_Right",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "x": 18,
+              "y": 164,
+              "width": 84,
+              "text": "顶 ->",
+              "align": "right",
+              "fontSize": 13,
+              "bold": true,
+              "color": "#cbd5e1"
+            },
+            {
+              "type": "panel",
+              "name": "cell_Top_Top",
+              "x": 114,
+              "y": 158,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_Top_Top",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "顶",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_Top_Top",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "cell_Top_Middle",
+              "x": 264,
+              "y": 158,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_Top_Middle",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "中",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_Top_Middle",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "cell_Top_Bottom",
+              "x": 414,
+              "y": 158,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_Top_Bottom",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "底",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_Top_Bottom",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "x": 18,
+              "y": 200,
+              "width": 84,
+              "text": "底 ->",
+              "align": "right",
+              "fontSize": 13,
+              "bold": true,
+              "color": "#cbd5e1"
+            },
+            {
+              "type": "panel",
+              "name": "cell_Bottom_Top",
+              "x": 114,
+              "y": 194,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_Bottom_Top",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "顶",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_Bottom_Top",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "cell_Bottom_Middle",
+              "x": 264,
+              "y": 194,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_Bottom_Middle",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "中",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_Bottom_Middle",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "cell_Bottom_Bottom",
+              "x": 414,
+              "y": 194,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_Bottom_Bottom",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "底",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_Bottom_Bottom",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "x": 18,
+              "y": 240,
+              "width": 84,
+              "text": "左延展 ->",
+              "align": "right",
+              "fontSize": 13,
+              "bold": true,
+              "color": "#34d399"
+            },
+            {
+              "type": "panel",
+              "name": "cell_LeftExt_Left",
+              "x": 114,
+              "y": 234,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_LeftExt_Left",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "左",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_LeftExt_Left",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "cell_LeftExt_Right",
+              "x": 414,
+              "y": 234,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_LeftExt_Right",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "右",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_LeftExt_Right",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "x": 18,
+              "y": 276,
+              "width": 84,
+              "text": "右延展 ->",
+              "align": "right",
+              "fontSize": 13,
+              "bold": true,
+              "color": "#34d399"
+            },
+            {
+              "type": "panel",
+              "name": "cell_RightExt_Left",
+              "x": 114,
+              "y": 270,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_RightExt_Left",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "左",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_RightExt_Left",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "cell_RightExt_Right",
+              "x": 414,
+              "y": 270,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_RightExt_Right",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "右",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_RightExt_Right",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "x": 18,
+              "y": 312,
+              "width": 84,
+              "text": "顶延展 ->",
+              "align": "right",
+              "fontSize": 13,
+              "bold": true,
+              "color": "#34d399"
+            },
+            {
+              "type": "panel",
+              "name": "cell_TopExt_Top",
+              "x": 114,
+              "y": 306,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_TopExt_Top",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "顶",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_TopExt_Top",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "cell_TopExt_Bottom",
+              "x": 414,
+              "y": 306,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_TopExt_Bottom",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "底",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_TopExt_Bottom",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "text",
+              "x": 18,
+              "y": 348,
+              "width": 84,
+              "text": "底延展 ->",
+              "align": "right",
+              "fontSize": 13,
+              "bold": true,
+              "color": "#34d399"
+            },
+            {
+              "type": "panel",
+              "name": "cell_BottomExt_Top",
+              "x": 114,
+              "y": 342,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_BottomExt_Top",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "顶",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_BottomExt_Top",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type": "panel",
+              "name": "cell_BottomExt_Bottom",
+              "x": 414,
+              "y": 342,
+              "width": 94,
+              "height": 30,
+              "elements": [
+                {
+                  "type": "button",
+                  "name": "relBtn_BottomExt_Bottom",
+                  "x": 0,
+                  "y": 0,
+                  "width": 56,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2b3445",
+                      "lineSize": 1,
+                      "lineColor": "#475569",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 56,
+                      "height": 28,
+                      "fillColor": "#2563eb",
+                      "lineSize": 1,
+                      "lineColor": "#60a5fa",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "底",
+                      "width": 56,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#e2e8f0"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                },
+                {
+                  "type": "button",
+                  "name": "pctBtn_BottomExt_Bottom",
+                  "x": 60,
+                  "y": 0,
+                  "width": 30,
+                  "height": 28,
+                  "mode": "Check",
+                  "elements": [
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#1e293b",
+                      "lineSize": 1,
+                      "lineColor": "#334155",
+                      "cornerRadius": 4
+                    },
+                    {
+                      "type": "graph",
+                      "width": 30,
+                      "height": 28,
+                      "fillColor": "#0284c7",
+                      "lineSize": 1,
+                      "lineColor": "#38bdf8",
+                      "cornerRadius": 4,
+                      "gearDisplay": {
+                        "controller": "button",
+                        "pages": [
+                          "down",
+                          "selectedOver"
+                        ]
+                      }
+                    },
+                    {
+                      "type": "text",
+                      "name": "title",
+                      "text": "%",
+                      "width": 30,
+                      "height": 28,
+                      "align": "center",
+                      "valign": "middle",
+                      "fontSize": 12,
+                      "bold": true,
+                      "color": "#64748b"
+                    }
+                  ],
+                  "controllers": [
+                    {
+                      "name": "button",
+                      "pages": [
+                        "up",
+                        "down",
+                        "over",
+                        "selectedOver"
+                      ],
+                      "selectedIndex": 0
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "panel",
+          "name": "configPreviewBox",
+          "x": 16,
+          "y": 468,
+          "width": 560,
+          "height": 92,
+          "background": {
+            "color": "#090d16",
+            "cornerRadius": 6,
+            "lineSize": 1,
+            "lineColor": "#334155"
+          },
+          "elements": [
+            {
+              "type": "text",
+              "name": "configPreviewText",
+              "x": 12,
+              "y": 8,
+              "width": 536,
+              "height": 76,
+              "text": "当前激活关联 (relations): 正在初始化...",
+              "fontSize": 11,
+              "color": "#a7f3d0",
+              "leading": 4
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

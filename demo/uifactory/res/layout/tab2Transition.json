@@ -1,0 +1,372 @@
+{
+  "type": "panel",
+  "name": "tab2Panel",
+  "x": 236,
+  "y": 12,
+  "width": 1228,
+  "height": 646,
+  "gearDisplay": { "controller": "tabCtrl", "pages": ["tab2"] },
+  "background": { "color": "#1e293b", "cornerRadius": 8 },
+  "controllers": [
+    {
+      "name": "easeCtrl",
+      "pages": ["QuadOut", "ElasticOut", "BounceOut", "BackOut", "Linear"],
+      "selectedIndex": 0
+    },
+    {
+      "name": "actionCtrl",
+      "pages": ["scale", "xy", "alpha", "rotate"],
+      "selectedIndex": 0
+    },
+    {
+      "name": "durationCtrl",
+      "pages": ["0.3", "0.5", "1.0", "1.5"],
+      "selectedIndex": 1
+    }
+  ],
+  "transitions": [
+    {
+      "name": "trans_scale",
+      "autoPlay": false,
+      "items": [
+        {
+          "type": "scale",
+          "target": "goldChest",
+          "time": 0,
+          "duration": 0.5,
+          "easeType": 4,
+          "startValue": [0.2, 0.2],
+          "endValue": [1.0, 1.0]
+        }
+      ]
+    },
+    {
+      "name": "trans_xy",
+      "autoPlay": false,
+      "items": [
+        {
+          "type": "xy",
+          "target": "goldChest",
+          "time": 0,
+          "duration": 0.5,
+          "easeType": 4,
+          "startValue": [144, 224],
+          "endValue": [304, 224]
+        }
+      ]
+    },
+    {
+      "name": "trans_alpha",
+      "autoPlay": false,
+      "items": [
+        {
+          "type": "alpha",
+          "target": "goldChest",
+          "time": 0,
+          "duration": 0.5,
+          "easeType": 4,
+          "startValue": 0,
+          "endValue": 1
+        }
+      ]
+    },
+    {
+      "name": "trans_rotate",
+      "autoPlay": false,
+      "items": [
+        {
+          "type": "rotation",
+          "target": "goldChest",
+          "time": 0,
+          "duration": 0.5,
+          "easeType": 4,
+          "startValue": -90,
+          "endValue": 0
+        }
+      ]
+    }
+  ],
+  "elements": [
+    {
+      "type": "text",
+      "x": 24,
+      "y": 16,
+      "text": "② Transition 交互式动效定制工作台 (选项平铺) 与防漂移切页动效联动",
+      "fontSize": 16,
+      "bold": true,
+      "color": "#f8fafc",
+      "width": 800
+    },
+    {
+      "type": "text",
+      "x": 24,
+      "y": 38,
+      "text": "左侧实时调整缓动曲线、补间动作与时长；右侧点击切页验证 Controller 原生 PlayTransitionAction 自动平滑滑入！",
+      "fontSize": 12,
+      "color": "#94a3b8",
+      "width": 1100
+    },
+    {
+      "type": "graph",
+      "name": "aniStageBg",
+      "x": 24,
+      "y": 64,
+      "width": 600,
+      "height": 510,
+      "fillColor": "#0f172a",
+      "cornerRadius": 8,
+      "lineSize": 1,
+      "lineColor": "#334155",
+      "group": "stageGroup"
+    },
+    {
+      "type": "group",
+      "name": "stageGroup"
+    },
+    {
+      "type": "panel",
+      "name": "goldChest",
+      "x": 304,
+      "y": 224,
+      "width": 180,
+      "height": 160,
+      "pivotX": 0.5,
+      "pivotY": 0.5,
+      "asAnchor": true,
+      "group": "stageGroup",
+      "elements": [
+        { "type": "graph", "width": 180, "height": 130, "fillColor": "#eab308", "lineSize": 3, "lineColor": "#fef08a", "cornerRadius": 16 },
+        { "type": "graph", "x": 70, "y": 45, "width": 40, "height": 40, "fillColor": "#713f12", "cornerRadius": 8 },
+        { "type": "text", "y": 140, "width": 180, "text": "🎁 3A 动效宝箱", "fontSize": 13, "bold": true, "color": "#fde047", "align": "center" }
+      ]
+    },
+    {
+      "type": "graph",
+      "name": "transWorkbenchBg",
+      "x": 645,
+      "y": 64,
+      "width": 563,
+      "height": 510,
+      "fillColor": "#0f172a",
+      "cornerRadius": 8,
+      "lineSize": 1,
+      "lineColor": "#334155",
+      "group": "workbenchGroup"
+    },
+    {
+      "type": "group",
+      "name": "workbenchGroup"
+    },
+    { "type": "text", "x": 665, "y": 78, "text": "① 缓动曲线 (Ease Type):", "fontSize": 13, "bold": true, "color": "#38bdf8", "width": 200, "group": "workbenchGroup" },
+    {
+      "type": "button", "name": "btnEase_QuadOut", "x": 665, "y": 100, "width": 96, "height": 38,
+      "mode": "Radio", "relatedController": "easeCtrl", "pageId": "QuadOut", "selected": true, "group": "workbenchGroup",
+      "controllers": [{ "name": "button", "pages": ["up", "down", "over", "selectedOver"], "selectedIndex": 0 }],
+      "elements": [
+        {
+          "type": "graph", "name": "bg", "width": 96, "height": 38, "fillColor": "#2563eb", "cornerRadius": 6,
+          "gearColor": { "controller": "button", "pages": { "up": { "color": "#334155" }, "down": { "color": "#2563eb" }, "selectedOver": { "color": "#2563eb" } } }
+        },
+        { "type": "text", "name": "title", "text": "QuadOut", "width": 96, "height": 38, "align": "center", "valign": "middle", "color": "#ffffff", "bold": true, "fontSize": 11 }
+      ]
+    },
+    {
+      "type": "button", "name": "btnEase_ElasticOut", "x": 769, "y": 100, "width": 96, "height": 38,
+      "mode": "Radio", "relatedController": "easeCtrl", "pageId": "ElasticOut", "group": "workbenchGroup",
+      "controllers": [{ "name": "button", "pages": ["up", "down", "over", "selectedOver"], "selectedIndex": 0 }],
+      "elements": [
+        {
+          "type": "graph", "name": "bg", "width": 96, "height": 38, "fillColor": "#334155", "cornerRadius": 6,
+          "gearColor": { "controller": "button", "pages": { "up": { "color": "#334155" }, "down": { "color": "#2563eb" }, "selectedOver": { "color": "#2563eb" } } }
+        },
+        { "type": "text", "name": "title", "text": "ElasticOut", "width": 96, "height": 38, "align": "center", "valign": "middle", "color": "#cbd5e1", "fontSize": 11 }
+      ]
+    },
+    {
+      "type": "button", "name": "btnEase_BounceOut", "x": 873, "y": 100, "width": 96, "height": 38,
+      "mode": "Radio", "relatedController": "easeCtrl", "pageId": "BounceOut", "group": "workbenchGroup",
+      "controllers": [{ "name": "button", "pages": ["up", "down", "over", "selectedOver"], "selectedIndex": 0 }],
+      "elements": [
+        {
+          "type": "graph", "name": "bg", "width": 96, "height": 38, "fillColor": "#334155", "cornerRadius": 6,
+          "gearColor": { "controller": "button", "pages": { "up": { "color": "#334155" }, "down": { "color": "#2563eb" }, "selectedOver": { "color": "#2563eb" } } }
+        },
+        { "type": "text", "name": "title", "text": "BounceOut", "width": 96, "height": 38, "align": "center", "valign": "middle", "color": "#cbd5e1", "fontSize": 11 }
+      ]
+    },
+    {
+      "type": "button", "name": "btnEase_BackOut", "x": 977, "y": 100, "width": 96, "height": 38,
+      "mode": "Radio", "relatedController": "easeCtrl", "pageId": "BackOut", "group": "workbenchGroup",
+      "controllers": [{ "name": "button", "pages": ["up", "down", "over", "selectedOver"], "selectedIndex": 0 }],
+      "elements": [
+        {
+          "type": "graph", "name": "bg", "width": 96, "height": 38, "fillColor": "#334155", "cornerRadius": 6,
+          "gearColor": { "controller": "button", "pages": { "up": { "color": "#334155" }, "down": { "color": "#2563eb" }, "selectedOver": { "color": "#2563eb" } } }
+        },
+        { "type": "text", "name": "title", "text": "BackOut", "width": 96, "height": 38, "align": "center", "valign": "middle", "color": "#cbd5e1", "fontSize": 11 }
+      ]
+    },
+    {
+      "type": "button", "name": "btnEase_Linear", "x": 1081, "y": 100, "width": 96, "height": 38,
+      "mode": "Radio", "relatedController": "easeCtrl", "pageId": "Linear", "group": "workbenchGroup",
+      "controllers": [{ "name": "button", "pages": ["up", "down", "over", "selectedOver"], "selectedIndex": 0 }],
+      "elements": [
+        {
+          "type": "graph", "name": "bg", "width": 96, "height": 38, "fillColor": "#334155", "cornerRadius": 6,
+          "gearColor": { "controller": "button", "pages": { "up": { "color": "#334155" }, "down": { "color": "#2563eb" }, "selectedOver": { "color": "#2563eb" } } }
+        },
+        { "type": "text", "name": "title", "text": "Linear", "width": 96, "height": 38, "align": "center", "valign": "middle", "color": "#cbd5e1", "fontSize": 11 }
+      ]
+    },
+
+    { "type": "text", "x": 665, "y": 148, "text": "② 补间动作 (Action Mode):", "fontSize": 13, "bold": true, "color": "#38bdf8", "width": 200, "group": "workbenchGroup" },
+    {
+      "type": "button", "name": "btnAct_scale", "x": 665, "y": 170, "width": 96, "height": 38,
+      "mode": "Radio", "relatedController": "actionCtrl", "pageId": "scale", "selected": true, "group": "workbenchGroup",
+      "controllers": [{ "name": "button", "pages": ["up", "down", "over", "selectedOver"], "selectedIndex": 0 }],
+      "elements": [
+        {
+          "type": "graph", "name": "bg", "width": 96, "height": 38, "fillColor": "#2563eb", "cornerRadius": 6,
+          "gearColor": { "controller": "button", "pages": { "up": { "color": "#334155" }, "down": { "color": "#2563eb" }, "selectedOver": { "color": "#2563eb" } } }
+        },
+        { "type": "text", "name": "title", "text": "Scale 缩放", "width": 96, "height": 38, "align": "center", "valign": "middle", "color": "#ffffff", "bold": true, "fontSize": 11 }
+      ]
+    },
+    {
+      "type": "button", "name": "btnAct_xy", "x": 769, "y": 170, "width": 96, "height": 38,
+      "mode": "Radio", "relatedController": "actionCtrl", "pageId": "xy", "group": "workbenchGroup",
+      "controllers": [{ "name": "button", "pages": ["up", "down", "over", "selectedOver"], "selectedIndex": 0 }],
+      "elements": [
+        {
+          "type": "graph", "name": "bg", "width": 96, "height": 38, "fillColor": "#334155", "cornerRadius": 6,
+          "gearColor": { "controller": "button", "pages": { "up": { "color": "#334155" }, "down": { "color": "#2563eb" }, "selectedOver": { "color": "#2563eb" } } }
+        },
+        { "type": "text", "name": "title", "text": "XY 滑动", "width": 96, "height": 38, "align": "center", "valign": "middle", "color": "#cbd5e1", "fontSize": 11 }
+      ]
+    },
+    {
+      "type": "button", "name": "btnAct_alpha", "x": 873, "y": 170, "width": 96, "height": 38,
+      "mode": "Radio", "relatedController": "actionCtrl", "pageId": "alpha", "group": "workbenchGroup",
+      "controllers": [{ "name": "button", "pages": ["up", "down", "over", "selectedOver"], "selectedIndex": 0 }],
+      "elements": [
+        {
+          "type": "graph", "name": "bg", "width": 96, "height": 38, "fillColor": "#334155", "cornerRadius": 6,
+          "gearColor": { "controller": "button", "pages": { "up": { "color": "#334155" }, "down": { "color": "#2563eb" }, "selectedOver": { "color": "#2563eb" } } }
+        },
+        { "type": "text", "name": "title", "text": "Alpha 淡入", "width": 96, "height": 38, "align": "center", "valign": "middle", "color": "#cbd5e1", "fontSize": 11 }
+      ]
+    },
+    {
+      "type": "button", "name": "btnAct_rotate", "x": 977, "y": 170, "width": 96, "height": 38,
+      "mode": "Radio", "relatedController": "actionCtrl", "pageId": "rotate", "group": "workbenchGroup",
+      "controllers": [{ "name": "button", "pages": ["up", "down", "over", "selectedOver"], "selectedIndex": 0 }],
+      "elements": [
+        {
+          "type": "graph", "name": "bg", "width": 96, "height": 38, "fillColor": "#334155", "cornerRadius": 6,
+          "gearColor": { "controller": "button", "pages": { "up": { "color": "#334155" }, "down": { "color": "#2563eb" }, "selectedOver": { "color": "#2563eb" } } }
+        },
+        { "type": "text", "name": "title", "text": "Rotate 旋转", "width": 96, "height": 38, "align": "center", "valign": "middle", "color": "#cbd5e1", "fontSize": 11 }
+      ]
+    },
+
+    { "type": "text", "x": 665, "y": 218, "text": "③ 动效时长 (Duration):", "fontSize": 13, "bold": true, "color": "#38bdf8", "width": 200, "group": "workbenchGroup" },
+    {
+      "type": "button", "name": "btnDur_03", "x": 665, "y": 240, "width": 96, "height": 38,
+      "mode": "Radio", "relatedController": "durationCtrl", "pageId": "0.3", "group": "workbenchGroup",
+      "controllers": [{ "name": "button", "pages": ["up", "down", "over", "selectedOver"], "selectedIndex": 0 }],
+      "elements": [
+        {
+          "type": "graph", "name": "bg", "width": 96, "height": 38, "fillColor": "#334155", "cornerRadius": 6,
+          "gearColor": { "controller": "button", "pages": { "up": { "color": "#334155" }, "down": { "color": "#2563eb" }, "selectedOver": { "color": "#2563eb" } } }
+        },
+        { "type": "text", "name": "title", "text": "0.3 秒", "width": 96, "height": 38, "align": "center", "valign": "middle", "color": "#cbd5e1", "fontSize": 11 }
+      ]
+    },
+    {
+      "type": "button", "name": "btnDur_05", "x": 769, "y": 240, "width": 96, "height": 38,
+      "mode": "Radio", "relatedController": "durationCtrl", "pageId": "0.5", "selected": true, "group": "workbenchGroup",
+      "controllers": [{ "name": "button", "pages": ["up", "down", "over", "selectedOver"], "selectedIndex": 0 }],
+      "elements": [
+        {
+          "type": "graph", "name": "bg", "width": 96, "height": 38, "fillColor": "#2563eb", "cornerRadius": 6,
+          "gearColor": { "controller": "button", "pages": { "up": { "color": "#334155" }, "down": { "color": "#2563eb" }, "selectedOver": { "color": "#2563eb" } } }
+        },
+        { "type": "text", "name": "title", "text": "0.5 秒 (默认)", "width": 96, "height": 38, "align": "center", "valign": "middle", "color": "#ffffff", "bold": true, "fontSize": 11 }
+      ]
+    },
+    {
+      "type": "button", "name": "btnDur_10", "x": 873, "y": 240, "width": 96, "height": 38,
+      "mode": "Radio", "relatedController": "durationCtrl", "pageId": "1.0", "group": "workbenchGroup",
+      "controllers": [{ "name": "button", "pages": ["up", "down", "over", "selectedOver"], "selectedIndex": 0 }],
+      "elements": [
+        {
+          "type": "graph", "name": "bg", "width": 96, "height": 38, "fillColor": "#334155", "cornerRadius": 6,
+          "gearColor": { "controller": "button", "pages": { "up": { "color": "#334155" }, "down": { "color": "#2563eb" }, "selectedOver": { "color": "#2563eb" } } }
+        },
+        { "type": "text", "name": "title", "text": "1.0 秒", "width": 96, "height": 38, "align": "center", "valign": "middle", "color": "#cbd5e1", "fontSize": 11 }
+      ]
+    },
+    {
+      "type": "button", "name": "btnDur_15", "x": 977, "y": 240, "width": 96, "height": 38,
+      "mode": "Radio", "relatedController": "durationCtrl", "pageId": "1.5", "group": "workbenchGroup",
+      "controllers": [{ "name": "button", "pages": ["up", "down", "over", "selectedOver"], "selectedIndex": 0 }],
+      "elements": [
+        {
+          "type": "graph", "name": "bg", "width": 96, "height": 38, "fillColor": "#334155", "cornerRadius": 6,
+          "gearColor": { "controller": "button", "pages": { "up": { "color": "#334155" }, "down": { "color": "#2563eb" }, "selectedOver": { "color": "#2563eb" } } }
+        },
+        { "type": "text", "name": "title", "text": "1.5 秒", "width": 96, "height": 38, "align": "center", "valign": "middle", "color": "#cbd5e1", "fontSize": 11 }
+      ]
+    },
+
+    {
+      "type": "button",
+      "name": "btnPlayCustom",
+      "x": 665,
+      "y": 288,
+      "width": 250,
+      "height": 44,
+      "group": "workbenchGroup",
+      "elements": [
+        { "type": "graph", "width": 250, "height": 44, "fillColor": "#2563eb", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "text": "▶ 立即播放定制动效", "width": 250, "height": 44, "align": "center", "valign": "middle", "color": "#ffffff", "bold": true, "fontSize": 13 }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "btnTriggerPageTrans",
+      "x": 930,
+      "y": 288,
+      "width": 255,
+      "height": 44,
+      "group": "workbenchGroup",
+      "elements": [
+        { "type": "graph", "width": 255, "height": 44, "fillColor": "#7c3aed", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "text": "⚡ 触发切页 (PlayTransitionAction)", "width": 255, "height": 44, "align": "center", "valign": "middle", "color": "#ffffff", "bold": true, "fontSize": 13 }
+      ]
+    },
+    {
+      "type": "panel",
+      "name": "slideCardContainer",
+      "src": "res/layout/tab2SlideCard.json",
+      "x": 665,
+      "y": 344,
+      "width": 520,
+      "height": 120,
+      "group": "workbenchGroup"
+    },
+    {
+      "type": "text",
+      "name": "transLog",
+      "x": 665,
+      "y": 478,
+      "width": 520,
+      "height": 86,
+      "text": "动效日志：就绪。点击上方任意参数选项立即生效。\n",
+      "fontSize": 11,
+      "color": "#94a3b8",
+      "leading": 4,
+      "group": "workbenchGroup"
+    }
+  ]
+}

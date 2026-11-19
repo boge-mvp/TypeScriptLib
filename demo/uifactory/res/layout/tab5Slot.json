@@ -1,0 +1,404 @@
+{
+  "type": "panel",
+  "name": "tab5Panel",
+  "x": 236,
+  "y": 12,
+  "width": 1228,
+  "height": 646,
+  "gearDisplay": { "controller": "tabCtrl", "pages": ["tab5"] },
+  "background": { "color": "#1e293b", "cornerRadius": 8 },
+  "elements": [
+    {
+      "type": "text",
+      "x": 24,
+      "y": 16,
+      "text": "⑤ 3A 级 Slot 5 轴滚轮网格 — 纯代码 PureList 对象池虚拟循环滚动",
+      "fontSize": 16,
+      "bold": true,
+      "color": "#f8fafc",
+      "width": 800
+    },
+    {
+      "type": "text",
+      "x": 24,
+      "y": 38,
+      "text": "外层 SingleRow 嵌套 5 列 SingleColumn PureList，全列启用 setVirtualAndLoop()，模拟生产级错峰旋转与整格吸附。",
+      "fontSize": 12,
+      "color": "#94a3b8",
+      "width": 1100
+    },
+    {
+      "type": "panel",
+      "name": "reelFrame",
+      "x": 24,
+      "y": 64,
+      "width": 860,
+      "height": 550,
+      "background": { "color": "#090d16", "cornerRadius": 10, "lineSize": 3, "lineColor": "#eab308" },
+      "elements": [
+        {
+          "type": "list",
+          "name": "slotOuterList",
+          "x": 15,
+          "y": 15,
+          "width": 830,
+          "height": 520,
+          "listLayout": "SingleRow",
+          "columnGap": 12,
+          "elements": [
+            {
+              "type": "list",
+              "name": "reelCol_0",
+              "width": 154,
+              "height": 520,
+              "listLayout": "SingleColumn",
+              "lineGap": 10,
+              "overflow": 2,
+              "scrollType": 1,
+              "defaultItem": ""
+            },
+            {
+              "type": "list",
+              "name": "reelCol_1",
+              "width": 154,
+              "height": 520,
+              "listLayout": "SingleColumn",
+              "lineGap": 10,
+              "overflow": 2,
+              "scrollType": 1,
+              "defaultItem": ""
+            },
+            {
+              "type": "list",
+              "name": "reelCol_2",
+              "width": 154,
+              "height": 520,
+              "listLayout": "SingleColumn",
+              "lineGap": 10,
+              "overflow": 2,
+              "scrollType": 1,
+              "defaultItem": ""
+            },
+            {
+              "type": "list",
+              "name": "reelCol_3",
+              "width": 154,
+              "height": 520,
+              "listLayout": "SingleColumn",
+              "lineGap": 10,
+              "overflow": 2,
+              "scrollType": 1,
+              "defaultItem": ""
+            },
+            {
+              "type": "list",
+              "name": "reelCol_4",
+              "width": 154,
+              "height": 520,
+              "listLayout": "SingleColumn",
+              "lineGap": 10,
+              "overflow": 2,
+              "scrollType": 1,
+              "defaultItem": ""
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "panel",
+      "name": "sidePanel",
+      "x": 910,
+      "y": 64,
+      "width": 296,
+      "height": 550,
+      "background": { "color": "#0f172a", "cornerRadius": 24, "lineSize": 1, "lineColor": "#334155" },
+      "elements": [
+        {
+          "type": "text",
+          "x": 16,
+          "y": 16,
+          "text": "Slot 滚轮控制台 (Controls)",
+          "fontSize": 15,
+          "bold": true,
+          "color": "#38bdf8",
+          "width": 264,
+          "height": 22
+        },
+        {
+          "type": "button",
+          "name": "btnSpin",
+          "x": 16,
+          "y": 44,
+          "width": 264,
+          "height": 40,
+          "downEffect": 2,
+          "downEffectValue": 0.95,
+          "title": "🎰 开始错峰旋转 (SPIN)",
+          "elements": [
+            { "type": "graph", "width": 264, "height": 40, "fillColor": "#16a34a", "cornerRadius": 8 },
+            { "type": "text", "name": "title", "text": "🎰 开始错峰旋转 (SPIN)", "width": 264, "height": 40, "align": "center", "valign": "middle", "color": "#ffffff", "bold": true, "fontSize": 14 }
+          ]
+        },
+        {
+          "type": "button",
+          "name": "btnStop",
+          "x": 16,
+          "y": 90,
+          "width": 264,
+          "height": 36,
+          "downEffect": 2,
+          "downEffectValue": 0.95,
+          "title": "🛑 错峰停轮 (STOP)",
+          "elements": [
+            { "type": "graph", "width": 264, "height": 36, "fillColor": "#dc2626", "cornerRadius": 8 },
+            { "type": "text", "name": "title", "text": "🛑 错峰停轮 (STOP)", "width": 264, "height": 36, "align": "center", "valign": "middle", "color": "#ffffff", "bold": true, "fontSize": 13 }
+          ]
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 134,
+          "text": "▼ 单列交互体验 (Interactive)",
+          "fontSize": 11,
+          "bold": true,
+          "color": "#94a3b8",
+          "width": 264,
+          "height": 18
+        },
+        {
+          "type": "button",
+          "name": "btnToggleTouch",
+          "x": 16,
+          "y": 156,
+          "width": 264,
+          "height": 32,
+          "mode": "Check",
+          "selected": true,
+          "title": "🖐️ 手动拖拽滚动: [已禁用 ✖]",
+          "selectedTitle": "🖐️ 手动拖拽滚动: [已开启 ✔]",
+          "elements": [
+            {
+              "type": "graph",
+              "width": 264,
+              "height": 32,
+              "fillColor": "#2563eb",
+              "cornerRadius": 6,
+              "gearColor": {
+                "controller": "button",
+                "pages": {
+                  "up": { "color": "#334155" },
+                  "down": { "color": "#1d4ed8" },
+                  "over": { "color": "#475569" },
+                  "selectedOver": { "color": "#2563eb" }
+                }
+              }
+            },
+            {
+              "type": "text",
+              "name": "title",
+              "text": "🖐️ 手动拖拽滚动: [已开启 ✔]",
+              "width": 264,
+              "height": 32,
+              "align": "center",
+              "valign": "middle",
+              "color": "#ffffff",
+              "bold": true,
+              "fontSize": 12
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "name": "btnToggleSnap",
+          "x": 16,
+          "y": 194,
+          "width": 264,
+          "height": 32,
+          "mode": "Check",
+          "selected": true,
+          "title": "🧲 整格磁吸对齐: [已关闭 ✖]",
+          "selectedTitle": "🧲 整格磁吸对齐: [已开启 ✔]",
+          "elements": [
+            {
+              "type": "graph",
+              "width": 264,
+              "height": 32,
+              "fillColor": "#2563eb",
+              "cornerRadius": 6,
+              "gearColor": {
+                "controller": "button",
+                "pages": {
+                  "up": { "color": "#334155" },
+                  "down": { "color": "#1d4ed8" },
+                  "over": { "color": "#475569" },
+                  "selectedOver": { "color": "#2563eb" }
+                }
+              }
+            },
+            {
+              "type": "text",
+              "name": "title",
+              "text": "🧲 整格磁吸对齐: [已开启 ✔]",
+              "width": 264,
+              "height": 32,
+              "align": "center",
+              "valign": "middle",
+              "color": "#ffffff",
+              "bold": true,
+              "fontSize": 12
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "name": "btnToggleBounce",
+          "x": 16,
+          "y": 232,
+          "width": 264,
+          "height": 32,
+          "mode": "Check",
+          "selected": true,
+          "title": "🌀 边缘弹性回弹: [已关闭 ✖]",
+          "selectedTitle": "🌀 边缘弹性回弹: [已开启 ✔]",
+          "elements": [
+            {
+              "type": "graph",
+              "width": 264,
+              "height": 32,
+              "fillColor": "#2563eb",
+              "cornerRadius": 6,
+              "gearColor": {
+                "controller": "button",
+                "pages": {
+                  "up": { "color": "#334155" },
+                  "down": { "color": "#1d4ed8" },
+                  "over": { "color": "#475569" },
+                  "selectedOver": { "color": "#2563eb" }
+                }
+              }
+            },
+            {
+              "type": "text",
+              "name": "title",
+              "text": "🌀 边缘弹性回弹: [已开启 ✔]",
+              "width": 264,
+              "height": 32,
+              "align": "center",
+              "valign": "middle",
+              "color": "#ffffff",
+              "bold": true,
+              "fontSize": 12
+            }
+          ]
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 272,
+          "text": "▼ 动画与物理策略 (Motion)",
+          "fontSize": 11,
+          "bold": true,
+          "color": "#94a3b8",
+          "width": 264,
+          "height": 18
+        },
+        {
+          "type": "button",
+          "name": "btnEasingMode",
+          "x": 16,
+          "y": 294,
+          "width": 264,
+          "height": 30,
+          "downEffect": 2,
+          "downEffectValue": 0.96,
+          "title": "📉 停轮缓动: BackOut (弹次回抽)",
+          "elements": [
+            { "type": "graph", "width": 264, "height": 30, "fillColor": "#1e293b", "cornerRadius": 6, "lineSize": 1, "lineColor": "#475569" },
+            { "type": "text", "name": "title", "text": "📉 停轮缓动: BackOut (弹次回抽)", "width": 264, "height": 30, "align": "center", "valign": "middle", "color": "#e2e8f0", "fontSize": 11 }
+          ]
+        },
+        {
+          "type": "button",
+          "name": "btnSpeedMode",
+          "x": 16,
+          "y": 328,
+          "width": 264,
+          "height": 30,
+          "downEffect": 2,
+          "downEffectValue": 0.96,
+          "title": "⚡ 旋转转速: 标准档 (35px/f)",
+          "elements": [
+            { "type": "graph", "width": 264, "height": 30, "fillColor": "#1e293b", "cornerRadius": 6, "lineSize": 1, "lineColor": "#475569" },
+            { "type": "text", "name": "title", "text": "⚡ 旋转转速: 标准档 (35px/f)", "width": 264, "height": 30, "align": "center", "valign": "middle", "color": "#e2e8f0", "fontSize": 11 }
+          ]
+        },
+        {
+          "type": "button",
+          "name": "btnStopPattern",
+          "x": 16,
+          "y": 362,
+          "width": 264,
+          "height": 30,
+          "downEffect": 2,
+          "downEffectValue": 0.96,
+          "title": "🎯 停轮策略: 错峰依次停轮 (1→5)",
+          "elements": [
+            { "type": "graph", "width": 264, "height": 30, "fillColor": "#1e293b", "cornerRadius": 6, "lineSize": 1, "lineColor": "#475569" },
+            { "type": "text", "name": "title", "text": "🎯 停轮策略: 错峰依次停轮 (1→5)", "width": 264, "height": 30, "align": "center", "valign": "middle", "color": "#e2e8f0", "fontSize": 11 }
+          ]
+        },
+        {
+          "type": "button",
+          "name": "btnSelectionMode",
+          "x": 16,
+          "y": 396,
+          "width": 264,
+          "height": 30,
+          "downEffect": 2,
+          "downEffectValue": 0.96,
+          "title": "👆 符号点选: 禁用点选 (None)",
+          "elements": [
+            { "type": "graph", "width": 264, "height": 30, "fillColor": "#1e293b", "cornerRadius": 6, "lineSize": 1, "lineColor": "#475569" },
+            { "type": "text", "name": "title", "text": "👆 符号点选: 禁用点选 (None)", "width": 264, "height": 30, "align": "center", "valign": "middle", "color": "#e2e8f0", "fontSize": 11 }
+          ]
+        },
+        {
+          "type": "text",
+          "x": 16,
+          "y": 434,
+          "text": "▼ 实时检视看板 (Live Inspector)",
+          "fontSize": 11,
+          "bold": true,
+          "color": "#94a3b8",
+          "width": 264,
+          "height": 16
+        },
+        {
+          "type": "graph",
+          "name": "statusBoardBg",
+          "x": 16,
+          "y": 454,
+          "width": 264,
+          "height": 82,
+          "fillColor": "#020617",
+          "cornerRadius": 6,
+          "lineSize": 1,
+          "lineColor": "#1e293b"
+        },
+        {
+          "type": "text",
+          "name": "slotStatus",
+          "x": 22,
+          "y": 458,
+          "width": 252,
+          "height": 74,
+          "text": "状态：静止就绪\n• 5 轴 PureList 单桶对象池复用率 100%\n• 手动拖拽: 已开启 ✔ | 磁吸: 110px | 回弹: 开启\n• 缓动: BackOut | 转速: 标准档 (35px/f)\n• 实时坐标: [C0:0 C1:0 C2:0 C3:0 C4:0]",
+          "fontSize": 10,
+          "color": "#cbd5e1",
+          "leading": 3
+        }
+      ]
+    }
+  ]
+}

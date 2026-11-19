@@ -1,0 +1,41 @@
+{
+  "type": "panel",
+  "name": "slotItemRoot",
+  "width": 154,
+  "height": 100,
+  "elements": [
+    {
+      "type": "graph",
+      "name": "bg",
+      "width": 154,
+      "height": 100,
+      "fillColor": "#1e293b",
+      "cornerRadius": 8,
+      "lineSize": 1,
+      "lineColor": "#334155"
+    },
+    {
+      "type": "text",
+      "name": "symIcon",
+      "x": 10,
+      "y": 15,
+      "width": 60,
+      "height": 70,
+      "fontSize": 38,
+      "align": "center",
+      "text": "🍒"
+    },
+    {
+      "type": "text",
+      "name": "symName",
+      "x": 75,
+      "y": 35,
+      "width": 75,
+      "height": 30,
+      "fontSize": 13,
+      "bold": true,
+      "color": "#ffffff",
+      "text": "CHERRY"
+    }
+  ]
+}

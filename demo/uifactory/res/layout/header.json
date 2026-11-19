@@ -1,0 +1,32 @@
+{
+  "type": "panel",
+  "name": "header",
+  "x": 0,
+  "y": 0,
+  "width": 1480,
+  "height": 50,
+  "background": { "color": "#1e293b" },
+  "layoutType": "horizontal",
+  "alignItems": "center",
+  "padding": { "left": 24, "right": 24, "top": 0, "bottom": 0 },
+  "elements": [
+    {
+      "type": "text",
+      "name": "title",
+      "text": "UIFactory 4.0 纯代码引擎 — 官方全特性交互验证工作台",
+      "fontSize": 18,
+      "bold": true,
+      "color": "#38bdf8",
+      "width": 650
+    },
+    {
+      "type": "text",
+      "name": "subTitle",
+      "text": "10 Gears Matrix | Transition | Native Button/Slider/Bar | Flexbox | 3A Slot | 24 Relations Matrix",
+      "fontSize": 12,
+      "color": "#94a3b8",
+      "width": 760,
+      "align": "right"
+    }
+  ]
+}
