@@ -31,6 +31,10 @@ export type IViewConfig = {
     pageController?: string | fgui.Controller;
     /** 容器溢出裁剪状态 (0 - Visible, 1 - Hidden, 2 - Scroll) */
     overflow?: number;
+    /** 容器自定义遮罩目标（子元件名称或路径） */
+    mask?: string;
+    /** 遮罩是否反向（反向遮罩/镂空效果） */
+    maskInverted?: boolean;
     /**
      * 面板子级元件的定位排版方式：
      *  - "none": 传统绝对定位，子元件按各自 x/y 坐标独立排布 (默认)

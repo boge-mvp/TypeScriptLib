@@ -19,17 +19,33 @@ export interface IControllerActionConfig {
 }
 
 /**
+ * 控制器单页面完整定义（对齐官方物理 ID 与业务别名成对模型）
+ */
+export interface IControllerPageDef {
+    /** 页面物理 ID（如 "c0", "_1", "p1"），缺省时自动自增生成 */
+    id?: string;
+    /** 页面业务别名（如 "up", "normal", "grayed"） */
+    name: string;
+}
+
+/**
  * 页面/组件控制器配置协议
  */
 export interface IControllerConfig {
     /** 控制器名称，如 "button", "tab", "c1", "mode" 等 */
     name: string;
-    /** 页面名称列表，例如 ["up", "down", "over", "selectedOver"] 或 ["page0", "page1"] */
+    /** 页面名称列表（简单模式），例如 ["up", "down", "over", "selectedOver"] 或 ["page0", "page1"] */
     pages?: string[];
+    /** 页面物理 ID 列表（与 pages 索引一一对应） */
+    pageIds?: string[];
+    /** 页面完整结构定义列表（复合模式，包含 id 与 name） */
+    pageDefs?: IControllerPageDef[];
     /** 默认选中的页面索引，默认为 0 */
     selectedIndex?: number;
     /** 默认选中的页面名称（如果设置，优先级高于 selectedIndex） */
     selectedPage?: string;
+    /** 默认选中的页面物理 ID */
+    selectedPageId?: string;
     /** 是否自动调整单选组件层级深度 */
     autoRadioGroupDepth?: boolean;
     /** 控制器切页触发动作列表 */

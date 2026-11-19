@@ -54,11 +54,72 @@
    - 所有的卡片底板、面板背景框、高亮边框，**必须使用轻量、极速的原生 `graph` 绘制**（配置 `shape: "rect"`、`fillColor`、`lineColor`、`cornerRadius` 等）；
    - 严禁为了画个背景色而实例化空 panel！`graph` 天然是纯几何图元，内存占用极小、绘制性能最高。
 2. **同页面功能区域划分 ➔ 100% 使用 `type: "group"` (GGroup)**：
-   - 若在同一个界面内划分若干功能区域（如卡片区域、检视器区、操作按钮组），**严禁使用内联嵌套 panel，必须使用原生的 `type: "group"`（GGroup）**；
+   - 若在同一个界面内划分若干功能区域（如卡片区域、检视器区、操作按钮组），**首选原生的 `type: "group"`（GGroup）**；
    - 所有子元件直接平铺挂在 Root 根节点下，声明 `"group": "groupName"` 归属到该组，保持单页面层级深度永远为 1，彻底消灭层级穿透与时序断裂！
 3. **面板嵌套规则与组件解耦铁律 (The Panel Nesting & Decoupling Law)**：
-   - **允许空白 Panel**：页面内仅允许存在没有子节点的空白 Panel（未声明 `elements`），专用于无交互的视口占位；
-   - **非空白 Panel 必须外部引用 (`src`)**：凡是包含子元件（声明了 `elements: [...]`）的非根 Panel，**绝对禁止手写内联声明**！必须将其抽离为独立自治的 JSON 布局文件，并通过 `"src": "res/layout/xxx.json"` 进行外部引用！
+   - **允许嵌套容器 Panel**：当需要整体裁剪（如 ScrollPane 视口）、独立显示矩阵变换（如旋转与等比缩放）时，允许在页面内使用子 Panel 作为功能容器；
+   - **控制器与动效 Root-Only 铁律**：页面内部的所有子 Panel 禁止内联声明 `controllers` 与 `transitions`；若子模块需要独立的业务状态机或自治动效，必须将其抽离为独立自治的 JSON 布局文件，并通过 `"src": "res/layout/xxx.json"` 进行外部引用！
+
+---
+
+### 2.5 FGUI GGroup (组) 全特性深度应用与选型决策指南
+
+在 FairyGUI 架构哲学中，`GGroup` 并非单纯的静态标签，而是具备**轻量、高效、穿透联动**特性的强大逻辑排版节点：
+
+#### 1. GGroup 的两大核心原生联动能力（源码级保障）
+- **位移联动广播 (moveChildren)**：
+  在 FairyGUI 底层（`fairygui.js` 第 783~784 行、第 4762 行），当 GGroup 的 `x` / `y` 坐标发生变化（包括被 `Transition` 的 XY 动作或 `GearXY` 驱动）时，会自动触发 `moveChildren(dx, dy)`，**组内所有子图元毫秒级无损同步位移**！
+- **透明度联动广播 (handleAlphaChanged)**：
+  在 FairyGUI 底层（`fairygui.js` 第 4897 行），当 GGroup 的 `alpha` 发生变化（包括被 `Transition` 的 Alpha 动作驱动）时，会自动触发 `handleAlphaChanged()`，**组内所有子图元同步淡入淡出**！
+
+#### 2. GGroup 在出场补间动效中的实战范式
+当卡片或功能块的出场动画仅涉及**“位移滑入 (XY) 与淡入 (Alpha)”**时，**绝对无需将卡片拆为独立的外部文件或嵌套 Panel**，直接在同一页面内使用 GGroup 拍平包裹即可：
+```json
+{
+  "transitions": [
+    {
+      "name": "cardSlideIn",
+      "items": [
+        { "type": "xy", "target": "cardGroup", "startValue": [450, 0], "endValue": [0, 0], "duration": 0.45, "easeType": 5 },
+        { "type": "alpha", "target": "cardGroup", "startValue": 0, "endValue": 1, "duration": 0.3 }
+      ]
+    }
+  ],
+  "elements": [
+    { "type": "group", "name": "cardGroup", "gearDisplay": { "controller": "pageCtrl", "pages": ["pageA"] } },
+    { "type": "graph", "name": "cardBg", "width": 520, "height": 120, "fillColor": "#1e293b", "cornerRadius": 8, "group": "cardGroup" },
+    { "type": "text", "text": "卡片标题", "x": 16, "y": 16, "group": "cardGroup" },
+    { "type": "button", "name": "btnAction", "x": 380, "y": 36, "group": "cardGroup" }
+  ]
+}
+```
+*优势：单页面层级深度严格为 1，零文件碎片，极简纯粹，且出场滑入动效 100% 顺畅生效！*
+
+#### 3. GGroup 的能力边界与物理限制
+| 功能特性 | GGroup 是否支持 | 物理原因与底层机理 | 应对方案 |
+| :--- | :---: | :--- | :--- |
+| **位移联动 (XY)** | ✅ 100% 支持 | 底层 `moveChildren(dx, dy)` 广播 | 直接将 Transition/GearXY target 设为 Group |
+| **淡入淡出 (Alpha)** | ✅ 100% 支持 | 底层 `handleAlphaChanged()` 广播 | 直接将 Transition Alpha target 设为 Group |
+| **显隐切换 (Visible)** | ✅ 100% 支持 | 底层 `internalVisible` 继承机制 | Group 挂载 `gearDisplay` 统一控显隐 |
+| **流式排版 (Layout)** | ✅ 100% 支持 | 原生支持 `layout: "horizontal" / "vertical"` 与 `gap` | 设置 `layoutType` 自动测算并排版 |
+| **等比缩放 (Scale)** | ❌ 不支持 | GGroup 是逻辑包围盒，无独立显示矩阵 | 选用 GComponent (Panel) 承载 |
+| **任意旋转 (Rotation)** | ❌ 不支持 | GGroup 无底层显示对象容器，无法施加旋转矩阵 | 选用 GComponent (Panel) 承载 |
+| **视口滚动 (Scroll)** | ❌ 不支持 | GGroup 无法持有 ScrollPane 裁剪视口 | 选用带 `scroll: true` 的 Panel |
+
+#### 4. GGroup vs Panel (GComponent) 终极选型决策树
+```
+                    需要组织一组子图元或构建界面功能块
+                                    │
+       ┌────────────────────────────┴────────────────────────────┐
+       ▼                                                         ▼
+仅涉及普通分区/位移滑入/淡入淡出/排版流？                   需要旋转/缩放/视口裁剪/独立自治状态机？
+       │                                                         │
+       ▼                                                         ▼
+【选用 GGroup + GGraph 拍平】                             【选用 GComponent (Panel)】
+- 页面层级深度严格为 1                                    - 若带独立控制器/动效：必须 src 外部引用
+- 零文件碎片，同文件自闭环                                - 若纯功能容器：可在页面内作为子容器挂载
+- 内存最小，排版最快
+```
 
 ---
 

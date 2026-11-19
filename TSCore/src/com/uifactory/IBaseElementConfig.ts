@@ -193,6 +193,12 @@ export type IBaseElementConfig = {
     gearDisplay2?: IGearDisplay2Config;
     /** 字体大小随控制器联动 (GearFontSize) */
     gearFontSize?: IGearFontSizeConfig;
+    /** 鼠标悬浮提示文本 (tooltips) */
+    tooltips?: string;
+    /** 用户自定义业务数据对象 (data) */
+    data?: any;
+    /** 混合模式 (如 "normal", "add", "multiply", "screen" 等) */
+    blendMode?: string;
     /** 所属的 GGroup 组名称，在同一直接父容器内自动归属于对应 GGroup 元件 */
     group?: string;
     /**

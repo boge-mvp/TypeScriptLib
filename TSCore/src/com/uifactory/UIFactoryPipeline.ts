@@ -108,6 +108,8 @@ export class UIFactoryPipeline {
         if (elData.visible !== undefined) node.visible = elData.visible;
         if (elData.touchable !== undefined) node.touchable = elData.touchable;
         if (elData.grayed !== undefined) node.grayed = elData.grayed;
+        if (elData.data !== undefined) node.data = elData.data;
+        if (elData.blendMode) node.blendMode = elData.blendMode;
 
         if (elData.scaleX !== undefined || elData.scaleY !== undefined || elData.scale !== undefined) {
             const sx = elData.scaleX !== undefined ? elData.scaleX : (elData.scale !== undefined ? elData.scale : 1);
@@ -342,6 +344,8 @@ export class UIFactoryPipeline {
             if (bConf.titleColor) node.titleColor = bConf.titleColor;
             if (bConf.titleFontSize) node.titleFontSize = bConf.titleFontSize;
             if (bConf.selected !== undefined) node.selected = bConf.selected;
+            if (bConf.sound) node["_sound"] = bConf.sound;
+            if (bConf.soundVolumeScale !== undefined) node["_soundVolumeScale"] = bConf.soundVolumeScale;
 
             // 对齐 GButton.setup_afterAdd 第 3858~3860 行：关联单选组或切页控制器
             if (bConf.relatedController) {
@@ -467,7 +471,8 @@ export class UIFactoryPipeline {
             }
         }
 
-        // 10. 组关联绑定 (对齐 GObject.setup_afterAdd 第 1562~1564 行)
+        // 10. 组关联与通用后置属性绑定 (对齐 GObject.setup_afterAdd 第 1558~1564 行)
+        if (elData.tooltips) node.tooltips = elData.tooltips;
         if (elData.group && parentNode) {
             const grp = parentNode.getChild(elData.group);
             if (grp instanceof fgui.GGroup) {

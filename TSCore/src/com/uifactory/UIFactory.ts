@@ -96,23 +96,7 @@ export class UIFactory {
                 ? new Set<string>([...Array.from(parentControllers), "button"])
                 : new Set<string>([...(anyNode.controllers || []).map((c: any) => c && c.name).filter(Boolean)]);
 
-            // Rule 1: Non-root panels cannot contain inline elements declaring gears that direct parent does not own
-            if (node.type === "panel" && !node.src && Array.isArray(anyNode.elements) && anyNode.elements.length > 0) {
-                for (const child of anyNode.elements) {
-                    for (const gk of gearKeys) {
-                        if (child[gk] && child[gk].controller) {
-                            const cName = child[gk].controller;
-                            if (!currentScopeControllers.has(cName)) {
-                                console.warn(
-                                    `[UIFactory] Invalid layout hierarchy in "${pagePath}": Sub-element "${pathTrace} -> elements[${child.name || child.type}]" declares gear "${gk}" referencing controller "${cName}", but its direct parent container does not own this controller! ` +
-                                    `FairyGUI Gears only look up controllers in their DIRECT parent container. Sub-elements needing controllers must be flattened to root with "group" or decoupled into an external component with "src".`
-                                );
-                            }
-                        }
-                    }
-                }
-            }
-
+            // Rule 1: Non-root panels cannot define controllers or transitions (must be on root or decoupled via src)
             // Rule 2: Non-root nodes cannot define controllers (except button internal 4-state controller)
             const isButtonControllerOnly = node.type === "button" &&
                 Array.isArray(anyNode.controllers) &&
@@ -742,12 +726,36 @@ export class UIFactory {
         const ctrl = new fgui.Controller();
         if (config.name) ctrl.name = config.name;
 
-        if (config.pages && Array.isArray(config.pages)) {
-            for (const p of config.pages) {
-                ctrl.addPage(p);
+        // 1. 映射单选组层级自适应 (对齐 Controller.setup 第 366~367 行)
+        if (config.autoRadioGroupDepth !== undefined) {
+            ctrl.autoRadioGroupDepth = !!config.autoRadioGroupDepth;
+        }
+
+        // 2. 映射页面 ID 与 Name 成对模型 (对齐 Controller.setup 第 371~375 行)
+        if (config.pageDefs && Array.isArray(config.pageDefs)) {
+            for (const def of config.pageDefs) {
+                if (def.id) {
+                    ctrl["_pageIds"].push(def.id);
+                    ctrl["_pageNames"].push(def.name);
+                } else {
+                    ctrl.addPage(def.name);
+                }
+            }
+        } else if (config.pages && Array.isArray(config.pages)) {
+            const hasCustomIds = config.pageIds && Array.isArray(config.pageIds) && config.pageIds.length === config.pages.length;
+            if (hasCustomIds) {
+                for (let i = 0; i < config.pages.length; i++) {
+                    ctrl["_pageIds"].push(config.pageIds![i]);
+                    ctrl["_pageNames"].push(config.pages[i]);
+                }
+            } else {
+                for (const p of config.pages) {
+                    ctrl.addPage(p);
+                }
             }
         }
 
+        // 3. 映射切页动作链 actions (PlayTransitionAction 等)
         if (config.actions && Array.isArray(config.actions)) {
             if (!ctrl["_actions"]) ctrl["_actions"] = [];
             for (const actConf of config.actions) {
@@ -774,18 +782,33 @@ export class UIFactory {
             }
         }
 
+        // 4. 映射状态变更事件监听
+        if (typeof config.onChanged === "function") {
+            ctrl.on(fgui.Events.STATE_CHANGED, ctrl, () => {
+                config.onChanged!(ctrl);
+            });
+        }
+
         if (owner) {
             owner.addController(ctrl);
         }
 
-        const targetIndex = config.selectedIndex !== undefined ? config.selectedIndex :
-            (config.selectedPage ? ctrl["_pageNames"].indexOf(config.selectedPage) : 0);
-        const safeIndex = targetIndex >= 0 ? targetIndex : 0;
+        // 5. 初始选中定位（对齐 Controller.setup 第 409~412 行）：
+        // 严格遵循官方二进制时序：在此阶段仅静默记录 _selectedIndex，绝不提前派发广播！
+        // 待容器的所有子元件、关联与齿轮全部装配完成后，由 panelNode.applyAllControllers() 统一广播！
+        let homePageIndex = 0;
+        if (config.selectedIndex !== undefined) {
+            homePageIndex = config.selectedIndex;
+        } else if (config.selectedPageId && ctrl["_pageIds"].indexOf(config.selectedPageId) !== -1) {
+            homePageIndex = ctrl["_pageIds"].indexOf(config.selectedPageId);
+        } else if (config.selectedPage && ctrl["_pageNames"].indexOf(config.selectedPage) !== -1) {
+            homePageIndex = ctrl["_pageNames"].indexOf(config.selectedPage);
+        }
 
-        if (ctrl.parent) {
-            ctrl.selectedIndex = safeIndex;
+        if (ctrl.pageCount > 0) {
+            ctrl["_selectedIndex"] = (homePageIndex >= 0 && homePageIndex < ctrl.pageCount) ? homePageIndex : 0;
         } else {
-            ctrl["_selectedIndex"] = safeIndex;
+            ctrl["_selectedIndex"] = -1;
         }
 
         return ctrl;
@@ -917,9 +940,11 @@ export class UIFactory {
      */
     public static fillPanel(panelNode: fgui.GComponent, elData: IBaseElementConfig & IViewConfig): void {
         panelNode["_buildingDisplayList"] = true;
+        fgui.UIPackage._constructing++;
 
-        let initW = elData.width || panelNode.width || 0;
-        let initH = elData.height || panelNode.height || 0;
+        try {
+            let initW = elData.width || panelNode.width || 0;
+            let initH = elData.height || panelNode.height || 0;
 
         panelNode.sourceWidth = initW;
         panelNode.sourceHeight = initH;
@@ -1238,12 +1263,22 @@ export class UIFactory {
         // =========================================================================
         // 【官方 Phase 5: finalize 闭环终态激活】
         // 按照官方 GComponent 顺序：
-        // 1. applyAllControllers()
-        // 2. 解除构建与显示列表锁 (_buildingDisplayList = false, _underConstruct = false)
-        // 3. buildNativeDisplayList() 提交显示树
-        // 4. setBoundsChangedFlag() 刷新包围盒
-        // 5. constructExtension (高级扩展组件装配，对齐 GComponent 第 3462 行)
+        // 1. 遮罩注入 (setMask)
+        // 2. applyAllControllers()
+        // 3. 解除构建与显示列表锁 (_buildingDisplayList = false, _underConstruct = false)
+        // 4. buildNativeDisplayList() 提交显示树
+        // 5. setBoundsChangedFlag() 刷新包围盒
+        // 6. constructExtension (高级扩展组件装配，对齐 GComponent 第 3462 行)
         // =========================================================================
+        if (elData.mask) {
+            const maskObj = panelNode.getChild(elData.mask) || panelNode.getChildByPath(elData.mask);
+            if (maskObj) {
+                panelNode.setMask(maskObj.displayObject, !!elData.maskInverted);
+            } else {
+                console.warn(`[UIFactory] 容器 "${panelNode.name || 'unnamed'}" 未找到指定的遮罩目标组件: "${elData.mask}"。`);
+            }
+        }
+
         if (typeof panelNode.applyAllControllers === "function") {
             panelNode.applyAllControllers();
         }
@@ -1261,5 +1296,8 @@ export class UIFactory {
 
         // Phase 4: 高级组件扩展类装配（官方在 buildNativeDisplayList 之后执行）
         UIFactory.setupComponentExtension(panelNode, elData);
+        } finally {
+            fgui.UIPackage._constructing--;
+        }
     }
 }
