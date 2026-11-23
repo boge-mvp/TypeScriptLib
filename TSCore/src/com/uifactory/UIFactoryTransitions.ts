@@ -58,7 +58,7 @@ export class UIFactoryTransitions {
                             item.targetId = targetNode.id;
                             item.target = targetNode;
                         } else {
-                            console.warn(`[UIFactory] Transition "${config.name || ""}" 未在容器中找到名为 "${targetKey}" 的目标子节点，已忽略该动效项。`);
+                            console.warn(`[UIFactory] Transition "${config.name || ""}" target "${targetKey}" was not found in container, action ignored.`);
                             continue;
                         }
                     }

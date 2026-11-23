@@ -16,6 +16,7 @@ import SoundUtils = tsCore.SoundUtils;
 import App = tsCore.App;
 import ConfigKit = tsCore.ConfigKit;
 import Path = tsCore.Path;
+import UIFactory = tsCore.UIFactory;
 import UIConfig = fgui.UIConfig;
 import {Player} from "../Player"
 import {AnalyticsManager} from "./AnalyticsManager"
@@ -200,12 +201,12 @@ export class AssetsLoader implements IFormatPath {
             }
         }
 
-        let loadBaseComplete = (loads: LoadRes[], success: boolean) => {
+        let loadBaseComplete = async (loads: LoadRes[], success: boolean) => {
             if (!success) {
                 loadErrorHandler()
                 return
             }
-            if (!this.addPackages(loads)) {
+            if (!(await this.addPackages(loads))) {
                 Log.debug("addPackage fail = init")
                 loadErrorHandler()
                 return
@@ -259,12 +260,12 @@ export class AssetsLoader implements IFormatPath {
             }
         }
 
-        let loadCommonComplete = (success: boolean) => {
+        let loadCommonComplete = async (success: boolean) => {
             if (!success) {
                 loadCommonErrorHandler()
                 return
             }
-            if (!this.addPackages(assets)) {
+            if (!(await this.addPackages(assets))) {
                 loadCommonErrorHandler()
                 return
             }
@@ -547,23 +548,30 @@ export class AssetsLoader implements IFormatPath {
             return
         }
 
-        if (this.commonRes?.packageName) {
-            if (!UIPackage.getByName(this.commonRes.packageName)) {
-                if (!this.addPackage(this.commonRes.packageName)) {
-                    this.loadErrorHandler()
-                    return
+        const handleSuccess = async () => {
+            if (this.commonRes?.packageName) {
+                if (!UIPackage.getByName(this.commonRes.packageName)) {
+                    if (!(await this.addPackage(this.commonRes.packageName))) {
+                        this.loadErrorHandler()
+                        return
+                    }
+                    // 通知开始注册游戏公共类 事件
+                    App.inst.sendAction(ActionLib.GAME_REG_GAME_COMMON_CLASS)
                 }
-                // 通知开始注册游戏公共类 事件
-                App.inst.sendAction(ActionLib.GAME_REG_GAME_COMMON_CLASS)
             }
+
+            if (this.loadObj && !(await this.addPackages(this.loadObj.res))) {
+                this.loadErrorHandler()
+                return
+            }
+
+            runFun(this.handler)
         }
 
-        if (this.loadObj && !this.addPackages(this.loadObj.res)) {
+        handleSuccess().catch((err: any) => {
+            Log.error("[AssetsLoader] loadComplete processing failed:", err)
             this.loadErrorHandler()
-            return
-        }
-
-        runFun(this.handler)
+        })
     }
 
 
@@ -575,37 +583,107 @@ export class AssetsLoader implements IFormatPath {
     }
 
     /**
-     * 将一个 loadRes数组对象  添加资源
-     * @param res
+     * 将一个 loadRes 数组对象批量添加/注册 UI 资源
+     *
+     * 自动内容自省：
+     * 1. 传统 FGUI 包与 UIFactory 纯代码合包（基于包扩展名）；
+     * 2. 独立/批量的纯代码 JSON 布局文件（非 UI 的 Spine/通用配置 JSON 静默放行，不中断主流程）。
+     *
+     * @param res 资源列表
      */
-    addPackages(res: LoadRes[]) {
-        let fuiName: string
+    async addPackages(res: LoadRes[]): Promise<boolean> {
+        let itemUrl: string
+        const ext = "." + fgui.UIConfig.packageFileExtension
         for (let k = 0; k < res.length; k++) {
-            fuiName = res[k].url
-            if (fuiName.indexOf("." + fgui.UIConfig.packageFileExtension) != -1) {
-                fuiName = fuiName.remove("." + fgui.UIConfig.packageFileExtension)
-                if (!this.addPackage(fuiName)) {
-                    Log.debug("addPackage fail = " + fuiName)
+            itemUrl = res[k].url
+            if (!itemUrl) continue
+
+            // 1. 匹配标准包扩展名 (.bin / .fui 等)
+            if (itemUrl.indexOf(ext) !== -1) {
+                const resKey = itemUrl.remove(ext)
+                if (!(await this.addPackage(resKey, itemUrl))) {
+                    Log.debug("addPackage fail = " + itemUrl)
                     return false
                 }
+            }
+            // 2. 匹配 JSON 布局文件 (仅当被识别为 UI 布局时生效；Spine 或通用数据 JSON 静默跳过，不阻断加载)
+            else if (itemUrl.endsWith(".json")) {
+                await this.addPackage(itemUrl, itemUrl)
             }
         }
         return true
     }
 
-
     /**
-     * 添加游戏UI资源
-     * @param resKey 资源名字
-     * @return 成功与否
+     * 添加/注册游戏 UI 资源 (基于数据本体特征与 Magic Number 智能内容多态识别)
+     *
+     * 零路径假设、零文件名依赖：
+     * 1. 传统 FGUI 二进制包 (前4字节为 0x46475549 / "FGUI") ➔ 原生 UIPackage.addPackage 反序列化；
+     * 2. UIFactory 纯代码加密二进制包 (非 FGUI 标头) ➔ await UIFactory.loadBundle 完成硬件解密并注册；
+     * 3. UIFactory 声明式 JSON 配置 (包含 layouts 或 type/elements 特征) ➔ 自动通过 UIFactory 注册至内存字典；
+     * 4. 非 UI 二进制或通用数据 JSON ➔ 安全返回 false，不阻塞调用方。
+     *
+     * @param resKey 资源标识或基础路径
+     * @param fullUrl 可选的完整资源 URL
+     * @return 注册处理成功与否
      */
-    addPackage(resKey: string) {
-        let descData: ArrayBuffer = AssetProxy.inst.getRes(resKey + "." + fgui.UIConfig.packageFileExtension)
-        if (!descData || descData.byteLength == 0) {
+    async addPackage(resKey: string, fullUrl?: string): Promise<boolean> {
+        const extUrl = resKey + "." + fgui.UIConfig.packageFileExtension
+        const targetUrl = fullUrl || extUrl
+        const data: any = AssetProxy.inst.getRes(targetUrl) || AssetProxy.inst.getRes(resKey) || AssetProxy.inst.getRes(extUrl)
+
+        if (!data) {
             return false
         }
-        if (!UIPackage.getByName(resKey)) UIPackage.addPackage(resKey)
-        return true
+
+        // 情况 A：数据是 ArrayBuffer 二进制流
+        if (data instanceof ArrayBuffer || (data.buffer instanceof ArrayBuffer)) {
+            const arrayBuf: ArrayBuffer = data instanceof ArrayBuffer ? data : data.buffer
+            if (arrayBuf.byteLength < 4) {
+                return false
+            }
+
+            const view = new DataView(arrayBuf)
+            const magic = view.getUint32(0, false) // 读取大端前4字节
+
+            // A1. 传统 FGUI 官方二进制包标头: 0x46475549 ("FGUI")
+            if (magic === 0x46475549) {
+                if (!UIPackage.getByName(resKey)) {
+                    UIPackage.addPackage(resKey)
+                }
+                return true
+            }
+
+            // A2. 非 FGUI 标头 ➔ 严格等待 UIFactory.loadBundle 硬件解密并注册完成，消除时序竞态
+            const bundleResult = await UIFactory.loadBundle(targetUrl)
+            return bundleResult !== null
+        }
+
+        // 情况 B：数据是已解析好的 JSON 对象或 JSON 字符串
+        if (typeof data === "object" || (typeof data === "string" && data.trim().startsWith("{"))) {
+            try {
+                const jsonObj = typeof data === "string" ? JSON.parse(data) : data
+                if (jsonObj && typeof jsonObj === "object") {
+                    // 若为合集包 (IUILayoutBundle) 或单一声明式布局 (IElementConfig)
+                    if ("layouts" in jsonObj || "type" in jsonObj || "elements" in jsonObj) {
+                        if ("layouts" in jsonObj && typeof jsonObj.layouts === "object") {
+                            UIFactory.registerBundle(jsonObj)
+                        } else {
+                            UIFactory.registerConfig(targetUrl, jsonObj)
+                            if (jsonObj.name) {
+                                UIFactory.registerConfig(jsonObj.name, jsonObj)
+                            }
+                        }
+                        return true
+                    }
+                }
+            } catch (err: any) {
+                Log.warn(`[AssetsLoader] Failed to parse JSON UI configuration: ${targetUrl}`, err)
+                return false
+            }
+        }
+
+        return false
     }
 
     /** 设置扩展 */

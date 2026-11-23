@@ -82,7 +82,9 @@
 
 ### 6. 统一资产加载与进程安全红线
 - **单一加载驱动**：`UIFactory.requestData` 与 `UIFactory.loadBundle` 必须 100% 独家委托 TSCore 内置的 `ELoader.loader.load` 发起资源请求，严禁私自绕过 ELoader 调用底层 `Laya.HttpRequest` 或浏览器 `fetch`；
-- **全链路异常防御与进度感知**：加载资源支持 `onProgress` 进度透传，并在网络 404、空数据、二进制头部不足 28 字节、AES-GCM 解密失败、Deflate 解压失败以及 JSON 解析失败全链路施加严密 try-catch 拦截与详细日志输出，杜绝静默失败与白屏死锁。
+- **全链路异常防御与进度感知**：加载资源支持 `onProgress` 进度透传，并在网络 404、空数据、二进制头部不足 28 字节、AES-GCM 解密失败、Deflate 解压失败以及 JSON 解析失败全链路施加严密 try-catch 拦截与详细日志输出，杜绝静默失败与白屏死锁；
+- **散装外部依赖自动级联加载 (Auto-Cascade Loading)**：在单文件布局加载完成后，引擎自动通过 `UIFactory.extractMissingDependencies` 静态推演子树依赖，对尚未在内存（`UIFactory.getConfig` 未命中）的外部 `src` 组件自动并发调度 `loadBundle` 补齐加载，彻底消除父布局已就绪而子组件漏配/未下载导致的白屏空白；
+- **全英文工业级诊断规范**：引擎内核（`UIFactory.ts`、`UIFactoryGears.ts`、`UIFactoryTransitions.ts`）全部控制台警告（console.warn）与报错（console.error）必须统一采用 100% 规范英文输出，杜绝中文日志残留。
 
 ---
 

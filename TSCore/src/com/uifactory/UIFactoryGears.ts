@@ -56,7 +56,7 @@ export class UIFactoryGears {
                 gear.apply();
                 // 确保在构建期不因 checkGearDisplay 误触发，在控制器统一 applyController 时刷新
             } else {
-                console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearDisplay.controller}"。`);
+                console.warn(`[UIFactory] Element "${childData.name || index}" declares gear "gearDisplay" referencing controller "${childData.gearDisplay.controller}" which was not found on parent.`);
             }
         }
 
@@ -86,7 +86,7 @@ export class UIFactoryGears {
                 }
                 gear.apply();
             } else {
-                console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearXY.controller}"。`);
+                console.warn(`[UIFactory] Element "${childData.name || index}" declares gear "gearXY" referencing controller "${childData.gearXY.controller}" which was not found on parent.`);
             }
         }
 
@@ -116,7 +116,7 @@ export class UIFactoryGears {
                 }
                 gear.apply();
             } else {
-                console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearSize.controller}"。`);
+                console.warn(`[UIFactory] Element "${childData.name || index}" declares gear "gearSize" referencing controller "${childData.gearSize.controller}" which was not found on parent.`);
             }
         }
 
@@ -146,7 +146,7 @@ export class UIFactoryGears {
                 }
                 gear.apply();
             } else {
-                console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearLook.controller}"。`);
+                console.warn(`[UIFactory] Element "${childData.name || index}" declares gear "gearLook" referencing controller "${childData.gearLook.controller}" which was not found on parent.`);
             }
         }
 
@@ -168,7 +168,7 @@ export class UIFactoryGears {
                 }
                 gear.apply();
             } else {
-                console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearColor.controller}"。`);
+                console.warn(`[UIFactory] Element "${childData.name || index}" declares gear "gearColor" referencing controller "${childData.gearColor.controller}" which was not found on parent.`);
             }
         }
 
@@ -190,7 +190,7 @@ export class UIFactoryGears {
                 }
                 gear.apply();
             } else {
-                console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearAnimation.controller}"。`);
+                console.warn(`[UIFactory] Element "${childData.name || index}" declares gear "gearAnimation" referencing controller "${childData.gearAnimation.controller}" which was not found on parent.`);
             }
         }
 
@@ -209,7 +209,7 @@ export class UIFactoryGears {
                 }
                 gear.apply();
             } else {
-                console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearText.controller}"。`);
+                console.warn(`[UIFactory] Element "${childData.name || index}" declares gear "gearText" referencing controller "${childData.gearText.controller}" which was not found on parent.`);
             }
         }
 
@@ -228,7 +228,7 @@ export class UIFactoryGears {
                 }
                 gear.apply();
             } else {
-                console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearIcon.controller}"。`);
+                console.warn(`[UIFactory] Element "${childData.name || index}" declares gear "gearIcon" referencing controller "${childData.gearIcon.controller}" which was not found on parent.`);
             }
         }
 
@@ -246,7 +246,7 @@ export class UIFactoryGears {
                 }
                 gear.apply();
             } else {
-                console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearDisplay2.controller}"。`);
+                console.warn(`[UIFactory] Element "${childData.name || index}" declares gear "gearDisplay2" referencing controller "${childData.gearDisplay2.controller}" which was not found on parent.`);
             }
         }
 
@@ -265,7 +265,7 @@ export class UIFactoryGears {
                 }
                 gear.apply();
             } else {
-                console.warn(`[UIFactory] 组件 "${childData.name || index}" 未在直接父容器中找到控制器 "${childData.gearFontSize.controller}"。`);
+                console.warn(`[UIFactory] Element "${childData.name || index}" declares gear "gearFontSize" referencing controller "${childData.gearFontSize.controller}" which was not found on parent.`);
             }
         }
     }

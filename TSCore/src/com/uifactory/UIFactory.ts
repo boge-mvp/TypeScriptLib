@@ -371,10 +371,42 @@ export class UIFactory {
                 if (resultData.name && !UIFactory.registeredConfigs[resultData.name]) {
                     UIFactory.registeredConfigs[resultData.name] = resultData as IElementConfig;
                 }
+
+                // 散装依赖自动级联加载：扫描当前布局配置中所有尚未载入内存的外部 src 依赖并自动并发补齐
+                const missingDeps = UIFactory.extractMissingDependencies(resultData as IElementConfig);
+                if (missingDeps.length > 0) {
+                    await Promise.all(missingDeps.map(depUrl => UIFactory.loadBundle(depUrl, options)));
+                }
             }
         }
 
         return resultData;
+    }
+
+    /**
+     * 递归收集声明式配置中所有尚未载入内存的外部 src 组件依赖
+     *
+     * @param config 当前待检查的组件配置
+     * @param gathered 已收集的缺失依赖集合 (内部递归传递)
+     * @returns 缺失并亟需级联加载的外部组件 URL 数组
+     */
+    public static extractMissingDependencies(
+        config: IElementConfig,
+        gathered: Set<string> = new Set<string>()
+    ): string[] {
+        if (!config || typeof config !== "object") return Array.from(gathered);
+
+        if (config.src && !UIFactory.getConfig(config.src)) {
+            gathered.add(config.src);
+        }
+
+        const anyConfig = config as any;
+        if (Array.isArray(anyConfig.elements)) {
+            for (const child of anyConfig.elements) {
+                UIFactory.extractMissingDependencies(child, gathered);
+            }
+        }
+        return Array.from(gathered);
     }
 
     /**
@@ -398,7 +430,7 @@ export class UIFactory {
     ): Nullable<T> {
         const template = UIFactory.getConfig(nameOrUrl);
         if (!template) {
-            console.error(`[UIFactory] 未找到名为 "${nameOrUrl}" 的组件配置模板！请确认是否已加载对应配置。`);
+            console.error(`[UIFactory] Component template "${nameOrUrl}" not found! Please ensure layout has been registered.`);
             return null;
         }
         const finalConfig: IElementConfig = (overrides ? {...template, ...overrides} : template) as IElementConfig;
@@ -1039,7 +1071,7 @@ export class UIFactory {
             if (typeof g[cmd] === "function") {
                 g[cmd](...args);
             } else {
-                console.warn(`Laya.Graphics 不支持方法: ${cmd}`);
+                console.warn(`[UIFactory] Laya.Graphics does not support command: ${cmd}`);
             }
         }
     }
@@ -1337,7 +1369,7 @@ export class UIFactory {
                                 }
                                 childNode.addRelation(targetNode, relType as number, r.usePercent || false);
                             } else {
-                                console.warn(`[UIFactory] 组件 "${childNode.name}" 找不到关联目标 "${r.target}"`);
+                                console.warn(`[UIFactory] Element "${childNode.name}" failed to find relation target "${r.target}"`);
                             }
                         }
                     }
@@ -1398,7 +1430,7 @@ export class UIFactory {
                 if (maskObj) {
                     panelNode.setMask(maskObj.displayObject, !!elData.maskInverted);
                 } else {
-                    console.warn(`[UIFactory] 容器 "${panelNode.name || 'unnamed'}" 未找到指定的遮罩目标组件: "${elData.mask}"。`);
+                    console.warn(`[UIFactory] Container "${panelNode.name || 'unnamed'}" failed to find mask target: "${elData.mask}".`);
                 }
             }
 
