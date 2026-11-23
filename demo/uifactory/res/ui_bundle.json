@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "timestamp": 1795079126430,
+  "timestamp": 1795170036261,
   "layouts": {
     "res/layout/header.json": {
       "type": "panel",
@@ -43,11 +43,14 @@
     },
     "res/layout/mainView.json": {
       "type": "panel",
-      "name": "bodyContainer",
+      "name": "rootPanel",
       "x": 0,
-      "y": 50,
+      "y": 0,
       "width": 1480,
-      "height": 670,
+      "height": 720,
+      "background": {
+        "color": "#0f172a"
+      },
       "controllers": [
         {
           "name": "tabCtrl",
@@ -56,8 +59,8 @@
             "tab2",
             "tab3",
             "tab4",
-            "tab5",
-            "tab6"
+            "tab6",
+            "tab5"
           ],
           "selectedIndex": 0
         }
@@ -65,738 +68,752 @@
       "elements": [
         {
           "type": "panel",
-          "name": "sidebarPanel",
+          "name": "headerPanel",
+          "src": "res/layout/header.json",
+          "x": 0,
+          "y": 0,
+          "width": 1480,
+          "height": 50
+        },
+        {
+          "type": "group",
+          "name": "sidebarGroup"
+        },
+        {
+          "type": "graph",
+          "name": "sidebarBg",
           "x": 16,
-          "y": 12,
+          "y": 62,
           "width": 208,
           "height": 646,
-          "background": {
-            "color": "#1e293b",
-            "cornerRadius": 8,
-            "lineSize": 1,
-            "lineColor": "#334155"
-          },
+          "shape": "rect",
+          "fillColor": "#1e293b",
+          "cornerRadius": 8,
+          "lineSize": 1,
+          "lineColor": "#334155",
+          "group": "sidebarGroup"
+        },
+        {
+          "type": "text",
+          "name": "menuHeader",
+          "x": 28,
+          "y": 76,
+          "width": 184,
+          "height": 26,
+          "fontSize": 14,
+          "bold": true,
+          "color": "#38bdf8",
+          "align": "center",
+          "valign": "middle",
+          "text": "🧭 功能模块列表",
+          "group": "sidebarGroup"
+        },
+        {
+          "type": "graph",
+          "name": "headerDivider",
+          "x": 28,
+          "y": 106,
+          "width": 184,
+          "height": 1,
+          "fillColor": "#334155",
+          "group": "sidebarGroup"
+        },
+        {
+          "type": "list",
+          "name": "tabList",
+          "x": 28,
+          "y": 116,
+          "width": 184,
+          "height": 580,
+          "listLayout": "SingleColumn",
+          "selectionMode": "Single",
+          "selectionController": "tabCtrl",
+          "lineGap": 8,
+          "selectedIndex": 0,
+          "group": "sidebarGroup",
           "elements": [
             {
-              "type": "text",
-              "name": "menuHeader",
-              "x": 12,
-              "y": 14,
+              "type": "button",
+              "name": "tabBtn_0",
               "width": 184,
-              "height": 26,
-              "fontSize": 14,
-              "bold": true,
-              "color": "#38bdf8",
-              "align": "center",
-              "valign": "middle",
-              "text": "🧭 功能模块列表"
-            },
-            {
-              "type": "graph",
-              "name": "headerDivider",
-              "x": 12,
-              "y": 44,
-              "width": 184,
-              "height": 1,
-              "fillColor": "#334155"
-            },
-            {
-              "type": "list",
-              "name": "tabList",
-              "x": 12,
-              "y": 54,
-              "width": 184,
-              "height": 580,
-              "listLayout": "SingleColumn",
-              "selectionMode": "Single",
-              "selectionController": "tabCtrl",
-              "lineGap": 8,
-              "selectedIndex": 0,
+              "height": 60,
+              "mode": "Check",
+              "selected": true,
+              "controllers": [
+                {
+                  "name": "button",
+                  "pages": [
+                    "up",
+                    "down",
+                    "over",
+                    "selectedOver"
+                  ],
+                  "selectedIndex": 3
+                }
+              ],
               "elements": [
                 {
-                  "type": "button",
-                  "name": "tabBtn_0",
+                  "type": "graph",
+                  "name": "bg",
                   "width": 184,
                   "height": 60,
-                  "mode": "Check",
-                  "selected": true,
-                  "controllers": [
-                    {
-                      "name": "button",
-                      "pages": [
-                        "up",
-                        "down",
-                        "over",
-                        "selectedOver"
-                      ],
-                      "selectedIndex": 3
-                    }
-                  ],
-                  "elements": [
-                    {
-                      "type": "graph",
-                      "name": "bg",
-                      "width": 184,
-                      "height": 60,
-                      "shape": "rect",
-                      "fillColor": "#0f172a",
-                      "lineSize": 1,
-                      "lineColor": "#334155",
-                      "cornerRadius": 6,
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#0f172a",
-                            "strokeColor": "#334155"
-                          },
-                          "down": {
-                            "color": "#2563eb",
-                            "strokeColor": "#60a5fa"
-                          },
-                          "over": {
-                            "color": "#1e293b",
-                            "strokeColor": "#475569"
-                          },
-                          "selectedOver": {
-                            "color": "#2563eb",
-                            "strokeColor": "#60a5fa"
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "name": "title",
-                      "text": "① 10大Gears",
-                      "x": 12,
-                      "y": 11,
-                      "width": 160,
-                      "height": 22,
-                      "fontSize": 14,
-                      "bold": true,
-                      "color": "#cbd5e1",
-                      "align": "left",
-                      "valign": "middle",
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#e2e8f0"
-                          },
-                          "down": {
-                            "color": "#ffffff"
-                          },
-                          "over": {
-                            "color": "#ffffff"
-                          },
-                          "selectedOver": {
-                            "color": "#ffffff"
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "name": "subLabel",
-                      "text": "状态机与属性检视",
-                      "x": 12,
-                      "y": 33,
-                      "width": 160,
-                      "height": 18,
-                      "fontSize": 11,
-                      "color": "#64748b",
-                      "align": "left",
-                      "valign": "middle",
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#64748b"
-                          },
-                          "down": {
-                            "color": "#dbeafe"
-                          },
-                          "over": {
-                            "color": "#94a3b8"
-                          },
-                          "selectedOver": {
-                            "color": "#dbeafe"
-                          }
-                        }
+                  "shape": "rect",
+                  "fillColor": "#0f172a",
+                  "lineSize": 1,
+                  "lineColor": "#334155",
+                  "cornerRadius": 6,
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#0f172a",
+                        "strokeColor": "#334155"
+                      },
+                      "down": {
+                        "color": "#2563eb",
+                        "strokeColor": "#60a5fa"
+                      },
+                      "over": {
+                        "color": "#1e293b",
+                        "strokeColor": "#475569"
+                      },
+                      "selectedOver": {
+                        "color": "#2563eb",
+                        "strokeColor": "#60a5fa"
                       }
                     }
-                  ]
+                  }
                 },
                 {
-                  "type": "button",
-                  "name": "tabBtn_1",
-                  "width": 184,
-                  "height": 60,
-                  "mode": "Check",
-                  "controllers": [
-                    {
-                      "name": "button",
-                      "pages": [
-                        "up",
-                        "down",
-                        "over",
-                        "selectedOver"
-                      ],
-                      "selectedIndex": 0
-                    }
-                  ],
-                  "elements": [
-                    {
-                      "type": "graph",
-                      "name": "bg",
-                      "width": 184,
-                      "height": 60,
-                      "shape": "rect",
-                      "fillColor": "#0f172a",
-                      "lineSize": 1,
-                      "lineColor": "#334155",
-                      "cornerRadius": 6,
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#0f172a",
-                            "strokeColor": "#334155"
-                          },
-                          "down": {
-                            "color": "#2563eb",
-                            "strokeColor": "#60a5fa"
-                          },
-                          "over": {
-                            "color": "#1e293b",
-                            "strokeColor": "#475569"
-                          },
-                          "selectedOver": {
-                            "color": "#2563eb",
-                            "strokeColor": "#60a5fa"
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "name": "title",
-                      "text": "② 动效定制",
-                      "x": 12,
-                      "y": 11,
-                      "width": 160,
-                      "height": 22,
-                      "fontSize": 14,
-                      "bold": true,
-                      "color": "#cbd5e1",
-                      "align": "left",
-                      "valign": "middle",
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#e2e8f0"
-                          },
-                          "down": {
-                            "color": "#ffffff"
-                          },
-                          "over": {
-                            "color": "#ffffff"
-                          },
-                          "selectedOver": {
-                            "color": "#ffffff"
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "name": "subLabel",
-                      "text": "Transition与缓动",
-                      "x": 12,
-                      "y": 33,
-                      "width": 160,
-                      "height": 18,
-                      "fontSize": 11,
-                      "color": "#64748b",
-                      "align": "left",
-                      "valign": "middle",
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#64748b"
-                          },
-                          "down": {
-                            "color": "#dbeafe"
-                          },
-                          "over": {
-                            "color": "#94a3b8"
-                          },
-                          "selectedOver": {
-                            "color": "#dbeafe"
-                          }
-                        }
+                  "type": "text",
+                  "name": "title",
+                  "text": "① 10大Gears",
+                  "x": 12,
+                  "y": 11,
+                  "width": 160,
+                  "height": 22,
+                  "fontSize": 14,
+                  "bold": true,
+                  "color": "#cbd5e1",
+                  "align": "left",
+                  "valign": "middle",
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#e2e8f0"
+                      },
+                      "down": {
+                        "color": "#ffffff"
+                      },
+                      "over": {
+                        "color": "#ffffff"
+                      },
+                      "selectedOver": {
+                        "color": "#ffffff"
                       }
                     }
-                  ]
+                  }
                 },
                 {
-                  "type": "button",
-                  "name": "tabBtn_2",
+                  "type": "text",
+                  "name": "subLabel",
+                  "text": "状态机与属性检视",
+                  "x": 12,
+                  "y": 33,
+                  "width": 160,
+                  "height": 18,
+                  "fontSize": 11,
+                  "color": "#64748b",
+                  "align": "left",
+                  "valign": "middle",
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#64748b"
+                      },
+                      "down": {
+                        "color": "#dbeafe"
+                      },
+                      "over": {
+                        "color": "#94a3b8"
+                      },
+                      "selectedOver": {
+                        "color": "#dbeafe"
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "name": "tabBtn_1",
+              "width": 184,
+              "height": 60,
+              "mode": "Check",
+              "controllers": [
+                {
+                  "name": "button",
+                  "pages": [
+                    "up",
+                    "down",
+                    "over",
+                    "selectedOver"
+                  ],
+                  "selectedIndex": 0
+                }
+              ],
+              "elements": [
+                {
+                  "type": "graph",
+                  "name": "bg",
                   "width": 184,
                   "height": 60,
-                  "mode": "Check",
-                  "controllers": [
-                    {
-                      "name": "button",
-                      "pages": [
-                        "up",
-                        "down",
-                        "over",
-                        "selectedOver"
-                      ],
-                      "selectedIndex": 0
-                    }
-                  ],
-                  "elements": [
-                    {
-                      "type": "graph",
-                      "name": "bg",
-                      "width": 184,
-                      "height": 60,
-                      "shape": "rect",
-                      "fillColor": "#0f172a",
-                      "lineSize": 1,
-                      "lineColor": "#334155",
-                      "cornerRadius": 6,
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#0f172a",
-                            "strokeColor": "#334155"
-                          },
-                          "down": {
-                            "color": "#2563eb",
-                            "strokeColor": "#60a5fa"
-                          },
-                          "over": {
-                            "color": "#1e293b",
-                            "strokeColor": "#475569"
-                          },
-                          "selectedOver": {
-                            "color": "#2563eb",
-                            "strokeColor": "#60a5fa"
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "name": "title",
-                      "text": "③ 原生全家桶",
-                      "x": 12,
-                      "y": 11,
-                      "width": 160,
-                      "height": 22,
-                      "fontSize": 14,
-                      "bold": true,
-                      "color": "#cbd5e1",
-                      "align": "left",
-                      "valign": "middle",
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#e2e8f0"
-                          },
-                          "down": {
-                            "color": "#ffffff"
-                          },
-                          "over": {
-                            "color": "#ffffff"
-                          },
-                          "selectedOver": {
-                            "color": "#ffffff"
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "name": "subLabel",
-                      "text": "Button/Slider/Bar",
-                      "x": 12,
-                      "y": 33,
-                      "width": 160,
-                      "height": 18,
-                      "fontSize": 11,
-                      "color": "#64748b",
-                      "align": "left",
-                      "valign": "middle",
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#64748b"
-                          },
-                          "down": {
-                            "color": "#dbeafe"
-                          },
-                          "over": {
-                            "color": "#94a3b8"
-                          },
-                          "selectedOver": {
-                            "color": "#dbeafe"
-                          }
-                        }
+                  "shape": "rect",
+                  "fillColor": "#0f172a",
+                  "lineSize": 1,
+                  "lineColor": "#334155",
+                  "cornerRadius": 6,
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#0f172a",
+                        "strokeColor": "#334155"
+                      },
+                      "down": {
+                        "color": "#2563eb",
+                        "strokeColor": "#60a5fa"
+                      },
+                      "over": {
+                        "color": "#1e293b",
+                        "strokeColor": "#475569"
+                      },
+                      "selectedOver": {
+                        "color": "#2563eb",
+                        "strokeColor": "#60a5fa"
                       }
                     }
-                  ]
+                  }
                 },
                 {
-                  "type": "button",
-                  "name": "tabBtn_3",
-                  "width": 184,
-                  "height": 60,
-                  "mode": "Check",
-                  "controllers": [
-                    {
-                      "name": "button",
-                      "pages": [
-                        "up",
-                        "down",
-                        "over",
-                        "selectedOver"
-                      ],
-                      "selectedIndex": 0
-                    }
-                  ],
-                  "elements": [
-                    {
-                      "type": "graph",
-                      "name": "bg",
-                      "width": 184,
-                      "height": 60,
-                      "shape": "rect",
-                      "fillColor": "#0f172a",
-                      "lineSize": 1,
-                      "lineColor": "#334155",
-                      "cornerRadius": 6,
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#0f172a",
-                            "strokeColor": "#334155"
-                          },
-                          "down": {
-                            "color": "#2563eb",
-                            "strokeColor": "#60a5fa"
-                          },
-                          "over": {
-                            "color": "#1e293b",
-                            "strokeColor": "#475569"
-                          },
-                          "selectedOver": {
-                            "color": "#2563eb",
-                            "strokeColor": "#60a5fa"
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "name": "title",
-                      "text": "④ Flex排版",
-                      "x": 12,
-                      "y": 11,
-                      "width": 160,
-                      "height": 22,
-                      "fontSize": 14,
-                      "bold": true,
-                      "color": "#cbd5e1",
-                      "align": "left",
-                      "valign": "middle",
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#e2e8f0"
-                          },
-                          "down": {
-                            "color": "#ffffff"
-                          },
-                          "over": {
-                            "color": "#ffffff"
-                          },
-                          "selectedOver": {
-                            "color": "#ffffff"
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "name": "subLabel",
-                      "text": "流式测量工作台",
-                      "x": 12,
-                      "y": 33,
-                      "width": 160,
-                      "height": 18,
-                      "fontSize": 11,
-                      "color": "#64748b",
-                      "align": "left",
-                      "valign": "middle",
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#64748b"
-                          },
-                          "down": {
-                            "color": "#dbeafe"
-                          },
-                          "over": {
-                            "color": "#94a3b8"
-                          },
-                          "selectedOver": {
-                            "color": "#dbeafe"
-                          }
-                        }
+                  "type": "text",
+                  "name": "title",
+                  "text": "② 动效定制",
+                  "x": 12,
+                  "y": 11,
+                  "width": 160,
+                  "height": 22,
+                  "fontSize": 14,
+                  "bold": true,
+                  "color": "#cbd5e1",
+                  "align": "left",
+                  "valign": "middle",
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#e2e8f0"
+                      },
+                      "down": {
+                        "color": "#ffffff"
+                      },
+                      "over": {
+                        "color": "#ffffff"
+                      },
+                      "selectedOver": {
+                        "color": "#ffffff"
                       }
                     }
-                  ]
+                  }
                 },
                 {
-                  "type": "button",
-                  "name": "tabBtn_4",
+                  "type": "text",
+                  "name": "subLabel",
+                  "text": "Transition与缓动",
+                  "x": 12,
+                  "y": 33,
+                  "width": 160,
+                  "height": 18,
+                  "fontSize": 11,
+                  "color": "#64748b",
+                  "align": "left",
+                  "valign": "middle",
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#64748b"
+                      },
+                      "down": {
+                        "color": "#dbeafe"
+                      },
+                      "over": {
+                        "color": "#94a3b8"
+                      },
+                      "selectedOver": {
+                        "color": "#dbeafe"
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "name": "tabBtn_2",
+              "width": 184,
+              "height": 60,
+              "mode": "Check",
+              "controllers": [
+                {
+                  "name": "button",
+                  "pages": [
+                    "up",
+                    "down",
+                    "over",
+                    "selectedOver"
+                  ],
+                  "selectedIndex": 0
+                }
+              ],
+              "elements": [
+                {
+                  "type": "graph",
+                  "name": "bg",
                   "width": 184,
                   "height": 60,
-                  "mode": "Check",
-                  "controllers": [
-                    {
-                      "name": "button",
-                      "pages": [
-                        "up",
-                        "down",
-                        "over",
-                        "selectedOver"
-                      ],
-                      "selectedIndex": 0
-                    }
-                  ],
-                  "elements": [
-                    {
-                      "type": "graph",
-                      "name": "bg",
-                      "width": 184,
-                      "height": 60,
-                      "shape": "rect",
-                      "fillColor": "#0f172a",
-                      "lineSize": 1,
-                      "lineColor": "#334155",
-                      "cornerRadius": 6,
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#0f172a",
-                            "strokeColor": "#334155"
-                          },
-                          "down": {
-                            "color": "#2563eb",
-                            "strokeColor": "#60a5fa"
-                          },
-                          "over": {
-                            "color": "#1e293b",
-                            "strokeColor": "#475569"
-                          },
-                          "selectedOver": {
-                            "color": "#2563eb",
-                            "strokeColor": "#60a5fa"
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "name": "title",
-                      "text": "⑤ 3A Slot",
-                      "x": 12,
-                      "y": 11,
-                      "width": 160,
-                      "height": 22,
-                      "fontSize": 14,
-                      "bold": true,
-                      "color": "#cbd5e1",
-                      "align": "left",
-                      "valign": "middle",
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#e2e8f0"
-                          },
-                          "down": {
-                            "color": "#ffffff"
-                          },
-                          "over": {
-                            "color": "#ffffff"
-                          },
-                          "selectedOver": {
-                            "color": "#ffffff"
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "name": "subLabel",
-                      "text": "PureList虚拟循环",
-                      "x": 12,
-                      "y": 33,
-                      "width": 160,
-                      "height": 18,
-                      "fontSize": 11,
-                      "color": "#64748b",
-                      "align": "left",
-                      "valign": "middle",
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#64748b"
-                          },
-                          "down": {
-                            "color": "#dbeafe"
-                          },
-                          "over": {
-                            "color": "#94a3b8"
-                          },
-                          "selectedOver": {
-                            "color": "#dbeafe"
-                          }
-                        }
+                  "shape": "rect",
+                  "fillColor": "#0f172a",
+                  "lineSize": 1,
+                  "lineColor": "#334155",
+                  "cornerRadius": 6,
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#0f172a",
+                        "strokeColor": "#334155"
+                      },
+                      "down": {
+                        "color": "#2563eb",
+                        "strokeColor": "#60a5fa"
+                      },
+                      "over": {
+                        "color": "#1e293b",
+                        "strokeColor": "#475569"
+                      },
+                      "selectedOver": {
+                        "color": "#2563eb",
+                        "strokeColor": "#60a5fa"
                       }
                     }
-                  ]
+                  }
                 },
                 {
-                  "type": "button",
-                  "name": "tabBtn_5",
+                  "type": "text",
+                  "name": "title",
+                  "text": "③ 原生全家桶",
+                  "x": 12,
+                  "y": 11,
+                  "width": 160,
+                  "height": 22,
+                  "fontSize": 14,
+                  "bold": true,
+                  "color": "#cbd5e1",
+                  "align": "left",
+                  "valign": "middle",
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#e2e8f0"
+                      },
+                      "down": {
+                        "color": "#ffffff"
+                      },
+                      "over": {
+                        "color": "#ffffff"
+                      },
+                      "selectedOver": {
+                        "color": "#ffffff"
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "text",
+                  "name": "subLabel",
+                  "text": "Button/Slider/Bar",
+                  "x": 12,
+                  "y": 33,
+                  "width": 160,
+                  "height": 18,
+                  "fontSize": 11,
+                  "color": "#64748b",
+                  "align": "left",
+                  "valign": "middle",
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#64748b"
+                      },
+                      "down": {
+                        "color": "#dbeafe"
+                      },
+                      "over": {
+                        "color": "#94a3b8"
+                      },
+                      "selectedOver": {
+                        "color": "#dbeafe"
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "name": "tabBtn_3",
+              "width": 184,
+              "height": 60,
+              "mode": "Check",
+              "controllers": [
+                {
+                  "name": "button",
+                  "pages": [
+                    "up",
+                    "down",
+                    "over",
+                    "selectedOver"
+                  ],
+                  "selectedIndex": 0
+                }
+              ],
+              "elements": [
+                {
+                  "type": "graph",
+                  "name": "bg",
                   "width": 184,
                   "height": 60,
-                  "mode": "Check",
-                  "controllers": [
-                    {
-                      "name": "button",
-                      "pages": [
-                        "up",
-                        "down",
-                        "over",
-                        "selectedOver"
-                      ],
-                      "selectedIndex": 0
+                  "shape": "rect",
+                  "fillColor": "#0f172a",
+                  "lineSize": 1,
+                  "lineColor": "#334155",
+                  "cornerRadius": 6,
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#0f172a",
+                        "strokeColor": "#334155"
+                      },
+                      "down": {
+                        "color": "#2563eb",
+                        "strokeColor": "#60a5fa"
+                      },
+                      "over": {
+                        "color": "#1e293b",
+                        "strokeColor": "#475569"
+                      },
+                      "selectedOver": {
+                        "color": "#2563eb",
+                        "strokeColor": "#60a5fa"
+                      }
                     }
+                  }
+                },
+                {
+                  "type": "text",
+                  "name": "title",
+                  "text": "④ Flex排版",
+                  "x": 12,
+                  "y": 11,
+                  "width": 160,
+                  "height": 22,
+                  "fontSize": 14,
+                  "bold": true,
+                  "color": "#cbd5e1",
+                  "align": "left",
+                  "valign": "middle",
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#e2e8f0"
+                      },
+                      "down": {
+                        "color": "#ffffff"
+                      },
+                      "over": {
+                        "color": "#ffffff"
+                      },
+                      "selectedOver": {
+                        "color": "#ffffff"
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "text",
+                  "name": "subLabel",
+                  "text": "流式测量工作台",
+                  "x": 12,
+                  "y": 33,
+                  "width": 160,
+                  "height": 18,
+                  "fontSize": 11,
+                  "color": "#64748b",
+                  "align": "left",
+                  "valign": "middle",
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#64748b"
+                      },
+                      "down": {
+                        "color": "#dbeafe"
+                      },
+                      "over": {
+                        "color": "#94a3b8"
+                      },
+                      "selectedOver": {
+                        "color": "#dbeafe"
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "name": "tabBtn_4",
+              "width": 184,
+              "height": 60,
+              "mode": "Check",
+              "controllers": [
+                {
+                  "name": "button",
+                  "pages": [
+                    "up",
+                    "down",
+                    "over",
+                    "selectedOver"
                   ],
-                  "elements": [
-                    {
-                      "type": "graph",
-                      "name": "bg",
-                      "width": 184,
-                      "height": 60,
-                      "shape": "rect",
-                      "fillColor": "#0f172a",
-                      "lineSize": 1,
-                      "lineColor": "#334155",
-                      "cornerRadius": 6,
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#0f172a",
-                            "strokeColor": "#334155"
-                          },
-                          "down": {
-                            "color": "#2563eb",
-                            "strokeColor": "#60a5fa"
-                          },
-                          "over": {
-                            "color": "#1e293b",
-                            "strokeColor": "#475569"
-                          },
-                          "selectedOver": {
-                            "color": "#2563eb",
-                            "strokeColor": "#60a5fa"
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "name": "title",
-                      "text": "⑥ 关联系统",
-                      "x": 12,
-                      "y": 11,
-                      "width": 160,
-                      "height": 22,
-                      "fontSize": 14,
-                      "bold": true,
-                      "color": "#cbd5e1",
-                      "align": "left",
-                      "valign": "middle",
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#e2e8f0"
-                          },
-                          "down": {
-                            "color": "#ffffff"
-                          },
-                          "over": {
-                            "color": "#ffffff"
-                          },
-                          "selectedOver": {
-                            "color": "#ffffff"
-                          }
-                        }
-                      }
-                    },
-                    {
-                      "type": "text",
-                      "name": "subLabel",
-                      "text": "24项Relations全测",
-                      "x": 12,
-                      "y": 33,
-                      "width": 160,
-                      "height": 18,
-                      "fontSize": 11,
-                      "color": "#64748b",
-                      "align": "left",
-                      "valign": "middle",
-                      "gearColor": {
-                        "controller": "button",
-                        "pages": {
-                          "up": {
-                            "color": "#64748b"
-                          },
-                          "down": {
-                            "color": "#dbeafe"
-                          },
-                          "over": {
-                            "color": "#94a3b8"
-                          },
-                          "selectedOver": {
-                            "color": "#dbeafe"
-                          }
-                        }
+                  "selectedIndex": 0
+                }
+              ],
+              "elements": [
+                {
+                  "type": "graph",
+                  "name": "bg",
+                  "width": 184,
+                  "height": 60,
+                  "shape": "rect",
+                  "fillColor": "#0f172a",
+                  "lineSize": 1,
+                  "lineColor": "#334155",
+                  "cornerRadius": 6,
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#0f172a",
+                        "strokeColor": "#334155"
+                      },
+                      "down": {
+                        "color": "#2563eb",
+                        "strokeColor": "#60a5fa"
+                      },
+                      "over": {
+                        "color": "#1e293b",
+                        "strokeColor": "#475569"
+                      },
+                      "selectedOver": {
+                        "color": "#2563eb",
+                        "strokeColor": "#60a5fa"
                       }
                     }
-                  ]
+                  }
+                },
+                {
+                  "type": "text",
+                  "name": "title",
+                  "text": "⑥ 关联系统",
+                  "x": 12,
+                  "y": 11,
+                  "width": 160,
+                  "height": 22,
+                  "fontSize": 14,
+                  "bold": true,
+                  "color": "#cbd5e1",
+                  "align": "left",
+                  "valign": "middle",
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#e2e8f0"
+                      },
+                      "down": {
+                        "color": "#ffffff"
+                      },
+                      "over": {
+                        "color": "#ffffff"
+                      },
+                      "selectedOver": {
+                        "color": "#ffffff"
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "text",
+                  "name": "subLabel",
+                  "text": "24项Relations全测",
+                  "x": 12,
+                  "y": 33,
+                  "width": 160,
+                  "height": 18,
+                  "fontSize": 11,
+                  "color": "#64748b",
+                  "align": "left",
+                  "valign": "middle",
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#64748b"
+                      },
+                      "down": {
+                        "color": "#dbeafe"
+                      },
+                      "over": {
+                        "color": "#94a3b8"
+                      },
+                      "selectedOver": {
+                        "color": "#dbeafe"
+                      }
+                    }
+                  }
+                }
+              ]
+            },
+            {
+              "type": "button",
+              "name": "tabBtn_5",
+              "width": 184,
+              "height": 60,
+              "mode": "Check",
+              "controllers": [
+                {
+                  "name": "button",
+                  "pages": [
+                    "up",
+                    "down",
+                    "over",
+                    "selectedOver"
+                  ],
+                  "selectedIndex": 0
+                }
+              ],
+              "elements": [
+                {
+                  "type": "graph",
+                  "name": "bg",
+                  "width": 184,
+                  "height": 60,
+                  "shape": "rect",
+                  "fillColor": "#0f172a",
+                  "lineSize": 1,
+                  "lineColor": "#334155",
+                  "cornerRadius": 6,
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#0f172a",
+                        "strokeColor": "#334155"
+                      },
+                      "down": {
+                        "color": "#2563eb",
+                        "strokeColor": "#60a5fa"
+                      },
+                      "over": {
+                        "color": "#1e293b",
+                        "strokeColor": "#475569"
+                      },
+                      "selectedOver": {
+                        "color": "#2563eb",
+                        "strokeColor": "#60a5fa"
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "text",
+                  "name": "title",
+                  "text": "⑤ 3A Slot",
+                  "x": 12,
+                  "y": 11,
+                  "width": 160,
+                  "height": 22,
+                  "fontSize": 14,
+                  "bold": true,
+                  "color": "#cbd5e1",
+                  "align": "left",
+                  "valign": "middle",
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#e2e8f0"
+                      },
+                      "down": {
+                        "color": "#ffffff"
+                      },
+                      "over": {
+                        "color": "#ffffff"
+                      },
+                      "selectedOver": {
+                        "color": "#ffffff"
+                      }
+                    }
+                  }
+                },
+                {
+                  "type": "text",
+                  "name": "subLabel",
+                  "text": "PureList虚拟循环",
+                  "x": 12,
+                  "y": 33,
+                  "width": 160,
+                  "height": 18,
+                  "fontSize": 11,
+                  "color": "#64748b",
+                  "align": "left",
+                  "valign": "middle",
+                  "gearColor": {
+                    "controller": "button",
+                    "pages": {
+                      "up": {
+                        "color": "#64748b"
+                      },
+                      "down": {
+                        "color": "#dbeafe"
+                      },
+                      "over": {
+                        "color": "#94a3b8"
+                      },
+                      "selectedOver": {
+                        "color": "#dbeafe"
+                      }
+                    }
+                  }
                 }
               ]
             }
@@ -807,7 +824,7 @@
           "name": "tab1Panel",
           "src": "res/layout/tab1Gears.json",
           "x": 236,
-          "y": 12,
+          "y": 62,
           "width": 1228,
           "height": 646,
           "gearDisplay": {
@@ -822,7 +839,7 @@
           "name": "tab2Panel",
           "src": "res/layout/tab2Transition.json",
           "x": 236,
-          "y": 12,
+          "y": 62,
           "width": 1228,
           "height": 646,
           "gearDisplay": {
@@ -837,7 +854,7 @@
           "name": "tab3Panel",
           "src": "res/layout/tab3Buttons.json",
           "x": 236,
-          "y": 12,
+          "y": 62,
           "width": 1228,
           "height": 646,
           "gearDisplay": {
@@ -852,7 +869,7 @@
           "name": "tab4Panel",
           "src": "res/layout/tab4Flexbox.json",
           "x": 236,
-          "y": 12,
+          "y": 62,
           "width": 1228,
           "height": 646,
           "gearDisplay": {
@@ -867,7 +884,7 @@
           "name": "tab5Panel",
           "src": "res/layout/tab5Slot.json",
           "x": 236,
-          "y": 12,
+          "y": 62,
           "width": 1228,
           "height": 646,
           "gearDisplay": {
@@ -882,7 +899,7 @@
           "name": "tab6Panel",
           "src": "res/layout/tab6Relations.json",
           "x": 236,
-          "y": 12,
+          "y": 62,
           "width": 1228,
           "height": 646,
           "gearDisplay": {
@@ -4341,6 +4358,8 @@
       "elements": [
         {
           "type": "text",
+          "x": 30,
+          "y": 16,
           "text": "③ 原生 GButton 二进制规范实装 + Checkbox/Radio 互斥 + Switch 开关 + GProgressBar 实装",
           "fontSize": 16,
           "bold": true,
@@ -4349,7 +4368,8 @@
         },
         {
           "type": "text",
-          "y": 24,
+          "x": 30,
+          "y": 38,
           "text": "展示 downEffect 中心缩放与颜色联动；Checkbox 原生勾选；Radio Group 原生互斥联动；Switch 独立组件滑动；GProgressBar 动态进度实装！",
           "fontSize": 12,
           "color": "#94a3b8",
@@ -4989,6 +5009,8 @@
       "elements": [
         {
           "type": "text",
+          "x": 24,
+          "y": 16,
           "text": "④ 交互式 Flexbox 排版操纵台 (Interactive Layout Workbench)",
           "fontSize": 16,
           "bold": true,
@@ -4997,7 +5019,8 @@
         },
         {
           "type": "text",
-          "y": 24,
+          "x": 24,
+          "y": 38,
           "text": "点击工具栏按钮实时切换排版参数，UIFactory 瞬间在预览区重新执行两遍测量排版，直观感受流式布局特性！",
           "fontSize": 12,
           "color": "#94a3b8",

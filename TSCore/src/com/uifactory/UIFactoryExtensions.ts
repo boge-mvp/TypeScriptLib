@@ -108,14 +108,13 @@ export class UIFactoryExtensions {
             } else if (panelNode instanceof fgui.GProgressBar) {
                 const pBar = panelNode;
                 const pConf = elData as IProgressBarConfig;
-                if (pConf.min !== undefined) pBar["min"] = pConf.min;
+                if (pConf.min !== undefined) pBar.min = pConf.min;
                 if (pConf.max !== undefined) pBar.max = pConf.max;
                 if (pConf.titleType !== undefined) pBar.titleType = pConf.titleType;
-                if (pConf.value !== undefined) {
-                    pBar.value = pConf.value;
-                } else {
-                    pBar.update(pBar.value);
-                }
+                if (pConf.value !== undefined) pBar.value = pConf.value;
+                // 100% 对齐官方 GProgressBar.setup_afterAdd 第 8375 行：
+                // 无论 setter 是否因数值与默认值相同被拦截，属性装配终态必须无条件强制执行一次 update 刷新条宽度与标题！
+                pBar.update(pBar.value);
             }
         }
         // 3. GComboBox 扩展类装配

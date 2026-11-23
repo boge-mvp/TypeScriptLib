@@ -1,32 +1,23 @@
 import GComponent = fgui.GComponent;
-import GButton = fgui.GButton;
 import GList = fgui.GList;
+import GButton = fgui.GButton;
 import GTextField = fgui.GTextField;
-import GGraph = fgui.GGraph;
+import GComboBox = fgui.GComboBox;
+import PureList = tsCore.PureList;
 import IPanelConfig = tsCore.IPanelConfig;
 import UIFactory = tsCore.UIFactory;
-import PureList = tsCore.PureList;
 
-/**
- * 符号单项配置数据
- */
 interface ISlotSymbol {
     icon: string;
     name: string;
     color: string;
 }
 
-/**
- * 缓动曲线选项定义
- */
 interface IEasingOption {
     name: string;
     ease: (t: number, b: number, c: number, d: number) => number;
 }
 
-/**
- * 转速档位定义
- */
 interface ISpeedOption {
     name: string;
     baseSpeed: number;
@@ -35,19 +26,14 @@ interface ISpeedOption {
 }
 
 /**
- * ⑤ 3A 级 Slot 5 轴滚轮网格 — 纯代码 PureList 对象池虚拟循环滚动
+ * Tab 5: 工业级 3A 级 Slot 滚轮滚动面板
  *
- * 规范化架构与声明式驱动：
- * 1. 100% 声明式数据驱动：5 轴滚轮列表 (reelCol_0 ~ reelCol_4) 与右侧交互控制台完全在 res/layout/tab5Slot.json 中静态配置；
- * 2. 彻底杜绝代码中手动循环 createElement 并 addChild 生成 DOM 树；
- * 3. 符号项布局规范：彻底移除代码硬编码 JSON 字面量，纯路径直驱引用 res/layout/slotItem.json；
- * 4. 内置全特性交互控制台：支持手动单列拖拽滑动、整格磁吸、弹性回弹、停轮缓动曲线切换、转速档位调节与停轮策略。
+ * 遵循官方规范：直接继承 fgui.GComponent，并在 onConstruct 生命周期钩子中自闭环完成所有逻辑绑定。
  */
-export class Tab5SlotView {
+export class Tab5SlotView extends GComponent {
 
     private static readonly ROW_HEIGHT = 110; // 单格项高 100px + 行距 10px
 
-    private _container!: GComponent;
     private _slotCols: PureList[] = [];
     private _isSpinning = false;
     private _slotSpeeds = [0, 0, 0, 0, 0];
@@ -82,12 +68,16 @@ export class Tab5SlotView {
     // 点选模式: "None" | "Single"
     private _selectionMode: "None" | "Single" = "None";
 
-    public setupInteractions(panel: GComponent, itemConfig?: IPanelConfig): void {
-        this._container = panel;
-        this._itemConfig = itemConfig || UIFactory.getLayout("res/layout/slotItem.json")!;
+    protected override onConstruct(): void {
+        super.onConstruct();
 
-        const outerList = this._container.getChild("reelFrame").getChild("slotOuterList") as GList;
-        const sidePanel = this._container.getChild("sidePanel") as GComponent;
+        this._itemConfig = UIFactory.getConfig<IPanelConfig>("res/layout/slotItem.json")!;
+
+        const reelFrame = this.getChild("reelFrame") as GComponent;
+        const outerList = reelFrame ? reelFrame.getChild("slotOuterList") as GList : null;
+        const sidePanel = this.getChild("sidePanel") as GComponent;
+        if (!sidePanel || !outerList) return;
+
         this._statusTxt = sidePanel.getChild("slotStatus") as GTextField;
 
         const symbols: ISlotSymbol[] = [
@@ -101,7 +91,7 @@ export class Tab5SlotView {
             { icon: "🍀", name: "CLOVER", color: "#22c55e" }
         ];
 
-        // 1. 100% 声明式驱动：直接查找在 tab5Slot.json 中声明的 5 列 PureList 容器，0 行代码循环创建 DOM 节点
+        // 1. 100% 声明式驱动：直接查找在 tab5Slot.json 中声明的 5 列 PureList 容器
         this._slotCols = [];
         for (let col = 0; col < 5; col++) {
             const colList = outerList.getChild(`reelCol_${col}`) as PureList;
@@ -110,290 +100,221 @@ export class Tab5SlotView {
                 continue;
             }
 
-            // 开启 FGUI 原生单桶对象池虚拟循环列表
-            colList.setVirtualAndLoop();
-
-            // 注入渲染器 (仅在 item 无子级时灌装解耦的 slotItem 模板，复用率 100%)
-            colList.itemRenderer = Laya.Handler.create(colList, (idx: number, item: GComponent) => {
+            colList.itemRenderer = Laya.Handler.create(this, (idx: number, item: GComponent) => {
                 if (item.numChildren === 0 && this._itemConfig) {
                     UIFactory.fillPanel(item, this._itemConfig);
                 }
                 const sym = symbols[idx % symbols.length];
-                const bg = item.getChild("bg") as GGraph;
                 const iconTxt = item.getChild("symIcon") as GTextField;
                 const nameTxt = item.getChild("symName") as GTextField;
+                const symBg = (item.getChild("bg") || item.getChild("symBg")) as fgui.GGraph;
 
-                if (bg) bg.drawRect(2, sym.color, "#1e293b");
                 if (iconTxt) iconTxt.text = sym.icon;
                 if (nameTxt) {
                     nameTxt.text = sym.name;
                     nameTxt.color = sym.color;
                 }
+                if (symBg) {
+                    symBg.drawRect(1, "#334155", "#1e293b", [8, 8, 8, 8]);
+                }
             }, null, false);
 
-            colList.numItems = symbols.length * 5;
+            colList.numItems = symbols.length * 3;
+            colList.ensureBoundsCorrect();
 
-            // 初始化各列的物理滚动属性与吸附参数
             if (colList.scrollPane) {
                 colList.scrollPane.touchEffect = this._touchScrollEnabled;
-                colList.scrollPane.mouseWheelEnabled = this._touchScrollEnabled;
-                colList.scrollPane.snapToItem = this._snapToItemEnabled;
                 colList.scrollPane.bouncebackEffect = this._bounceEnabled;
+                colList.scrollPane.snapToItem = this._snapToItemEnabled;
             }
-
-            // 在列表容器自身监听滚动事件（FGUI 事件派发于 GComponent 宿主），实时更新检视看板
-            colList.on(fgui.Events.SCROLL, this, this._onListScroll);
 
             this._slotCols.push(colList);
         }
 
-        // 2. 绑定右侧控制台核心主控操作
-        this._setupSidePanelControls(sidePanel);
-        this._updateStatusInspector("静止就绪");
+        // 2. 绑定操控台交互事件
+        this._setupSideControls(sidePanel);
     }
 
-    /**
-     * 监听单列滚动事件
-     */
-    private _onListScroll(): void {
-        if (!this._isSpinning) {
-            this._updateStatusInspector("用户手动单列滑动中...");
-        }
-    }
-
-    /**
-     * 装配右侧控制台的全部扩展交互与物理策略按钮
-     */
-    private _setupSidePanelControls(sidePanel: GComponent): void {
+    private _setupSideControls(sidePanel: GComponent): void {
         const btnSpin = sidePanel.getChild("btnSpin") as GButton;
         const btnStop = sidePanel.getChild("btnStop") as GButton;
 
-        // 开始错峰旋转
         if (btnSpin) {
             btnSpin.onClick(this, () => {
                 if (this._isSpinning) return;
-                this._startSlotSpin();
+                this._startSpin();
             });
         }
 
-        // 错峰/全停
         if (btnStop) {
             btnStop.onClick(this, () => {
                 if (!this._isSpinning) return;
-                this._stopSlotSpin();
+                this._stopSpin();
             });
         }
 
-        // 🖐️ 手动单列拖拽滑动开关 (用户重点提出：控制手动能否点击 list 滚动单列)
-        const btnToggleTouch = sidePanel.getChild("btnToggleTouch") as GButton;
-        if (btnToggleTouch) {
-            btnToggleTouch.selected = this._touchScrollEnabled;
-            btnToggleTouch.onClick(this, () => {
-                this._touchScrollEnabled = btnToggleTouch.selected;
+        const btnTouch = sidePanel.getChild("btnToggleTouch") as GButton;
+        if (btnTouch) {
+            btnTouch.onClick(this, () => {
+                this._touchScrollEnabled = !this._touchScrollEnabled;
                 for (const col of this._slotCols) {
-                    if (col.scrollPane) {
-                        col.scrollPane.touchEffect = this._touchScrollEnabled;
-                        col.scrollPane.mouseWheelEnabled = this._touchScrollEnabled;
-                    }
+                    if (col.scrollPane) col.scrollPane.touchEffect = this._touchScrollEnabled;
                 }
-                this._updateStatusInspector(this._touchScrollEnabled ? "手动单列拖拽已开启" : "手动单列拖拽已禁用");
+                btnTouch.title = `手动拖拽: ${this._touchScrollEnabled ? "ON" : "OFF"}`;
+                this._updateStatus(`已${this._touchScrollEnabled ? "允许" : "禁止"}手动滑动滚轮`);
             });
         }
 
-        // 🧲 整格磁吸对齐开关
-        const btnToggleSnap = sidePanel.getChild("btnToggleSnap") as GButton;
-        if (btnToggleSnap) {
-            btnToggleSnap.selected = this._snapToItemEnabled;
-            btnToggleSnap.onClick(this, () => {
-                this._snapToItemEnabled = btnToggleSnap.selected;
+        const btnSnap = sidePanel.getChild("btnToggleSnap") as GButton;
+        if (btnSnap) {
+            btnSnap.onClick(this, () => {
+                this._snapToItemEnabled = !this._snapToItemEnabled;
                 for (const col of this._slotCols) {
-                    if (col.scrollPane) {
-                        col.scrollPane.snapToItem = this._snapToItemEnabled;
-                    }
+                    if (col.scrollPane) col.scrollPane.snapToItem = this._snapToItemEnabled;
                 }
-                this._updateStatusInspector(this._snapToItemEnabled ? "整格磁吸对齐已开启" : "整格磁吸对齐已关闭");
+                btnSnap.title = `整格磁吸: ${this._snapToItemEnabled ? "ON" : "OFF"}`;
+                this._updateStatus(`已${this._snapToItemEnabled ? "开启" : "关闭"}整格磁吸对齐`);
             });
         }
 
-        // 🌀 边缘弹性回弹开关
-        const btnToggleBounce = sidePanel.getChild("btnToggleBounce") as GButton;
-        if (btnToggleBounce) {
-            btnToggleBounce.selected = this._bounceEnabled;
-            btnToggleBounce.onClick(this, () => {
-                this._bounceEnabled = btnToggleBounce.selected;
+        const btnBounce = sidePanel.getChild("btnToggleBounce") as GButton;
+        if (btnBounce) {
+            btnBounce.onClick(this, () => {
+                this._bounceEnabled = !this._bounceEnabled;
                 for (const col of this._slotCols) {
-                    if (col.scrollPane) {
-                        col.scrollPane.bouncebackEffect = this._bounceEnabled;
-                    }
+                    if (col.scrollPane) col.scrollPane.bouncebackEffect = this._bounceEnabled;
                 }
-                this._updateStatusInspector(this._bounceEnabled ? "弹性回弹已开启" : "弹性回弹已关闭");
+                btnBounce.title = `弹性回弹: ${this._bounceEnabled ? "ON" : "OFF"}`;
+                this._updateStatus(`已${this._bounceEnabled ? "开启" : "关闭"}视口弹性回弹`);
             });
         }
 
-        // 📉 缓动曲线循环切换
-        const btnEasingMode = sidePanel.getChild("btnEasingMode") as GButton;
-        if (btnEasingMode) {
-            btnEasingMode.onClick(this, () => {
+        const btnEase = sidePanel.getChild("btnEasingMode") as GButton;
+        if (btnEase) {
+            btnEase.onClick(this, () => {
                 this._easingIndex = (this._easingIndex + 1) % this._easingOptions.length;
                 const opt = this._easingOptions[this._easingIndex];
-                btnEasingMode.title = `📉 停轮缓动: ${opt.name}`;
-                this._updateStatusInspector(`停轮缓动已切换为: ${opt.name}`);
+                btnEase.title = `曲线: ${opt.name.split(" ")[0]}`;
+                this._updateStatus(`切换停轮曲线: ${opt.name}`);
             });
         }
 
-        // ⚡ 旋转速度档位切换
-        const btnSpeedMode = sidePanel.getChild("btnSpeedMode") as GButton;
-        if (btnSpeedMode) {
-            btnSpeedMode.onClick(this, () => {
+        const btnSpeed = sidePanel.getChild("btnSpeedMode") as GButton;
+        if (btnSpeed) {
+            btnSpeed.onClick(this, () => {
                 this._speedIndex = (this._speedIndex + 1) % this._speedOptions.length;
                 const opt = this._speedOptions[this._speedIndex];
-                btnSpeedMode.title = `⚡ 旋转转速: ${opt.name.split(",")[0]}`;
-                this._updateStatusInspector(`转速已切换为: ${opt.name}`);
+                btnSpeed.title = `转速: ${opt.name.split(" ")[0]}`;
+                this._updateStatus(`切换档位: ${opt.name}`);
             });
         }
 
-        // 🎯 停轮策略切换
-        const btnStopPattern = sidePanel.getChild("btnStopPattern") as GButton;
-        if (btnStopPattern) {
-            btnStopPattern.onClick(this, () => {
+        const btnPattern = sidePanel.getChild("btnStopPattern") as GButton;
+        if (btnPattern) {
+            btnPattern.onClick(this, () => {
                 this._stopPattern = this._stopPattern === "sequential" ? "instant" : "sequential";
-                btnStopPattern.title = this._stopPattern === "sequential"
-                    ? "🎯 停轮策略: 错峰依次停轮 (1→5)"
-                    : "🎯 停轮策略: 一键全轴同时定格 (Instant)";
-                this._updateStatusInspector(`停轮策略切换为: ${this._stopPattern === "sequential" ? "错峰依次" : "全轴同时"}`);
+                btnPattern.title = `停轮: ${this._stopPattern === "sequential" ? "错峰" : "齐停"}`;
+                this._updateStatus(`停轮策略: ${this._stopPattern === "sequential" ? "1->5 依次错峰" : "全列同时刹停"}`);
             });
         }
 
-        // 👆 符号点选模式切换
-        const btnSelectionMode = sidePanel.getChild("btnSelectionMode") as GButton;
-        if (btnSelectionMode) {
-            btnSelectionMode.onClick(this, () => {
+        const btnSel = sidePanel.getChild("btnSelectionMode") as GButton;
+        if (btnSel) {
+            btnSel.onClick(this, () => {
                 this._selectionMode = this._selectionMode === "None" ? "Single" : "None";
-                btnSelectionMode.title = this._selectionMode === "None"
-                    ? "👆 符号点选: 禁用点选 (None)"
-                    : "👆 符号点选: 单项高亮选择 (Single)";
                 for (const col of this._slotCols) {
-                    col.selectionMode = this._selectionMode === "Single"
-                        ? fgui.ListSelectionMode.Single
-                        : fgui.ListSelectionMode.None;
+                    col.selectionMode = this._selectionMode === "None" ? fgui.ListSelectionMode.None : fgui.ListSelectionMode.Single;
                 }
-                this._updateStatusInspector(`符号点选模式: ${this._selectionMode === "Single" ? "单选高亮" : "禁用"}`);
+                btnSel.title = `点选: ${this._selectionMode}`;
+                this._updateStatus(`单项点选高亮: ${this._selectionMode}`);
             });
         }
     }
 
-    /**
-     * 启动高速错峰旋转
-     */
-    private _startSlotSpin(): void {
+    private _startSpin(): void {
         this._isSpinning = true;
-        this._slotSpeeds = [0, 0, 0, 0, 0];
-        Laya.timer.frameLoop(1, this, this._updateSlotFrame);
+        this._updateStatus("🚀 滚轮极速加速启动中...");
+        const curOpt = this._speedOptions[this._speedIndex];
 
-        const currentSpeedOpt = this._speedOptions[this._speedIndex];
-        for (let i = 0; i < 5; i++) {
-            const colIdx = i;
-            Laya.timer.once(i * currentSpeedOpt.staggerDelay, this, () => {
-                this._slotSpeeds[colIdx] = currentSpeedOpt.baseSpeed + colIdx * 2;
+        // 高速旋转期间必须关闭整格磁吸对齐，避免每帧坐标被 FGUI 强行吸附回当前格导致滚动卡死
+        for (const col of this._slotCols) {
+            if (col.scrollPane) col.scrollPane.snapToItem = false;
+        }
+
+        for (let col = 0; col < 5; col++) {
+            this._slotSpeeds[col] = 0;
+            Laya.timer.once(col * curOpt.staggerDelay, this, () => {
+                if (!this._isSpinning) return;
+                this._slotSpeeds[col] = curOpt.baseSpeed;
             });
         }
 
-        this._updateStatusInspector("5 轴高速错峰旋转中...");
+        Laya.timer.frameLoop(1, this, this._onSpinLoop);
     }
 
-    /**
-     * 停轮落定与整格磁吸
-     */
-    private _stopSlotSpin(): void {
-        const currentSpeedOpt = this._speedOptions[this._speedIndex];
-        const currentEase = this._easingOptions[this._easingIndex].ease;
+    private _onSpinLoop(): void {
+        // 8 个符号为一组（高 880px），超过第二组（1760px）时折返 880px，保持在第一与第二组之间无缝无限循环
+        const loopSegment = Tab5SlotView.ROW_HEIGHT * 8;
+        for (let col = 0; col < this._slotCols.length; col++) {
+            const list = this._slotCols[col];
+            const speed = this._slotSpeeds[col];
+            if (speed > 0 && list.scrollPane) {
+                list.scrollPane.posY += speed;
+                if (list.scrollPane.posY >= loopSegment * 2) {
+                    list.scrollPane.posY -= loopSegment;
+                }
+            }
+        }
+    }
+
+    private _stopSpin(): void {
+        this._updateStatus("🛑 触发停轮序列...");
+        Laya.timer.clear(this, this._onSpinLoop);
+        const curOpt = this._speedOptions[this._speedIndex];
+        const easeFunc = this._easingOptions[this._easingIndex].ease;
 
         if (this._stopPattern === "instant") {
-            // 一键全轴同时定格
+            for (let col = 0; col < 5; col++) {
+                this._stopSingleCol(col, easeFunc);
+            }
+            this._finishSpin();
+        } else {
+            for (let col = 0; col < 5; col++) {
+                Laya.timer.once(col * curOpt.stopDelay, this, () => {
+                    this._stopSingleCol(col, easeFunc);
+                    if (col === 4) {
+                        this._finishSpin();
+                    }
+                });
+            }
+        }
+    }
+
+    private _stopSingleCol(colIdx: number, easeFunc: (t: number, b: number, c: number, d: number) => number): void {
+        const col = this._slotCols[colIdx];
+        if (!col || !col.scrollPane) return;
+
+        this._slotSpeeds[colIdx] = 0;
+        const currentY = col.scrollPane.posY;
+        const snapY = Math.round(currentY / Tab5SlotView.ROW_HEIGHT) * Tab5SlotView.ROW_HEIGHT;
+
+        Laya.Tween.to(col.scrollPane, { posY: snapY }, 600, easeFunc);
+    }
+
+    private _finishSpin(): void {
+        Laya.timer.once(700, this, () => {
             this._isSpinning = false;
-            Laya.timer.clear(this, this._updateSlotFrame);
-            for (let i = 0; i < 5; i++) {
-                this._slotSpeeds[i] = 0;
-                const col = this._slotCols[i];
-                if (col && col.scrollPane) {
-                    const snapY = Math.round(col.scrollPane.posY / Tab5SlotView.ROW_HEIGHT) * Tab5SlotView.ROW_HEIGHT;
-                    Laya.Tween.to(col.scrollPane, { posY: snapY }, 250, currentEase);
-                }
+            // 停轮物理吸附到位后恢复整格磁吸配置
+            for (const col of this._slotCols) {
+                if (col.scrollPane) col.scrollPane.snapToItem = this._snapToItemEnabled;
             }
-            this._updateStatusInspector("定格完成！全轴同时落定，对齐 110px 整格。");
-            return;
-        }
-
-        // 默认: 错峰依次减速停轮 (1 -> 5)
-        for (let i = 0; i < 5; i++) {
-            const colIdx = i;
-            Laya.timer.once(i * currentSpeedOpt.stopDelay, this, () => {
-                this._slotSpeeds[colIdx] = 0;
-                const col = this._slotCols[colIdx];
-                if (col && col.scrollPane) {
-                    const snapY = Math.round(col.scrollPane.posY / Tab5SlotView.ROW_HEIGHT) * Tab5SlotView.ROW_HEIGHT;
-                    Laya.Tween.to(col.scrollPane, { posY: snapY }, 260, currentEase);
-                }
-                if (colIdx === 4) {
-                    this._isSpinning = false;
-                    Laya.timer.clear(this, this._updateSlotFrame);
-                    this._updateStatusInspector("定格完成！5 轴错峰停轮落定，整格磁吸完成。");
-                }
-            });
-        }
-        this._updateStatusInspector("正在依次减速落定中...");
+            this._updateStatus("✨ 停轮完成！全轴物理磁吸已复位对齐。");
+        });
     }
 
-    /**
-     * 逐帧位移更新
-     */
-    private _updateSlotFrame(): void {
-        for (let i = 0; i < 5; i++) {
-            const speed = this._slotSpeeds[i];
-            if (speed > 0) {
-                const col = this._slotCols[i];
-                if (col && col.scrollPane) {
-                    col.scrollPane.posY += speed;
-                }
-            }
-        }
-    }
-
-    /**
-     * 刷新右侧状态检视看板
-     */
-    private _updateStatusInspector(stateMsg: string): void {
-        if (!this._statusTxt) return;
-
-        const coords = this._slotCols.map((c, i) => {
-            const posY = c && c.scrollPane ? Math.round(c.scrollPane.posY % 880) : 0;
-            return `C${i}:${posY}`;
-        }).join(" ");
-
-        this._statusTxt.text = `状态：${stateMsg}\n` +
-            `• 5 轴 PureList 单桶对象池复用率 100%\n` +
-            `• 拖拽: ${this._touchScrollEnabled ? "开启✔" : "禁用✖"} | 磁吸: ${this._snapToItemEnabled ? "110px✔" : "关✖"} | 回弹: ${this._bounceEnabled ? "开✔" : "关✖"}\n` +
-            `• 缓动: ${this._easingOptions[this._easingIndex].name.split(" ")[0]} | 转速: ${this._speedOptions[this._speedIndex].name.split(" ")[0]}\n` +
-            `• 实时坐标: [${coords}]`;
-    }
-
-    /**
-     * 容器销毁或重置时的生命周期安全清理
-     */
-    public dispose(): void {
-        this._isSpinning = false;
-        Laya.timer.clearAll(this);
-        for (const col of this._slotCols) {
-            col.off(fgui.Events.SCROLL, this, this._onListScroll);
-            if (col.itemRenderer) {
-                col.itemRenderer.recover();
-            }
-            if (col.scrollPane) {
-                Laya.Tween.clearAll(col.scrollPane);
-            }
-        }
-        if (this._container) {
-            this._container.offAllCaller(this);
+    private _updateStatus(text: string): void {
+        if (this._statusTxt) {
+            this._statusTxt.text = `状态: ${text}`;
         }
     }
 }

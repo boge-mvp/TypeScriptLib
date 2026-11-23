@@ -5,24 +5,30 @@ import GProgressBar = fgui.GProgressBar;
 import GTextInput = fgui.GTextInput;
 import GTextField = fgui.GTextField;
 
-export class Tab3ButtonsView {
+/**
+ * Tab 3: 原生组件全家桶 (Button / Slider / Bar / Checkbox / Radio / Input) 交互检视面板
+ *
+ * 遵循官方规范：直接继承 fgui.GComponent，并在 onConstruct 生命周期钩子中自闭环完成所有逻辑绑定。
+ */
+export class Tab3ButtonsView extends GComponent {
 
-    private _container!: GComponent;
+    protected override onConstruct(): void {
+        super.onConstruct();
 
-    public setupInteractions(panel: GComponent): void {
-        this._container = panel;
-        const logContent = this._container.getChild("btnLogBoard").getChild("logContent") as GTextField;
+        const logBoard = this.getChild("btnLogBoard") as GComponent;
+        const logContent = logBoard ? logBoard.getChild("logContent") as GTextField : null;
 
         const appendLog = (msg: string) => {
+            if (!logContent) return;
             const t = new Date().toLocaleTimeString();
             const prev = logContent.text || "";
             logContent.text = `[${t}] ${msg}\n` + prev.slice(0, 1200);
         };
 
         const getNode = (name: string): fgui.GObject => {
-            let res = this._container.getChild(name);
+            let res = this.getChild(name);
             if (!res) {
-                const box = this._container.getChild("btnDemoBox") as GComponent;
+                const box = this.getChild("btnDemoBox") as GComponent;
                 if (box) res = box.getChild(name);
             }
             return res;
@@ -68,33 +74,16 @@ export class Tab3ButtonsView {
             const slider = sliderSec.getChild("demoSlider") as GSlider;
             if (slider) {
                 slider.on(fgui.Events.STATE_CHANGED, this, () => {
-                    appendLog(`[原生 GSlider] 数值变动: value = ${Math.round(slider.value)} / ${slider.max}`);
+                    appendLog(`原生 GSlider 拖拽更新: value = ${slider.value}`);
                 });
             }
         }
 
-        // GTextInput 原生交互输入框
-        const inputSec = getNode("inputSection") as GComponent;
-        if (inputSec) {
-            const inputWrapper = inputSec.getChild("inputWrapper") as GComponent;
-            if (inputWrapper) {
-                const textInput = inputWrapper.getChild("demoInput") as GTextInput;
-                if (textInput && textInput["nativeInput"]) {
-                    textInput["nativeInput"].on(Laya.Event.INPUT, this, () => {
-                        appendLog(`输入框实时键入内容: "${textInput.text}"`);
-                    });
-                    textInput["nativeInput"].on(Laya.Event.BLUR, this, () => {
-                        appendLog(`输入框失焦确定: 最终文本 = "${textInput.text}"`);
-                    });
-                }
-            }
-        }
-
-        // 原生 GProgressBar 进度推进交互
-        const progressSection = getNode("progressSection") as GComponent;
-        if (progressSection) {
-            const pBar = progressSection.getChild("demoProgressBar") as GProgressBar;
-            const progressCtrlRow = progressSection.getChild("progressCtrlRow") as GComponent;
+        // 原生 GProgressBar 交互控制
+        const barSec = getNode("progressSection") as GComponent;
+        if (barSec) {
+            const pBar = barSec.getChild("demoProgressBar") as GProgressBar;
+            const progressCtrlRow = barSec.getChild("progressCtrlRow") as GComponent;
             if (progressCtrlRow && pBar) {
                 const btnAdd = progressCtrlRow.getChild("btnProgressAdd") as GButton;
                 const btnReset = progressCtrlRow.getChild("btnProgressReset") as GButton;
@@ -111,6 +100,17 @@ export class Tab3ButtonsView {
                         appendLog(`[原生 GProgressBar] 进度重置为 0%`);
                     });
                 }
+            }
+        }
+
+        // 原生输入框交互监听
+        const inputSec = getNode("inputSection") as GComponent;
+        if (inputSec) {
+            const input = inputSec.getChild("demoInput") as GTextInput;
+            if (input) {
+                input.on(Laya.Event.INPUT, this, () => {
+                    appendLog(`原生 GTextInput 实时输入: "${input.text}"`);
+                });
             }
         }
     }

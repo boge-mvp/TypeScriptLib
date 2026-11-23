@@ -1,67 +1,84 @@
 {
   "type": "panel",
-  "name": "bodyContainer",
+  "name": "rootPanel",
   "x": 0,
-  "y": 50,
+  "y": 0,
   "width": 1480,
-  "height": 670,
+  "height": 720,
+  "background": { "color": "#0f172a" },
   "controllers": [
     {
       "name": "tabCtrl",
-      "pages": ["tab1", "tab2", "tab3", "tab4", "tab5", "tab6"],
+      "pages": ["tab1", "tab2", "tab3", "tab4", "tab6", "tab5"],
       "selectedIndex": 0
     }
   ],
   "elements": [
     {
       "type": "panel",
-      "name": "sidebarPanel",
+      "name": "headerPanel",
+      "src": "res/layout/header.json",
+      "x": 0,
+      "y": 0,
+      "width": 1480,
+      "height": 50
+    },
+    {
+      "type": "group",
+      "name": "sidebarGroup"
+    },
+    {
+      "type": "graph",
+      "name": "sidebarBg",
       "x": 16,
-      "y": 12,
+      "y": 62,
       "width": 208,
       "height": 646,
-      "background": {
-        "color": "#1e293b",
-        "cornerRadius": 8,
-        "lineSize": 1,
-        "lineColor": "#334155"
-      },
-      "elements": [
-        {
-          "type": "text",
-          "name": "menuHeader",
-          "x": 12,
-          "y": 14,
-          "width": 184,
-          "height": 26,
-          "fontSize": 14,
-          "bold": true,
-          "color": "#38bdf8",
-          "align": "center",
-          "valign": "middle",
-          "text": "🧭 功能模块列表"
-        },
-        {
-          "type": "graph",
-          "name": "headerDivider",
-          "x": 12,
-          "y": 44,
-          "width": 184,
-          "height": 1,
-          "fillColor": "#334155"
-        },
-        {
-          "type": "list",
-          "name": "tabList",
-          "x": 12,
-          "y": 54,
-          "width": 184,
-          "height": 580,
-          "listLayout": "SingleColumn",
-          "selectionMode": "Single",
-          "selectionController": "tabCtrl",
-          "lineGap": 8,
-          "selectedIndex": 0,
+      "shape": "rect",
+      "fillColor": "#1e293b",
+      "cornerRadius": 8,
+      "lineSize": 1,
+      "lineColor": "#334155",
+      "group": "sidebarGroup"
+    },
+    {
+      "type": "text",
+      "name": "menuHeader",
+      "x": 28,
+      "y": 76,
+      "width": 184,
+      "height": 26,
+      "fontSize": 14,
+      "bold": true,
+      "color": "#38bdf8",
+      "align": "center",
+      "valign": "middle",
+      "text": "🧭 功能模块列表",
+      "group": "sidebarGroup"
+    },
+    {
+      "type": "graph",
+      "name": "headerDivider",
+      "x": 28,
+      "y": 106,
+      "width": 184,
+      "height": 1,
+      "fillColor": "#334155",
+      "group": "sidebarGroup"
+    },
+    {
+      "type": "list",
+      "name": "tabList",
+      "x": 28,
+      "y": 116,
+      "width": 184,
+      "height": 580,
+      "listLayout": "SingleColumn",
+      "selectionMode": "Single",
+      "selectionController": "tabCtrl",
+      "lineGap": 8,
+      "selectedIndex": 0,
+      "group": "sidebarGroup",
           "elements": [
             {
               "type": "button",
@@ -425,7 +442,7 @@
                 {
                   "type": "text",
                   "name": "title",
-                  "text": "⑤ 3A Slot",
+                  "text": "⑥ 关联系统",
                   "x": 12,
                   "y": 11,
                   "width": 160,
@@ -448,7 +465,7 @@
                 {
                   "type": "text",
                   "name": "subLabel",
-                  "text": "PureList虚拟循环",
+                  "text": "24项Relations全测",
                   "x": 12,
                   "y": 33,
                   "width": 160,
@@ -506,7 +523,7 @@
                 {
                   "type": "text",
                   "name": "title",
-                  "text": "⑥ 关联系统",
+                  "text": "⑤ 3A Slot",
                   "x": 12,
                   "y": 11,
                   "width": 160,
@@ -529,7 +546,7 @@
                 {
                   "type": "text",
                   "name": "subLabel",
-                  "text": "24项Relations全测",
+                  "text": "PureList虚拟循环",
                   "x": 12,
                   "y": 33,
                   "width": 160,
@@ -551,15 +568,13 @@
               ]
             }
           ]
-        }
-      ]
-    },
-    {
-      "type": "panel",
+        },
+        {
+          "type": "panel",
       "name": "tab1Panel",
       "src": "res/layout/tab1Gears.json",
       "x": 236,
-      "y": 12,
+      "y": 62,
       "width": 1228,
       "height": 646,
       "gearDisplay": { "controller": "tabCtrl", "pages": ["tab1"] }
@@ -569,7 +584,7 @@
       "name": "tab2Panel",
       "src": "res/layout/tab2Transition.json",
       "x": 236,
-      "y": 12,
+      "y": 62,
       "width": 1228,
       "height": 646,
       "gearDisplay": { "controller": "tabCtrl", "pages": ["tab2"] }
@@ -579,7 +594,7 @@
       "name": "tab3Panel",
       "src": "res/layout/tab3Buttons.json",
       "x": 236,
-      "y": 12,
+      "y": 62,
       "width": 1228,
       "height": 646,
       "gearDisplay": { "controller": "tabCtrl", "pages": ["tab3"] }
@@ -589,7 +604,7 @@
       "name": "tab4Panel",
       "src": "res/layout/tab4Flexbox.json",
       "x": 236,
-      "y": 12,
+      "y": 62,
       "width": 1228,
       "height": 646,
       "gearDisplay": { "controller": "tabCtrl", "pages": ["tab4"] }
@@ -599,7 +614,7 @@
       "name": "tab5Panel",
       "src": "res/layout/tab5Slot.json",
       "x": 236,
-      "y": 12,
+      "y": 62,
       "width": 1228,
       "height": 646,
       "gearDisplay": { "controller": "tabCtrl", "pages": ["tab5"] }
@@ -609,7 +624,7 @@
       "name": "tab6Panel",
       "src": "res/layout/tab6Relations.json",
       "x": 236,
-      "y": 12,
+      "y": 62,
       "width": 1228,
       "height": 646,
       "gearDisplay": { "controller": "tabCtrl", "pages": ["tab6"] }

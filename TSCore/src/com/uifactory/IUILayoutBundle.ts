@@ -1,4 +1,4 @@
-import { IPanelConfig } from "./IPanelConfig";
+import { IElementConfig } from "./IElementConfig";
 
 /**
  * 集中打包的 UI 布局合集包数据规范 (UI Layout Bundle)
@@ -14,7 +14,7 @@ export interface IUILayoutBundle {
     timestamp?: number;
     /**
      * 布局配置数据字典
-     * 键为组件名称或路径标识（如 "header"、"res/layout/header.json"），值为完整的声明式面板配置
+     * 键为组件名称或路径标识（如 "header"、"res/layout/header.json"），值为完整的声明式组件/面板配置
      */
-    layouts: Record<string, IPanelConfig>;
+    layouts: Record<string, IElementConfig>;
 }

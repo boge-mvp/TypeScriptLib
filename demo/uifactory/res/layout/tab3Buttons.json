@@ -18,6 +18,8 @@
   "elements": [
     {
       "type": "text",
+      "x": 30,
+      "y": 16,
       "text": "③ 原生 GButton 二进制规范实装 + Checkbox/Radio 互斥 + Switch 开关 + GProgressBar 实装",
       "fontSize": 16,
       "bold": true,
@@ -26,7 +28,8 @@
     },
     {
       "type": "text",
-      "y": 24,
+      "x": 30,
+      "y": 38,
       "text": "展示 downEffect 中心缩放与颜色联动；Checkbox 原生勾选；Radio Group 原生互斥联动；Switch 独立组件滑动；GProgressBar 动态进度实装！",
       "fontSize": 12,
       "color": "#94a3b8",

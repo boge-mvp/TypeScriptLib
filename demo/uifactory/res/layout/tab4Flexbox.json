@@ -11,6 +11,8 @@
   "elements": [
     {
       "type": "text",
+      "x": 24,
+      "y": 16,
       "text": "④ 交互式 Flexbox 排版操纵台 (Interactive Layout Workbench)",
       "fontSize": 16,
       "bold": true,
@@ -19,7 +21,8 @@
     },
     {
       "type": "text",
-      "y": 24,
+      "x": 24,
+      "y": 38,
       "text": "点击工具栏按钮实时切换排版参数，UIFactory 瞬间在预览区重新执行两遍测量排版，直观感受流式布局特性！",
       "fontSize": 12,
       "color": "#94a3b8",

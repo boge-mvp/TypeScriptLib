@@ -1,23 +1,27 @@
 import GComponent = fgui.GComponent;
 import GTextField = fgui.GTextField;
 
-export class Tab1GearsView {
+/**
+ * Tab 1: 10 大 Gears 状态机与齿轮矩阵检视面板
+ *
+ * 遵循官方规范：直接继承 fgui.GComponent，并在 onConstruct 生命周期钩子中自闭环完成所有逻辑绑定。
+ */
+export class Tab1GearsView extends GComponent {
 
-    private _container!: GComponent;
     private _currentAnimFrame: number = 0;
 
-    public setupInteractions(panel: GComponent): void {
-        this._container = panel;
-        const gearCtrl = this._container.getController("gearCtrl");
-        const condCtrl = this._container.getController("condCtrl");
-        const lookCtrl = this._container.getController("lookCtrl");
-        const scaleCtrl = this._container.getController("scaleCtrl");
-        const colorCtrl = this._container.getController("colorCtrl");
+    protected override onConstruct(): void {
+        super.onConstruct();
 
-        const badge = (this._container.getChild("inspectorBadge") || this._container.getChild("badgeBg")) as GComponent;
-        const inspLog = this._container.getChild("inspectorLog") as GTextField;
-        const condTip = this._container.getChild("condTip") as GTextField;
-        const animStatus = this._container.getChild("animStatus") as GTextField;
+        const gearCtrl = this.getController("gearCtrl");
+        const condCtrl = this.getController("condCtrl");
+        const lookCtrl = this.getController("lookCtrl");
+        const scaleCtrl = this.getController("scaleCtrl");
+
+        const badge = (this.getChild("inspectorBadge") || this.getChild("badgeBg")) as GComponent;
+        const inspLog = this.getChild("inspectorLog") as GTextField;
+        const condTip = this.getChild("condTip") as GTextField;
+        const animStatus = this.getChild("animStatus") as GTextField;
 
         const updateCondTip = () => {
             if (condTip && gearCtrl && condCtrl) {
@@ -53,7 +57,7 @@ export class Tab1GearsView {
             }
         });
 
-        // 3. 检视器只读审计日志监听 (所有透明/旋转/缩放/换色/置灰/触控 100% 由 JSON 中的 Gears 声明式驱动，0行属性赋值代码！)
+        // 3. 检视器只读审计日志监听
         if (lookCtrl) {
             lookCtrl.on(fgui.Events.STATE_CHANGED, this, () => {
                 if (inspLog) {
@@ -68,16 +72,16 @@ export class Tab1GearsView {
             });
         }
 
+        const colorCtrl = this.getController("colorCtrl");
         if (colorCtrl) {
             colorCtrl.on(fgui.Events.STATE_CHANGED, this, () => {
-                if (inspLog) inspLog.text = `[官方GearColor驱动] colorCtrl 切至: ${colorCtrl.selectedPage}，目标元件背景图元由 FGUI 原生自闭环换色与描边同步切换！`;
+                if (inspLog) inspLog.text = `[官方GearColor驱动] colorCtrl 切至: ${colorCtrl.selectedPage}，矢量填充色平滑迁移！`;
             });
         }
 
-        // 4. 鼠标点击目标测试元件交互验证 (在 touchable=false 时由 FGUI 底层原生拦截穿透)
         if (badge) {
             badge.onClick(this, () => {
-                if (inspLog) inspLog.text = `[${new Date().toLocaleTimeString()}] 🎯 目标测试可视元件被点击！(当前 touchable=${badge.touchable})`;
+                if (inspLog) inspLog.text = `[触控命中验证] 🎯 成功点击了测试徽章目标！(当前 touchable=${badge.touchable})`;
             });
         }
     }

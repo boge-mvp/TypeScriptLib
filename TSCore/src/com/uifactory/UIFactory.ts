@@ -58,10 +58,28 @@ export class UIFactory {
     public static customCreators: Record<string, ElementCreator<any, any>> = {};
 
     /** 已注册的外部独立页面/组件布局配置字典表，支持通过标准路径寻址 */
-    public static registeredLayouts: Record<string, IPanelConfig> = {};
+    public static registeredConfigs: Record<string, IElementConfig> = {};
+
+    /** 已注册的页面/组件布局或 URL 对应的自定义 UI 扩展类映射表 (对齐官方 fgui.UIObjectFactory.extensions) */
+    public static extensions: Record<string, new () => fgui.GObject> = {};
 
     /** UI 布局合包的默认对称加密密钥 (支持商业项目全局覆盖) */
     public static bundleKey: string = "TypeScriptLib_UIFactory_2026_Key";
+
+    /**
+     * 注册页面/组件布局的自定义 UI 扩展类 (100% 对齐官方 fgui.UIObjectFactory.setExtension)
+     * 支持映射顶级页面、通过 src 引用的子组件或普通配置，支持继承自 GComponent、GButton 等任意 GObject 子类
+     *
+     * @param pathKey 页面配置文件的相对路径或标识名 (如 "res/layout/mainView.json" 或 "res/layout/tab1Gears.json")
+     * @param extensionClass 继承自 fgui.GObject 的用户自定义 UI 类
+     */
+    public static setExtension<T extends fgui.GObject>(
+        pathKey: string,
+        extensionClass: new () => T
+    ): void {
+        const normalized = pathKey.replace(/\\/g, "/");
+        UIFactory.extensions[normalized] = extensionClass;
+    }
 
     /**
      * Validates that:
@@ -146,15 +164,17 @@ export class UIFactory {
     }
 
     /**
-     * 注册独立页面/组件布局配置，使其可通过 src="路径" 在任意其他页面中直接引用
+     * 注册独立页面/组件配置，使其可通过 src="路径" 在任意其他页面中直接引用
      *
-     * @param pathKey 页面配置文件的标准相对路径 (如 "res/layout/header.json")
-     * @param config 声明式容器布局配置
+     * @param pathKey 页面或组件配置文件的标准相对路径 (如 "res/layout/header.json")
+     * @param config 声明式组件配置
      */
-    public static registerLayout(pathKey: string, config: IPanelConfig): void {
+    public static registerConfig(pathKey: string, config: IElementConfig): void {
         const normalized = pathKey.replace(/\\/g, "/");
-        UIFactory.validateLayoutConfig(config, normalized);
-        UIFactory.registeredLayouts[normalized] = config;
+        if (config.type === "panel" || !config.type) {
+            UIFactory.validateLayoutConfig(config as IPanelConfig, normalized);
+        }
+        UIFactory.registeredConfigs[normalized] = config;
     }
 
     /**
@@ -166,14 +186,12 @@ export class UIFactory {
      *
      * @param bundle 包含 layouts 字典的合集包对象，或直接传入页面映射字典
      */
-    public static registerBundle(bundle: IUILayoutBundle | Record<string, IPanelConfig>): void {
+    public static registerBundle(bundle: IUILayoutBundle | Record<string, IElementConfig>): void {
         if (!bundle) return;
-        const dict = ("layouts" in bundle && typeof bundle.layouts === "object") ? bundle.layouts : (bundle as Record<string, IPanelConfig>);
+        const dict = ("layouts" in bundle && typeof bundle.layouts === "object") ? bundle.layouts : (bundle as Record<string, IElementConfig>);
         for (const [key, conf] of Object.entries(dict)) {
             if (!conf) continue;
-            const normalized = key.replace(/\\/g, "/");
-            UIFactory.validateLayoutConfig(conf, normalized);
-            UIFactory.registeredLayouts[normalized] = conf;
+            UIFactory.registerConfig(key, conf);
         }
     }
 
@@ -209,21 +227,22 @@ export class UIFactory {
     }
 
     /**
-     * 一次性异步加载 UI 布局合包文件并自动注入内存注册表
+     * 一次性异步加载 UI 布局文件并自动注入内存注册表
      *
-     * 支持明文 JSON 合包与紧凑压缩/加密的二进制合包：
-     * - 若未显式提供后缀，自动联动官方 fgui.UIConfig.packageFileExtension (默认 "bin" 或 "fui")；
-     * - 若文件为二进制格式，自动提取文件头 12 字节 IV 与 16 字节 AuthTag，执行 AES-GCM 原生解密与 Deflate 解压；
+     * 统一入口，全场景智能兼容：
+     * - 若文件为紧凑压缩/加密的二进制合包 (.bin / .fui / 省略后缀)：自动提取文件头 12 字节 IV 与 16 字节 AuthTag，执行 AES-GCM 原生硬件解密与 Deflate 解压；
+     * - 若文件为明文 JSON 合包 (.json 且包含 layouts 字典)：一次性注入全量页面内存字典；
+     * - 若文件为单个界面的独立 JSON 布局配置 (.json 顶层为 panel/button 等单一组件)：自动识别并以规范化路径及 name 注册到内存注册表；
      * - 解压还原后毫秒级注册至内存字典，全流程零碎片请求开销。
      *
-     * @param bundleUrl 合包文件地址 (例如 "res/ui_bundle" 或 "res/ui_bundle.bin" 或 "res/ui_bundle.fui")
+     * @param bundleUrl 布局资源地址 (例如 "res/ui_bundle.bin"、"res/ui_bundle.json" 或 "res/layout/login.json")
      * @param options 可选配置项（自定义密钥 key、强制扩展名 extension）
-     * @returns 解析后的 IUILayoutBundle 合包数据对象
+     * @returns 解析后的 IUILayoutBundle 合包数据对象或单个 IPanelConfig 布局配置
      */
     public static async loadBundle(
         bundleUrl: string,
         options?: { key?: string; extension?: string }
-    ): Promise<IUILayoutBundle> {
+    ): Promise<IUILayoutBundle | IPanelConfig> {
         let finalUrl = bundleUrl;
         const hasDotExt = finalUrl.lastIndexOf(".") > finalUrl.lastIndexOf("/");
         if (!hasDotExt) {
@@ -233,7 +252,7 @@ export class UIFactory {
 
         const fullUrl = UIFactory.formatResUrl(finalUrl);
         const isBinary = !finalUrl.endsWith(".json");
-        let bundle: IUILayoutBundle;
+        let resultData: any;
 
         if (isBinary) {
             const arrayBuf = await UIFactory.requestData(fullUrl, "arraybuffer") as ArrayBuffer;
@@ -284,65 +303,106 @@ export class UIFactory {
                 jsonStr = lb.readUTFBytes();
             }
 
-            bundle = JSON.parse(jsonStr) as IUILayoutBundle;
+            resultData = JSON.parse(jsonStr);
         } else {
             const jsonOrData = await UIFactory.requestData(fullUrl, "json");
-            bundle = (typeof jsonOrData === "string" ? JSON.parse(jsonOrData) : jsonOrData) as IUILayoutBundle;
+            resultData = typeof jsonOrData === "string" ? JSON.parse(jsonOrData) : jsonOrData;
         }
 
         if (typeof Laya !== "undefined" && Laya.Loader && typeof Laya.Loader.cacheRes === "function") {
-            Laya.Loader.cacheRes(finalUrl, bundle);
+            Laya.Loader.cacheRes(finalUrl, resultData);
+            if (finalUrl !== bundleUrl) {
+                Laya.Loader.cacheRes(bundleUrl, resultData);
+            }
         }
 
-        UIFactory.registerBundle(bundle);
-        return bundle;
+        // 核心智能路由：自动区分合集包 (IUILayoutBundle) 与单文件布局配置 (IElementConfig)
+        if (resultData && typeof resultData === "object") {
+            if ("layouts" in resultData && typeof resultData.layouts === "object") {
+                UIFactory.registerBundle(resultData as IUILayoutBundle);
+            } else {
+                const normalizedFinal = finalUrl.replace(/\\/g, "/");
+                const normalizedOrigin = bundleUrl.replace(/\\/g, "/");
+
+                UIFactory.registerConfig(normalizedFinal, resultData as IElementConfig);
+                if (normalizedOrigin !== normalizedFinal) {
+                    UIFactory.registeredConfigs[normalizedOrigin] = resultData as IElementConfig;
+                }
+                // 若配置中指定了 name，额外以 name 注册别名索引，便于通过短名寻址
+                if (resultData.name && !UIFactory.registeredConfigs[resultData.name]) {
+                    UIFactory.registeredConfigs[resultData.name] = resultData as IElementConfig;
+                }
+            }
+        }
+
+        return resultData;
     }
 
     /**
-     * 直接从已注册/已加载的布局合集中极速实例化一个界面容器
+     * 直接从已注册/已加载的配置合集或单配置文件中实例化一个界面显示对象
      *
-     * @template T 期望返回的容器组件类型
-     * @param nameOrUrl 页面名称或注册标识 (如 "mainView" 或 "res/layout/mainView.json")
-     * @param overrides 可选的实例覆盖属性 (覆盖坐标 x/y、宽度、高度、关联 relations 等)
+     * 自动感知配置中的实际类型（支持 panel, button, label, progressbar, slider, combobox, list 等或自定义扩展类），
+     * 摆脱单一 panel 限制，依据元素类型多态构建。
+     *
+     * @template T 期望返回的显示对象类型 (默认为 fgui.GComponent，也可传入 fgui.GButton, fgui.GProgressBar 等任意 GObject 子类)
+     * @param nameOrUrl 页面名称或注册标识 (如 "mainView" 或 "res/layout/mainView.json" 或 "res/layout/commonBtn.json")
+     * @param overrides 可选的实例覆盖属性 (覆盖坐标 x/y、宽度、高度、文本、关联 relations 等)
      * @param containerW 可选容器基准宽度
      * @param containerH 可选容器基准高度
-     * @returns 实例化的 GComponent 显示对象
+     * @returns 实例化的 GObject 显示对象
      */
-    public static createFromLayout<T extends fgui.GComponent = fgui.GComponent>(
+    public static createFromConfig<T extends fgui.GObject = fgui.GComponent>(
         nameOrUrl: string,
-        overrides?: Partial<IPanelConfig>,
+        overrides?: Partial<IElementConfig>,
         containerW?: number,
         containerH?: number
     ): Nullable<T> {
-        const template = UIFactory.getLayout(nameOrUrl);
+        const template = UIFactory.getConfig(nameOrUrl);
         if (!template) {
-            console.error(`[UIFactory] 未找到名为 "${nameOrUrl}" 的布局配置模板！请确认是否已加载对应合集包。`);
+            console.error(`[UIFactory] 未找到名为 "${nameOrUrl}" 的组件配置模板！请确认是否已加载对应配置。`);
             return null;
         }
-        const finalConfig: IPanelConfig = overrides ? { ...template, ...overrides } : template;
-        return UIFactory.createPanel(finalConfig, containerW, containerH) as Nullable<T>;
+        const finalConfig: IElementConfig = (overrides ? { ...template, ...overrides } : template) as IElementConfig;
+        const normalized = nameOrUrl.replace(/\\/g, "/");
+        const customClass = UIFactory.extensions[normalized];
+
+        if (finalConfig.type === "panel" || !finalConfig.type) {
+            UIFactory.validateLayoutConfig(finalConfig as IPanelConfig, normalized);
+        }
+
+        const node = UIFactory.createElement<T>(finalConfig, containerW || 0, containerH || 0, customClass);
+        if (node) {
+            if (finalConfig.x !== undefined) node.x = finalConfig.x;
+            if (finalConfig.y !== undefined) node.y = finalConfig.y;
+        }
+        return node;
     }
 
     /**
-     * 获取指定 URL 或名称的页面布局配置
+     * 获取指定 URL、文件路径或名称的组件/页面配置对象
      *
      * 寻址顺序：
-     * 1. 优先从 UIFactory.registeredLayouts 内存字典提取；
+     * 1. 优先从 UIFactory.registeredConfigs 内存字典提取；
      * 2. 其次从 Laya.loader.getRes(urlOrName) 提取已预加载的 JSON 配置；
      * 3. 再次尝试拼接 resBasePath 后的地址寻址。
      *
-     * @param urlOrName 页面配置文件路径或注册标识
-     * @returns 匹配的 IPanelConfig，未命中返回 null
+     * @template T 期望返回的配置类型 (默认为 IElementConfig)
+     * @param urlOrName 配置文件路径或注册标识
+     * @returns 匹配的 IElementConfig，未命中返回 null
      */
-    public static getLayout(urlOrName?: string): Nullable<IPanelConfig> {
+    public static getConfig<T extends IElementConfig = IElementConfig>(urlOrName?: string): Nullable<T> {
         if (!urlOrName) return null;
-        if (UIFactory.registeredLayouts[urlOrName]) {
-            return UIFactory.registeredLayouts[urlOrName];
+        if (UIFactory.registeredConfigs[urlOrName]) {
+            return UIFactory.registeredConfigs[urlOrName] as T;
+        }
+        const normalized = urlOrName.replace(/\\/g, "/");
+        if (UIFactory.registeredConfigs[normalized]) {
+            return UIFactory.registeredConfigs[normalized] as T;
         }
         if (typeof Laya !== "undefined" && Laya.loader && typeof Laya.loader.getRes === "function") {
-            const res = Laya.loader.getRes(urlOrName) || Laya.loader.getRes(UIFactory.formatResUrl(urlOrName));
+            const res = Laya.loader.getRes(urlOrName) || Laya.loader.getRes(normalized) || Laya.loader.getRes(UIFactory.formatResUrl(urlOrName)) || Laya.loader.getRes(UIFactory.formatResUrl(normalized));
             if (res && typeof res === "object") {
-                return res as IPanelConfig;
+                return res as T;
             }
         }
         return null;
@@ -356,7 +416,7 @@ export class UIFactory {
      */
     public static resolveElementConfig(elData: IElementConfig): IElementConfig {
         if (!elData.src) return elData;
-        const templateConf = UIFactory.getLayout(elData.src);
+        const templateConf = UIFactory.getConfig(elData.src);
         if (!templateConf) return elData;
         const elAny = elData as any;
         const tmplAny = templateConf as any;
@@ -427,12 +487,14 @@ export class UIFactory {
      * @param elData 声明式元素配置对象
      * @param containerW 父容器可用宽度基准
      * @param containerH 父容器可用高度基准
+     * @param userClass
      * @returns 实例化的 FGUI 对象，类型不匹配或未知时返回 null
      */
     public static createElement<T extends fgui.GObject = fgui.GObject>(
         elData: IElementConfig,
         containerW: number,
-        containerH: number
+        containerH: number,
+        userClass?: new () => fgui.GObject
     ): Nullable<T> {
         // 【官方规范：外部页面/组件引用解析 (src 属性驱动)】
         // 若节点声明了 src 属性（例如 src: "res/layout/header.json" 或已注册的布局模板名）：
@@ -440,8 +502,14 @@ export class UIFactory {
         // 2. 自动从缓存或注册表中提取被引用页面的纯静态配置，并与当前实例属性（覆盖位置、尺寸、关联与齿轮等）安全合并；
         // 3. 构建完全由被引用页面的自身结构独立决定。
         let finalData: IElementConfig = elData;
+        let extClass: (new () => fgui.GObject) | undefined = userClass;
+
         if (elData.src) {
-            const templateConf = UIFactory.getLayout(elData.src);
+            const normalizedSrc = elData.src.replace(/\\/g, "/");
+            if (!extClass && UIFactory.extensions[normalizedSrc]) {
+                extClass = UIFactory.extensions[normalizedSrc];
+            }
+            const templateConf = UIFactory.getConfig(elData.src);
             if (templateConf) {
                 const elAny = elData as any;
                 const tmplAny = templateConf as any;
@@ -463,50 +531,60 @@ export class UIFactory {
             }
         }
 
+        // 普通配置节点的自定义类匹配（支持依据 name 匹配）
+        if (!extClass && elData.name && UIFactory.extensions[elData.name]) {
+            extClass = UIFactory.extensions[elData.name];
+        }
+
         let node: Nullable<fgui.GObject> = null;
 
-        if (UIFactory.customCreators[finalData.type]) {
+        if (extClass) {
+            // 对齐官方 UIObjectFactory.newObject: 优先实例化注册的自定义扩展类
+            node = new extClass();
+        } else if (UIFactory.customCreators[finalData.type]) {
             node = UIFactory.customCreators[finalData.type](finalData, containerW, containerH);
         } else {
             // 严格对齐官方步骤：纯实例化阶段，不提前灌入 text / url
             node = UIFactoryPipeline.instantiateNode(finalData);
-            if (node) {
-                // 统一分流前置赋值 (setup_beforeAdd)
-                UIFactoryPipeline.setup_beforeAdd(node, finalData);
+        }
 
-                // 若为复合容器类型，级联构建内部
-                if (finalData.type === "panel" && (node instanceof fgui.GComponent)) {
-                    UIFactory.fillPanel(node, finalData as IPanelConfig);
-                } else if (finalData.type === "button" && (node instanceof fgui.GButton)) {
-                    UIFactory.fillPanel(node, finalData as IButtonConfig);
-                } else if (finalData.type === "slider" && (node instanceof fgui.GSlider)) {
-                    UIFactory.fillPanel(node, finalData as ISliderConfig);
-                } else if (finalData.type === "progressbar" && (node instanceof fgui.GProgressBar)) {
-                    UIFactory.fillPanel(node, finalData as IProgressBarConfig);
-                } else if (finalData.type === "label" && (node instanceof fgui.GLabel)) {
-                    UIFactory.fillPanel(node, finalData as ILabelConfig);
-                } else if (finalData.type === "combobox" && (node instanceof fgui.GComboBox)) {
-                    UIFactory.fillPanel(node, finalData as IComboBoxConfig);
-                } else if (finalData.type === "scrollbar" && (node instanceof fgui.GScrollBar)) {
-                    UIFactory.fillPanel(node, finalData as IScrollBarConfig);
-                } else if (finalData.type === "tree" && (node instanceof fgui.GTree)) {
-                    UIFactory.fillPanel(node, finalData as ITreeConfig);
-                } else if (finalData.type === "list" && (node instanceof fgui.GList)) {
-                    const lConf = finalData as IListConfig;
-                    if (lConf.defaultItem) node.defaultItem = lConf.defaultItem;
-                    if (lConf.listLayout) node.layout = fgui.ListLayoutType[lConf.listLayout];
-                    if (lConf.selectionMode !== undefined) {
-                        node.selectionMode = typeof lConf.selectionMode === "string"
-                            ? (fgui.ListSelectionMode[lConf.selectionMode] ?? fgui.ListSelectionMode.Single)
-                            : lConf.selectionMode;
-                    }
-                    if (lConf.lineGap !== undefined) node.lineGap = lConf.lineGap;
-                    if (lConf.columnGap !== undefined) node.columnGap = lConf.columnGap;
-                    if (lConf.autoResizeItem !== undefined) node.autoResizeItem = lConf.autoResizeItem;
-                    UIFactory.fillPanel(node, lConf);
-                    if (lConf.selectedIndex !== undefined && lConf.selectedIndex >= 0) {
-                        node.selectedIndex = lConf.selectedIndex;
-                    }
+        if (node) {
+            // 统一分流前置赋值 (setup_beforeAdd)
+            UIFactoryPipeline.setup_beforeAdd(node, finalData);
+
+            // 若为复合容器类型，级联构建内部
+            if (finalData.type === "panel" && (node instanceof fgui.GComponent)) {
+                UIFactory.fillPanel(node, finalData as IPanelConfig);
+            } else if (finalData.type === "button" && (node instanceof fgui.GButton)) {
+                UIFactory.fillPanel(node, finalData as IButtonConfig);
+            } else if (finalData.type === "slider" && (node instanceof fgui.GSlider)) {
+                UIFactory.fillPanel(node, finalData as ISliderConfig);
+            } else if (finalData.type === "progressbar" && (node instanceof fgui.GProgressBar)) {
+                UIFactory.fillPanel(node, finalData as IProgressBarConfig);
+            } else if (finalData.type === "label" && (node instanceof fgui.GLabel)) {
+                UIFactory.fillPanel(node, finalData as ILabelConfig);
+            } else if (finalData.type === "combobox" && (node instanceof fgui.GComboBox)) {
+                UIFactory.fillPanel(node, finalData as IComboBoxConfig);
+            } else if (finalData.type === "scrollbar" && (node instanceof fgui.GScrollBar)) {
+                UIFactory.fillPanel(node, finalData as IScrollBarConfig);
+            } else if (finalData.type === "tree" && (node instanceof fgui.GTree)) {
+                UIFactory.fillPanel(node, finalData as ITreeConfig);
+            } else if (finalData.type === "list" && (node instanceof fgui.GList)) {
+                const lConf = finalData as IListConfig;
+                if (lConf.defaultItem) node.defaultItem = lConf.defaultItem;
+                if (lConf.listLayout) node.layout = fgui.ListLayoutType[lConf.listLayout];
+                if (lConf.selectionMode !== undefined) {
+                    node.selectionMode = typeof lConf.selectionMode === "string"
+                        ? (fgui.ListSelectionMode[lConf.selectionMode] ?? fgui.ListSelectionMode.Single)
+                        : lConf.selectionMode;
+                }
+                if (lConf.lineGap !== undefined) node.lineGap = lConf.lineGap;
+                if (lConf.columnGap !== undefined) node.columnGap = lConf.columnGap;
+                if (lConf.autoResizeItem !== undefined) node.autoResizeItem = lConf.autoResizeItem;
+                UIFactory.fillPanel(node, lConf);
+                node.ensureBoundsCorrect();
+                if (lConf.selectedIndex !== undefined && lConf.selectedIndex >= 0) {
+                    node.selectedIndex = lConf.selectedIndex;
                 }
             }
         }
@@ -682,11 +760,17 @@ export class UIFactory {
      * @param elData 面板容器配置对象
      * @param containerW 可选容器基准宽度
      * @param containerH 可选容器基准高度
+     * @param userClass
      * @returns 实例化的 GComponent 对象
      */
-    public static createPanel(elData: IPanelConfig, containerW?: number, containerH?: number): fgui.GComponent {
+    public static createPanel(
+        elData: IPanelConfig,
+        containerW?: number,
+        containerH?: number,
+        userClass?: new () => fgui.GObject
+    ): fgui.GComponent {
         UIFactory.validateLayoutConfig(elData, elData.name || "panel");
-        const node = UIFactory.createElement<fgui.GComponent>(elData, containerW || 0, containerH || 0)!;
+        const node = UIFactory.createElement<fgui.GComponent>(elData, containerW || 0, containerH || 0, userClass)!;
         if (elData.x !== undefined) node.x = elData.x;
         if (elData.y !== undefined) node.y = elData.y;
         return node;
@@ -728,7 +812,7 @@ export class UIFactory {
 
         // 1. 映射单选组层级自适应 (对齐 Controller.setup 第 366~367 行)
         if (config.autoRadioGroupDepth !== undefined) {
-            ctrl.autoRadioGroupDepth = !!config.autoRadioGroupDepth;
+            ctrl.autoRadioGroupDepth = config.autoRadioGroupDepth;
         }
 
         // 2. 映射页面 ID 与 Name 成对模型 (对齐 Controller.setup 第 371~375 行)
@@ -1279,23 +1363,19 @@ export class UIFactory {
             }
         }
 
-        if (typeof panelNode.applyAllControllers === "function") {
-            panelNode.applyAllControllers();
-        }
+        panelNode.applyAllControllers();
 
         panelNode["_buildingDisplayList"] = false;
         panelNode["_underConstruct"] = false;
 
-        if (typeof panelNode["buildNativeDisplayList"] === "function") {
-            panelNode["buildNativeDisplayList"]();
-        }
-
-        if (typeof panelNode.setBoundsChangedFlag === "function") {
-            panelNode.setBoundsChangedFlag();
-        }
+        panelNode["buildNativeDisplayList"]();
+        panelNode.setBoundsChangedFlag();
 
         // Phase 4: 高级组件扩展类装配（官方在 buildNativeDisplayList 之后执行）
         UIFactory.setupComponentExtension(panelNode, elData);
+
+        // 100% 对齐官方 GComponent.constructFromResource2 第 3464 行：自动触发生命周期
+        panelNode["onConstruct"]();
         } finally {
             fgui.UIPackage._constructing--;
         }

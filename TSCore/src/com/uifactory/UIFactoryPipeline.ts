@@ -159,7 +159,7 @@ export class UIFactoryPipeline {
             // 文本排版排空拦截：直接强制执行 typeset，确保 autoSize 为 Height/Both 时即刻计算出真实的 textHeight！
             if (node["_textField"]) {
                 node["_textField"]["typeset"]();
-            } else if (typeof node.ensureSizeCorrect === "function") {
+            } else {
                 node.ensureSizeCorrect();
             }
         } else if (node instanceof fgui.GGraph) {
@@ -322,9 +322,7 @@ export class UIFactoryPipeline {
                     node.text = rawText;
                 }
             }
-            if (typeof node.ensureSizeCorrect === "function") {
-                node.ensureSizeCorrect();
-            }
+            node.ensureSizeCorrect();
         }
         // 2. 外部资源 URL 此时才注入并开始加载 (对齐 GLoader.setup_afterAdd)
         else if (node instanceof fgui.GLoader) {
