@@ -80,6 +80,10 @@
   2. 若检测到非根 Panel 包含内联 `elements`（未标记 `src`），触发标准规范警告（Rule 2），提示开发者使用 `type: "group"` (GGroup) 拍平或抽离为 `src` 独立文件；
   3. 校验齿轮是否合法绑定到所属控制器的有效页面。
 
+### 6. 统一资产加载与进程安全红线
+- **单一加载驱动**：`UIFactory.requestData` 与 `UIFactory.loadBundle` 必须 100% 独家委托 TSCore 内置的 `ELoader.loader.load` 发起资源请求，严禁私自绕过 ELoader 调用底层 `Laya.HttpRequest` 或浏览器 `fetch`；
+- **全链路异常防御与进度感知**：加载资源支持 `onProgress` 进度透传，并在网络 404、空数据、二进制头部不足 28 字节、AES-GCM 解密失败、Deflate 解压失败以及 JSON 解析失败全链路施加严密 try-catch 拦截与详细日志输出，杜绝静默失败与白屏死锁。
+
 ---
 
 ## 四、 闭环验证基线

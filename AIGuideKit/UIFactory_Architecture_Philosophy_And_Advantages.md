@@ -139,9 +139,10 @@ FairyGUI 作为优秀的 2D UI 解决方案，其传统的“桌面编辑器客�
 ### 4. 全平台跨端加载器与硬件解密运行时 (`UIFactory.loadBundle`)
 为了在所有终端环境下实现极致的加载性能与兼容性，客户端加载内核采用了多层级防御与硬件加速：
 
-1. **LayaNative (ConchApp / Laya 加速器) 原生通信适配**：
-   - 彻底规避移动微端与原生 C++ 加速器容器中无 `window.fetch` 导致的致命白屏异常；
-   - 优先通过官方全平台通信驱动 **`Laya.HttpRequest`** 发起 `responseType: "arraybuffer"` 请求，直通底层的 C++ 原生网络驱动（curl / NSURLSession / OkHttp）；
+1. **TSCore ELoader 统一资产加载与多 CDN 容灾**：
+   - 100% 接入框架内置的 `ELoader.loader.load` 统一资产管线，彻底消除外部私起请求导致的链路失联；
+   - 自动享受多域名（BaseURL）备用与断线重试机制，无缝融入 FGUI 统一资产代理（`fgui.AssetProxy`）与进程缓存管理；
+   - 完整支持 `onProgress` 进度透传回调，实现对大体积加密包加载进度的精确捕获与展现；
 2. **浏览器 Web Crypto API 硬件加速解密**：
    - 在标准浏览器或高版本 WebView 中，通过 `crypto.subtle.decrypt` 调用 GPU / CPU 硬件加速指令集（AES-NI），毫秒级完成解密，对主线程帧率完全零感知；
 3. **多重安全解码与解压降级保障**：

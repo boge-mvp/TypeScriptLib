@@ -1,31 +1,32 @@
-import { IElementConfig } from "./IElementConfig";
-import { IGraphConfig } from "./IGraphConfig";
-import { IIconConfig } from "./IIconConfig";
-import { ITextConfig } from "./ITextConfig";
-import { IButtonConfig } from "./IButtonConfig";
-import { IListConfig } from "./IListConfig";
-import { IControllerConfig } from "./IControllerConfig";
-import { UIFactoryTransitions } from "./UIFactoryTransitions";
-import { IBaseElementConfig } from "./IBaseElementConfig";
-import { IViewConfig } from "./IViewConfig";
-import { UIFactoryGears } from "./UIFactoryGears";
-import { UIFactoryLayout } from "./UIFactoryLayout";
-import { UIFactoryExtensions } from "./UIFactoryExtensions";
-import { UIFactoryPipeline } from "./UIFactoryPipeline";
-import { IGraphicsCmdConfig } from "./IGraphicsCmdConfig";
-import { ITransitionConfig, TransitionActionType } from "./ITransitionConfig";
-import { IPanelConfig } from "./IPanelConfig";
-import { ISliderConfig } from "./ISliderConfig";
-import { IProgressBarConfig } from "./IProgressBarConfig";
-import { IGroupConfig } from "./IGroupConfig";
-import { ILabelConfig } from "./ILabelConfig";
-import { IComboBoxConfig } from "./IComboBoxConfig";
-import { IScrollBarConfig } from "./IScrollBarConfig";
-import { ITreeConfig } from "./ITreeConfig";
-import { IMovieClipConfig } from "./IMovieClipConfig";
-import { ILoader3DConfig } from "./ILoader3DConfig";
-import { IImageConfig } from "./IImageConfig";
-import { IUILayoutBundle } from "./IUILayoutBundle";
+import {IElementConfig} from "./IElementConfig";
+import {IGraphConfig} from "./IGraphConfig";
+import {IIconConfig} from "./IIconConfig";
+import {ITextConfig} from "./ITextConfig";
+import {IButtonConfig} from "./IButtonConfig";
+import {IListConfig} from "./IListConfig";
+import {IControllerConfig} from "./IControllerConfig";
+import {UIFactoryTransitions} from "./UIFactoryTransitions";
+import {IBaseElementConfig} from "./IBaseElementConfig";
+import {IViewConfig} from "./IViewConfig";
+import {UIFactoryGears} from "./UIFactoryGears";
+import {UIFactoryLayout} from "./UIFactoryLayout";
+import {UIFactoryExtensions} from "./UIFactoryExtensions";
+import {UIFactoryPipeline} from "./UIFactoryPipeline";
+import {IGraphicsCmdConfig} from "./IGraphicsCmdConfig";
+import {ITransitionConfig, TransitionActionType} from "./ITransitionConfig";
+import {IPanelConfig} from "./IPanelConfig";
+import {ISliderConfig} from "./ISliderConfig";
+import {IProgressBarConfig} from "./IProgressBarConfig";
+import {IGroupConfig} from "./IGroupConfig";
+import {ILabelConfig} from "./ILabelConfig";
+import {IComboBoxConfig} from "./IComboBoxConfig";
+import {IScrollBarConfig} from "./IScrollBarConfig";
+import {ITreeConfig} from "./ITreeConfig";
+import {IMovieClipConfig} from "./IMovieClipConfig";
+import {ILoader3DConfig} from "./ILoader3DConfig";
+import {IImageConfig} from "./IImageConfig";
+import {IUILayoutBundle} from "./IUILayoutBundle";
+import {ELoader} from "../extends/ELoader";
 
 /**
  * 自定义组件创建器函数类型
@@ -204,33 +205,36 @@ export class UIFactory {
     }
 
     /**
-     * 跨端安全的网络数据请求器 (100% 兼容 Laya加速器 ConchApp、移动微端、小游戏与标准 Web 浏览器)
+     * 依托 TSCore ELoader 统一资产加载器发起异步数据请求
      *
-     * 优先采用 Laya.HttpRequest 发起网络请求，完美规避 LayaNative (ConchApp) 环境下无 window.fetch 的致命缺陷。
+     * 100% 复用 TSCore 的多域名/多 CDN 容灾、缓存管理与进程生命周期。
+     * 加载成功返回数据对象，加载失败（404 或为空）安全返回 null，彻底杜绝 Promise reject 抛错。
      *
      * @param url 目标资源地址
      * @param responseType 期望返回的数据格式 ("arraybuffer" | "json" | "text")
-     * @returns 响应数据 Promise (ArrayBuffer 或 JSON 对象)
+     * @param progress 可选的加载进度回调函数 (0 ~ 1)
+     * @returns 响应数据 Promise (成功返回 ArrayBuffer / JSON 对象，失败返回 null)
      */
-    public static requestData(url: string, responseType: "arraybuffer" | "json" | "text" = "text"): Promise<any> {
-        return new Promise((resolve, reject) => {
-            if (typeof Laya !== "undefined" && Laya.HttpRequest) {
-                const hr = new Laya.HttpRequest();
-                hr.once(Laya.Event.COMPLETE, null, () => {
-                    resolve(hr.data);
-                });
-                hr.once(Laya.Event.ERROR, null, (err: any) => {
-                    reject(new Error(`[UIFactory] Laya.HttpRequest 请求失败: ${url} (错误: ${err})`));
-                });
-                hr.send(url, null, "get", responseType);
-            } else if (typeof fetch !== "undefined") {
-                fetch(url).then(resp => {
-                    if (!resp.ok) throw new Error(`HTTP error ${resp.status}`);
-                    return responseType === "arraybuffer" ? resp.arrayBuffer() : (responseType === "json" ? resp.json() : resp.text());
-                }).then(resolve).catch(reject);
-            } else {
-                reject(new Error("[UIFactory] 当前环境既不支持 Laya.HttpRequest 也不支持 fetch！"));
-            }
+    public static requestData<T>(
+        url: string,
+        responseType: "arraybuffer" | "json" | "text" = "text",
+        progress?: (ratio: number) => void
+    ): Promise<Nullable<T>> {
+        return new Promise((resolve) => {
+            const layaType = responseType === "arraybuffer"
+                ? Laya.Loader.BUFFER
+                : (responseType === "json" ? Laya.Loader.JSON : Laya.Loader.TEXT);
+
+            const progressHandler = progress ? Laya.Handler.create(null, (p: number) => progress(p), null, false) : undefined;
+
+            ELoader.loader.load(
+                url,
+                Laya.Handler.create(null, (data: any) => {
+                    resolve(data);
+                }),
+                progressHandler,
+                layaType
+            );
         });
     }
 
@@ -241,16 +245,16 @@ export class UIFactory {
      * - 若文件为紧凑压缩/加密的二进制合包 (.bin / .fui / 省略后缀)：自动提取文件头 12 字节 IV 与 16 字节 AuthTag，执行 AES-GCM 原生硬件解密与 Deflate 解压；
      * - 若文件为明文 JSON 合包 (.json 且包含 layouts 字典)：一次性注入全量页面内存字典；
      * - 若文件为单个界面的独立 JSON 布局配置 (.json 顶层为 panel/button 等单一组件)：自动识别并以规范化路径及 name 注册到内存注册表；
-     * - 解压还原后毫秒级注册至内存字典，全流程零碎片请求开销。
+     * - 加载或解析失败时安全记录日志并返回 null，绝不向外抛出未捕获异常。
      *
      * @param bundleUrl 布局资源地址 (例如 "res/ui_bundle.bin"、"res/ui_bundle.json" 或 "res/layout/login.json")
-     * @param options 可选配置项（自定义密钥 key、强制扩展名 extension）
-     * @returns 解析后的 IUILayoutBundle 合包数据对象或单个 IPanelConfig 布局配置
+     * @param options 可选配置项（自定义密钥 key、强制扩展名 extension、加载进度回调 onProgress）
+     * @returns 解析后的合包数据对象或单个布局配置，失败返回 null
      */
     public static async loadBundle(
         bundleUrl: string,
-        options?: { key?: string; extension?: string }
-    ): Promise<IUILayoutBundle | IPanelConfig> {
+        options?: { key?: string; extension?: string; onProgress?: (ratio: number) => void }
+    ): Promise<Nullable<IUILayoutBundle | IPanelConfig>> {
         let finalUrl = bundleUrl;
         const hasDotExt = finalUrl.lastIndexOf(".") > finalUrl.lastIndexOf("/");
         if (!hasDotExt) {
@@ -260,68 +264,95 @@ export class UIFactory {
 
         const fullUrl = UIFactory.formatResUrl(finalUrl);
         const isBinary = !finalUrl.endsWith(".json");
-        let resultData: any;
+        let resultData: any = null;
 
-        if (isBinary) {
-            const arrayBuf = await UIFactory.requestData(fullUrl, "arraybuffer") as ArrayBuffer;
-            const uint8 = new Uint8Array(arrayBuf);
-
-            // 提取文件头协议: [12 字节 GCM IV] + [16 字节 AuthTag] + [加密的 Deflate 密文]
-            const iv = uint8.slice(0, 12);
-            const tag = uint8.slice(12, 28);
-            const cipherBytes = uint8.slice(28);
-
-            // Web Crypto GCM 解密格式要求密文尾部包含 AuthTag
-            const combinedCipher = new Uint8Array(cipherBytes.length + tag.length);
-            combinedCipher.set(cipherBytes, 0);
-            combinedCipher.set(tag, cipherBytes.length);
-
-            // 派生 AES-256 密钥
-            const secret = options?.key || UIFactory.bundleKey;
-            const enc = new TextEncoder();
-            const keyHash = await crypto.subtle.digest("SHA-256", enc.encode(secret));
-            const cryptoKey = await crypto.subtle.importKey("raw", keyHash, { name: "AES-GCM" }, false, ["decrypt"]);
-
-            // 原生硬件加速解密
-            const decryptedBuf = await crypto.subtle.decrypt(
-                { name: "AES-GCM", iv, tagLength: 128 },
-                cryptoKey,
-                combinedCipher
-            );
-
-            // 无损 Deflate 解压 (优先原生 DecompressionStream，其次 Zlib.RawInflate，兜底 Laya.Byte)
-            let jsonStr = "";
-            if (typeof DecompressionStream !== "undefined") {
-                const ds = new DecompressionStream("deflate-raw");
-                const decompressedStream = new Response(decryptedBuf).body!.pipeThrough(ds);
-                jsonStr = await new Response(decompressedStream).text();
-            } else if (typeof Zlib !== "undefined" && Zlib.RawInflate) {
-                const inflater = new Zlib.RawInflate(new Uint8Array(decryptedBuf));
-                const decompressedBytes = inflater.decompress();
-                if (typeof TextDecoder !== "undefined") {
-                    jsonStr = new TextDecoder().decode(decompressedBytes);
-                } else if (typeof Laya !== "undefined" && Laya.Byte) {
-                    const lb = new Laya.Byte(decompressedBytes.buffer);
-                    jsonStr = lb.readUTFBytes();
+        try {
+            if (isBinary) {
+                const arrayBuf = await UIFactory.requestData<ArrayBuffer>(fullUrl, "arraybuffer", options?.onProgress);
+                if (!arrayBuf || arrayBuf.byteLength < 28) {
+                    console.warn(`[UIFactory] Binary bundle file is missing, empty or corrupted (< 28 bytes header): ${fullUrl}`);
+                    return null;
                 }
-            } else if (typeof TextDecoder !== "undefined") {
-                jsonStr = new TextDecoder().decode(decryptedBuf);
-            } else if (typeof Laya !== "undefined" && Laya.Byte) {
-                const lb = new Laya.Byte(decryptedBuf);
-                jsonStr = lb.readUTFBytes();
-            }
+                const uint8 = new Uint8Array(arrayBuf);
 
-            resultData = JSON.parse(jsonStr);
-        } else {
-            const jsonOrData = await UIFactory.requestData(fullUrl, "json");
-            resultData = typeof jsonOrData === "string" ? JSON.parse(jsonOrData) : jsonOrData;
+                // 提取文件头协议: [12 字节 GCM IV] + [16 字节 AuthTag] + [加密的 Deflate 密文]
+                const iv = uint8.slice(0, 12);
+                const tag = uint8.slice(12, 28);
+                const cipherBytes = uint8.slice(28);
+
+                // Web Crypto GCM 解密格式要求密文尾部包含 AuthTag
+                const combinedCipher = new Uint8Array(cipherBytes.length + tag.length);
+                combinedCipher.set(cipherBytes, 0);
+                combinedCipher.set(tag, cipherBytes.length);
+
+                // 派生 AES-256 密钥
+                const secret = options?.key || UIFactory.bundleKey;
+                const enc = new TextEncoder();
+                const keyHash = await crypto.subtle.digest("SHA-256", enc.encode(secret));
+                const cryptoKey = await crypto.subtle.importKey("raw", keyHash, {name: "AES-GCM"}, false, ["decrypt"]);
+
+                // 原生硬件加速解密
+                let decryptedBuf: ArrayBuffer;
+                try {
+                    decryptedBuf = await crypto.subtle.decrypt(
+                        {name: "AES-GCM", iv, tagLength: 128},
+                        cryptoKey,
+                        combinedCipher
+                    );
+                } catch (decryptErr: any) {
+                    console.warn(`[UIFactory] Failed to decrypt bundle via AES-GCM, invalid key or corrupted payload: ${fullUrl}`, decryptErr);
+                    return null;
+                }
+
+                // 无损 Deflate 解压 (优先原生 DecompressionStream，其次 Zlib.RawInflate，兜底 Laya.Byte)
+                let jsonStr = "";
+                try {
+                    if (typeof DecompressionStream !== "undefined") {
+                        const ds = new DecompressionStream("deflate-raw");
+                        const decompressedStream = new Response(decryptedBuf).body!.pipeThrough(ds);
+                        jsonStr = await new Response(decompressedStream).text();
+                    } else if (typeof Zlib !== "undefined" && Zlib.RawInflate) {
+                        const inflater = new Zlib.RawInflate(new Uint8Array(decryptedBuf));
+                        const decompressedBytes = inflater.decompress();
+                        if (typeof TextDecoder !== "undefined") {
+                            jsonStr = new TextDecoder().decode(decompressedBytes);
+                        } else if (typeof Laya !== "undefined" && Laya.Byte) {
+                            const lb = new Laya.Byte(decompressedBytes.buffer);
+                            jsonStr = lb.readUTFBytes();
+                        }
+                    } else if (typeof TextDecoder !== "undefined") {
+                        jsonStr = new TextDecoder().decode(decryptedBuf);
+                    } else if (typeof Laya !== "undefined" && Laya.Byte) {
+                        const lb = new Laya.Byte(decryptedBuf);
+                        jsonStr = lb.readUTFBytes();
+                    }
+                } catch (decompressErr: any) {
+                    console.warn(`[UIFactory] Failed to decompress Deflate payload: ${fullUrl}`, decompressErr);
+                    return null;
+                }
+
+                try {
+                    resultData = JSON.parse(jsonStr);
+                } catch (jsonErr: any) {
+                    console.warn(`[UIFactory] Failed to parse JSON content from decrypted bundle: ${fullUrl}`, jsonErr);
+                    return null;
+                }
+            } else {
+                const jsonOrData = await UIFactory.requestData(fullUrl, "json", options?.onProgress);
+                if (!jsonOrData) {
+                    console.warn(`[UIFactory] Layout JSON file is missing or empty: ${fullUrl}`);
+                    return null;
+                }
+                resultData = typeof jsonOrData === "string" ? JSON.parse(jsonOrData) : jsonOrData;
+            }
+        } catch (err: any) {
+            console.warn(`[UIFactory] loadBundle encountered an error: ${fullUrl}`, err);
+            return null;
         }
 
-        if (typeof Laya !== "undefined" && Laya.Loader && typeof Laya.Loader.cacheRes === "function") {
-            Laya.Loader.cacheRes(finalUrl, resultData);
-            if (finalUrl !== bundleUrl) {
-                Laya.Loader.cacheRes(bundleUrl, resultData);
-            }
+        Laya.Loader.cacheRes(finalUrl, resultData);
+        if (finalUrl !== bundleUrl) {
+            Laya.Loader.cacheRes(bundleUrl, resultData);
         }
 
         // 核心智能路由：自动区分合集包 (IUILayoutBundle) 与单文件布局配置 (IElementConfig)
@@ -370,7 +401,7 @@ export class UIFactory {
             console.error(`[UIFactory] 未找到名为 "${nameOrUrl}" 的组件配置模板！请确认是否已加载对应配置。`);
             return null;
         }
-        const finalConfig: IElementConfig = (overrides ? { ...template, ...overrides } : template) as IElementConfig;
+        const finalConfig: IElementConfig = (overrides ? {...template, ...overrides} : template) as IElementConfig;
         const normalized = nameOrUrl.replace(/\\/g, "/");
         const customClass = UIFactory.extensions[normalized];
 
@@ -621,7 +652,7 @@ export class UIFactory {
      * @returns 实例化的 GRichTextField 对象
      */
     public static createRichTextField(elData: ITextConfig): fgui.GRichTextField {
-        return UIFactory.createElement<fgui.GRichTextField>({ ...elData, isUbb: true }, 0, 0)!;
+        return UIFactory.createElement<fgui.GRichTextField>({...elData, isUbb: true}, 0, 0)!;
     }
 
     /**
@@ -631,7 +662,7 @@ export class UIFactory {
      * @returns 实例化的 GTextInput 对象
      */
     public static createTextInput(elData: ITextConfig): fgui.GTextInput {
-        return UIFactory.createElement<fgui.GTextInput>({ ...elData, isInput: true }, 0, 0)!;
+        return UIFactory.createElement<fgui.GTextInput>({...elData, isInput: true}, 0, 0)!;
     }
 
     /**
@@ -1038,352 +1069,352 @@ export class UIFactory {
             let initW = elData.width || panelNode.width || 0;
             let initH = elData.height || panelNode.height || 0;
 
-        panelNode.sourceWidth = initW;
-        panelNode.sourceHeight = initH;
-        panelNode.initWidth = initW;
-        panelNode.initHeight = initH;
-        panelNode.setSize(initW, initH);
+            panelNode.sourceWidth = initW;
+            panelNode.sourceHeight = initH;
+            panelNode.initWidth = initW;
+            panelNode.initHeight = initH;
+            panelNode.setSize(initW, initH);
 
-        let overflowVal: any = elData.overflow;
-        if (typeof overflowVal === "string") {
-            const key = (overflowVal.charAt(0).toUpperCase() + overflowVal.slice(1).toLowerCase()) as keyof typeof fgui.OverflowType;
-            overflowVal = fgui.OverflowType[key] ?? overflowVal;
-        }
-        if (overflowVal === fgui.OverflowType.Scroll) {
-            if (elData.padding) {
-                panelNode.margin.top = elData.padding.top ?? 0;
-                panelNode.margin.bottom = elData.padding.bottom ?? 0;
-                panelNode.margin.left = elData.padding.left ?? 0;
-                panelNode.margin.right = elData.padding.right ?? 0;
+            let overflowVal: any = elData.overflow;
+            if (typeof overflowVal === "string") {
+                const key = (overflowVal.charAt(0).toUpperCase() + overflowVal.slice(1).toLowerCase()) as keyof typeof fgui.OverflowType;
+                overflowVal = fgui.OverflowType[key] ?? overflowVal;
             }
-            panelNode.setupScrollPanel(overflowVal, elData.scrollType);
-            if (elData.pageController && panelNode.scrollPane) {
-                let targetCtrl: Nullable<fgui.Controller> = null;
-                if (typeof elData.pageController === "string") {
-                    targetCtrl = panelNode.getController(elData.pageController);
-                } else {
-                    targetCtrl = elData.pageController;
+            if (overflowVal === fgui.OverflowType.Scroll) {
+                if (elData.padding) {
+                    panelNode.margin.top = elData.padding.top ?? 0;
+                    panelNode.margin.bottom = elData.padding.bottom ?? 0;
+                    panelNode.margin.left = elData.padding.left ?? 0;
+                    panelNode.margin.right = elData.padding.right ?? 0;
                 }
-                if (targetCtrl) {
-                    panelNode.scrollPane.pageController = targetCtrl;
+                panelNode.setupScrollPanel(overflowVal, elData.scrollType);
+                if (elData.pageController && panelNode.scrollPane) {
+                    let targetCtrl: Nullable<fgui.Controller> = null;
+                    if (typeof elData.pageController === "string") {
+                        targetCtrl = panelNode.getController(elData.pageController);
+                    } else {
+                        targetCtrl = elData.pageController;
+                    }
+                    if (targetCtrl) {
+                        panelNode.scrollPane.pageController = targetCtrl;
+                    }
                 }
             }
-        }
 
-        if (elData.controllers && elData.controllers.length > 0) {
-            for (const ctrlData of elData.controllers) {
-                UIFactory.createController(ctrlData, panelNode);
+            if (elData.controllers && elData.controllers.length > 0) {
+                for (const ctrlData of elData.controllers) {
+                    UIFactory.createController(ctrlData, panelNode);
+                }
             }
-        }
 
-        const childElements = (elData.elements || []).map(el => UIFactory.resolveElementConfig(el));
-        let panelMaxHeight = elData.height || 0;
-        let panelMaxWidth = elData.width || 0;
+            const childElements = (elData.elements || []).map(el => UIFactory.resolveElementConfig(el));
+            let panelMaxHeight = elData.height || 0;
+            let panelMaxWidth = elData.width || 0;
 
-        const isVerticalFlow = elData.layoutType === "vertical";
-        const isHorizontalFlow = elData.layoutType === "horizontal";
+            const isVerticalFlow = elData.layoutType === "vertical";
+            const isHorizontalFlow = elData.layoutType === "horizontal";
 
-        const padTop = elData.padding?.top ?? 0;
-        const padBottom = elData.padding?.bottom ?? 0;
-        const padLeft = elData.padding?.left ?? 0;
-        const padRight = elData.padding?.right ?? 0;
+            const padTop = elData.padding?.top ?? 0;
+            const padBottom = elData.padding?.bottom ?? 0;
+            const padLeft = elData.padding?.left ?? 0;
+            const padRight = elData.padding?.right ?? 0;
 
-        const childNodes: Nullable<fgui.GObject>[] = [];
-        let totalH = 0;
-        let totalW = 0;
-        let maxChildH = 0;
-        let maxChildW = 0;
-        let flowChildCount = 0;
+            const childNodes: Nullable<fgui.GObject>[] = [];
+            let totalH = 0;
+            let totalW = 0;
+            let maxChildH = 0;
+            let maxChildW = 0;
+            let flowChildCount = 0;
 
-        let wrapCurrentX = padLeft;
-        let wrapCurrentRowMaxH = 0;
-        let wrapTotalH = 0;
-        let wrapHasItemInRow = false;
-        const maxLineWidth = (initW > 0 ? initW : 0) - padRight;
+            let wrapCurrentX = padLeft;
+            let wrapCurrentRowMaxH = 0;
+            let wrapTotalH = 0;
+            let wrapHasItemInRow = false;
+            const maxLineWidth = (initW > 0 ? initW : 0) - padRight;
 
-        // =========================================================================
-        // 【官方 Phase 1: setup_beforeAdd 离散化构建】
-        // 严格锁定 _underConstruct = true，在排版与齿轮未就绪前杜绝任何误触
-        // =========================================================================
-        for (let i = 0; i < childElements.length; i++) {
-            const childData = childElements[i];
-            const childNode = UIFactory.createElement<fgui.GObject>(childData, childData.width || 0, childData.height || 0);
-            if (childNode) {
-                // 官方生命周期保护：进入构建保护期
-                childNode["_underConstruct"] = true;
-                childNodes.push(childNode);
-                const childIsAbsolute = childData.position === "absolute";
-                if (!childIsAbsolute) {
-                    flowChildCount++;
-                    const layout = childData.layout || {};
-                    const scaleY = childNode.scaleY !== undefined ? Math.abs(childNode.scaleY) : 1;
-                    const scaleX = childNode.scaleX !== undefined ? Math.abs(childNode.scaleX) : 1;
-                    const elH = childNode.height * scaleY;
-                    const elW = childNode.width * scaleX;
+            // =========================================================================
+            // 【官方 Phase 1: setup_beforeAdd 离散化构建】
+            // 严格锁定 _underConstruct = true，在排版与齿轮未就绪前杜绝任何误触
+            // =========================================================================
+            for (let i = 0; i < childElements.length; i++) {
+                const childData = childElements[i];
+                const childNode = UIFactory.createElement<fgui.GObject>(childData, childData.width || 0, childData.height || 0);
+                if (childNode) {
+                    // 官方生命周期保护：进入构建保护期
+                    childNode["_underConstruct"] = true;
+                    childNodes.push(childNode);
+                    const childIsAbsolute = childData.position === "absolute";
+                    if (!childIsAbsolute) {
+                        flowChildCount++;
+                        const layout = childData.layout || {};
+                        const scaleY = childNode.scaleY !== undefined ? Math.abs(childNode.scaleY) : 1;
+                        const scaleX = childNode.scaleX !== undefined ? Math.abs(childNode.scaleX) : 1;
+                        const elH = childNode.height * scaleY;
+                        const elW = childNode.width * scaleX;
 
-                    if (isVerticalFlow) {
-                        const offsetY = layout.offsetY || 0;
-                        const gapValue = (i > 0 && elData.gap !== undefined) ? elData.gap : 0;
-                        totalH += offsetY + gapValue + elH;
-                    } else if (isHorizontalFlow && !elData.flexWrap) {
-                        const offsetX = layout.offsetX || 0;
-                        const gapValue = (i > 0 && elData.gap !== undefined) ? elData.gap : 0;
-                        totalW += offsetX + gapValue + elW;
-                    } else if (isHorizontalFlow && elData.flexWrap) {
-                        const offsetX = layout.offsetX || 0;
-                        const offsetY = layout.offsetY || 0;
-                        const gapValue = (wrapHasItemInRow && elData.gap !== undefined) ? elData.gap : 0;
-                        const projectedX = wrapCurrentX + offsetX + gapValue + elW;
-                        const currentItemH = offsetY + elH;
+                        if (isVerticalFlow) {
+                            const offsetY = layout.offsetY || 0;
+                            const gapValue = (i > 0 && elData.gap !== undefined) ? elData.gap : 0;
+                            totalH += offsetY + gapValue + elH;
+                        } else if (isHorizontalFlow && !elData.flexWrap) {
+                            const offsetX = layout.offsetX || 0;
+                            const gapValue = (i > 0 && elData.gap !== undefined) ? elData.gap : 0;
+                            totalW += offsetX + gapValue + elW;
+                        } else if (isHorizontalFlow && elData.flexWrap) {
+                            const offsetX = layout.offsetX || 0;
+                            const offsetY = layout.offsetY || 0;
+                            const gapValue = (wrapHasItemInRow && elData.gap !== undefined) ? elData.gap : 0;
+                            const projectedX = wrapCurrentX + offsetX + gapValue + elW;
+                            const currentItemH = offsetY + elH;
 
-                        if (wrapHasItemInRow && projectedX > maxLineWidth && maxLineWidth > padLeft) {
-                            const rowGap = elData.gap ?? 0;
-                            wrapTotalH += wrapCurrentRowMaxH + rowGap;
-                            wrapCurrentRowMaxH = currentItemH;
-                            wrapCurrentX = padLeft + offsetX + elW;
-                        } else {
-                            wrapCurrentX = wrapCurrentX + offsetX + gapValue + elW;
-                            if (currentItemH > wrapCurrentRowMaxH) {
+                            if (wrapHasItemInRow && projectedX > maxLineWidth && maxLineWidth > padLeft) {
+                                const rowGap = elData.gap ?? 0;
+                                wrapTotalH += wrapCurrentRowMaxH + rowGap;
                                 wrapCurrentRowMaxH = currentItemH;
+                                wrapCurrentX = padLeft + offsetX + elW;
+                            } else {
+                                wrapCurrentX = wrapCurrentX + offsetX + gapValue + elW;
+                                if (currentItemH > wrapCurrentRowMaxH) {
+                                    wrapCurrentRowMaxH = currentItemH;
+                                }
+                                wrapHasItemInRow = true;
                             }
-                            wrapHasItemInRow = true;
+                        }
+
+                        if (elH > maxChildH) maxChildH = elH;
+                        if (elW > maxChildW) maxChildW = elW;
+                    }
+                } else {
+                    childNodes.push(null);
+                }
+            }
+
+            if (wrapHasItemInRow) {
+                wrapTotalH += wrapCurrentRowMaxH;
+            }
+
+            if (!elData.height) {
+                if (isVerticalFlow && totalH > 0) {
+                    initH = totalH + padTop + padBottom;
+                } else if (isHorizontalFlow && elData.flexWrap && wrapTotalH > 0) {
+                    initH = wrapTotalH + padTop + padBottom;
+                } else if (isHorizontalFlow && maxChildH > 0) {
+                    initH = maxChildH + padTop + padBottom;
+                }
+            }
+            if (!elData.width) {
+                if (isHorizontalFlow && !elData.flexWrap && totalW > 0) {
+                    initW = totalW + padLeft + padRight;
+                } else if (isVerticalFlow && maxChildW > 0) {
+                    initW = maxChildW + padLeft + padRight;
+                }
+            }
+
+            panelNode.sourceWidth = initW;
+            panelNode.sourceHeight = initH;
+            panelNode.initWidth = initW;
+            panelNode.initHeight = initH;
+            panelNode.setSize(initW, initH);
+
+            for (let i = 0; i < childNodes.length; i++) {
+                const childNode = childNodes[i];
+                if (childNode) {
+                    panelNode.addChild(childNode);
+                }
+            }
+
+            let startOffsetY = 0;
+            let startOffsetX = 0;
+            const justifyContent = elData.justifyContent;
+            let perGapSpaceX = 0;
+            let perGapSpaceY = 0;
+            if (justifyContent && justifyContent !== "flex-start") {
+                if (isVerticalFlow && initH > 0) {
+                    const availableH = initH - padTop - padBottom;
+                    const freeSpaceH = availableH - totalH;
+                    if (freeSpaceH > 0) {
+                        if (justifyContent === "center") startOffsetY = freeSpaceH / 2;
+                        else if (justifyContent === "flex-end") startOffsetY = freeSpaceH;
+                        else if (justifyContent === "space-between" && flowChildCount > 1) perGapSpaceY = freeSpaceH / (flowChildCount - 1);
+                        else if (justifyContent === "space-around" && flowChildCount > 0) {
+                            const unit = freeSpaceH / flowChildCount;
+                            startOffsetY = unit / 2;
+                            perGapSpaceY = unit;
+                        }
+                    }
+                } else if (isHorizontalFlow && !elData.flexWrap && initW > 0) {
+                    const availableW = initW - padLeft - padRight;
+                    const freeSpaceW = availableW - totalW;
+                    if (freeSpaceW > 0) {
+                        if (justifyContent === "center") startOffsetX = freeSpaceW / 2;
+                        else if (justifyContent === "flex-end") startOffsetX = freeSpaceW;
+                        else if (justifyContent === "space-between" && flowChildCount > 1) perGapSpaceX = freeSpaceW / (flowChildCount - 1);
+                        else if (justifyContent === "space-around" && flowChildCount > 0) {
+                            const unit = freeSpaceW / flowChildCount;
+                            startOffsetX = unit / 2;
+                            perGapSpaceX = unit;
+                        }
+                    }
+                }
+            }
+
+            const flowState = {
+                accumulatedX: padLeft + startOffsetX,
+                accumulatedY: padTop + startOffsetY,
+                perGapSpaceX,
+                perGapSpaceY,
+                lastNode: null as Nullable<fgui.GObject>,
+                currentRowMaxHeight: 0,
+                index: 0
+            };
+
+            let minChildY = Infinity;
+            let minChildX = Infinity;
+
+            // =========================================================================
+            // 【官方 Phase 2: 排版定位】
+            // =========================================================================
+            for (let i = 0; i < childElements.length; i++) {
+                const childData = childElements[i];
+                const childNode = childNodes[i];
+                if (childNode) {
+                    flowState.index = i;
+                    const posInfo = UIFactory.setupElementPosition(childNode, childData, initW, initH, elData, flowState);
+                    flowState.lastNode = childNode;
+
+                    const actualBottom = posInfo.targetY + posInfo.elH;
+                    const actualRight = posInfo.targetX + posInfo.elW;
+                    if (actualBottom > panelMaxHeight) panelMaxHeight = actualBottom;
+                    if (actualRight > panelMaxWidth) panelMaxWidth = actualRight;
+                    if (childNode.y < minChildY) minChildY = childNode.y;
+                    if (childNode.x < minChildX) minChildX = childNode.x;
+                }
+            }
+
+            // =========================================================================
+            // 【官方 Phase 2.5: setupRelations 独立关系装配】
+            // 对齐官方 constructFromResource2 (第 3402~3408 行)：
+            // 必须在所有子元件完成 addChild 与初始坐标/尺寸定位后，再统一建立 Relations，
+            // 确保无论关联目标在 elements 数组中的先后顺序如何，都能获取到目标准确的初始坐标与宽高！
+            // =========================================================================
+            for (let i = 0; i < childElements.length; i++) {
+                const childData = childElements[i];
+                const childNode = childNodes[i];
+                if (childNode) {
+                    const layout = childData.layout || {};
+                    const alignX = layout.alignX;
+                    const alignY = layout.alignY;
+                    const isFlexWrapFlow = isHorizontalFlow && elData.flexWrap && childData.position !== "absolute";
+
+                    if (layout.leftPercent !== undefined || alignX === "center" || alignX === "right") {
+                        let relTypeX = fgui.RelationType.Left_Left;
+                        if (alignX === "center") relTypeX = fgui.RelationType.Center_Center;
+                        else if (alignX === "right") relTypeX = fgui.RelationType.Right_Right;
+                        childNode.addRelation(panelNode, relTypeX);
+                    }
+
+                    if (!isFlexWrapFlow) {
+                        if (layout.topPercent !== undefined || alignY === "middle" || alignY === "bottom") {
+                            let relTypeY = fgui.RelationType.Top_Top;
+                            if (alignY === "middle") relTypeY = fgui.RelationType.Middle_Middle;
+                            else if (alignY === "bottom") relTypeY = fgui.RelationType.Bottom_Bottom;
+                            childNode.addRelation(panelNode, relTypeY);
                         }
                     }
 
-                    if (elH > maxChildH) maxChildH = elH;
-                    if (elW > maxChildW) maxChildW = elW;
-                }
-            } else {
-                childNodes.push(null);
-            }
-        }
-
-        if (wrapHasItemInRow) {
-            wrapTotalH += wrapCurrentRowMaxH;
-        }
-
-        if (!elData.height) {
-            if (isVerticalFlow && totalH > 0) {
-                initH = totalH + padTop + padBottom;
-            } else if (isHorizontalFlow && elData.flexWrap && wrapTotalH > 0) {
-                initH = wrapTotalH + padTop + padBottom;
-            } else if (isHorizontalFlow && maxChildH > 0) {
-                initH = maxChildH + padTop + padBottom;
-            }
-        }
-        if (!elData.width) {
-            if (isHorizontalFlow && !elData.flexWrap && totalW > 0) {
-                initW = totalW + padLeft + padRight;
-            } else if (isVerticalFlow && maxChildW > 0) {
-                initW = maxChildW + padLeft + padRight;
-            }
-        }
-
-        panelNode.sourceWidth = initW;
-        panelNode.sourceHeight = initH;
-        panelNode.initWidth = initW;
-        panelNode.initHeight = initH;
-        panelNode.setSize(initW, initH);
-
-        for (let i = 0; i < childNodes.length; i++) {
-            const childNode = childNodes[i];
-            if (childNode) {
-                panelNode.addChild(childNode);
-            }
-        }
-
-        let startOffsetY = 0;
-        let startOffsetX = 0;
-        const justifyContent = elData.justifyContent;
-        let perGapSpaceX = 0;
-        let perGapSpaceY = 0;
-        if (justifyContent && justifyContent !== "flex-start") {
-            if (isVerticalFlow && initH > 0) {
-                const availableH = initH - padTop - padBottom;
-                const freeSpaceH = availableH - totalH;
-                if (freeSpaceH > 0) {
-                    if (justifyContent === "center") startOffsetY = freeSpaceH / 2;
-                    else if (justifyContent === "flex-end") startOffsetY = freeSpaceH;
-                    else if (justifyContent === "space-between" && flowChildCount > 1) perGapSpaceY = freeSpaceH / (flowChildCount - 1);
-                    else if (justifyContent === "space-around" && flowChildCount > 0) {
-                        const unit = freeSpaceH / flowChildCount;
-                        startOffsetY = unit / 2;
-                        perGapSpaceY = unit;
-                    }
-                }
-            } else if (isHorizontalFlow && !elData.flexWrap && initW > 0) {
-                const availableW = initW - padLeft - padRight;
-                const freeSpaceW = availableW - totalW;
-                if (freeSpaceW > 0) {
-                    if (justifyContent === "center") startOffsetX = freeSpaceW / 2;
-                    else if (justifyContent === "flex-end") startOffsetX = freeSpaceW;
-                    else if (justifyContent === "space-between" && flowChildCount > 1) perGapSpaceX = freeSpaceW / (flowChildCount - 1);
-                    else if (justifyContent === "space-around" && flowChildCount > 0) {
-                        const unit = freeSpaceW / flowChildCount;
-                        startOffsetX = unit / 2;
-                        perGapSpaceX = unit;
-                    }
-                }
-            }
-        }
-
-        const flowState = {
-            accumulatedX: padLeft + startOffsetX,
-            accumulatedY: padTop + startOffsetY,
-            perGapSpaceX,
-            perGapSpaceY,
-            lastNode: null as Nullable<fgui.GObject>,
-            currentRowMaxHeight: 0,
-            index: 0
-        };
-
-        let minChildY = Infinity;
-        let minChildX = Infinity;
-
-        // =========================================================================
-        // 【官方 Phase 2: 排版定位】
-        // =========================================================================
-        for (let i = 0; i < childElements.length; i++) {
-            const childData = childElements[i];
-            const childNode = childNodes[i];
-            if (childNode) {
-                flowState.index = i;
-                const posInfo = UIFactory.setupElementPosition(childNode, childData, initW, initH, elData, flowState);
-                flowState.lastNode = childNode;
-
-                const actualBottom = posInfo.targetY + posInfo.elH;
-                const actualRight = posInfo.targetX + posInfo.elW;
-                if (actualBottom > panelMaxHeight) panelMaxHeight = actualBottom;
-                if (actualRight > panelMaxWidth) panelMaxWidth = actualRight;
-                if (childNode.y < minChildY) minChildY = childNode.y;
-                if (childNode.x < minChildX) minChildX = childNode.x;
-            }
-        }
-
-        // =========================================================================
-        // 【官方 Phase 2.5: setupRelations 独立关系装配】
-        // 对齐官方 constructFromResource2 (第 3402~3408 行)：
-        // 必须在所有子元件完成 addChild 与初始坐标/尺寸定位后，再统一建立 Relations，
-        // 确保无论关联目标在 elements 数组中的先后顺序如何，都能获取到目标准确的初始坐标与宽高！
-        // =========================================================================
-        for (let i = 0; i < childElements.length; i++) {
-            const childData = childElements[i];
-            const childNode = childNodes[i];
-            if (childNode) {
-                const layout = childData.layout || {};
-                const alignX = layout.alignX;
-                const alignY = layout.alignY;
-                const isFlexWrapFlow = isHorizontalFlow && elData.flexWrap && childData.position !== "absolute";
-
-                if (layout.leftPercent !== undefined || alignX === "center" || alignX === "right") {
-                    let relTypeX = fgui.RelationType.Left_Left;
-                    if (alignX === "center") relTypeX = fgui.RelationType.Center_Center;
-                    else if (alignX === "right") relTypeX = fgui.RelationType.Right_Right;
-                    childNode.addRelation(panelNode, relTypeX);
-                }
-
-                if (!isFlexWrapFlow) {
-                    if (layout.topPercent !== undefined || alignY === "middle" || alignY === "bottom") {
-                        let relTypeY = fgui.RelationType.Top_Top;
-                        if (alignY === "middle") relTypeY = fgui.RelationType.Middle_Middle;
-                        else if (alignY === "bottom") relTypeY = fgui.RelationType.Bottom_Bottom;
-                        childNode.addRelation(panelNode, relTypeY);
-                    }
-                }
-
-                // 显式声明的官方关联系统绑定 (Relations)
-                if (childData.relations && Array.isArray(childData.relations)) {
-                    for (const r of childData.relations) {
-                        let targetNode: Nullable<fgui.GObject> = panelNode;
-                        if (r.target && r.target !== "parent") {
-                            targetNode = panelNode.getChild(r.target);
-                        }
-                        if (targetNode) {
-                            let relType = r.type;
-                            if (typeof relType === "string") {
-                                const relKey = relType as keyof typeof fgui.RelationType;
-                                relType = fgui.RelationType[relKey] !== undefined ? fgui.RelationType[relKey] : relType;
+                    // 显式声明的官方关联系统绑定 (Relations)
+                    if (childData.relations && Array.isArray(childData.relations)) {
+                        for (const r of childData.relations) {
+                            let targetNode: Nullable<fgui.GObject> = panelNode;
+                            if (r.target && r.target !== "parent") {
+                                targetNode = panelNode.getChild(r.target);
                             }
-                            childNode.addRelation(targetNode, relType as number, r.usePercent || false);
-                        } else {
-                            console.warn(`[UIFactory] 组件 "${childNode.name}" 找不到关联目标 "${r.target}"`);
+                            if (targetNode) {
+                                let relType = r.type;
+                                if (typeof relType === "string") {
+                                    const relKey = relType as keyof typeof fgui.RelationType;
+                                    relType = fgui.RelationType[relKey] !== undefined ? fgui.RelationType[relKey] : relType;
+                                }
+                                childNode.addRelation(targetNode, relType as number, r.usePercent || false);
+                            } else {
+                                console.warn(`[UIFactory] 组件 "${childNode.name}" 找不到关联目标 "${r.target}"`);
+                            }
                         }
                     }
                 }
             }
-        }
 
-        // =========================================================================
-        // 【官方 Phase 3: setup_afterAdd 统一分流内容注入与齿轮装配】
-        // 集中在 UIFactoryPipeline.setup_afterAdd 中，灌入真实内容 text/url 并解除构建锁
-        // =========================================================================
-        for (let i = 0; i < childElements.length; i++) {
-            const childData = childElements[i];
-            const childNode = childNodes[i];
-            if (childNode) {
-                UIFactoryPipeline.setup_afterAdd(childNode, childData, panelNode, i, UIFactory.setupElementGears);
+            // =========================================================================
+            // 【官方 Phase 3: setup_afterAdd 统一分流内容注入与齿轮装配】
+            // 集中在 UIFactoryPipeline.setup_afterAdd 中，灌入真实内容 text/url 并解除构建锁
+            // =========================================================================
+            for (let i = 0; i < childElements.length; i++) {
+                const childData = childElements[i];
+                const childNode = childNodes[i];
+                if (childNode) {
+                    UIFactoryPipeline.setup_afterAdd(childNode, childData, panelNode, i, UIFactory.setupElementGears);
+                }
             }
-        }
 
-        if (!isVerticalFlow && !elData.height && minChildY < Infinity && minChildY > 0) {
-            panelMaxHeight += minChildY;
-        }
-        const finalMaxHeight = panelMaxHeight + panelNode.margin.top + panelNode.margin.bottom;
-        // 自动撑高容器高度：当子元件实际撑开的内容高度超出显式声明的高度时，必须自动撑大容器高度；若显式声明了滚动容器，则保持固定视口高度由 scrollPane 处理滚动
-        if (finalMaxHeight > panelNode.height && (!elData.height || !panelNode.scrollPane)) {
-            panelNode.height = finalMaxHeight;
-        }
-
-        if (!isHorizontalFlow && !elData.width && minChildX < Infinity && minChildX > 0) {
-            panelMaxWidth += minChildX;
-        }
-        const finalMaxWidth = panelMaxWidth + panelNode.margin.left + panelNode.margin.right;
-        if (finalMaxWidth > panelNode.width && !elData.width) {
-            panelNode.width = finalMaxWidth;
-        }
-
-        if (elData.background) {
-            panelNode.drawBackground(elData.background);
-        }
-
-        if (elData.transitions && elData.transitions.length > 0) {
-            for (const transData of elData.transitions) {
-                UIFactory.createTransition(transData, panelNode);
+            if (!isVerticalFlow && !elData.height && minChildY < Infinity && minChildY > 0) {
+                panelMaxHeight += minChildY;
             }
-        }
-
-        // =========================================================================
-        // 【官方 Phase 5: finalize 闭环终态激活】
-        // 按照官方 GComponent 顺序：
-        // 1. 遮罩注入 (setMask)
-        // 2. applyAllControllers()
-        // 3. 解除构建与显示列表锁 (_buildingDisplayList = false, _underConstruct = false)
-        // 4. buildNativeDisplayList() 提交显示树
-        // 5. setBoundsChangedFlag() 刷新包围盒
-        // 6. constructExtension (高级扩展组件装配，对齐 GComponent 第 3462 行)
-        // =========================================================================
-        if (elData.mask) {
-            const maskObj = panelNode.getChild(elData.mask) || panelNode.getChildByPath(elData.mask);
-            if (maskObj) {
-                panelNode.setMask(maskObj.displayObject, !!elData.maskInverted);
-            } else {
-                console.warn(`[UIFactory] 容器 "${panelNode.name || 'unnamed'}" 未找到指定的遮罩目标组件: "${elData.mask}"。`);
+            const finalMaxHeight = panelMaxHeight + panelNode.margin.top + panelNode.margin.bottom;
+            // 自动撑高容器高度：当子元件实际撑开的内容高度超出显式声明的高度时，必须自动撑大容器高度；若显式声明了滚动容器，则保持固定视口高度由 scrollPane 处理滚动
+            if (finalMaxHeight > panelNode.height && (!elData.height || !panelNode.scrollPane)) {
+                panelNode.height = finalMaxHeight;
             }
-        }
 
-        panelNode.applyAllControllers();
+            if (!isHorizontalFlow && !elData.width && minChildX < Infinity && minChildX > 0) {
+                panelMaxWidth += minChildX;
+            }
+            const finalMaxWidth = panelMaxWidth + panelNode.margin.left + panelNode.margin.right;
+            if (finalMaxWidth > panelNode.width && !elData.width) {
+                panelNode.width = finalMaxWidth;
+            }
 
-        panelNode["_buildingDisplayList"] = false;
-        panelNode["_underConstruct"] = false;
+            if (elData.background) {
+                panelNode.drawBackground(elData.background);
+            }
 
-        panelNode["buildNativeDisplayList"]();
-        panelNode.setBoundsChangedFlag();
+            if (elData.transitions && elData.transitions.length > 0) {
+                for (const transData of elData.transitions) {
+                    UIFactory.createTransition(transData, panelNode);
+                }
+            }
 
-        // Phase 4: 高级组件扩展类装配（官方在 buildNativeDisplayList 之后执行）
-        UIFactory.setupComponentExtension(panelNode, elData);
+            // =========================================================================
+            // 【官方 Phase 5: finalize 闭环终态激活】
+            // 按照官方 GComponent 顺序：
+            // 1. 遮罩注入 (setMask)
+            // 2. applyAllControllers()
+            // 3. 解除构建与显示列表锁 (_buildingDisplayList = false, _underConstruct = false)
+            // 4. buildNativeDisplayList() 提交显示树
+            // 5. setBoundsChangedFlag() 刷新包围盒
+            // 6. constructExtension (高级扩展组件装配，对齐 GComponent 第 3462 行)
+            // =========================================================================
+            if (elData.mask) {
+                const maskObj = panelNode.getChild(elData.mask) || panelNode.getChildByPath(elData.mask);
+                if (maskObj) {
+                    panelNode.setMask(maskObj.displayObject, !!elData.maskInverted);
+                } else {
+                    console.warn(`[UIFactory] 容器 "${panelNode.name || 'unnamed'}" 未找到指定的遮罩目标组件: "${elData.mask}"。`);
+                }
+            }
 
-        // 100% 对齐官方 GComponent.constructFromResource2 第 3464 行：自动触发生命周期
-        panelNode["onConstruct"]();
+            panelNode.applyAllControllers();
+
+            panelNode["_buildingDisplayList"] = false;
+            panelNode["_underConstruct"] = false;
+
+            panelNode["buildNativeDisplayList"]();
+            panelNode.setBoundsChangedFlag();
+
+            // Phase 4: 高级组件扩展类装配（官方在 buildNativeDisplayList 之后执行）
+            UIFactory.setupComponentExtension(panelNode, elData);
+
+            // 100% 对齐官方 GComponent.constructFromResource2 第 3464 行：自动触发生命周期
+            panelNode["onConstruct"]();
         } finally {
             fgui.UIPackage._constructing--;
         }
