@@ -1,14 +1,14 @@
 # UIFactory 纯代码 UI 构建与多端自适应指南 (面向 AI 界面构建与代码生成)
 
-> **文档性质**：面向代码生成智能体（AI Agent）及开发者的**通用界面构建实战指南**。
-> **核心目标**：指导 AI 学习如何使用 `UIFactory` 声明式配置驱动（JSON Schema）构建高品质、多端响应式防拉伸变形的 FGUI 纯代码界面，以及挂接 Spine 3.8 骨骼动画与矢量特效。
+> **文档性质**：面向代码生成智能体（AI Agent）及开发者的**全局公用界面构建实战指南**。
+> **核心使命**：指导代码生成智能体与开发者使用 `UIFactory` 声明式配置驱动（JSON Schema）构建高品质、多端响应式防拉伸变形的 FGUI 纯代码界面，以及挂接 Spine 3.8 骨骼动画与矢量特效。
 > **命名空间约定**：纯代码工厂入口在全局或框架中以 `UIFactory` 命名暴露，本文所有示例均直接以 `UIFactory.xxx` 纯净语法示范。
 
 ---
 
-## 一、 技术选型决策铁律（AI 必须执行）
+## 一、 技术选型与职责边界 (Scope & Responsibilities)
 
-在构建游戏 UI 界面与交互逻辑时，必须严格遵守以下三级优先级决策链，**绝对禁止直接创建底层引擎原生 UI 对象挂载到外部舞台**：
+在构建游戏 UI 界面与交互逻辑时，严格遵循以下三级优先级决策模型，确保整个应用界面位于统一的自适应视口与事件树内：
 
 ```
                             需要创建 UI 元素 / 组件
@@ -29,30 +29,46 @@
                       禁止：直接将原生显示对象 addChild 到 Stage / 舞台
 ```
 
-### 为什么禁止原生 UI 对象直接构建界面：
-1. **适配比例分裂**：原生对象的缩放计算游离在 FGUI 的 `GRoot` 与关联系统（Relation）之外，在宽屏、折叠屏或平板上必定产生拉伸变形或位置错位；
+### 职责边界与禁令机理：
+1. **适配比例分裂**：底层引擎原生对象的缩放计算游离在 FGUI 的 `GRoot` 与关联系统（Relation）之外，在宽屏、折叠屏或平板上必定产生拉伸变形或位置错位；
 2. **事件与裁剪穿透**：FGUI 的滚动视口（ScrollPane）无法对外部原生对象执行矢量视口裁剪，且两者的命中测试（HitTest）与事件冒泡链路完全冲突。
 
 ---
 
-## 二、 响应式自适应排版设计思想 (多端防拉伸变形)
+## 二、 响应式与人机工程学排版契约 (Responsive & Ergonomic Spec)
 
-在编写纯代码配置时，AI 必须将**“防变形、防拉伸、防挤压”**置于首位：
+在编写纯代码配置时，必须将**“防变形、防拉伸、防挤压”**与人机工程学规范置于首位：
 
-1. **相对定位与百分比首选**：
+### 2.1 响应式自适应布局
+1. **相对定位与百分比优先**：
    - 优先通过 `layout: { alignX: "center", alignY: "middle" }` 或 `leftPercent / topPercent`（0~1 比例值）进行弹性定位；
    - 绝对坐标 `x / y` 仅作为辅助微调手段，不推荐作为常规响应式界面的主要布局手段。
 2. **百分比宽高与行/列权重分配**：
    - 容器与面板推荐使用百分比尺寸（如 `width: 0.85` 代表占屏幕/父级宽度的 85%）；
    - 在网格或横向流式布局中，子项宽度推荐根据所在的列权重定义百分比（如 `0.3` 代表一行自动弹性三等分），彻底杜绝极端分辨率下的挤压变形。
-3. **8pt 空间度量网格**：
-   - 所有间距（gap）、内边距（padding）、组件高度严格遵循 8pt 网格阶梯（8, 12, 16, 20, 24, 32, 40, 48, 56），保持视觉呼吸感。
 
-### 2.4 纯正 FGUI 组件角色定位：Graph 背景、Group 分区与 Panel 边界
+### 2.2 人机工程学空间网格与触控交互规范
+1. **8pt / 4pt 空间度量网格**：
+   - 所有间距（`gap`）、内边距（`padding`）、组件高度严格遵循 8pt / 4pt 网格阶梯（4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64），保持视觉呼吸感与规整韵律。
+2. **触控与光标交互热区标准**：
+   - **移动端触控目标**：单个交互目标的物理点击热区推荐 $\ge 44 \times 44\text{pt}$ / $48 \times 48\text{dp}$；
+   - **小图标触控补偿**：当视觉图标较小（如 16x16px 或 20x20px 的关闭/更多按钮）时，应通过外层容器或透明内边距（Padding）扩展 Hitbox，确保点击区域达标；
+   - **防误触间距**：相邻的两个可点击交互元素之间，外间距推荐保持 $\ge 8\text{px}$（推荐 $12\text{px} \sim 16\text{px}$）。
+3. **父子嵌套圆角曲率守恒定律**：
+   - 当外层容器嵌套内层卡片/元素且具有内边距（Padding）时，遵循同心圆角法则：
+     $$R_{\text{outer}} = R_{\text{inner}} + \text{Padding}$$
+   - 避免内外层简单机械使用相同圆角导致转角厚薄不均与挤压感。
+4. **60-30-10 空间调色与视觉对比度**：
+   - **60% 基础主基调色**：界面大面积背景（如深色模式 `#0B0F19` / `#0F172A`）；
+   - **30% 结构层级色**：卡片底板、次级容器、边框分割线（如 `#1E293B` / `#334155`）；
+   - **10% 焦点强调色**：核心 CTA 按钮、选中指示态（如 `#16A34A` / `#38BDF8`）；
+   - 正文与背景文本对比度推荐符合 WCAG 2.2 标准（常规文本对比度 $\ge 4.5:1$）。
+
+### 2.3 纯正 FGUI 组件角色定位：Graph 背景、Group 分区与 Panel 边界
 在构建纯代码界面时，必须严格遵守以下三大组件角色的正统职责划分：
 1. **背景底板 / 装饰线框 ➔ 100% 使用 `type: "graph"` (GGraph)**：
    - 所有的卡片底板、面板背景框、高亮边框，**必须使用轻量、极速的原生 `graph` 绘制**（配置 `shape: "rect"`、`fillColor`、`lineColor`、`cornerRadius` 等）；
-   - 严禁为了画个背景色而实例化空 panel！`graph` 天然是纯几何图元，内存占用极小、绘制性能最高。
+   - 背景与装饰线框统一由轻量原生 `graph` 承载，规避空 panel 带来的额外组件对象开销与多余渲染层级。
 2. **同页面功能区域划分 ➔ 100% 使用 `type: "group"` (GGroup)**：
    - 若在同一个界面内划分若干功能区域（如卡片区域、检视器区、操作按钮组），**首选原生的 `type: "group"`（GGroup）**；
    - 所有子元件直接平铺挂在 Root 根节点下，声明 `"group": "groupName"` 归属到该组，保持单页面层级深度永远为 1，彻底消灭层级穿透与时序断裂！
@@ -60,9 +76,7 @@
    - **允许嵌套容器 Panel**：当需要整体裁剪（如 ScrollPane 视口）、独立显示矩阵变换（如旋转与等比缩放）时，允许在页面内使用子 Panel 作为功能容器；
    - **控制器与动效 Root-Only 铁律**：页面内部的所有子 Panel 禁止内联声明 `controllers` 与 `transitions`；若子模块需要独立的业务状态机或自治动效，必须将其抽离为独立自治的 JSON 布局文件，并通过 `"src": "res/layout/xxx.json"` 进行外部引用！
 
----
-
-### 2.5 FGUI GGroup (组) 全特性深度应用与选型决策指南
+### 2.4 FGUI GGroup (组) 全特性深度应用与选型决策指南
 
 在 FairyGUI 架构哲学中，`GGroup` 并非单纯的静态标签，而是具备**轻量、高效、穿透联动**特性的强大逻辑排版节点：
 
@@ -106,7 +120,7 @@
 | **任意旋转 (Rotation)** | ❌ 不支持 | GGroup 无底层显示对象容器，无法施加旋转矩阵 | 选用 GComponent (Panel) 承载 |
 | **视口滚动 (Scroll)** | ❌ 不支持 | GGroup 无法持有 ScrollPane 裁剪视口 | 选用带 `scroll: true` 的 Panel |
 
-#### 4. GGroup vs Panel (GComponent) 终极选型决策树
+#### 4. GGroup vs Panel (GComponent) 选型决策
 ```
                     需要组织一组子图元或构建界面功能块
                                     │
@@ -123,9 +137,9 @@
 
 ---
 
-## 三、 UIFactory 元素配置与声明式范式
+## 三、 声明式配置驱动与组件模型 (Declarative Component Model)
 
-### 3.1 元素多态路由表 (官方 19 大原生组件对齐)
+### 3.1 元素多态路由表 (官方 18 大原生组件对齐)
 
 | type 配置值 | 产出 FGUI 对象 | 创建函数 | 典型适用场景 |
 |---|---|---|---|
@@ -148,9 +162,23 @@
 | `"loader3d"` | `fgui.GLoader3D` | `createLoader3D` | 原生 3D 模型与 Spine 骨骼渲染装载器 |
 | `"image"` | `fgui.GImage` | `createImage` | 原生静态图片组件 (支持翻转与多种 fillMethod 环形填充) |
 
+### 3.2 原生扩展部件映射契约 (Button, Checkbox, Radio, Slider, Input)
+1. **GButton 按压反馈与模式**：
+   - **中心向心缩放**（推荐纯代码按钮）：配置 `downEffect: 2, downEffectValue: 0.92`。UIFactory 会自动设置 `setPivot(0.5, 0.5, pivotAsAnchor)`，保持顶层布局 `(x, y)` 零位移，按压时向几何中心平滑微缩；
+   - **滤镜变暗反馈**：配置 `downEffect: 1, downEffectValue: 0.65`（适合带底图按钮）；
+   - **Checkbox 复选模式**：配置 `mode: "Check"`。内部放置对勾文本或图元，并绑定 `gearDisplay: { controller: "button", pages: ["down", "selectedOver"] }`，即可实现全自动原生的勾选显隐；
+   - **Radio 单选模式**：配置 `mode: "Radio", relatedController: "radioCtrl", pageId: "optA"`，且单选按钮组共同受根节点控制。
+2. **进度条与可拖拽滑动条 (GProgressBar / GSlider)**：
+   - 在组件容器中，包含具有规范名称的子元件：
+     - 名为 `"bar"` 或 `"bar_v"` 的图元：映射为进度填充体；
+     - 名为 `"title"` 的文本：映射为百分比文本；
+     - 名为 `"grip"` 的图元（GSlider 特有）：映射为手柄并自动激活物理拖拽手势。
+3. **交互式输入框 (GTextInput)**：
+   - 配置 `type: "text", isInput: true, promptText: "请输入内容..."`，UIFactory 自动产出原生 `fgui.GTextInput`，底层自动挂载输入框并支持光标对焦与键盘键入。
+
 ---
 
-## 四、 页面状态机 (Controller) 与齿轮联动 (Gears) 规范
+## 四、 页面状态机 (Controller) 与齿轮联动 (Gears) 契约
 
 ### 4.1 控制器 (Controllers) 与动效 (Transitions) 的根节点声明规则 (Root-Only Declaration Rule)
 
@@ -160,13 +188,13 @@
 3. **子节点禁止内联声明**：页面内部的子节点（如嵌套的子 panel、row 容器、group 等）禁止直接内联声明 `controllers` 或 `transitions`；
 4. **子模块独立状态机解耦规范**：若页面的某个子模块需要拥有独立的控制器（例如独立的单选组或子状态机）或专属动效，**应将其抽离为独立的 JSON 配置文件（自治组件），并在父页面中通过 `"src": "res/layout/xxx.json"` 进行外部引用**。每个独立组件在自身根节点上合法声明其属性。
 
-### 4.2 控制器与齿轮直接父子层级规则（Direct-Parent Scoping）
+### 4.2 控制器与齿轮层级驱动规则
 
-在 FGUI 官方架构中，**Controller 必须声明在受控元素的直接父容器（Parent Panel）上**。当直接父容器上的控制器发生页面切换时，父容器会自动调用原生的 `applyController(c) -> child.handleControllerChanged(c)`，毫秒级精准驱动子元件。由于单页面内控制器只存在于 Root 根节点，因此直接受根控制器驱动的子元件应当是该根容器的直接子元素。
+在 FGUI 官方架构中，控制器切换时父容器调用 `applyController(c) -> child.handleControllerChanged(c)` 驱动子元件。页面内统一由 Root 根节点声明状态机，齿轮通过控制器名称进行状态响应绑定。
 
 ### 4.3 全系 10 大 Gears 状态机配置总表
 
-每个子元件均可在配置中声明以下齿轮，随直接父级控制器的页面切换自动执行状态迁移：
+每个子元件均可在配置中声明以下齿轮，随控制器的页面切换自动执行状态迁移：
 
 | 齿轮属性 | FGUI 原生类 | 功能说明 | 关键配置参数范例 |
 |---|---|---|---|
@@ -181,38 +209,19 @@
 | `gearDisplay2` | GearDisplay2 (8) | 复合多条件布尔逻辑求值（AND 且 / OR 或） | `gearDisplay2: { controller: "subCtrl", pages: ["page1"], condition: 1 }` (1=OR, 0=AND) |
 | `gearFontSize` | GearFontSize (9) | 文本字号跨阶跳变 | `gearFontSize: { controller: "modeCtrl", pages: { viewA: 14, viewB: 20 } }` |
 
-### 4.3 声明式属性控制 (Gears) 优先于命令式代码赋值（核心思想）
+### 4.4 声明式属性控制 (Gears) 优先契约
 
-> **设计准则**：在控制器切页驱动界面内容变化时，**严禁在 TS 业务代码中手写循环或事件回调去手动修改组件属性**（例如手动 `btn.title = "xxx"`、`graph.fillColor = "#..."`、`panel.visible = false` 等）。
-> **必须 100% 优先使用官方属性控制 (Gears)**：
+> **设计准则**：在控制器切页驱动界面内容变化时，**避免在业务代码中手写循环或事件回调去手动修改组件属性**（如手动 `btn.title = "xxx"`、`graph.fillColor = "#..."`、`panel.visible = false` 等）。
+> **推荐 100% 使用官方属性控制 (Gears)**：
 > 1. **文案切换**：使用 `gearText`，由控制器自动替换文本；
 > 2. **颜色切换**：使用 `gearColor`，由控制器自动切换矢量填充色与描边色；
 > 3. **显隐排版**：使用 `gearDisplay` / `gearDisplay2`，由控制器自动管理渲染树节点的挂载与剔除；
 > 4. **位移与缩放**：使用 `gearXY` / `gearSize`，由控制器自动执行平滑补间动画；
-> 5. **列表与下拉双向绑定**：在 `GList` 与 `GComboBox` 上直接声明 `selectionController` 与 `pageController`，选中项切换与控制器状态双向自动联动，零手写胶水代码！
+> 5. **列表与下拉双向绑定**：在 `GList` 与 `GComboBox` 上直接声明 `selectionController` 与 `pageController`，选中项切换与控制器状态双向自动联动，零手写胶水代码。
 
 ---
 
-## 五、 原生组件全家桶构建规范 (Button, Checkbox, Radio, Slider, Input)
-
-### 5.1 GButton 按压反馈与模式
-- **中心向心缩放**（推荐纯代码按钮）：配置 `downEffect: 2, downEffectValue: 0.92`。UIFactory 会自动设置 `setPivot(0.5, 0.5, pivotAsAnchor)`，保持顶层布局 `(x, y)` 零位移，按压时向几何中心平滑微缩。
-- **滤镜变暗反馈**：配置 `downEffect: 1, downEffectValue: 0.65`（适合带底图按钮）。
-- **Checkbox 复选模式**：配置 `mode: "Check"`。内部放置对勾文本或图元，并绑定 `gearDisplay: { controller: "button", pages: ["down", "selectedOver"] }`，即可实现全自动原生的勾选显隐！
-- **Radio 单选模式**：配置 `mode: "Radio", relatedController: "radioCtrl", pageId: "optA"`，且必须与其兄弟单选按钮共同放置在持有 `"radioCtrl"` 的直接父容器中。
-
-### 5.2 进度条与可拖拽滑动条 (GProgressBar / GSlider)
-- 在组件容器中，只需包含具有规范名称的子元件：
-  - 名为 `"bar"` 或 `"bar_v"` 的图元：映射为进度填充体；
-  - 名为 `"title"` 的文本：映射为百分比文本；
-  - 名为 `"grip"` 的图元（GSlider 特有）：映射为手柄并自动激活物理拖拽手势！
-
-### 5.3 交互式输入框 (GTextInput)
-- 配置 `type: "text", isInput: true, promptText: "请输入内容..."`，UIFactory 自动产出原生 `fgui.GTextInput`，底层自动挂载系统原生输入框并支持光标对焦与键盘键入。
-
----
-
-## 六、 Spine 3.8 骨骼动画与粒子特效挂载（黄金桥接法则）
+## 五、 Spine 3.8 骨骼动画与矢量特效挂载（黄金桥接法则）
 
 由于 Spine 动画和 2D 粒子系统属于底层原生渲染对象，不能直接 `addChild` 到舞台破坏 FGUI 适配。**必须使用 GGraph 矢量占位符作为宿主媒介**：
 
@@ -229,7 +238,7 @@
 
 ### 2. 代码安全挂接与坐标对齐
 ```typescript
-// 1. 获取占位符并强转为 GGraph
+// 1. 获取占位符并转换为 GGraph
 const holder = panel.getChild("hero_spine_holder").asGraph;
 
 // 2. 实例化原生 Spine 或粒子
@@ -246,9 +255,9 @@ spineAnim.y = holder.height;
 
 ---
 
-## 七、 界面完全自适应实战范式 (通用通用设置弹窗)
+## 六、 确定性通用范式 (通用设置弹窗实战)
 
-以下是一套兼具多端弹性自适应、控制器分页、多选复选、单选互斥与动效的通用界面配置范例：
+以下是一套兼具多端弹性自适应、控制器分页、多选复选、单选互斥与动效的通用界面配置范例。控制器严格遵循 **Root-Only 声明规则**，已通过 `validateLayoutConfig` 静态校验：
 
 ```typescript
 const settingDialogConfig: IPanelConfig = {
@@ -261,8 +270,12 @@ const settingDialogConfig: IPanelConfig = {
         fillColor: "#0f172a",
         lineColor: "#334155",
         lineSize: 2,
-        cornerRadius: 12
+        cornerRadius: 16 // 符合嵌套圆角公式：R_outer (16) = R_inner (8) + Padding (8)
     },
+    // 单页面所有状态机统一在 Root 根节点声明
+    controllers: [
+        { name: "radioCtrl", pages: ["speedFast", "speedNormal"], selectedIndex: 0 }
+    ],
     layoutType: "vertical",
     alignItems: "center",
     padding: { top: 24, bottom: 24, left: 32, right: 32 },
@@ -277,44 +290,37 @@ const settingDialogConfig: IPanelConfig = {
             bold: true,
             color: "#38bdf8"
         },
-        // 单选互斥选项组容器 (直接持有 radioCtrl 控制器)
+        // 单选互斥逻辑组 (使用 GGroup 拍平，同页面层级深度严格为 1，无冗余 Panel 嵌套)
         {
-            type: "panel",
-            name: "radioGroupRow",
-            width: 500,
-            height: 48,
-            layoutType: "horizontal",
-            justifyContent: "space-around",
-            controllers: [
-                { name: "radioCtrl", pages: ["speedFast", "speedNormal"], selectedIndex: 0 }
-            ],
+            type: "group",
+            name: "radioGroupRow"
+        },
+        {
+            type: "button",
+            name: "btnFast",
+            group: "radioGroupRow",
+            width: 220,
+            height: 44, // 满足触控最小尺寸标准 >= 44pt
+            mode: "Radio",
+            relatedController: "radioCtrl",
+            pageId: "speedFast",
             elements: [
-                {
-                    type: "button",
-                    name: "btnFast",
-                    width: 220,
-                    height: 44,
-                    mode: "Radio",
-                    relatedController: "radioCtrl",
-                    pageId: "speedFast",
-                    elements: [
-                        { type: "graph", name: "bg", width: 220, height: 44, fillColor: "#1e293b", cornerRadius: 6 },
-                        { type: "text", name: "title", text: "高速模式 (Fast)", align: "center", valign: "middle", width: 220, height: 44, color: "#ffffff" }
-                    ]
-                },
-                {
-                    type: "button",
-                    name: "btnNormal",
-                    width: 220,
-                    height: 44,
-                    mode: "Radio",
-                    relatedController: "radioCtrl",
-                    pageId: "speedNormal",
-                    elements: [
-                        { type: "graph", name: "bg", width: 220, height: 44, fillColor: "#1e293b", cornerRadius: 6 },
-                        { type: "text", name: "title", text: "常规模式 (Normal)", align: "center", valign: "middle", width: 220, height: 44, color: "#ffffff" }
-                    ]
-                }
+                { type: "graph", name: "bg", width: 220, height: 44, fillColor: "#1e293b", cornerRadius: 8 },
+                { type: "text", name: "title", text: "高速模式 (Fast)", align: "center", valign: "middle", width: 220, height: 44, color: "#ffffff" }
+            ]
+        },
+        {
+            type: "button",
+            name: "btnNormal",
+            group: "radioGroupRow",
+            width: 220,
+            height: 44,
+            mode: "Radio",
+            relatedController: "radioCtrl",
+            pageId: "speedNormal",
+            elements: [
+                { type: "graph", name: "bg", width: 220, height: 44, fillColor: "#1e293b", cornerRadius: 8 },
+                { type: "text", name: "title", text: "常规模式 (Normal)", align: "center", valign: "middle", width: 220, height: 44, color: "#ffffff" }
             ]
         },
         // 底部确认大按钮 (具有中心等比缩放按压反馈)
@@ -340,11 +346,11 @@ fgui.GRoot.inst.addChild(settingDialog);
 
 ---
 
-## 八、 AI 界面构建与代码生成黄金避坑与禁止规则 (红线清单)
+## 七、 架构物理红线与避坑清单 (Physical Invariants & Redlines)
 
-为确保 AI 生成的代码在任何环境下 100% 稳定运行、杜绝黑屏/拉伸/死锁，必须严格遵循以下八大铁律：
+为确保代码生成与纯代码配置在任何运行环境下 100% 稳定运行、杜绝黑屏/拉伸/死锁，必须严格遵守以下十大物理红线：
 
-### 1. 🚨 铁律一：滚动容器（overflow: 2）的直接子级绝对禁止使用相对居中（layout: alignX/alignY）
+### 1. 🚨 铁律一：滚动容器（overflow: 2）的直接子级禁止使用相对居中（layout: alignX/alignY）
 - **现象与根因**：ScrollPane 视口滚动会高频修改视口偏移，而 `layout: { alignX: "center", alignY: "middle" }` 会在底层建立 `Center_Center` 关联。一旦滚动或容器尺寸变动，两者相互拉扯，导致内容在视口中**剧烈抖动、闪烁甚至瞬间跳回屏幕中央**！
 - **正确规范**：滚动视口的直接子节点**必须使用常规流式布局（如 layoutType: "vertical"）或纯绝对坐标（x/y）**；若局部模块确需居中，必须包裹在内层定宽定高容器中，由内层容器居中子节点。
 
@@ -356,13 +362,13 @@ fgui.GRoot.inst.addChild(settingDialog);
 - **现象与根因**：FGUI 文本在未配置 `width` 时默认为 `AutoSizeType.Both`（单行向右无限延展）。虽然 UIFactory 会自动将 `\n` 转义为 `<br/>`，但如果文本缺失宽度限制，普通长文案永远不会自然换行，甚至直接冲出屏幕！
 - **正确规范**：凡是动态多行提示、公告或段落文本，**必须显式声明 `width`**，使其自动切换为 `AutoSizeType.Height`（固定宽度、高度随文本自动撑开）。
 
-### 4. 🚨 铁律四：控制器与齿轮必须属于直接父容器（Direct-Parent Scoping）
-- **现象与根因**：在 FGUI 官方架构中，`gear.controller = this.parent.getController(...)`。若将齿轮声明在曾祖父容器的控制器上，父级切换时官方的 `applyController` 根本无法跨层遍历到孙子节点，导致**齿轮状态机完全失效、点击无响应**！
-- **正确规范**：受控子元件（如 Tab 页签内容、单选按钮）的控制器，**必须直接声明在该元件的直接父级 Panel 上**。若顶级大按钮需要控制深层内容，应通过脚本在顶级事件中同步修改该子面板的控制器索引。
+### 4. 🚨 铁律四：控制器必须在 Root 声明，受控齿轮首选通过 GGroup 拍平或 src 外部解耦
+- **现象与根因**：在 FGUI 官方架构中，控制器切页是通过 `parent.applyController(c) -> child.handleControllerChanged(c)` 仅向下派发一层。如果在嵌套子 Panel 中内联声明控制器，不仅会破坏单页面单一事实源，还会被引擎 `validateLayoutConfig` 校验直接拦截报错；而若让深层嵌套的孙子节点直接挂载根级齿轮，也会因跨层而无法接收到父级的切页广播！
+- **正确规范**：单页面所有控制器**必须且只能在 Root 根节点声明**。需要受状态机驱动的子元件推荐直接挂载在 Root 下并通过 `GGroup` 拍平分组；若局部子模块需要深层排版且受状态机控制，必须将该子模块抽离为独立的 JSON 布局文件并通过 `"src": "res/layout/xxx.json"` 进行外部引用解耦。
 
-### 5. 🚨 铁律五：单选按钮组（Radio）必须与兄弟项同置于持有该控制器的父容器内
-- **现象与根因**：单选互斥依赖父级的 `radioRow.applyController` 依次触发所有兄弟单选按钮的 `handleControllerChanged` 进行反选。若单选按钮散落在不同层级的子容器中，**会导致互斥链条断裂，出现多个单选同时被选中，或点击几次后死锁固定在一侧无法切回**！
-- **正确规范**：所有互斥的 `mode: "Radio"` 按钮，必须集中放置在同一个配置了对应 `relatedController` 的父级 Panel 容器内。
+### 5. 🚨 铁律五：单选按钮组（Radio）控制器由 Root 统一管理，子 Panel 仅作为排版容器
+- **现象与根因**：单选互斥依赖 `Radio` 模式按钮配置的 `relatedController` 与页面状态机联动。如果在嵌套的行/列容器中重复声明 `controllers`，会触发引擎校验异常；而若单选按钮的 `relatedController` 命名与根控制器不匹配，则会导致互斥链条断裂，出现多个单选同时被选中或切页死锁。
+- **正确规范**：单选组关联的控制器必须在页面 Root 根节点声明，单选按钮只需配置 `relatedController: "radioCtrl", pageId: "..."`，中间包裹单选按钮的水平/垂直 Panel 仅作为排版容器，严禁在子容器内重复内联声明同名控制器。
 
 ### 6. 🚨 铁律六：缩放/旋转/弹跳补间动效必须显式指定几何中心轴心点（Pivot）
 - **现象与根因**：FGUI 组件默认轴心点为左上角 `(0, 0)`。在此状态下直接执行缩放弹跳（Scale 1.0 -> 1.2）或旋转动效，元素会沿着左上角向右下方膨胀偏移，导致**视觉中心大幅跑偏、动效漂移错位**！

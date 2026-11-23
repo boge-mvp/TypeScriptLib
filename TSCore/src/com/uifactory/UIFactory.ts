@@ -89,7 +89,6 @@ export class UIFactory {
      *
      * @param config The layout panel configuration (IPanelConfig)
      * @param pagePath The path or identifier of the layout being validated
-     * @throws Error when layout hierarchy or gear configuration is invalid
      */
     public static validateLayoutConfig(config: IPanelConfig, pagePath: string = "root"): void {
         if (!config || !config.elements || !Array.isArray(config.elements)) return;
@@ -115,7 +114,16 @@ export class UIFactory {
                 : new Set<string>([...(anyNode.controllers || []).map((c: any) => c && c.name).filter(Boolean)]);
 
             // Rule 1: Non-root panels cannot define controllers or transitions (must be on root or decoupled via src)
-            // Rule 2: Non-root nodes cannot define controllers (except button internal 4-state controller)
+            // Rule 2: Non-root panels cannot contain inline elements unless referenced via "src"
+            if (node.type === "panel" && Array.isArray(anyNode.elements) && anyNode.elements.length > 0) {
+                console.warn(
+                    `[UIFactory] Invalid layout in "${pagePath}": Non-root panel "${pathTrace}" (name: "${node.name || 'unnamed'}") contains inline "elements". ` +
+                    `In UIFactory clean code architecture, page-level functional partitioning must use "type: 'group'" (GGroup) to keep depth strictly at 1. ` +
+                    `If sub-container requires independent hierarchy, extract it into a separate layout JSON and reference it via "src".`
+                );
+            }
+
+            // Rule 3: Non-root nodes cannot define controllers (except button internal 4-state controller)
             const isButtonControllerOnly = node.type === "button" &&
                 Array.isArray(anyNode.controllers) &&
                 anyNode.controllers.length === 1 &&
@@ -128,7 +136,7 @@ export class UIFactory {
                 );
             }
 
-            // Rule 3: Non-root nodes cannot define transitions
+            // Rule 4: Non-root nodes cannot define transitions
             if (Array.isArray(anyNode.transitions) && anyNode.transitions.length > 0) {
                 console.warn(
                     `[UIFactory] Invalid layout in "${pagePath}": "transitions" cannot be defined on non-root node "${pathTrace}" (name: "${node.name || 'unnamed'}", type: "${node.type}"). ` +
@@ -136,7 +144,7 @@ export class UIFactory {
                 );
             }
 
-            // Rule 4: All declared Gears on this node must reference controllers that exist on parent container
+            // Rule 5: All declared Gears on this node must reference controllers that exist on parent container
             for (const gk of gearKeys) {
                 if (anyNode[gk] && anyNode[gk].controller) {
                     const ctrlName = anyNode[gk].controller;

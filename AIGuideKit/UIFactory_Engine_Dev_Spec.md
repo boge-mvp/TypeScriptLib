@@ -75,7 +75,10 @@
 ### 5. Controllers 与 Transitions 根节点声明规则与校验机制
 - **架构规则**：一个 UI 页面配置文件中，`controllers` 与 `transitions` 仅允许在 Root 根节点声明；根节点支持任意业务命名（不限死叫 root）。
 - **组件角色规范**：纯背景底板必须使用原生的 `type: "graph"` (GGraph)，严禁滥用空 panel 画背景；同一页面内划分功能区域必须使用原生的 `type: "group"` (GGroup)；带子节点的 panel 必须拆分为外部引用（`src`）。
-- **校验防御壳**：引擎在 `UIFactory.validateLayoutConfig` 与构建工具 `bundleLayouts` 中内置了自动验证逻辑。若在非 Root 子节点（且未标记 `src` 外部组件）中检测到 `controllers` 或 `transitions`，统一抛出标准英文异常进行阻断。
+- **校验防御壳**：引擎在 `UIFactory.validateLayoutConfig` 与构建工具 `bundleLayouts` 中内置了自动验证逻辑：
+  1. 若在非 Root 子节点（且未标记 `src` 外部组件）中检测到 `controllers` 或 `transitions`，统一输出标准英文警告或阻断异常；
+  2. 若检测到非根 Panel 包含内联 `elements`（未标记 `src`），触发标准规范警告（Rule 2），提示开发者使用 `type: "group"` (GGroup) 拍平或抽离为 `src` 独立文件；
+  3. 校验齿轮是否合法绑定到所属控制器的有效页面。
 
 ---
 
