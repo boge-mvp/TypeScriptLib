@@ -46,13 +46,11 @@ LayaAir 游戏开发框架（npm 包 `@boge-mvp/game-lib`，发布于 GitHub Pac
 - `template/` — LayaAir/FGUI/Spine 引擎运行时模板库（随包分发）
 - `webp/` — libwebp v1.3.0 多平台二进制
 
-## 专职 Agent 路由与分工
+## UIFactory 模块维护约定
 
-- **`uifactory-expert` (UIFactory 专职维护智能体，定义于 `.opencode/agents/uifactory-expert.md`)**
-  - **管辖范围**：
-    1. 底层代码：`TSCore/src/com/uifactory/` 全目录代码（包含 8 大逻辑与排版实现模块及全部 20 个 `I*Config.ts` 协议文件）；
-    2. 权威规范矩阵：`AIGuideKit/` 目录三大核心事实源文档（面向外部 AI 的 UI 构建指南 `UIFactory_AI_UI_Creation_Guide.md`、开发库内核维护规范 `UIFactory_Engine_Dev_Spec.md` 以及架构哲学与生产级打包加密白皮书 `UIFactory_Architecture_Philosophy_And_Advantages.md`）。
-  - **强制路由铁律**：凡涉及该引擎目录下的任何代码排查、缺陷修复、排版算法优化、新组件扩展、配置协议演进，以及三大规范文档的维护修订与避坑约束沉淀，**必须由 `uifactory-expert` 智能体专门处理**，严禁其他通用智能体直接无序修改。
-  - **双向同步与闭环验证要求**：
-    1. 规范双向同步：代码变更或实战避坑约束沉淀必须同步更新到 `AIGuideKit/` 对应规范文档；
-    2. 代码验证基线：代码改动后必须在根目录执行 `npm run build:tscore` 确保输出 113 js / 113 dts 且 0 报错。
+- **管辖目录与文档**：
+  1. 底层代码：`TSCore/src/com/uifactory/` 全目录代码（包含逻辑与排版实现模块及全部 `I*Config.ts` 协议文件）；
+  2. 规范矩阵：`AIGuideKit/` 目录三大核心事实源文档（`UIFactory_AI_UI_Creation_Guide.md`、`UIFactory_Engine_Dev_Spec.md`、`UIFactory_Architecture_Philosophy_And_Advantages.md`）。
+- **双向同步与闭环验证要求**：
+  1. 规范双向同步：代码变更或实战避坑约束沉淀必须同步更新到 `AIGuideKit/` 对应规范文档；
+  2. 代码验证基线：代码改动后必须在根目录执行 `npm run build:tscore` 确保输出 113 js / 113 dts 且 0 报错。
