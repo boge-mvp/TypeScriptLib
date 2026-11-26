@@ -588,31 +588,6 @@ export class DefineConfig {
                 }
             });
 
-            Object.defineProperty(fgui.GLoader3D.prototype, "loadExternal", {
-                value: function (this: fgui.GLoader3D) {
-                    const url = this["_url"];
-                    if (!url || !Laya.SpineTemplet) return;
-                    const formattedUrl = Laya.URL.formatURL(url);
-                    const isSpine = /\.json(\?.*)?$/i.test(formattedUrl) || /\.skel(\?.*)?$/i.test(formattedUrl);
-                    if (!isSpine) return;
-
-                    const savedUrl = url;
-                    const templet = new Laya.SpineTemplet(Laya.SpineVersion ? Laya.SpineVersion.v3_8 : Laya.SpineVersion?.v3_8);
-                    templet.on(Laya.Event.COMPLETE, this, (spine: Laya.SpineTempletBase) => {
-                        if (this.isDisposed) return;
-                        const t = spine || templet;
-                        const skel = t.buildArmature()
-                        const sw = t?.skeletonData?.width || this.width || 160;
-                        const sh = t?.skeletonData?.height || this.height || 160;
-                        this["sourceWidth"] = sw;
-                        this["sourceHeight"] = sh;
-                        this.setSkeleton(skel.getSkeleton(), new Laya.Point(sw * 0.5, sh * 0.5));
-                        // setSkeleton 内部会置空 _url，恢复 _url 以便业务侧读取
-                        this["_url"] = savedUrl;
-                    });
-                    templet.loadAni(formattedUrl);
-                }
-            });
         }
 
     }
