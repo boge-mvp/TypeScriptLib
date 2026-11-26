@@ -6,10 +6,12 @@ import {IButtonConfig} from "./IButtonConfig";
 import {IListConfig} from "./IListConfig";
 import {IControllerConfig} from "./IControllerConfig";
 import {UIFactoryTransitions} from "./UIFactoryTransitions";
+import {ITransitionTargetValue} from "./ITransitionTargetValue";
 import {IBaseElementConfig} from "./IBaseElementConfig";
 import {IViewConfig} from "./IViewConfig";
 import {UIFactoryGears} from "./UIFactoryGears";
 import {UIFactoryLayout} from "./UIFactoryLayout";
+import {IFlowLayoutState} from "./IFlowLayoutState";
 import {UIFactoryExtensions} from "./UIFactoryExtensions";
 import {UIFactoryPipeline} from "./UIFactoryPipeline";
 import {IGraphicsCmdConfig} from "./IGraphicsCmdConfig";
@@ -26,7 +28,8 @@ import {IMovieClipConfig} from "./IMovieClipConfig";
 import {ILoader3DConfig} from "./ILoader3DConfig";
 import {IImageConfig} from "./IImageConfig";
 import {IUILayoutBundle} from "./IUILayoutBundle";
-import {ELoader} from "../extends/ELoader";
+import {UIFactoryLoader} from "./UIFactoryLoader";
+import {UIFactoryPanelBuilder} from "./UIFactoryPanelBuilder";
 
 /**
  * 自定义组件创建器函数类型
@@ -38,8 +41,9 @@ import {ELoader} from "../extends/ELoader";
  * @param containerH 父容器计算高度
  * @returns 实例化的 FGUI 组件对象
  */
-export type ElementCreator<T extends IElementConfig = IElementConfig, R extends fgui.GObject = fgui.GObject> =
-    (elData: T, containerW: number, containerH: number) => R;
+export type ElementCreator<T extends IElementConfig = IElementConfig, R extends fgui.GObject = fgui.GObject> = {
+    bivariantHack(elData: T, containerW: number, containerH: number): R;
+}["bivariantHack"];
 
 /**
  * UIFactory 纯代码 FGUI 布局引擎与组件工厂门面
@@ -56,7 +60,7 @@ export class UIFactory {
     public static resBasePath: string = "";
 
     /** 已注册的自定义元件创建器字典表，键为元素类型 type */
-    public static customCreators: Record<string, ElementCreator<any, any>> = {};
+    public static customCreators: Record<string, ElementCreator<IElementConfig, fgui.GObject>> = {};
 
     /** 已注册的外部独立页面/组件布局配置字典表，支持通过标准路径寻址 */
     public static registeredConfigs: Record<string, IElementConfig> = {};
@@ -92,84 +96,7 @@ export class UIFactory {
      * @param pagePath The path or identifier of the layout being validated
      */
     public static validateLayoutConfig(config: IPanelConfig, pagePath: string = "root"): void {
-        if (!config || !config.elements || !Array.isArray(config.elements)) return;
-
-        // Collect all valid controllers declared on the root node
-        const validControllers = new Set<string>((config.controllers || []).map(c => c && c.name).filter(Boolean));
-
-        const gearKeys = [
-            "gearDisplay", "gearXY", "gearSize", "gearLook", "gearColor",
-            "gearAnimation", "gearText", "gearIcon", "gearDisplay2", "gearFontSize"
-        ];
-
-        const checkChild = (node: IElementConfig, pathTrace: string, parentControllers: Set<string>) => {
-            if (!node) return;
-            // If child references an external component via src, its own file has its own root node
-            if (node.src) return;
-
-            const anyNode = node as any;
-
-            // Compute available controllers for children inside this node
-            const currentScopeControllers = (node.type === "button")
-                ? new Set<string>([...Array.from(parentControllers), "button"])
-                : new Set<string>([...(anyNode.controllers || []).map((c: any) => c && c.name).filter(Boolean)]);
-
-            // Rule 1: Non-root panels cannot define controllers or transitions (must be on root or decoupled via src)
-            // Rule 2: Non-root panels cannot contain inline elements unless referenced via "src"
-            if (node.type === "panel" && Array.isArray(anyNode.elements) && anyNode.elements.length > 0) {
-                console.warn(
-                    `[UIFactory] Invalid layout in "${pagePath}": Non-root panel "${pathTrace}" (name: "${node.name || 'unnamed'}") contains inline "elements". ` +
-                    `In UIFactory clean code architecture, page-level functional partitioning must use "type: 'group'" (GGroup) to keep depth strictly at 1. ` +
-                    `If sub-container requires independent hierarchy, extract it into a separate layout JSON and reference it via "src".`
-                );
-            }
-
-            // Rule 3: Non-root nodes cannot define controllers (except button internal 4-state controller)
-            const isButtonControllerOnly = node.type === "button" &&
-                Array.isArray(anyNode.controllers) &&
-                anyNode.controllers.length === 1 &&
-                anyNode.controllers[0].name === "button";
-
-            if (Array.isArray(anyNode.controllers) && anyNode.controllers.length > 0 && !isButtonControllerOnly) {
-                console.warn(
-                    `[UIFactory] Invalid layout in "${pagePath}": "controllers" cannot be defined on non-root node "${pathTrace}" (name: "${node.name || 'unnamed'}", type: "${node.type}"). ` +
-                    `Controllers must only be declared on the root node of a layout JSON. If a sub-module requires an independent controller, extract it into a separate JSON file and reference it via "src".`
-                );
-            }
-
-            // Rule 4: Non-root nodes cannot define transitions
-            if (Array.isArray(anyNode.transitions) && anyNode.transitions.length > 0) {
-                console.warn(
-                    `[UIFactory] Invalid layout in "${pagePath}": "transitions" cannot be defined on non-root node "${pathTrace}" (name: "${node.name || 'unnamed'}", type: "${node.type}"). ` +
-                    `Transitions must only be declared on the root node of a layout JSON. If a sub-module requires an independent transition, extract it into a separate JSON file and reference it via "src".`
-                );
-            }
-
-            // Rule 5: All declared Gears on this node must reference controllers that exist on parent container
-            for (const gk of gearKeys) {
-                if (anyNode[gk] && anyNode[gk].controller) {
-                    const ctrlName = anyNode[gk].controller;
-                    if (!parentControllers.has(ctrlName)) {
-                        console.warn(
-                            `[UIFactory] Invalid gear configuration in "${pagePath}": Element "${pathTrace}" (name: "${node.name || 'unnamed'}") declares gear "${gk}" referencing non-existent controller "${ctrlName}". ` +
-                            `Declared controllers on direct parent container: [${Array.from(parentControllers).join(", ")}].`
-                        );
-                    }
-                }
-            }
-
-            if (anyNode.elements && Array.isArray(anyNode.elements)) {
-                for (let i = 0; i < anyNode.elements.length; i++) {
-                    const child = anyNode.elements[i];
-                    checkChild(child, `${pathTrace} -> elements[${i}](${child.name || child.type})`, currentScopeControllers);
-                }
-            }
-        };
-
-        for (let i = 0; i < config.elements.length; i++) {
-            const rootChild = config.elements[i];
-            checkChild(rootChild, `elements[${i}](${rootChild.name || rootChild.type})`, validControllers);
-        }
+        UIFactoryLoader.validateLayoutConfig(config, pagePath);
     }
 
     /**
@@ -220,193 +147,21 @@ export class UIFactory {
         responseType: "arraybuffer" | "json" | "text" = "text",
         progress?: (ratio: number) => void
     ): Promise<Nullable<T>> {
-        return new Promise((resolve) => {
-            const layaType = responseType === "arraybuffer"
-                ? Laya.Loader.BUFFER
-                : (responseType === "json" ? Laya.Loader.JSON : Laya.Loader.TEXT);
-
-            const progressHandler = progress ? Laya.Handler.create(null, (p: number) => progress(p), null, false) : undefined;
-
-            ELoader.loader.load(
-                url,
-                Laya.Handler.create(null, (data: any) => {
-                    resolve(data);
-                }),
-                progressHandler,
-                layaType
-            );
-        });
+        return UIFactoryLoader.requestData<T>(url, responseType, progress);
     }
 
-    /**
-     * 一次性异步加载 UI 布局文件并自动注入内存注册表
-     *
-     * 统一入口，全场景智能兼容：
-     * - 若文件为紧凑压缩/加密的二进制合包 (.bin / 省略后缀)：自动提取文件头 12 字节 IV 与 16 字节 AuthTag，执行 AES-GCM 原生硬件解密与 Deflate 解压；
-     * - 若文件为明文 JSON 合包 (.json 且包含 layouts 字典)：一次性注入全量页面内存字典；
-     * - 若文件为单个界面的独立 JSON 布局配置 (.json 顶层为 panel/button 等单一组件)：自动识别并以规范化路径及 name 注册到内存注册表；
-     * - 加载或解析失败时安全记录日志并返回 null，绝不向外抛出未捕获异常。
-     *
-     * @param bundleUrl 布局资源地址 (例如 "res/ui_bundle.bin"、"res/ui_bundle.json" 或 "res/layout/login.json")
-     * @param options 可选配置项（自定义密钥 key、强制扩展名 extension、加载进度回调 onProgress）
-     * @returns 解析后的合包数据对象或单个布局配置，失败返回 null
-     */
     public static async loadBundle(
         bundleUrl: string,
         options?: { key?: string; extension?: string; onProgress?: (ratio: number) => void }
     ): Promise<Nullable<IUILayoutBundle | IPanelConfig>> {
-        let finalUrl = bundleUrl;
-        const hasDotExt = finalUrl.lastIndexOf(".") > finalUrl.lastIndexOf("/");
-        if (!hasDotExt) {
-            const ext = options?.extension || (fgui.UIConfig && fgui.UIConfig.packageFileExtension) || "bin";
-            finalUrl = `${finalUrl}.${ext.replace(/^\./, "")}`;
-        }
-
-        const fullUrl = UIFactory.formatResUrl(finalUrl);
-        const isBinary = !finalUrl.endsWith(".json");
-        let resultData: any = null;
-
-        try {
-            if (isBinary) {
-                const arrayBuf = await UIFactory.requestData<ArrayBuffer>(fullUrl, "arraybuffer", options?.onProgress);
-                if (!arrayBuf || arrayBuf.byteLength < 28) {
-                    console.warn(`[UIFactory] Binary bundle file is missing, empty or corrupted (< 28 bytes header): ${fullUrl}`);
-                    return null;
-                }
-                const uint8 = new Uint8Array(arrayBuf);
-
-                // 提取文件头协议: [12 字节 GCM IV] + [16 字节 AuthTag] + [加密的 Deflate 密文]
-                const iv = uint8.slice(0, 12);
-                const tag = uint8.slice(12, 28);
-                const cipherBytes = uint8.slice(28);
-
-                // Web Crypto GCM 解密格式要求密文尾部包含 AuthTag
-                const combinedCipher = new Uint8Array(cipherBytes.length + tag.length);
-                combinedCipher.set(cipherBytes, 0);
-                combinedCipher.set(tag, cipherBytes.length);
-
-                // 派生 AES-256 密钥
-                const secret = options?.key || UIFactory.bundleKey;
-                const enc = new TextEncoder();
-                const keyHash = await crypto.subtle.digest("SHA-256", enc.encode(secret));
-                const cryptoKey = await crypto.subtle.importKey("raw", keyHash, {name: "AES-GCM"}, false, ["decrypt"]);
-
-                // 原生硬件加速解密
-                let decryptedBuf: ArrayBuffer;
-                try {
-                    decryptedBuf = await crypto.subtle.decrypt(
-                        {name: "AES-GCM", iv, tagLength: 128},
-                        cryptoKey,
-                        combinedCipher
-                    );
-                } catch (decryptErr: any) {
-                    console.warn(`[UIFactory] Failed to decrypt bundle via AES-GCM, invalid key or corrupted payload: ${fullUrl}`, decryptErr);
-                    return null;
-                }
-
-                // 无损 Deflate 解压 (优先原生 DecompressionStream，其次 Zlib.RawInflate，兜底 Laya.Byte)
-                let jsonStr = "";
-                try {
-                    if (typeof DecompressionStream !== "undefined") {
-                        const ds = new DecompressionStream("deflate-raw");
-                        const decompressedStream = new Response(decryptedBuf).body!.pipeThrough(ds);
-                        jsonStr = await new Response(decompressedStream).text();
-                    } else if (typeof Zlib !== "undefined" && Zlib.RawInflate) {
-                        const inflater = new Zlib.RawInflate(new Uint8Array(decryptedBuf));
-                        const decompressedBytes = inflater.decompress();
-                        if (typeof TextDecoder !== "undefined") {
-                            jsonStr = new TextDecoder().decode(decompressedBytes);
-                        } else if (typeof Laya !== "undefined" && Laya.Byte) {
-                            const lb = new Laya.Byte(decompressedBytes.buffer);
-                            jsonStr = lb.readUTFBytes();
-                        }
-                    } else if (typeof TextDecoder !== "undefined") {
-                        jsonStr = new TextDecoder().decode(decryptedBuf);
-                    } else if (typeof Laya !== "undefined" && Laya.Byte) {
-                        const lb = new Laya.Byte(decryptedBuf);
-                        jsonStr = lb.readUTFBytes();
-                    }
-                } catch (decompressErr: any) {
-                    console.warn(`[UIFactory] Failed to decompress Deflate payload: ${fullUrl}`, decompressErr);
-                    return null;
-                }
-
-                try {
-                    resultData = JSON.parse(jsonStr);
-                } catch (jsonErr: any) {
-                    console.warn(`[UIFactory] Failed to parse JSON content from decrypted bundle: ${fullUrl}`, jsonErr);
-                    return null;
-                }
-            } else {
-                const jsonOrData = await UIFactory.requestData(fullUrl, "json", options?.onProgress);
-                if (!jsonOrData) {
-                    console.warn(`[UIFactory] Layout JSON file is missing or empty: ${fullUrl}`);
-                    return null;
-                }
-                resultData = typeof jsonOrData === "string" ? JSON.parse(jsonOrData) : jsonOrData;
-            }
-        } catch (err: any) {
-            console.warn(`[UIFactory] loadBundle encountered an error: ${fullUrl}`, err);
-            return null;
-        }
-
-        Laya.Loader.cacheRes(finalUrl, resultData);
-        if (finalUrl !== bundleUrl) {
-            Laya.Loader.cacheRes(bundleUrl, resultData);
-        }
-
-        // 核心智能路由：自动区分合集包 (IUILayoutBundle) 与单文件布局配置 (IElementConfig)
-        if (resultData && typeof resultData === "object") {
-            if ("layouts" in resultData && typeof resultData.layouts === "object") {
-                UIFactory.registerBundle(resultData as IUILayoutBundle);
-            } else {
-                const normalizedFinal = finalUrl.replace(/\\/g, "/");
-                const normalizedOrigin = bundleUrl.replace(/\\/g, "/");
-
-                UIFactory.registerConfig(normalizedFinal, resultData as IElementConfig);
-                if (normalizedOrigin !== normalizedFinal) {
-                    UIFactory.registeredConfigs[normalizedOrigin] = resultData as IElementConfig;
-                }
-                // 若配置中指定了 name，额外以 name 注册别名索引，便于通过短名寻址
-                if (resultData.name && !UIFactory.registeredConfigs[resultData.name]) {
-                    UIFactory.registeredConfigs[resultData.name] = resultData as IElementConfig;
-                }
-
-                // 散装依赖自动级联加载：扫描当前布局配置中所有尚未载入内存的外部 src 依赖并自动并发补齐
-                const missingDeps = UIFactory.extractMissingDependencies(resultData as IElementConfig);
-                if (missingDeps.length > 0) {
-                    await Promise.all(missingDeps.map(depUrl => UIFactory.loadBundle(depUrl, options)));
-                }
-            }
-        }
-
-        return resultData;
+        return UIFactoryLoader.loadBundle(bundleUrl, options);
     }
 
-    /**
-     * 递归收集声明式配置中所有尚未载入内存的外部 src 组件依赖
-     *
-     * @param config 当前待检查的组件配置
-     * @param gathered 已收集的缺失依赖集合 (内部递归传递)
-     * @returns 缺失并亟需级联加载的外部组件 URL 数组
-     */
     public static extractMissingDependencies(
         config: IElementConfig,
         gathered: Set<string> = new Set<string>()
     ): string[] {
-        if (!config || typeof config !== "object") return Array.from(gathered);
-
-        if (config.src && !UIFactory.getConfig(config.src)) {
-            gathered.add(config.src);
-        }
-
-        const anyConfig = config as any;
-        if (Array.isArray(anyConfig.elements)) {
-            for (const child of anyConfig.elements) {
-                UIFactory.extractMissingDependencies(child, gathered);
-            }
-        }
-        return Array.from(gathered);
+        return UIFactoryLoader.extractMissingDependencies(config, gathered);
     }
 
     /**
@@ -420,13 +175,15 @@ export class UIFactory {
      * @param overrides 可选的实例覆盖属性 (覆盖坐标 x/y、宽度、高度、文本、关联 relations 等)
      * @param containerW 可选容器基准宽度
      * @param containerH 可选容器基准高度
+     * @param userClass 可选的用户自定义扩展类（优先级高于全局 extensions 注册表）
      * @returns 实例化的 GObject 显示对象
      */
     public static createFromConfig<T extends fgui.GObject = fgui.GComponent>(
         nameOrUrl: string,
         overrides?: Partial<IElementConfig>,
         containerW?: number,
-        containerH?: number
+        containerH?: number,
+        userClass?: new () => fgui.GObject
     ): Nullable<T> {
         const template = UIFactory.getConfig(nameOrUrl);
         if (!template) {
@@ -435,7 +192,7 @@ export class UIFactory {
         }
         const finalConfig: IElementConfig = (overrides ? {...template, ...overrides} : template) as IElementConfig;
         const normalized = nameOrUrl.replace(/\\/g, "/");
-        const customClass = UIFactory.extensions[normalized];
+        const customClass = userClass || UIFactory.extensions[normalized];
 
         if (finalConfig.type === "panel" || !finalConfig.type) {
             UIFactory.validateLayoutConfig(finalConfig as IPanelConfig, normalized);
@@ -489,22 +246,22 @@ export class UIFactory {
         if (!elData.src) return elData;
         const templateConf = UIFactory.getConfig(elData.src);
         if (!templateConf) return elData;
-        const elAny = elData as any;
-        const tmplAny = templateConf as any;
+        const elView = elData as Partial<IPanelConfig>;
+        const tmplView = templateConf as Partial<IPanelConfig>;
         return {
             ...templateConf,
             ...elData,
             type: elData.type || templateConf.type || "panel",
-            elements: elAny.elements || tmplAny.elements,
-            controllers: elAny.controllers || tmplAny.controllers,
-            transitions: elAny.transitions || tmplAny.transitions,
-            background: elAny.background !== undefined ? elAny.background : tmplAny.background,
-            padding: elAny.padding !== undefined ? elAny.padding : tmplAny.padding,
-            layoutType: elAny.layoutType !== undefined ? elAny.layoutType : tmplAny.layoutType,
-            gap: elAny.gap !== undefined ? elAny.gap : tmplAny.gap,
-            flexWrap: elAny.flexWrap !== undefined ? elAny.flexWrap : tmplAny.flexWrap,
-            alignItems: elAny.alignItems !== undefined ? elAny.alignItems : tmplAny.alignItems,
-            justifyContent: elAny.justifyContent !== undefined ? elAny.justifyContent : tmplAny.justifyContent
+            elements: elView.elements || tmplView.elements,
+            controllers: elView.controllers || tmplView.controllers,
+            transitions: elView.transitions || tmplView.transitions,
+            background: elView.background !== undefined ? elView.background : tmplView.background,
+            padding: elView.padding !== undefined ? elView.padding : tmplView.padding,
+            layoutType: elView.layoutType !== undefined ? elView.layoutType : tmplView.layoutType,
+            gap: elView.gap !== undefined ? elView.gap : tmplView.gap,
+            flexWrap: elView.flexWrap !== undefined ? elView.flexWrap : tmplView.flexWrap,
+            alignItems: elView.alignItems !== undefined ? elView.alignItems : tmplView.alignItems,
+            justifyContent: elView.justifyContent !== undefined ? elView.justifyContent : tmplView.justifyContent
         } as IElementConfig;
     }
 
@@ -563,15 +320,10 @@ export class UIFactory {
      */
     public static createElement<T extends fgui.GObject = fgui.GObject>(
         elData: IElementConfig,
-        containerW: number,
-        containerH: number,
+        containerW: number = 0,
+        containerH: number = 0,
         userClass?: new () => fgui.GObject
     ): Nullable<T> {
-        // 【官方规范：外部页面/组件引用解析 (src 属性驱动)】
-        // 若节点声明了 src 属性（例如 src: "res/layout/header.json" 或已注册的布局模板名）：
-        // 1. 父页面仅声明引用标识与自身几何位置，绝不内联子页面的内部子树；
-        // 2. 自动从缓存或注册表中提取被引用页面的纯静态配置，并与当前实例属性（覆盖位置、尺寸、关联与齿轮等）安全合并；
-        // 3. 构建完全由被引用页面的自身结构独立决定。
         let finalData: IElementConfig = elData;
         let extClass: (new () => fgui.GObject) | undefined = userClass;
 
@@ -582,22 +334,22 @@ export class UIFactory {
             }
             const templateConf = UIFactory.getConfig(elData.src);
             if (templateConf) {
-                const elAny = elData as any;
-                const tmplAny = templateConf as any;
+                const elView = elData as Partial<IPanelConfig>;
+                const tmplView = templateConf as Partial<IPanelConfig>;
                 finalData = {
                     ...templateConf,
                     ...elData,
                     type: elData.type || templateConf.type || "panel",
-                    elements: elAny.elements || tmplAny.elements,
-                    controllers: elAny.controllers || tmplAny.controllers,
-                    transitions: elAny.transitions || tmplAny.transitions,
-                    background: elAny.background !== undefined ? elAny.background : tmplAny.background,
-                    padding: elAny.padding !== undefined ? elAny.padding : tmplAny.padding,
-                    layoutType: elAny.layoutType !== undefined ? elAny.layoutType : tmplAny.layoutType,
-                    gap: elAny.gap !== undefined ? elAny.gap : tmplAny.gap,
-                    flexWrap: elAny.flexWrap !== undefined ? elAny.flexWrap : tmplAny.flexWrap,
-                    alignItems: elAny.alignItems !== undefined ? elAny.alignItems : tmplAny.alignItems,
-                    justifyContent: elAny.justifyContent !== undefined ? elAny.justifyContent : tmplAny.justifyContent
+                    elements: elView.elements || tmplView.elements,
+                    controllers: elView.controllers || tmplView.controllers,
+                    transitions: elView.transitions || tmplView.transitions,
+                    background: elView.background !== undefined ? elView.background : tmplView.background,
+                    padding: elView.padding !== undefined ? elView.padding : tmplView.padding,
+                    layoutType: elView.layoutType !== undefined ? elView.layoutType : tmplView.layoutType,
+                    gap: elView.gap !== undefined ? elView.gap : tmplView.gap,
+                    flexWrap: elView.flexWrap !== undefined ? elView.flexWrap : tmplView.flexWrap,
+                    alignItems: elView.alignItems !== undefined ? elView.alignItems : tmplView.alignItems,
+                    justifyContent: elView.justifyContent !== undefined ? elView.justifyContent : tmplView.justifyContent
                 } as IElementConfig;
             }
         }
@@ -642,7 +394,13 @@ export class UIFactory {
                 UIFactory.fillPanel(node, finalData as ITreeConfig);
             } else if (finalData.type === "list" && (node instanceof fgui.GList)) {
                 const lConf = finalData as IListConfig;
-                if (lConf.defaultItem) node.defaultItem = lConf.defaultItem;
+                if (lConf.defaultItem) {
+                    if (lConf.defaultItem.startsWith("ui://")) {
+                        node.defaultItem = lConf.defaultItem;
+                    } else {
+                        node["_defaultItem"] = lConf.defaultItem;
+                    }
+                }
                 if (lConf.listLayout) node.layout = fgui.ListLayoutType[lConf.listLayout];
                 if (lConf.selectionMode !== undefined) {
                     node.selectionMode = typeof lConf.selectionMode === "string"
@@ -824,6 +582,26 @@ export class UIFactory {
     }
 
     /**
+     * 创建进度条组件 (GProgressBar)
+     *
+     * @param elData 进度条配置对象
+     * @returns 实例化的 GProgressBar 对象
+     */
+    public static createProgressBar(elData: IProgressBarConfig): fgui.GProgressBar {
+        return UIFactory.createElement<fgui.GProgressBar>(elData, 0, 0)!;
+    }
+
+    /**
+     * 创建滑动条组件 (GSlider)
+     *
+     * @param elData 滑动条配置对象
+     * @returns 实例化的 GSlider 对象
+     */
+    public static createSlider(elData: ISliderConfig): fgui.GSlider {
+        return UIFactory.createElement<fgui.GSlider>(elData, 0, 0)!;
+    }
+
+    /**
      * 创建容器面板 (EPanel / fgui.GComponent)
      *
      * 支持绝对定位、单向流式排版、Flexbox 弹性自适应折行、控制器及滚动视口挂载。
@@ -997,7 +775,7 @@ export class UIFactory {
      * @param source 外部易读参数对象
      * @param target FGUI 内部目标 TransitionValue 对象
      */
-    public static fillTransitionValue(actionType: number, source: any, target: any): void {
+    public static fillTransitionValue(actionType: number, source: unknown, target: ITransitionTargetValue): void {
         UIFactoryTransitions.fillTransitionValue(actionType, source, target);
     }
 
@@ -1020,7 +798,7 @@ export class UIFactory {
         containerW: number,
         containerH: number,
         parentData?: IBaseElementConfig & IViewConfig,
-        flowState?: any
+        flowState?: IFlowLayoutState
     ): { targetX: number; targetY: number; elW: number; elH: number; } {
         return UIFactoryLayout.setupElementPosition(node, elData, containerW, containerH, parentData, flowState);
     }
@@ -1094,361 +872,6 @@ export class UIFactory {
      * @param elData 声明式容器配置（包含 elements、controllers、layoutType、padding、background 等）
      */
     public static fillPanel(panelNode: fgui.GComponent, elData: IBaseElementConfig & IViewConfig): void {
-        panelNode["_buildingDisplayList"] = true;
-        fgui.UIPackage._constructing++;
-
-        try {
-            let initW = elData.width || panelNode.width || 0;
-            let initH = elData.height || panelNode.height || 0;
-
-            panelNode.sourceWidth = initW;
-            panelNode.sourceHeight = initH;
-            panelNode.initWidth = initW;
-            panelNode.initHeight = initH;
-            panelNode.setSize(initW, initH);
-
-            let overflowVal: any = elData.overflow;
-            if (typeof overflowVal === "string") {
-                const key = (overflowVal.charAt(0).toUpperCase() + overflowVal.slice(1).toLowerCase()) as keyof typeof fgui.OverflowType;
-                overflowVal = fgui.OverflowType[key] ?? overflowVal;
-            }
-            if (overflowVal === fgui.OverflowType.Scroll) {
-                if (elData.padding) {
-                    panelNode.margin.top = elData.padding.top ?? 0;
-                    panelNode.margin.bottom = elData.padding.bottom ?? 0;
-                    panelNode.margin.left = elData.padding.left ?? 0;
-                    panelNode.margin.right = elData.padding.right ?? 0;
-                }
-                panelNode.setupScrollPanel(overflowVal, elData.scrollType);
-                if (elData.pageController && panelNode.scrollPane) {
-                    let targetCtrl: Nullable<fgui.Controller> = null;
-                    if (typeof elData.pageController === "string") {
-                        targetCtrl = panelNode.getController(elData.pageController);
-                    } else {
-                        targetCtrl = elData.pageController;
-                    }
-                    if (targetCtrl) {
-                        panelNode.scrollPane.pageController = targetCtrl;
-                    }
-                }
-            }
-
-            if (elData.controllers && elData.controllers.length > 0) {
-                for (const ctrlData of elData.controllers) {
-                    UIFactory.createController(ctrlData, panelNode);
-                }
-            }
-
-            const childElements = (elData.elements || []).map(el => UIFactory.resolveElementConfig(el));
-            let panelMaxHeight = elData.height || 0;
-            let panelMaxWidth = elData.width || 0;
-
-            const isVerticalFlow = elData.layoutType === "vertical";
-            const isHorizontalFlow = elData.layoutType === "horizontal";
-
-            const padTop = elData.padding?.top ?? 0;
-            const padBottom = elData.padding?.bottom ?? 0;
-            const padLeft = elData.padding?.left ?? 0;
-            const padRight = elData.padding?.right ?? 0;
-
-            const childNodes: Nullable<fgui.GObject>[] = [];
-            let totalH = 0;
-            let totalW = 0;
-            let maxChildH = 0;
-            let maxChildW = 0;
-            let flowChildCount = 0;
-
-            let wrapCurrentX = padLeft;
-            let wrapCurrentRowMaxH = 0;
-            let wrapTotalH = 0;
-            let wrapHasItemInRow = false;
-            const maxLineWidth = (initW > 0 ? initW : 0) - padRight;
-
-            // =========================================================================
-            // 【官方 Phase 1: setup_beforeAdd 离散化构建】
-            // 严格锁定 _underConstruct = true，在排版与齿轮未就绪前杜绝任何误触
-            // =========================================================================
-            for (let i = 0; i < childElements.length; i++) {
-                const childData = childElements[i];
-                const childNode = UIFactory.createElement<fgui.GObject>(childData, childData.width || 0, childData.height || 0);
-                if (childNode) {
-                    // 官方生命周期保护：进入构建保护期
-                    childNode["_underConstruct"] = true;
-                    childNodes.push(childNode);
-                    const childIsAbsolute = childData.position === "absolute";
-                    if (!childIsAbsolute) {
-                        flowChildCount++;
-                        const layout = childData.layout || {};
-                        const scaleY = childNode.scaleY !== undefined ? Math.abs(childNode.scaleY) : 1;
-                        const scaleX = childNode.scaleX !== undefined ? Math.abs(childNode.scaleX) : 1;
-                        const elH = childNode.height * scaleY;
-                        const elW = childNode.width * scaleX;
-
-                        if (isVerticalFlow) {
-                            const offsetY = layout.offsetY || 0;
-                            const gapValue = (i > 0 && elData.gap !== undefined) ? elData.gap : 0;
-                            totalH += offsetY + gapValue + elH;
-                        } else if (isHorizontalFlow && !elData.flexWrap) {
-                            const offsetX = layout.offsetX || 0;
-                            const gapValue = (i > 0 && elData.gap !== undefined) ? elData.gap : 0;
-                            totalW += offsetX + gapValue + elW;
-                        } else if (isHorizontalFlow && elData.flexWrap) {
-                            const offsetX = layout.offsetX || 0;
-                            const offsetY = layout.offsetY || 0;
-                            const gapValue = (wrapHasItemInRow && elData.gap !== undefined) ? elData.gap : 0;
-                            const projectedX = wrapCurrentX + offsetX + gapValue + elW;
-                            const currentItemH = offsetY + elH;
-
-                            if (wrapHasItemInRow && projectedX > maxLineWidth && maxLineWidth > padLeft) {
-                                const rowGap = elData.gap ?? 0;
-                                wrapTotalH += wrapCurrentRowMaxH + rowGap;
-                                wrapCurrentRowMaxH = currentItemH;
-                                wrapCurrentX = padLeft + offsetX + elW;
-                            } else {
-                                wrapCurrentX = wrapCurrentX + offsetX + gapValue + elW;
-                                if (currentItemH > wrapCurrentRowMaxH) {
-                                    wrapCurrentRowMaxH = currentItemH;
-                                }
-                                wrapHasItemInRow = true;
-                            }
-                        }
-
-                        if (elH > maxChildH) maxChildH = elH;
-                        if (elW > maxChildW) maxChildW = elW;
-                    }
-                } else {
-                    childNodes.push(null);
-                }
-            }
-
-            if (wrapHasItemInRow) {
-                wrapTotalH += wrapCurrentRowMaxH;
-            }
-
-            if (!elData.height) {
-                if (isVerticalFlow && totalH > 0) {
-                    initH = totalH + padTop + padBottom;
-                } else if (isHorizontalFlow && elData.flexWrap && wrapTotalH > 0) {
-                    initH = wrapTotalH + padTop + padBottom;
-                } else if (isHorizontalFlow && maxChildH > 0) {
-                    initH = maxChildH + padTop + padBottom;
-                }
-            }
-            if (!elData.width) {
-                if (isHorizontalFlow && !elData.flexWrap && totalW > 0) {
-                    initW = totalW + padLeft + padRight;
-                } else if (isVerticalFlow && maxChildW > 0) {
-                    initW = maxChildW + padLeft + padRight;
-                }
-            }
-
-            panelNode.sourceWidth = initW;
-            panelNode.sourceHeight = initH;
-            panelNode.initWidth = initW;
-            panelNode.initHeight = initH;
-            panelNode.setSize(initW, initH);
-
-            for (let i = 0; i < childNodes.length; i++) {
-                const childNode = childNodes[i];
-                if (childNode) {
-                    panelNode.addChild(childNode);
-                }
-            }
-
-            let startOffsetY = 0;
-            let startOffsetX = 0;
-            const justifyContent = elData.justifyContent;
-            let perGapSpaceX = 0;
-            let perGapSpaceY = 0;
-            if (justifyContent && justifyContent !== "flex-start") {
-                if (isVerticalFlow && initH > 0) {
-                    const availableH = initH - padTop - padBottom;
-                    const freeSpaceH = availableH - totalH;
-                    if (freeSpaceH > 0) {
-                        if (justifyContent === "center") startOffsetY = freeSpaceH / 2;
-                        else if (justifyContent === "flex-end") startOffsetY = freeSpaceH;
-                        else if (justifyContent === "space-between" && flowChildCount > 1) perGapSpaceY = freeSpaceH / (flowChildCount - 1);
-                        else if (justifyContent === "space-around" && flowChildCount > 0) {
-                            const unit = freeSpaceH / flowChildCount;
-                            startOffsetY = unit / 2;
-                            perGapSpaceY = unit;
-                        }
-                    }
-                } else if (isHorizontalFlow && !elData.flexWrap && initW > 0) {
-                    const availableW = initW - padLeft - padRight;
-                    const freeSpaceW = availableW - totalW;
-                    if (freeSpaceW > 0) {
-                        if (justifyContent === "center") startOffsetX = freeSpaceW / 2;
-                        else if (justifyContent === "flex-end") startOffsetX = freeSpaceW;
-                        else if (justifyContent === "space-between" && flowChildCount > 1) perGapSpaceX = freeSpaceW / (flowChildCount - 1);
-                        else if (justifyContent === "space-around" && flowChildCount > 0) {
-                            const unit = freeSpaceW / flowChildCount;
-                            startOffsetX = unit / 2;
-                            perGapSpaceX = unit;
-                        }
-                    }
-                }
-            }
-
-            const flowState = {
-                accumulatedX: padLeft + startOffsetX,
-                accumulatedY: padTop + startOffsetY,
-                perGapSpaceX,
-                perGapSpaceY,
-                lastNode: null as Nullable<fgui.GObject>,
-                currentRowMaxHeight: 0,
-                index: 0
-            };
-
-            let minChildY = Infinity;
-            let minChildX = Infinity;
-
-            // =========================================================================
-            // 【官方 Phase 2: 排版定位】
-            // =========================================================================
-            for (let i = 0; i < childElements.length; i++) {
-                const childData = childElements[i];
-                const childNode = childNodes[i];
-                if (childNode) {
-                    flowState.index = i;
-                    const posInfo = UIFactory.setupElementPosition(childNode, childData, initW, initH, elData, flowState);
-                    flowState.lastNode = childNode;
-
-                    const actualBottom = posInfo.targetY + posInfo.elH;
-                    const actualRight = posInfo.targetX + posInfo.elW;
-                    if (actualBottom > panelMaxHeight) panelMaxHeight = actualBottom;
-                    if (actualRight > panelMaxWidth) panelMaxWidth = actualRight;
-                    if (childNode.y < minChildY) minChildY = childNode.y;
-                    if (childNode.x < minChildX) minChildX = childNode.x;
-                }
-            }
-
-            // =========================================================================
-            // 【官方 Phase 2.5: setupRelations 独立关系装配】
-            // 对齐官方 constructFromResource2 (第 3402~3408 行)：
-            // 必须在所有子元件完成 addChild 与初始坐标/尺寸定位后，再统一建立 Relations，
-            // 确保无论关联目标在 elements 数组中的先后顺序如何，都能获取到目标准确的初始坐标与宽高！
-            // =========================================================================
-            for (let i = 0; i < childElements.length; i++) {
-                const childData = childElements[i];
-                const childNode = childNodes[i];
-                if (childNode) {
-                    const layout = childData.layout || {};
-                    const alignX = layout.alignX;
-                    const alignY = layout.alignY;
-                    const isFlexWrapFlow = isHorizontalFlow && elData.flexWrap && childData.position !== "absolute";
-
-                    if (layout.leftPercent !== undefined || alignX === "center" || alignX === "right") {
-                        let relTypeX = fgui.RelationType.Left_Left;
-                        if (alignX === "center") relTypeX = fgui.RelationType.Center_Center;
-                        else if (alignX === "right") relTypeX = fgui.RelationType.Right_Right;
-                        childNode.addRelation(panelNode, relTypeX);
-                    }
-
-                    if (!isFlexWrapFlow) {
-                        if (layout.topPercent !== undefined || alignY === "middle" || alignY === "bottom") {
-                            let relTypeY = fgui.RelationType.Top_Top;
-                            if (alignY === "middle") relTypeY = fgui.RelationType.Middle_Middle;
-                            else if (alignY === "bottom") relTypeY = fgui.RelationType.Bottom_Bottom;
-                            childNode.addRelation(panelNode, relTypeY);
-                        }
-                    }
-
-                    // 显式声明的官方关联系统绑定 (Relations)
-                    if (childData.relations && Array.isArray(childData.relations)) {
-                        for (const r of childData.relations) {
-                            let targetNode: Nullable<fgui.GObject> = panelNode;
-                            if (r.target && r.target !== "parent") {
-                                targetNode = panelNode.getChild(r.target);
-                            }
-                            if (targetNode) {
-                                let relType = r.type;
-                                if (typeof relType === "string") {
-                                    const relKey = relType as keyof typeof fgui.RelationType;
-                                    relType = fgui.RelationType[relKey] !== undefined ? fgui.RelationType[relKey] : relType;
-                                }
-                                childNode.addRelation(targetNode, relType as number, r.usePercent || false);
-                            } else {
-                                console.warn(`[UIFactory] Element "${childNode.name}" failed to find relation target "${r.target}"`);
-                            }
-                        }
-                    }
-                }
-            }
-
-            // =========================================================================
-            // 【官方 Phase 3: setup_afterAdd 统一分流内容注入与齿轮装配】
-            // 集中在 UIFactoryPipeline.setup_afterAdd 中，灌入真实内容 text/url 并解除构建锁
-            // =========================================================================
-            for (let i = 0; i < childElements.length; i++) {
-                const childData = childElements[i];
-                const childNode = childNodes[i];
-                if (childNode) {
-                    UIFactoryPipeline.setup_afterAdd(childNode, childData, panelNode, i, UIFactory.setupElementGears);
-                }
-            }
-
-            if (!isVerticalFlow && !elData.height && minChildY < Infinity && minChildY > 0) {
-                panelMaxHeight += minChildY;
-            }
-            const finalMaxHeight = panelMaxHeight + panelNode.margin.top + panelNode.margin.bottom;
-            // 自动撑高容器高度：当子元件实际撑开的内容高度超出显式声明的高度时，必须自动撑大容器高度；若显式声明了滚动容器，则保持固定视口高度由 scrollPane 处理滚动
-            if (finalMaxHeight > panelNode.height && (!elData.height || !panelNode.scrollPane)) {
-                panelNode.height = finalMaxHeight;
-            }
-
-            if (!isHorizontalFlow && !elData.width && minChildX < Infinity && minChildX > 0) {
-                panelMaxWidth += minChildX;
-            }
-            const finalMaxWidth = panelMaxWidth + panelNode.margin.left + panelNode.margin.right;
-            if (finalMaxWidth > panelNode.width && !elData.width) {
-                panelNode.width = finalMaxWidth;
-            }
-
-            if (elData.background) {
-                panelNode.drawBackground(elData.background);
-            }
-
-            if (elData.transitions && elData.transitions.length > 0) {
-                for (const transData of elData.transitions) {
-                    UIFactory.createTransition(transData, panelNode);
-                }
-            }
-
-            // =========================================================================
-            // 【官方 Phase 5: finalize 闭环终态激活】
-            // 按照官方 GComponent 顺序：
-            // 1. 遮罩注入 (setMask)
-            // 2. applyAllControllers()
-            // 3. 解除构建与显示列表锁 (_buildingDisplayList = false, _underConstruct = false)
-            // 4. buildNativeDisplayList() 提交显示树
-            // 5. setBoundsChangedFlag() 刷新包围盒
-            // 6. constructExtension (高级扩展组件装配，对齐 GComponent 第 3462 行)
-            // =========================================================================
-            if (elData.mask) {
-                const maskObj = panelNode.getChild(elData.mask) || panelNode.getChildByPath(elData.mask);
-                if (maskObj) {
-                    panelNode.setMask(maskObj.displayObject, !!elData.maskInverted);
-                } else {
-                    console.warn(`[UIFactory] Container "${panelNode.name || 'unnamed'}" failed to find mask target: "${elData.mask}".`);
-                }
-            }
-
-            panelNode.applyAllControllers();
-
-            panelNode["_buildingDisplayList"] = false;
-            panelNode["_underConstruct"] = false;
-
-            panelNode["buildNativeDisplayList"]();
-            panelNode.setBoundsChangedFlag();
-
-            // Phase 4: 高级组件扩展类装配（官方在 buildNativeDisplayList 之后执行）
-            UIFactory.setupComponentExtension(panelNode, elData);
-
-            // 100% 对齐官方 GComponent.constructFromResource2 第 3464 行：自动触发生命周期
-            panelNode["onConstruct"]();
-        } finally {
-            fgui.UIPackage._constructing--;
-        }
+        UIFactoryPanelBuilder.fillPanel(panelNode, elData);
     }
 }

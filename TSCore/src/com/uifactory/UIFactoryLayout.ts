@@ -1,6 +1,7 @@
 import { IElementConfig } from "./IElementConfig";
 import { IBaseElementConfig } from "./IBaseElementConfig";
 import { IViewConfig } from "./IViewConfig";
+import { IFlowLayoutState } from "./IFlowLayoutState";
 
 /**
  * UIFactory 两遍测量排版与物理定位引擎
@@ -36,15 +37,7 @@ export class UIFactoryLayout {
         containerW: number,
         containerH: number,
         parentData?: IBaseElementConfig & IViewConfig,
-        flowState?: {
-            accumulatedX: number;
-            accumulatedY: number;
-            perGapSpaceX?: number;
-            perGapSpaceY?: number;
-            lastNode: Nullable<fgui.GObject>;
-            currentRowMaxHeight: number;
-            index: number;
-        }
+        flowState?: IFlowLayoutState
     ): { targetX: number; targetY: number; elW: number; elH: number; } {
         const layout = elData.layout || {};
         const parentLayoutType = parentData?.layoutType;

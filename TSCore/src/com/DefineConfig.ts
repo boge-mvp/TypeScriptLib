@@ -549,6 +549,72 @@ export class DefineConfig {
             });
         }
 
+        // 扩展 FGUI 官方 GLoader3D.loadExternal 支持纯路径加载外部 Spine 3.8/4.0 资源 (.json / .skel)
+        if (fgui.GLoader3D) {
+            const orig_GLoader3D_onChange = fgui.GLoader3D.prototype["onChange"];
+            Object.defineProperty(fgui.GLoader3D.prototype, "onChange", {
+                value: function (this: fgui.GLoader3D) {
+                    const content = this["_content"];
+                    if (!content) return;
+                    if (typeof content["showSkinByName"] === "function") {
+                        orig_GLoader3D_onChange.call(this);
+                        return;
+                    }
+                    // Laya.SpineSkeleton 适配分支
+                    if (this["_animationName"]) {
+                        if (this["_playing"]) {
+                            if (typeof content.play === "function") {
+                                content.play(this["_animationName"], this["_loop"], true);
+                            }
+                        } else if (typeof content.stop === "function") {
+                            content.stop();
+                        }
+                    } else if (typeof content.stop === "function") {
+                        content.stop();
+                    }
+                    if (this["_skinName"] && typeof content.getSkeleton === "function") {
+                        const sk = content.getSkeleton();
+                        if (sk && typeof sk.setSkinByName === "function") {
+                            try {
+                                sk.setSkinByName(this["_skinName"]);
+                                if (typeof sk.setSlotsToSetupPose === "function") {
+                                    sk.setSlotsToSetupPose();
+                                }
+                            } catch (e) {
+                                // ignore invalid skin name
+                            }
+                        }
+                    }
+                }
+            });
+
+            Object.defineProperty(fgui.GLoader3D.prototype, "loadExternal", {
+                value: function (this: fgui.GLoader3D) {
+                    const url = this["_url"];
+                    if (!url || !Laya.SpineTemplet) return;
+                    const formattedUrl = Laya.URL.formatURL(url);
+                    const isSpine = /\.json(\?.*)?$/i.test(formattedUrl) || /\.skel(\?.*)?$/i.test(formattedUrl);
+                    if (!isSpine) return;
+
+                    const savedUrl = url;
+                    const templet = new Laya.SpineTemplet(Laya.SpineVersion ? Laya.SpineVersion.v3_8 : Laya.SpineVersion?.v3_8);
+                    templet.on(Laya.Event.COMPLETE, this, (spine: Laya.SpineTempletBase) => {
+                        if (this.isDisposed) return;
+                        const t = spine || templet;
+                        const skel = t.buildArmature()
+                        const sw = t?.skeletonData?.width || this.width || 160;
+                        const sh = t?.skeletonData?.height || this.height || 160;
+                        this["sourceWidth"] = sw;
+                        this["sourceHeight"] = sh;
+                        this.setSkeleton(skel.getSkeleton(), new Laya.Point(sw * 0.5, sh * 0.5));
+                        // setSkeleton 内部会置空 _url，恢复 _url 以便业务侧读取
+                        this["_url"] = savedUrl;
+                    });
+                    templet.loadAni(formattedUrl);
+                }
+            });
+        }
+
     }
 
     /**

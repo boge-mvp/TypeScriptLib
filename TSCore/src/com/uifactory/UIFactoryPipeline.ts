@@ -7,13 +7,13 @@ import { IListConfig } from "./IListConfig";
 import { IGroupConfig } from "./IGroupConfig";
 import { ILabelConfig } from "./ILabelConfig";
 import { IComboBoxConfig } from "./IComboBoxConfig";
-import { IScrollBarConfig } from "./IScrollBarConfig";
 import { ITreeConfig } from "./ITreeConfig";
 import { IMovieClipConfig } from "./IMovieClipConfig";
 import { ILoader3DConfig } from "./ILoader3DConfig";
 import { IImageConfig } from "./IImageConfig";
 import { EPanel } from "./EPanel";
-import { PureList } from "./PureList";
+import { PureList, PureTree } from "./PureList";
+import { UIFactoryExtensions } from "./UIFactoryExtensions";
 import { UIFactory } from "./UIFactory";
 
 /**
@@ -74,7 +74,7 @@ export class UIFactoryPipeline {
             case "scrollbar":
                 return new fgui.GScrollBar();
             case "tree":
-                return new fgui.GTree();
+                return new PureTree();
             case "movieclip":
                 return new fgui.GMovieClip();
             case "loader3d":
@@ -143,6 +143,7 @@ export class UIFactoryPipeline {
             }
 
             if (tConf.singleLine) node.singleLine = true;
+            if (tConf.isUbb) node.ubbEnabled = true;
             if (tConf.font) node.font = tConf.font;
             if (tConf.fontSize) node.fontSize = tConf.fontSize;
             if (tConf.color) node.color = tConf.color;
@@ -258,6 +259,12 @@ export class UIFactoryPipeline {
             if (mcConf.timeScale !== undefined) node.timeScale = mcConf.timeScale;
             if (mcConf.playing !== undefined) node.playing = mcConf.playing;
             if (mcConf.frame !== undefined) node.frame = mcConf.frame;
+            const innerMc = node["_movieClip"];
+            if (innerMc) {
+                if (mcConf.interval !== undefined) innerMc.interval = mcConf.interval;
+                if (mcConf.swing !== undefined) innerMc.swing = mcConf.swing;
+                if (mcConf.repeatDelay !== undefined) innerMc.repeatDelay = mcConf.repeatDelay;
+            }
         } else if (node instanceof fgui.GLoader3D) {
             const l3dConf = elData as ILoader3DConfig;
             if (l3dConf.color) node.color = l3dConf.color;
@@ -268,10 +275,55 @@ export class UIFactoryPipeline {
             if (l3dConf.frame !== undefined) node.frame = l3dConf.frame;
         } else if (node instanceof fgui.GTree) {
             const treeConf = elData as ITreeConfig;
+            if (treeConf.defaultItem !== undefined) {
+                if (treeConf.defaultItem.startsWith("ui://")) {
+                    node.defaultItem = treeConf.defaultItem;
+                } else {
+                    node["_defaultItem"] = treeConf.defaultItem;
+                }
+            }
+            if (treeConf.lineGap !== undefined) node.lineGap = treeConf.lineGap;
+            if (treeConf.selectionMode !== undefined) {
+                if (typeof treeConf.selectionMode === "string") {
+                    const smMap: Record<string, number> = {
+                        single: fgui.ListSelectionMode.Single,
+                        multiple: fgui.ListSelectionMode.Multiple,
+                        multiple_singleclick: fgui.ListSelectionMode.Multiple_SingleClick,
+                        none: fgui.ListSelectionMode.None
+                    };
+                    node.selectionMode = smMap[treeConf.selectionMode.toLowerCase()] ?? fgui.ListSelectionMode.Single;
+                } else {
+                    node.selectionMode = treeConf.selectionMode;
+                }
+            }
             if (treeConf.indent !== undefined) node.indent = treeConf.indent;
             if (treeConf.clickToExpand !== undefined) node.clickToExpand = treeConf.clickToExpand;
             if (treeConf.treeNodeRender) node.treeNodeRender = treeConf.treeNodeRender;
             if (treeConf.treeNodeWillExpand) node.treeNodeWillExpand = treeConf.treeNodeWillExpand;
+        } else if (node instanceof fgui.GList) {
+            const lConf = elData as IListConfig;
+            if (lConf.defaultItem !== undefined) {
+                if (lConf.defaultItem.startsWith("ui://")) {
+                    node.defaultItem = lConf.defaultItem;
+                } else {
+                    node["_defaultItem"] = lConf.defaultItem;
+                }
+            }
+            if (lConf.lineGap !== undefined) node.lineGap = lConf.lineGap;
+            if (lConf.columnGap !== undefined) node.columnGap = lConf.columnGap;
+            if (lConf.selectionMode !== undefined) {
+                if (typeof lConf.selectionMode === "string") {
+                    const smMap: Record<string, number> = {
+                        single: fgui.ListSelectionMode.Single,
+                        multiple: fgui.ListSelectionMode.Multiple,
+                        multiple_singleclick: fgui.ListSelectionMode.Multiple_SingleClick,
+                        none: fgui.ListSelectionMode.None
+                    };
+                    node.selectionMode = smMap[lConf.selectionMode.toLowerCase()] ?? fgui.ListSelectionMode.Single;
+                } else {
+                    node.selectionMode = lConf.selectionMode;
+                }
+            }
         } else if (node instanceof fgui.GComboBox) {
             const cbConf = elData as IComboBoxConfig;
             if (cbConf.visibleItemCount !== undefined) node.visibleItemCount = cbConf.visibleItemCount;
@@ -443,12 +495,54 @@ export class UIFactoryPipeline {
                     node.scrollPane.pageController = targetCtrl;
                 }
             }
+            if (node instanceof fgui.GTree) {
+                const treeConf = elData as ITreeConfig;
+                if (treeConf.nodes && treeConf.nodes.length > 0) {
+                    UIFactoryExtensions.populateTreeNodes(node, node.rootNode, treeConf.nodes);
+                }
+            }
         }
-        // 7. GMovieClip 资源注入
+        // 7. GMovieClip 资源注入（支持 package url 或外部 frames 图片路径序列）
         else if (node instanceof fgui.GMovieClip) {
             const mcConf = elData as IMovieClipConfig;
             if (mcConf.url) {
                 node.url = UIFactory.formatResUrl(mcConf.url);
+            } else if (mcConf.frames && mcConf.frames.length > 0) {
+                const formattedUrls = mcConf.frames.map(f => Laya.URL.formatURL(UIFactory.formatResUrl(f)));
+                const targetW = mcConf.width;
+                const targetH = mcConf.height;
+                Laya.loader.load(formattedUrls, Laya.Handler.create(null, () => {
+                    if (node.isDisposed) return;
+                    const innerMc = node["_movieClip"] as fgui.MovieClip;
+                    if (!innerMc) return;
+                    const fguiFrames: fgui.Frame[] = [];
+                    let maxW = 0;
+                    let maxH = 0;
+                    for (const u of formattedUrls) {
+                        const tex = Laya.loader.getRes(u) as Nullable<Laya.Texture>;
+                        if (tex) {
+                            const frame = { addDelay: 0, texture: tex } as fgui.Frame;
+                            fguiFrames.push(frame);
+                            if (tex.sourceWidth > maxW) maxW = tex.sourceWidth;
+                            if (tex.sourceHeight > maxH) maxH = tex.sourceHeight;
+                        }
+                    }
+                    if (fguiFrames.length > 0) {
+                        innerMc.frames = fguiFrames;
+                        if (mcConf.interval !== undefined) innerMc.interval = mcConf.interval;
+                        if (mcConf.swing !== undefined) innerMc.swing = mcConf.swing;
+                        if (mcConf.repeatDelay !== undefined) innerMc.repeatDelay = mcConf.repeatDelay;
+                        if (targetW && targetH) {
+                            node.setSize(targetW, targetH);
+                            innerMc.size(targetW, targetH);
+                        } else if (maxW > 0 && maxH > 0) {
+                            node.setSize(maxW, maxH);
+                            innerMc.size(maxW, maxH);
+                        }
+                        if (mcConf.frame !== undefined) node.frame = mcConf.frame;
+                        node.playing = mcConf.playing !== false;
+                    }
+                }));
             }
         }
         // 8. GLoader3D 资源注入
@@ -457,6 +551,10 @@ export class UIFactoryPipeline {
             if (l3dConf.url) {
                 node.url = UIFactory.formatResUrl(l3dConf.url);
             }
+            if (l3dConf.animationName) node.animationName = l3dConf.animationName;
+            if (l3dConf.skinName) node.skinName = l3dConf.skinName;
+            if (l3dConf.loop !== undefined) node.loop = l3dConf.loop;
+            if (l3dConf.playing !== undefined) node.playing = l3dConf.playing;
         }
         // 9. GImage 资源注入
         else if (node instanceof fgui.GImage) {
@@ -465,6 +563,18 @@ export class UIFactoryPipeline {
                 const tex = UIFactory.getFguiTexture(imgConf.url);
                 if (tex && node.image) {
                     node.image.texture = tex;
+                } else {
+                    const formattedUrl = UIFactory.formatResUrl(imgConf.url);
+                    const cached = Laya.loader.getRes(formattedUrl) as Nullable<Laya.Texture>;
+                    if (cached && node.image) {
+                        node.image.texture = cached;
+                    } else {
+                        Laya.loader.load(formattedUrl, Laya.Handler.create(null, (loadedTex: Nullable<Laya.Texture>) => {
+                            if (loadedTex && node.image && !node.isDisposed) {
+                                node.image.texture = loadedTex;
+                            }
+                        }), null, Laya.Loader.IMAGE);
+                    }
                 }
             }
         }

@@ -1,4 +1,5 @@
-import {ITransitionConfig, TransitionActionType} from "./ITransitionConfig";
+import { ITransitionConfig, ITransitionItemConfig, TransitionActionType } from "./ITransitionConfig";
+import { ITransitionTargetValue } from "./ITransitionTargetValue";
 
 /**
  * UIFactory 声明式过渡动效 (Transition) 引擎
@@ -38,7 +39,24 @@ export class UIFactoryTransitions {
                 const itemConf = config.items[i];
                 const actionType = this.mapActionType(itemConf.type);
 
-                const item: any = {
+                const item: {
+                    type: number;
+                    time: number;
+                    value: ITransitionTargetValue;
+                    displayLockToken: number;
+                    target?: Nullable<fgui.GObject>;
+                    targetId?: string;
+                    tweenConfig?: {
+                        duration: number;
+                        easeType: number;
+                        repeat: number;
+                        yoyo: boolean;
+                        endLabel: string;
+                        startValue: ITransitionTargetValue;
+                        endValue: ITransitionTargetValue;
+                        endHook: Nullable<Laya.Handler | (() => void)>;
+                    };
+                } = {
                     type: actionType,
                     time: itemConf.time || 0,
                     value: {},
@@ -68,23 +86,24 @@ export class UIFactoryTransitions {
                     targetNode = owner;
                 }
 
-                const tw: any = itemConf.tweenConfig || (itemConf.tween || itemConf.duration !== undefined ? itemConf : null);
+                const tw: Nullable<NonNullable<ITransitionItemConfig["tweenConfig"]> & Partial<ITransitionItemConfig> & { endHook?: Nullable<Laya.Handler | (() => void)>; endLabel?: string }> = itemConf.tweenConfig || (itemConf.tween || itemConf.duration !== undefined ? itemConf : null);
                 if (tw && typeof tw === "object") {
                     const duration = tw.duration !== undefined ? tw.duration : 0;
                     const ease = tw.easeType !== undefined ? tw.easeType : fgui.EaseType.QuadOut;
-                    item.tweenConfig = {
+                    const tweenCfg = {
                         duration: duration,
                         easeType: ease,
                         repeat: tw.repeat !== undefined ? tw.repeat : 0,
                         yoyo: !!tw.yoyo,
                         endLabel: tw.endLabel || "",
-                        startValue: { b1: true, b2: true },
-                        endValue: { b1: true, b2: true },
+                        startValue: { b1: true, b2: true } as ITransitionTargetValue,
+                        endValue: { b1: true, b2: true } as ITransitionTargetValue,
                         endHook: tw.endHook || tw.hook || null
                     };
+                    item.tweenConfig = tweenCfg;
 
-                    this.fillTransitionValue(actionType, tw.startValue, item.tweenConfig.startValue);
-                    this.fillTransitionValue(actionType, tw.endValue, item.tweenConfig.endValue);
+                    this.fillTransitionValue(actionType, tw.startValue, tweenCfg.startValue);
+                    this.fillTransitionValue(actionType, tw.endValue, tweenCfg.endValue);
 
                     const itemTotal = item.time + duration;
                     if (itemTotal > totalDuration) {
@@ -149,85 +168,86 @@ export class UIFactoryTransitions {
      * @param source 外部声明式参数对象（支持数组 [x, y] 或对象 { x, y } / { scaleX, scaleY } 等）
      * @param target FGUI 内部 TransitionValue 存储目标对象
      */
-    public static fillTransitionValue(actionType: number, source: any, target: any): void {
+    public static fillTransitionValue(actionType: number, source: unknown, target: ITransitionTargetValue): void {
         if (source === undefined || source === null || !target) return;
+        const src = (typeof source === "object" && !Array.isArray(source) ? source : {}) as Record<string, unknown>;
         switch (actionType) {
             case 0: // XY
-                target.b1 = source.b1 !== undefined ? source.b1 : true;
-                target.b2 = source.b2 !== undefined ? source.b2 : true;
+                target.b1 = typeof src.b1 === "boolean" ? src.b1 : true;
+                target.b2 = typeof src.b2 === "boolean" ? src.b2 : true;
                 if (Array.isArray(source)) {
-                    target.f1 = source[0] || 0;
-                    target.f2 = source[1] || 0;
+                    target.f1 = Number(source[0]) || 0;
+                    target.f2 = Number(source[1]) || 0;
                 } else {
-                    target.f1 = source.x !== undefined ? source.x : (source.f1 !== undefined ? source.f1 : 0);
-                    target.f2 = source.y !== undefined ? source.y : (source.f2 !== undefined ? source.f2 : 0);
+                    target.f1 = src.x !== undefined ? Number(src.x) : (src.f1 !== undefined ? Number(src.f1) : 0);
+                    target.f2 = src.y !== undefined ? Number(src.y) : (src.f2 !== undefined ? Number(src.f2) : 0);
                 }
                 break;
             case 1: // Size
-                target.b1 = source.b1 !== undefined ? source.b1 : true;
-                target.b2 = source.b2 !== undefined ? source.b2 : true;
+                target.b1 = typeof src.b1 === "boolean" ? src.b1 : true;
+                target.b2 = typeof src.b2 === "boolean" ? src.b2 : true;
                 if (Array.isArray(source)) {
-                    target.f1 = source[0] || 0;
-                    target.f2 = source[1] || 0;
+                    target.f1 = Number(source[0]) || 0;
+                    target.f2 = Number(source[1]) || 0;
                 } else {
-                    target.f1 = source.width !== undefined ? source.width : (source.w !== undefined ? source.w : (source.f1 !== undefined ? source.f1 : 0));
-                    target.f2 = source.height !== undefined ? source.height : (source.h !== undefined ? source.h : (source.f2 !== undefined ? source.f2 : 0));
+                    target.f1 = src.width !== undefined ? Number(src.width) : (src.w !== undefined ? Number(src.w) : (src.f1 !== undefined ? Number(src.f1) : 0));
+                    target.f2 = src.height !== undefined ? Number(src.height) : (src.h !== undefined ? Number(src.h) : (src.f2 !== undefined ? Number(src.f2) : 0));
                 }
                 break;
             case 2: // Scale
                 if (Array.isArray(source)) {
-                    target.f1 = source[0] !== undefined ? source[0] : 1;
-                    target.f2 = source[1] !== undefined ? source[1] : target.f1;
+                    target.f1 = source[0] !== undefined ? Number(source[0]) : 1;
+                    target.f2 = source[1] !== undefined ? Number(source[1]) : target.f1;
                 } else if (typeof source === "number") {
                     target.f1 = source;
                     target.f2 = source;
                 } else {
-                    target.f1 = source.scaleX !== undefined ? source.scaleX : (source.scale !== undefined ? source.scale : (source.f1 !== undefined ? source.f1 : 1));
-                    target.f2 = source.scaleY !== undefined ? source.scaleY : (source.scale !== undefined ? source.scale : (source.f2 !== undefined ? source.f2 : 1));
+                    target.f1 = src.scaleX !== undefined ? Number(src.scaleX) : (src.scale !== undefined ? Number(src.scale) : (src.f1 !== undefined ? Number(src.f1) : 1));
+                    target.f2 = src.scaleY !== undefined ? Number(src.scaleY) : (src.scale !== undefined ? Number(src.scale) : (src.f2 !== undefined ? Number(src.f2) : 1));
                 }
                 break;
             case 3: // Pivot
                 if (Array.isArray(source)) {
-                    target.f1 = source[0] || 0;
-                    target.f2 = source[1] || 0;
+                    target.f1 = Number(source[0]) || 0;
+                    target.f2 = Number(source[1]) || 0;
                 } else {
-                    target.f1 = source.pivotX !== undefined ? source.pivotX : (source.f1 !== undefined ? source.f1 : 0);
-                    target.f2 = source.pivotY !== undefined ? source.pivotY : (source.f2 !== undefined ? source.f2 : 0);
+                    target.f1 = src.pivotX !== undefined ? Number(src.pivotX) : (src.f1 !== undefined ? Number(src.f1) : 0);
+                    target.f2 = src.pivotY !== undefined ? Number(src.pivotY) : (src.f2 !== undefined ? Number(src.f2) : 0);
                 }
                 break;
             case 4: // Alpha
-                target.f1 = typeof source === "number" ? source : (source.alpha !== undefined ? source.alpha : (source.f1 !== undefined ? source.f1 : 1));
+                target.f1 = typeof source === "number" ? source : (src.alpha !== undefined ? Number(src.alpha) : (src.f1 !== undefined ? Number(src.f1) : 1));
                 break;
             case 5: // Rotation
-                target.f1 = typeof source === "number" ? source : (source.rotation !== undefined ? source.rotation : (source.f1 !== undefined ? source.f1 : 0));
+                target.f1 = typeof source === "number" ? source : (src.rotation !== undefined ? Number(src.rotation) : (src.f1 !== undefined ? Number(src.f1) : 0));
                 break;
             case 6: // Color
-                target.c = typeof source === "string" ? source : (source.color || source.c || "#ffffff");
+                target.c = typeof source === "string" ? source : String(src.color || src.c || "#ffffff");
                 break;
             case 7: // Animation
-                target.i = source.frame !== undefined ? source.frame : (source.i || 0);
-                target.b = source.playing !== undefined ? source.playing : (source.b !== undefined ? source.b : true);
+                target.i = src.frame !== undefined ? Number(src.frame) : (Number(src.i) || 0);
+                target.b = typeof src.playing === "boolean" ? src.playing : (typeof src.b === "boolean" ? src.b : true);
                 break;
             case 8: // Visible
-                target.b = typeof source === "boolean" ? source : (source.visible !== undefined ? source.visible : (source.b !== undefined ? source.b : true));
+                target.b = typeof source === "boolean" ? source : (typeof src.visible === "boolean" ? src.visible : (typeof src.b === "boolean" ? src.b : true));
                 break;
             case 9: // Sound
-                target.s = typeof source === "string" ? source : (source.sound || source.s || "");
-                target.f1 = source.volume !== undefined ? source.volume : (source.f1 !== undefined ? source.f1 : 1);
+                target.s = typeof source === "string" ? source : String(src.sound || src.s || "");
+                target.f1 = src.volume !== undefined ? Number(src.volume) : (src.f1 !== undefined ? Number(src.f1) : 1);
                 break;
             case 10: // Transition
-                target.s = typeof source === "string" ? source : (source.transName || source.s || "");
-                target.i = source.playTimes !== undefined ? source.playTimes : (source.i !== undefined ? source.i : 1);
+                target.s = typeof source === "string" ? source : String(src.transName || src.s || "");
+                target.i = src.playTimes !== undefined ? Number(src.playTimes) : (src.i !== undefined ? Number(src.i) : 1);
                 break;
             case 11: // Shake
-                target.f1 = source.amplitude !== undefined ? source.amplitude : (source.f1 !== undefined ? source.f1 : 0);
-                target.f2 = source.duration !== undefined ? source.duration : (source.f2 !== undefined ? source.f2 : 0);
+                target.f1 = src.amplitude !== undefined ? Number(src.amplitude) : (src.f1 !== undefined ? Number(src.f1) : 0);
+                target.f2 = src.duration !== undefined ? Number(src.duration) : (src.f2 !== undefined ? Number(src.f2) : 0);
                 break;
             case 14: // Text
-                target.s = typeof source === "string" ? source : (source.text || source.s || "");
+                target.s = typeof source === "string" ? source : String(src.text || src.s || "");
                 break;
             case 15: // Icon
-                target.s = typeof source === "string" ? source : (source.icon || source.url || source.s || "");
+                target.s = typeof source === "string" ? source : String(src.icon || src.url || src.s || "");
                 break;
             default:
                 break;

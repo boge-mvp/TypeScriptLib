@@ -30,7 +30,7 @@ export type IViewConfig = {
     /** 滚动容器双向绑定的分页控制器 (名称或 Controller 实例，挂载至 scrollPane.pageController) */
     pageController?: string | fgui.Controller;
     /** 容器溢出裁剪状态 (0 - Visible, 1 - Hidden, 2 - Scroll) */
-    overflow?: number;
+    overflow?: number | string;
     /** 容器自定义遮罩目标（子元件名称或路径） */
     mask?: string;
     /** 遮罩是否反向（反向遮罩/镂空效果） */

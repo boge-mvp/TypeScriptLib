@@ -23,7 +23,7 @@ LayaAir 游戏开发框架（npm 包 `@boge-mvp/game-lib`，发布于 GitHub Pac
 
 ## 验证基线
 
-- 无独立测试套件；**构建成功即唯一闭环标准**（`build:tscore` 输出 95 js / 95 dts 零报错为基线）
+- 无独立测试套件；**构建成功即唯一闭环标准**（`build:tscore` 输出 117 js / 117 dts 零报错为基线）
 - 构建日志的循环依赖警告（eloader↔log↔configkit、uifactory 配置组、app↔eventcontroller）为既有噪音，非错误，无需修复
 
 ## 发布（CI）
@@ -53,4 +53,3 @@ LayaAir 游戏开发框架（npm 包 `@boge-mvp/game-lib`，发布于 GitHub Pac
   2. 规范矩阵：`AIGuideKit/` 目录三大核心事实源文档（`UIFactory_AI_UI_Creation_Guide.md`、`UIFactory_Engine_Dev_Spec.md`、`UIFactory_Architecture_Philosophy_And_Advantages.md`）。
 - **双向同步与闭环验证要求**：
   1. 规范双向同步：代码变更或实战避坑约束沉淀必须同步更新到 `AIGuideKit/` 对应规范文档；
-  2. 代码验证基线：代码改动后必须在根目录执行 `npm run build:tscore` 确保输出 113 js / 113 dts 且 0 报错。

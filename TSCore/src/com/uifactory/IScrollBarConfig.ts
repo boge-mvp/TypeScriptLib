@@ -15,4 +15,8 @@ export interface IScrollBarConfig extends IBaseElementConfig, IViewConfig {
     type: "scrollbar";
     /** 是否固定手柄长度 (默认为 false，随内容比例动态伸缩) */
     fixedGripSize?: boolean;
+    /** 关联的目标滚动容器名称 (同级容器名，自动绑定其 scrollPane) */
+    target?: string;
+    /** 是否为纵向滚动条 (默认为 true) */
+    vertical?: boolean;
 }

@@ -27,6 +27,8 @@ export interface IComboBoxConfig extends IBaseElementConfig, IViewConfig {
     popupDirection?: number | "Auto" | "Up" | "Down";
     /** 双向绑定的选择状态控制器 (名称或实例) */
     selectionController?: string | fgui.Controller;
+    /** 弹出下拉列表组件模板路径 (如 "res/layout/comboDropdown.json") */
+    dropdown?: string;
     /** 标题文本颜色 */
     titleColor?: string;
     /** 标题文本字号 */

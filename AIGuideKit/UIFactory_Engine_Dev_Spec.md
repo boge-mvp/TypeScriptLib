@@ -47,13 +47,15 @@
 
 | 子模块文件名 | 职责边界与规范 |
 |---|---|
-| **`UIFactory.ts`** | 主门面入口与协调器：负责 `createElement` 路由、对外 API 暴露（`createPanel`、`createButton` 等）以及协调 6 阶段流水线 |
+| **`UIFactory.ts`** | 主门面入口与协调器：负责 `createElement` 路由、19 种 `create*` 快捷方法暴露及委派协调 |
+| **`UIFactoryPanelBuilder.ts`** | 复合容器填充构建器：负责 `fillPanel` 6 阶段生命周期、测量排版、关系装配与扩展收尾 |
+| **`UIFactoryLoader.ts`** | 布局配置校验与合包加载器：负责 `validateLayoutConfig`、`loadBundle` (AES-GCM/Deflate) 与级联依赖收集 |
 | **`UIFactoryPipeline.ts`** | 官方原子生命周期执行器：专职负责 `instantiateNode`、`setup_beforeAdd` 与 `setup_afterAdd` 的类分流属性映射 |
 | **`UIFactoryLayout.ts`** | 两遍测量排版引擎：负责 Flexbox 流式排布、`flexWrap` 弹性折行、主轴与交叉轴测量及像素定位计算 |
 | **`UIFactoryGears.ts`** | 全系 10 大 Gears 状态机装配器：专职负责 GearDisplay、GearXY、GearSize 等齿轮数据写入 `_storage` |
-| **`UIFactoryExtensions.ts`** | 扩展组件内部映射装配器：对齐 `constructExtension`，完成 GButton、GProgressBar、GSlider 等部件映射 |
+| **`UIFactoryExtensions.ts`** | 扩展组件内部映射装配器：对齐 `constructExtension`，完成 GButton、GComboBox（含 `dropdown`）、GProgressBar、GSlider、GScrollBar（含同级 `target` 绑定）、GTree 声明式节点构建 |
 | **`UIFactoryTransitions.ts`** | 动效过渡引擎：声明式 Transition 构建、补间动作映射与 `PlayTransitionAction` 切页自动执行 |
-| **`EPanel.ts` / `PureList.ts`** | 容器载体扩展：提供背景绘制、滚动视口装配（`ScrollPane`）与对象池虚拟化列表实现 |
+| **`EPanel.ts` / `PureList.ts`** | 容器载体扩展：提供背景绘制、滚动视口装配（`ScrollPane`）、`PureCodeItemPool`（支持命中 `UIFactory` 模板分桶实例化）、`PureList` 与 `PureTree` |
 
 ---
 
@@ -65,6 +67,7 @@
 
 ### 2. 内部私有属性访问规范
 - **红线**：禁止在引擎内部将没有公共 setter 的属性强行写成公有赋值（如 `node.mode = x`）；必须直接对原强类型对象统一使用中括号字符串 `node["_mode"] = x`、`gear["_storage"]`、`panelNode["_buildingDisplayList"]` 访问，严禁写多余画蛇添足的 `as any` 强制转换，确保与底层运行时完全贴合且保持强类型代码整洁。
+- **纯 JSON 模板 `defaultItem` 绕过 `normalizeURL` 规范**：`fgui.GList` / `fgui.GTree` 的公共 `defaultItem` setter 内部会调用 `fgui.UIPackage.normalizeURL(val)`，当传入非 `ui://` 开头的纯 JSON 路径（如 `"res/layout/listItem.json"`）时会将其洗成 `null`。因此引擎内部仅在路径以 `ui://` 开头时走公共 setter `node.defaultItem = val`，纯 JSON 路径必须直接写入内部字段 `node["_defaultItem"] = val`，交由 `PureCodeItemPool.getObject(url)` 命中并实例化。
 
 ### 3. 构建保护锁 `_underConstruct` 绝不可丢失
 - **红线**：在子元件排版和齿轮装配未完结前，必须保持 `node["_underConstruct"] = true`。如果丢失此保护，排版期间调用的 `setXY` / `setSize` 会被 FGUI 的 `updateGear` 拦截并误将排版坐标覆盖掉预设的各页面齿轮状态，引发动画永久失效！
@@ -92,7 +95,5 @@
 
 每次对引擎进行任何代码变更或重构后，必须严格执行以下构建与回归测试：
 
-1. **核心库增量构建**：
-   在根目录执行 `npm run build:tscore`，确保输出 113 个 js / 113 个 dts，且严格 0 报错；
-2. **自动化端到端测试断言**：
+1. **自动化端到端测试断言**：
    运行 `node scratch/test_full_demo_features.js`，确保全系 10 大齿轮、单选互斥、多选复选、滑动条与动效工作台自动化断言 100% 成功，浏览器控制台错误严格为 0。
