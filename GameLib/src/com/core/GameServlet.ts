@@ -416,7 +416,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
      * 处理发送bet请求时的错误。
      */
     protected onSendBetError(msg: any, request: AjaxRequest) {
-        WaitResult.inst.hide()
+        WaitResult.hide()
         SceneManager.inst.gameErrorExit(LibStr.NET_ERROR)
     }
 
@@ -451,7 +451,7 @@ export abstract class GameServlet<T extends BaseGameData = BaseGameData> extends
 
     protected jackPotClaimHandler(handler: Handler | ((remove: boolean, win: number) => void), response: HttpResponse, request?: AjaxRequest) {
         if (response.code != HttpCode.OK) {
-            WaitResult.inst.hide()
+            WaitResult.hide()
             // this.showNotResult(response.data, false, request)
             StateCode.execute(response.code, response)
             runFun(handler, false)

@@ -50,7 +50,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
     /** 当前游戏的活动按钮 */
     activityBtn?: ActivityButton
     /** 提示文案 */
-    promptTip?: PromptTip
+    promptTip?: Nullable<PromptTip>
     /** 奖金组件 */
     jackpotBtn: any
     /** 是否在执行运行事件 */
@@ -103,7 +103,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
     protected showPromptActivity(comp: GComponent, downward?: any) {
         if (!comp) return
         this.promptTip ??= PromptTip.createPromptTip()
-        this.promptTip.show(comp, downward)
+        this.promptTip?.show(comp, downward)
     }
 
     /** 押注变化 */
@@ -414,10 +414,10 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
     showInviteRealMoney(handler?: ParamHandler) {
         let obj: IPromptData = {okName: "Ok"}
         if (Player.inst.token) {
-            WaitResult.inst.show()
+            WaitResult.show()
             this.gameModel!.gameServlet!.postData(Player.inst.data.getWapUrl(Urls.URL_USER_ACCOUNT_ASSET),
                 {token: Player.inst.token}, (data, request) => {
-                    WaitResult.inst.hide()
+                    WaitResult.hide()
                     if (data.code == HttpCode.OK && data.data) {
                         if (data.data.balance == 0) {
                             obj.okName = getString(LibStr.DEPOSIT_PLAY)
@@ -432,7 +432,7 @@ export class BaseScene<T extends BaseGameData = BaseGameData> extends BaseView i
                         }
                     })
                 }, () => {
-                    WaitResult.inst.hide()
+                    WaitResult.hide()
                     PromptWindow.inst.showCancelTip(LibStr.SHOW_INVITE_REAL_MONEY, obj, handler, () => {
                         JSUtils.gameClose(1)
                     })

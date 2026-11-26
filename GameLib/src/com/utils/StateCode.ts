@@ -79,7 +79,7 @@ export class StateCode {
                 HtmlWindow.inst.hide()
                 if (typeof msg === "object") msg = this.getShowMessage(msg)
                 msg = msg ? msg : getString(LibStr.FIRST_LOG)
-                if (UIPackage.getByName("gameCommon")) WaitResult.inst.hide()
+                if (UIPackage.getByName("gameCommon")) WaitResult.hide()
                 HomePrompt.instance.showTip(0, msg, function () {
                     if (Player.inst.gameId == -1) {
                         LocalStorage.removeItem("token")

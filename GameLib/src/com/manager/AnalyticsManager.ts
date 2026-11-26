@@ -81,7 +81,7 @@ export class AnalyticsManager {
     }
 
     static gtagConfig(targetId: string, config?: Gtag.ControlParams | Gtag.EventParams | Gtag.ConfigParams | Gtag.CustomParams) {
-        if (AnalyticsManager.isEnableAnalytics()) gtag("config", targetId, config)
+        if (AnalyticsManager.isEnableAnalytics() && ConfigKit.get("gtag")) gtag("config", targetId, config)
     }
 
     static gtagEvent(eventCategory: string, eventName: string, eventValue: string, eventParams?: Gtag.ControlParams | Gtag.EventParams | Gtag.CustomParams) {
@@ -89,16 +89,18 @@ export class AnalyticsManager {
             if (Browser.onLayaRuntime) {
                 AppManager.enterFeedback({eventName: eventName, eventValue: eventValue})
             } else {
-                const params: Gtag.ControlParams | Gtag.EventParams | Gtag.CustomParams = {
-                    event_category: eventCategory,
-                    event_label: eventValue,
-                    ...eventParams
+                if (ConfigKit.get("gtag")) {
+                    const params: Gtag.ControlParams | Gtag.EventParams | Gtag.CustomParams = {
+                        event_category: eventCategory,
+                        event_label: eventValue,
+                        ...eventParams
+                    }
+                    if (!params["send_to"]) {
+                        const ids = dataLayer?.find((it) => it[0] == "config")
+                        if (ids && ids[1]) params["send_to"] = ids[1]
+                    }
+                    gtag("event", eventName, params)
                 }
-                if (!params["send_to"]) {
-                    const ids = dataLayer.find((it) => it[0] == "config")
-                    if (ids && ids[1]) params["send_to"] = ids[1]
-                }
-                gtag("event", eventName, params)
             }
         }
     }
