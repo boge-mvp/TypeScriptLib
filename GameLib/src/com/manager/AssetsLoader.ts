@@ -525,7 +525,7 @@ export class AssetsLoader implements IFormatPath {
 
     private progressComplete(e: number, singleInfo?: SingleProgressInfo) {
         let pro = parseInt(e * 100 + "")
-        if (LoadingWindow.inst == null) {
+        if (!LoadingWindow.CREATE_FUI_URL || LoadingWindow.inst == null) {
             const tempValue = LoadingWindow.getProgress(pro, 4, 4)
             JSUtils.progress(tempValue)
             return

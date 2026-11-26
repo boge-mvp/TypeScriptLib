@@ -306,7 +306,7 @@ export class SceneManager extends EProxy {
         // 已经加载的游戏代码
         if (!Player.inst.urlParam?.isJumpPage())
             GRoot.inst.closeModalWait()
-        LoadingWindow.inst?.changeView(1, getString(LibStr.LOADING))
+        if (LoadingWindow.CREATE_FUI_URL) LoadingWindow.inst?.changeView(1, getString(LibStr.LOADING))
         if (obj) {
             AssetsLoader.inst.loadRes(obj, Handler.create(this, this.loadResComplete),
                 Handler.create(this, this.loadResErrorHandler))
@@ -492,7 +492,7 @@ export class SceneManager extends EProxy {
         this.sendAction(ActionLib.GAME_UPDATE_DEFAULT_SCREEN)
 
         if (UIPackage.getByName("gameCommon"))
-            WaitResult.inst.hide()
+            WaitResult.hide()
 
         if (Player.inst.gameId != CommonCmd.GAME_HOME) {
             if (Player.inst.isGuest)

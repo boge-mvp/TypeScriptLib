@@ -1,6 +1,7 @@
 import GLoader = fgui.GLoader;
 import Tween = Laya.Tween;
 import Handler = Laya.Handler;
+import Log = tsCore.Log;
 import {BaseView} from "../core/BaseView"
 
 /**
@@ -15,7 +16,7 @@ export class CardDeck extends BaseView {
     private load!: GLoader
     /** 在数组中的位置 */
     pos!: number
-    static CREATE_FUI_URL = "//gameCommon/CardDeck"
+    static CREATE_FUI_URL: Nullable<string> = null
 
     protected override onConstruct() {
         super.onConstruct();
@@ -61,7 +62,11 @@ export class CardDeck extends BaseView {
         this.removeFromParent()
     }
 
-    static create() {
+    static create(): Nullable<CardDeck> {
+        if (!this.CREATE_FUI_URL) {
+            Log.warn("[CardDeck] CREATE_FUI_URL is null, cannot create view.")
+            return null
+        }
         return createView(this.CREATE_FUI_URL, CardDeck)
     }
 

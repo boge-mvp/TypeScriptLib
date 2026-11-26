@@ -2,6 +2,7 @@ import GComponent = fgui.GComponent;
 import Point = Laya.Point;
 import GRoot = fgui.GRoot;
 import ELabel = tsCore.ELabel;
+import Log = tsCore.Log;
 import {LibStr} from "../LibStr"
 import {SceneManager} from "../manager/SceneManager"
 
@@ -11,7 +12,7 @@ export class PromptTip extends ELabel {
     private target!: GComponent
     private downward: any
 
-    static CREATE_FUI_URL = "//gameCommon/PromptTip"
+    static CREATE_FUI_URL: Nullable<string> = null
 
     protected override onInit() {
         super.onInit();
@@ -19,7 +20,11 @@ export class PromptTip extends ELabel {
         this.text = getString(LibStr.CASH_GIFTS_AVAILABLE)
     }
 
-    static createPromptTip() {
+    static createPromptTip(): Nullable<PromptTip> {
+        if (!this.CREATE_FUI_URL) {
+            Log.warn("[PromptTip] CREATE_FUI_URL is null, cannot create view.")
+            return null
+        }
         return createView(this.CREATE_FUI_URL, PromptTip)
     }
 

@@ -3,6 +3,7 @@ import GTextField = fgui.GTextField;
 import Controller = fgui.Controller;
 import GRoot = fgui.GRoot;
 import HistoryManager = tsCore.HistoryManager;
+import Log = tsCore.Log;
 import {BaseView} from "../core/BaseView"
 import {LibStr} from "../LibStr"
 import {JSUtils} from "../utils/JSUtils"
@@ -10,18 +11,17 @@ import {JSUtils} from "../utils/JSUtils"
 /** 加载界面 */
 export class LoadingWindow extends BaseView {
 
-    private static _instance: LoadingWindow
-    /**
-     * 用来判断是否已经初始化一次了
-     */
-    static isInit = false
+    private static _instance: Nullable<LoadingWindow> = null
 
-    static CREATE_FUI_URL = "//init/LoadingWindow"
+    static CREATE_FUI_URL: Nullable<string> = null
 
-    static get inst() {
-        if (this._instance == null && !this.isInit) {
+    static get inst(): Nullable<LoadingWindow> {
+        if (!this._instance) {
+            if (!LoadingWindow.CREATE_FUI_URL) {
+                Log.warn("[LoadingWindow] CREATE_FUI_URL is null, cannot create view.")
+                return null
+            }
             this._instance = createView(LoadingWindow.CREATE_FUI_URL, LoadingWindow)
-            this.isInit = true
         }
         return this._instance
     }

@@ -1,6 +1,8 @@
 import GTextField = fgui.GTextField;
 import GButton = fgui.GButton;
 import Controller = fgui.Controller;
+import GRoot = fgui.GRoot;
+import Log = tsCore.Log;
 import {BaseWindow} from "../core/BaseWindow"
 import {ActionLib} from "../ActionLib"
 import {AppRecordManager} from "../manager/AppRecordManager"
@@ -17,7 +19,25 @@ export class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWin
         return PromptWindow._instance
     }
 
-    static CREATE_FUI_URL = "//common/PromptWindow"
+    static CREATE_FUI_URL: Nullable<string> = null
+
+    private static checkCreateUrl(): boolean {
+        if (!PromptWindow.CREATE_FUI_URL) {
+            Log.warn("[PromptWindow] CREATE_FUI_URL is null, cannot create view.")
+            return false
+        }
+        return true
+    }
+
+    override show() {
+        if (!PromptWindow.checkCreateUrl()) return
+        super.show()
+    }
+
+    override showOn(root: GRoot) {
+        if (!PromptWindow.checkCreateUrl()) return
+        super.showOn(root)
+    }
 
     static show(msg: string | number | any[] | PromptData,
                 callback?: ParamHandler,
@@ -60,7 +80,9 @@ export class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWin
     }
 
     protected override onInit() {
-        this.contentPane = createView(PromptWindow.CREATE_FUI_URL)
+        if (!PromptWindow.checkCreateUrl()) return
+        this.contentPane = createView(PromptWindow.CREATE_FUI_URL!)
+        if (!this.contentPane) return
         super.onInit()
 
         this.content = this.getChild("content")?.asTextField
@@ -192,6 +214,7 @@ export class PromptWindow<T extends BaseGameData = BaseGameData> extends BaseWin
 
         this.isAction = data.isAction || true
         this.show()
+        if (!this.contentPane) return
         if (this.continueBtn) this.continueBtn.text = obj.okName
         if (this.cancelBtn) this.cancelBtn.text = obj.cancelName
         this.setControllers(data)

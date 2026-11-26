@@ -1,6 +1,8 @@
 import Controller = fgui.Controller;
 import GButton = fgui.GButton;
 import GTextField = fgui.GTextField;
+import GRoot = fgui.GRoot;
+import Log = tsCore.Log;
 import {AppRecordManager} from "../manager/AppRecordManager"
 import {LibStr} from "../LibStr"
 import {BaseGameData} from "../core/BaseGameData";
@@ -26,7 +28,25 @@ export class HomePrompt<T extends BaseGameData = BaseGameData> extends BaseWindo
 
     private callback?: Function
     private cancelCallback?: Function
-    static CREATE_FUI_URL = "//init/HomePrompt"
+    static CREATE_FUI_URL: Nullable<string> = null
+
+    private static checkCreateUrl(): boolean {
+        if (!HomePrompt.CREATE_FUI_URL) {
+            Log.warn("[HomePrompt] CREATE_FUI_URL is null, cannot create view.")
+            return false
+        }
+        return true
+    }
+
+    override show() {
+        if (!HomePrompt.checkCreateUrl()) return
+        super.show()
+    }
+
+    override showOn(root: GRoot) {
+        if (!HomePrompt.checkCreateUrl()) return
+        super.showOn(root)
+    }
 
     constructor() {
         super()
@@ -35,8 +55,10 @@ export class HomePrompt<T extends BaseGameData = BaseGameData> extends BaseWindo
     }
 
     protected override onInit() {
+        if (!HomePrompt.checkCreateUrl()) return
 
-        this.contentPane = createView(HomePrompt.CREATE_FUI_URL)
+        this.contentPane = createView(HomePrompt.CREATE_FUI_URL!)
+        if (!this.contentPane) return
 
         this.controller = this.contentPane.getController("c1")
 
@@ -89,6 +111,7 @@ export class HomePrompt<T extends BaseGameData = BaseGameData> extends BaseWindo
         }
 
         this.show()
+        if (!this.contentPane) return
         this.center()
         this.controller && (this.controller.selectedIndex = code)
         if (this.okBtn) {

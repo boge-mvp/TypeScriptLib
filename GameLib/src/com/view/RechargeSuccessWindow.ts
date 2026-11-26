@@ -1,5 +1,7 @@
 import GTextField = fgui.GTextField;
 import GButton = fgui.GButton;
+import GRoot = fgui.GRoot;
+import Log = tsCore.Log;
 import {BaseWindow} from "../core/BaseWindow"
 import {AppRecordManager} from "../manager/AppRecordManager"
 import {BaseGameData} from "../core/BaseGameData";
@@ -14,7 +16,26 @@ export class RechargeSuccessWindow<T extends BaseGameData = BaseGameData> extend
         return RechargeSuccessWindow._instance
     }
 
-    static CREATE_FUI_URL = "//common/RechargeSuccessWindow"
+    static CREATE_FUI_URL: Nullable<string> = null
+
+    private static checkCreateUrl(): boolean {
+        if (!RechargeSuccessWindow.CREATE_FUI_URL) {
+            Log.warn("[RechargeSuccessWindow] CREATE_FUI_URL is null, cannot create view.")
+            return false
+        }
+        return true
+    }
+
+    override show() {
+        if (!RechargeSuccessWindow.checkCreateUrl()) return
+        super.show()
+    }
+
+    override showOn(root: GRoot) {
+        if (!RechargeSuccessWindow.checkCreateUrl()) return
+        super.showOn(root)
+    }
+
     private content?: GTextField
     private callback?: ParamHandler
     /** 确定 */
@@ -38,7 +59,9 @@ export class RechargeSuccessWindow<T extends BaseGameData = BaseGameData> extend
     }
 
     protected override onInit() {
-        this.contentPane = createView(RechargeSuccessWindow.CREATE_FUI_URL)
+        if (!RechargeSuccessWindow.checkCreateUrl()) return
+        this.contentPane = createView(RechargeSuccessWindow.CREATE_FUI_URL!)
+        if (!this.contentPane) return
         super.onInit()
         this.content = this.contentPane.getChild("n2")?.asTextField
         this.closeButton = this.contentPane.getChild("n3")!
@@ -90,6 +113,7 @@ export class RechargeSuccessWindow<T extends BaseGameData = BaseGameData> extend
         }
         this.isAction = isAction
         this.show()
+        if (!this.contentPane) return
         if (this.content) this.content.text = msg
         this.callback = callback
     }

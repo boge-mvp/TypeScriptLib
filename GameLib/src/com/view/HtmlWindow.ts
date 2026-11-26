@@ -20,11 +20,29 @@ import {CommonCmd} from "../net/Common";
 export class HtmlWindow extends fgui.Window implements IRecord {
 
     private static _instance: HtmlWindow
-    static CREATE_FUI_URL = "//common/HtmlWindow"
+    static CREATE_FUI_URL: Nullable<string> = null
 
     static get inst() {
         this._instance ??= new HtmlWindow
         return this._instance
+    }
+
+    private static checkCreateUrl(): boolean {
+        if (!HtmlWindow.CREATE_FUI_URL) {
+            Log.warn("[HtmlWindow] CREATE_FUI_URL is null, cannot create view.")
+            return false
+        }
+        return true
+    }
+
+    override show() {
+        if (!HtmlWindow.checkCreateUrl()) return
+        super.show()
+    }
+
+    override showOn(root: GRoot) {
+        if (!HtmlWindow.checkCreateUrl()) return
+        super.showOn(root)
     }
 
     private closeHandler?: ParamHandler
@@ -47,9 +65,11 @@ export class HtmlWindow extends fgui.Window implements IRecord {
     private loadMovieClip?: Controller
 
     protected override onInit() {
+        if (!HtmlWindow.checkCreateUrl()) return
 
         this.modal = true
-        this.contentPane = createView(HtmlWindow.CREATE_FUI_URL)
+        this.contentPane = createView(HtmlWindow.CREATE_FUI_URL!)
+        if (!this.contentPane) return
 
         this.contentPane.addRelation(GRoot.inst, RelationType.Size)
         this.loadMovieClip = this.contentPane.getController("c1")
@@ -80,9 +100,11 @@ export class HtmlWindow extends fgui.Window implements IRecord {
      * @param closeHandler 此界面关闭后回调
      */
     openHtml(url: string, full = false, closeHandler?: ParamHandler) {
+        if (!HtmlWindow.checkCreateUrl()) return
         this.closeHandler = closeHandler
         HistoryManager.addHistory(undefined, this)
         this.show()
+        if (!this.contentPane) return
         App.inst.sendAction(ActionLib.GAME_UPDATE_DEFAULT_SCREEN)
         if (this.loadMovieClip)
             this.loadMovieClip.selectedIndex = 0
@@ -129,9 +151,11 @@ export class HtmlWindow extends fgui.Window implements IRecord {
      *
      */
     showTip(url: string, full = false, closeHandler?: ParamHandler) {
+        if (!HtmlWindow.checkCreateUrl()) return
         this.closeHandler = closeHandler
         HistoryManager.addHistory(undefined, this)
         this.show()
+        if (!this.contentPane) return
         App.inst.sendAction(ActionLib.GAME_UPDATE_DEFAULT_SCREEN)
 
         if (this.loadMovieClip) {
