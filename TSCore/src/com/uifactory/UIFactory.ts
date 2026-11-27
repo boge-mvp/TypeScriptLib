@@ -372,49 +372,96 @@ export class UIFactory {
         }
 
         if (node) {
-            // 统一分流前置赋值 (setup_beforeAdd)
-            UIFactoryPipeline.setup_beforeAdd(node, finalData);
+            const isComposite =
+                (finalData.type === "panel" && (node instanceof fgui.GComponent)) ||
+                (finalData.type === "button" && (node instanceof fgui.GButton)) ||
+                (finalData.type === "slider" && (node instanceof fgui.GSlider)) ||
+                (finalData.type === "progressbar" && (node instanceof fgui.GProgressBar)) ||
+                (finalData.type === "label" && (node instanceof fgui.GLabel)) ||
+                (finalData.type === "combobox" && (node instanceof fgui.GComboBox)) ||
+                (finalData.type === "scrollbar" && (node instanceof fgui.GScrollBar)) ||
+                (finalData.type === "tree" && (node instanceof fgui.GTree)) ||
+                (finalData.type === "list" && (node instanceof fgui.GList));
 
-            // 若为复合容器类型，级联构建内部
-            if (finalData.type === "panel" && (node instanceof fgui.GComponent)) {
-                UIFactory.fillPanel(node, finalData as IPanelConfig);
-            } else if (finalData.type === "button" && (node instanceof fgui.GButton)) {
-                UIFactory.fillPanel(node, finalData as IButtonConfig);
-            } else if (finalData.type === "slider" && (node instanceof fgui.GSlider)) {
-                UIFactory.fillPanel(node, finalData as ISliderConfig);
-            } else if (finalData.type === "progressbar" && (node instanceof fgui.GProgressBar)) {
-                UIFactory.fillPanel(node, finalData as IProgressBarConfig);
-            } else if (finalData.type === "label" && (node instanceof fgui.GLabel)) {
-                UIFactory.fillPanel(node, finalData as ILabelConfig);
-            } else if (finalData.type === "combobox" && (node instanceof fgui.GComboBox)) {
-                UIFactory.fillPanel(node, finalData as IComboBoxConfig);
-            } else if (finalData.type === "scrollbar" && (node instanceof fgui.GScrollBar)) {
-                UIFactory.fillPanel(node, finalData as IScrollBarConfig);
-            } else if (finalData.type === "tree" && (node instanceof fgui.GTree)) {
-                UIFactory.fillPanel(node, finalData as ITreeConfig);
-            } else if (finalData.type === "list" && (node instanceof fgui.GList)) {
-                const lConf = finalData as IListConfig;
-                if (lConf.defaultItem) {
-                    if (lConf.defaultItem.startsWith("ui://")) {
-                        node.defaultItem = lConf.defaultItem;
-                    } else {
-                        node["_defaultItem"] = lConf.defaultItem;
+            if (isComposite) {
+                // 对齐官方 constructFromResource -> setup_beforeAdd 顺序：先内部构建，再外部覆写实例属性
+                if (finalData.type === "button" && (node instanceof fgui.GButton)) {
+                    const bConf = finalData as IButtonConfig;
+                    if (!bConf.controllers || !bConf.controllers.some(c => c.name === "button")) {
+                        bConf.controllers = [
+                            { name: "button", pages: ["up", "down", "over", "selectedOver"], selectedIndex: 0 },
+                            ...(bConf.controllers || [])
+                        ];
+                    }
+                } else if (finalData.type === "list" && (node instanceof fgui.GList)) {
+                    const lConf = finalData as IListConfig;
+                    if (lConf.defaultItem) {
+                        if (lConf.defaultItem.startsWith("ui://")) {
+                            node.defaultItem = lConf.defaultItem;
+                        } else {
+                            node["_defaultItem"] = lConf.defaultItem;
+                        }
+                    }
+                    if (lConf.listLayout) node.layout = fgui.ListLayoutType[lConf.listLayout];
+                    if (lConf.selectionMode !== undefined) {
+                        node.selectionMode = typeof lConf.selectionMode === "string"
+                            ? (fgui.ListSelectionMode[lConf.selectionMode] ?? fgui.ListSelectionMode.Single)
+                            : lConf.selectionMode;
+                    }
+                    if (lConf.lineGap !== undefined) node.lineGap = lConf.lineGap;
+                    if (lConf.columnGap !== undefined) node.columnGap = lConf.columnGap;
+                    if (lConf.autoResizeItem !== undefined) node.autoResizeItem = lConf.autoResizeItem;
+                }
+
+                UIFactory.fillPanel(node as fgui.GComponent, finalData as IBaseElementConfig & IViewConfig);
+                UIFactoryPipeline.setup_beforeAdd(node, finalData);
+
+                if (finalData.type === "list" && (node instanceof fgui.GList)) {
+                    const lConf = finalData as IListConfig;
+                    node.ensureBoundsCorrect();
+                    if (lConf.selectedIndex !== undefined && lConf.selectedIndex >= 0) {
+                        node.selectedIndex = lConf.selectedIndex;
                     }
                 }
-                if (lConf.listLayout) node.layout = fgui.ListLayoutType[lConf.listLayout];
-                if (lConf.selectionMode !== undefined) {
-                    node.selectionMode = typeof lConf.selectionMode === "string"
-                        ? (fgui.ListSelectionMode[lConf.selectionMode] ?? fgui.ListSelectionMode.Single)
-                        : lConf.selectionMode;
+            } else {
+                UIFactoryPipeline.setup_beforeAdd(node, finalData);
+            }
+
+            // 若为顶层独立调用（无父容器后续执行 setup_afterAdd），补齐内容注入并解除 _underConstruct
+            if (fgui.UIPackage._constructing === 0) {
+                if (node instanceof fgui.GTextField) {
+                    const tConf = finalData as ITextConfig;
+                    if (tConf.text) {
+                        const rawText = tConf.text.replace(/\\n/g, "\n");
+                        node.text = node instanceof fgui.GRichTextField ? rawText.replace(/\n/g, "<br/>") : rawText;
+                    }
+                    node.ensureSizeCorrect();
+                } else if (node instanceof fgui.GButton) {
+                    const bConf = finalData as IButtonConfig;
+                    if (bConf.title !== undefined) node.title = bConf.title;
+                    if (bConf.icon !== undefined) node.icon = UIFactory.formatResUrl(bConf.icon);
+                    if (bConf.selectedTitle !== undefined) node.selectedTitle = bConf.selectedTitle;
+                    if (bConf.selectedIcon !== undefined) node.selectedIcon = UIFactory.formatResUrl(bConf.selectedIcon);
+                    if (bConf.titleColor) node.titleColor = bConf.titleColor;
+                    if (bConf.titleFontSize) node.titleFontSize = bConf.titleFontSize;
+                    if (bConf.selected !== undefined) node.selected = bConf.selected;
+                } else if (node instanceof fgui.GLabel) {
+                    const lConf = finalData as ILabelConfig;
+                    if (lConf.title !== undefined) node.title = lConf.title;
+                    if (lConf.icon !== undefined) node.icon = UIFactory.formatResUrl(lConf.icon);
+                    if (lConf.titleColor) node.titleColor = lConf.titleColor;
+                    if (lConf.titleFontSize) node.titleFontSize = lConf.titleFontSize;
+                    if (lConf.color) node.color = lConf.color;
+                    if (lConf.editable !== undefined) node.editable = lConf.editable;
+                } else if (node instanceof fgui.GComboBox) {
+                    const cbConf = finalData as IComboBoxConfig;
+                    if (cbConf.items) node.items = cbConf.items;
+                    if (cbConf.values) node.values = cbConf.values;
+                    if (cbConf.icons) node.icons = cbConf.icons.map(u => UIFactory.formatResUrl(u));
+                    if (cbConf.selectedIndex !== undefined) node.selectedIndex = cbConf.selectedIndex;
+                    if (cbConf.value !== undefined) node.value = cbConf.value;
                 }
-                if (lConf.lineGap !== undefined) node.lineGap = lConf.lineGap;
-                if (lConf.columnGap !== undefined) node.columnGap = lConf.columnGap;
-                if (lConf.autoResizeItem !== undefined) node.autoResizeItem = lConf.autoResizeItem;
-                UIFactory.fillPanel(node, lConf);
-                node.ensureBoundsCorrect();
-                if (lConf.selectedIndex !== undefined && lConf.selectedIndex >= 0) {
-                    node.selectedIndex = lConf.selectedIndex;
-                }
+                node["_underConstruct"] = false;
             }
         }
 

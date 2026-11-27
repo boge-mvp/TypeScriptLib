@@ -41,6 +41,31 @@ export class UIFactoryExtensions {
                 const iconChild = btn.getChild("icon");
                 if (iconChild) btn["_iconObject"] = iconChild;
             }
+            // 对齐 GButton.constructExtension：装配 _mode、_downEffect、_sound
+            const bConf = elData as IButtonConfig;
+            let parsedMode = fgui.ButtonMode.Common;
+            if (bConf.mode !== undefined) {
+                if (typeof bConf.mode === "string") {
+                    const l = bConf.mode.toLowerCase();
+                    if (l === "check") parsedMode = fgui.ButtonMode.Check;
+                    else if (l === "radio") parsedMode = fgui.ButtonMode.Radio;
+                } else {
+                    parsedMode = bConf.mode;
+                }
+            }
+            btn["_mode"] = parsedMode;
+            if (bConf.downEffect !== undefined) {
+                btn["_downEffect"] = bConf.downEffect;
+                if (bConf.downEffectValue !== undefined) {
+                    btn["_downEffectValue"] = bConf.downEffectValue;
+                }
+                if (bConf.downEffect === 2) {
+                    btn.setPivot(0.5, 0.5, btn.pivotAsAnchor);
+                }
+            }
+            if (bConf.sound) btn["_sound"] = bConf.sound;
+            if (bConf.soundVolumeScale !== undefined) btn["_soundVolumeScale"] = bConf.soundVolumeScale;
+
             // 确保 buttonController 存在并设置初始状态 UP
             if (!btn["_buttonController"]) {
                 const bCtrl = btn.getController("button");
@@ -58,18 +83,6 @@ export class UIFactoryExtensions {
                 btn.on(Laya.Event.MOUSE_DOWN, btn, btn["__mousedown"]);
                 btn.on(Laya.Event.CLICK, btn, btn["__click"]);
             }
-
-            // 统一回填顶层属性（兼容独立调用 createButton / createFromConfig 且保证 _titleObject/_iconObject 已就绪）
-            const bConf = elData as IButtonConfig;
-            if (bConf.title !== undefined) btn.title = bConf.title;
-            if (bConf.icon !== undefined) btn.icon = UIFactory.formatResUrl(bConf.icon);
-            if (bConf.selectedTitle !== undefined) btn.selectedTitle = bConf.selectedTitle;
-            if (bConf.selectedIcon !== undefined) btn.selectedIcon = UIFactory.formatResUrl(bConf.selectedIcon);
-            if (bConf.titleColor) btn.titleColor = bConf.titleColor;
-            if (bConf.titleFontSize) btn.titleFontSize = bConf.titleFontSize;
-            if (bConf.selected !== undefined) btn.selected = bConf.selected;
-            if (bConf.sound) btn["_sound"] = bConf.sound;
-            if (bConf.soundVolumeScale !== undefined) btn["_soundVolumeScale"] = bConf.soundVolumeScale;
         }
         // 2. GProgressBar 与 GSlider 扩展类装配
         else if (panelNode instanceof fgui.GProgressBar || (fgui.GSlider && panelNode instanceof fgui.GSlider)) {
@@ -110,12 +123,12 @@ export class UIFactoryExtensions {
                         slider["_gripObject"] = gripChild;
                         gripChild.on(Laya.Event.MOUSE_DOWN, slider, slider["__gripMouseDown"]);
 
-                        if (slider["_barObjectH"]) {
+                        if (slider["_barObjectH"] && !gripChild.relations.contains(slider["_barObjectH"])) {
                             gripChild.addRelation(
                                 slider["_barObjectH"],
                                 isReversed ? fgui.RelationType.Left_Left : fgui.RelationType.Right_Right
                             );
-                        } else if (slider["_barObjectV"]) {
+                        } else if (slider["_barObjectV"] && !gripChild.relations.contains(slider["_barObjectV"])) {
                             gripChild.addRelation(
                                 slider["_barObjectV"],
                                 isReversed ? fgui.RelationType.Top_Top : fgui.RelationType.Bottom_Bottom

@@ -12,21 +12,21 @@
 ```text
 ========================================================================================
 [Phase 1: 纯实例化] ─── UIFactoryPipeline.instantiateNode(elData)
-                     仅调用 new 具体空类，绝对不提前灌入 text / url / gears 数据
+                     仅调用 new 具体空类（复合组件先完成内部 fillPanel，再进入外部 setup_beforeAdd）
         │
 [Phase 2: 前置初始化] ─── UIFactoryPipeline.setup_beforeAdd(node, elData)
                      打上 node["_underConstruct"] = true 保护锁！
-                     按组件类集中分流注入固有尺寸、物理变换与基础样式（对齐各子类 setup_beforeAdd）
+                     按组件类集中分流注入固有尺寸、物理变换、基础样式及 GLoader.url（对齐各子类 setup_beforeAdd）
         │
-[Phase 3: 测量与排版] ─── panelNode.addChild(childNode) -> setupElementPosition
+[Phase 3: 测量与排版] ─── child.parent = panelNode -> _children.push(child) -> setupElementPosition
                      确立 child.parent 引用树，执行两遍测量排版，计算目标像素坐标
         │
 [Phase 3.5: 独立关系] ─── setupRelations (遍历子元件建立 RelationType 跟随)
                      对齐官方 constructFromResource2：所有子元件定型后统一建立关联，确保目标基准坐标准确
         │
 [Phase 4: 后置初始化] ─── UIFactoryPipeline.setup_afterAdd(node, elData, parentNode, index)
-                     此时节点坐标已定型，安全灌入真实内容 (.text / .url / button.title)
-                     装配全系 10 大 Gears 状态至 gear["_storage"]
+                     此时节点坐标已定型，安全灌入真实内容 (.text / button.title / 仅直接父级控制器绑定)
+                     装配全系 10 大 Gears 状态至 gear["_storage"]（不提前 gear.apply()）
                      最后安全解除构建保护锁：node["_underConstruct"] = false;
         │
 [Phase 5: 扩展类装配] ─── UIFactoryExtensions.setupComponentExtension(panelNode, elData)

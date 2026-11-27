@@ -57,6 +57,8 @@ export class UIFactoryPanelBuilder {
                         panelNode.scrollPane.pageController = targetCtrl;
                     }
                 }
+            } else if (overflowVal !== undefined) {
+                panelNode["setupOverflow"](overflowVal);
             }
 
             if (elData.controllers && elData.controllers.length > 0) {
@@ -170,10 +172,16 @@ export class UIFactoryPanelBuilder {
             panelNode.initHeight = initH;
             panelNode.setSize(initW, initH);
 
+            const isList = panelNode instanceof fgui.GList;
             for (let i = 0; i < childNodes.length; i++) {
                 const childNode = childNodes[i];
                 if (childNode) {
-                    panelNode.addChild(childNode);
+                    if (isList) {
+                        panelNode.addChild(childNode);
+                    } else {
+                        childNode.parent = panelNode;
+                        panelNode["_children"].push(childNode);
+                    }
                 }
             }
 

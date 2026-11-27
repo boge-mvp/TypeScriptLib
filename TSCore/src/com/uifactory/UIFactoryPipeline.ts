@@ -93,8 +93,8 @@ export class UIFactoryPipeline {
      * 对应官方 GObject.setup_beforeAdd 阶段：
      * 1. 开启构建保护锁 `_underConstruct = true`，确保后续排版调用 setXY/setSize 时不会误触发齿轮拦截；
      * 2. 注入通用基础图元属性（alpha、rotation、visible、touchable、grayed、scale、pivot、size）；
-     * 3. 按子类分流注入各类型特有样式（文本的 autoSize/字体/颜色、图形的矩形/圆/圆角、Loader的填充模式、按钮的按压反馈与 mode）；
-     * 4. 严格禁止在此时提前赋值 text / url，杜绝引发过早排版和网络加载。
+     * 3. 按子类分流注入各类型特有样式（文本的 autoSize/字体/颜色、图形的矩形/圆/圆角、Loader的填充模式与 url）；
+     * 4. 文本 `text` 等可变内容延后至 `setup_afterAdd` 注入，避免过早触发文本排版。
      *
      * @param node 刚刚实例化的空 FGUI 目标对象
      * @param elData 声明式元素配置对象
@@ -157,13 +157,6 @@ export class UIFactoryPipeline {
             if (tConf.bold !== undefined) node.bold = tConf.bold;
             if (tConf.stroke !== undefined) node.stroke = tConf.stroke;
             if (tConf.strokeColor) node.strokeColor = tConf.strokeColor;
-
-            // 文本排版排空拦截：直接强制执行 typeset，确保 autoSize 为 Height/Both 时即刻计算出真实的 textHeight！
-            if (node["_textField"]) {
-                node["_textField"]["typeset"]();
-            } else {
-                node.ensureSizeCorrect();
-            }
         } else if (node instanceof fgui.GGraph) {
             const gConf = elData as IGraphConfig;
             const lineSize = gConf.lineSize || 0;
@@ -194,41 +187,15 @@ export class UIFactoryPipeline {
                 } else {
                     node.fill = iConf.fill;
                 }
-            } else if (iConf.width && iConf.height) {
-                node.fill = fgui.LoaderFillType.ScaleFree;
             }
             if (iConf.shrinkOnly !== undefined) node.shrinkOnly = iConf.shrinkOnly;
             if (iConf.autoSize !== undefined) node.autoSize = iConf.autoSize;
             if (iConf.align) node.align = iConf.align;
             if (iConf.valign) node.verticalAlign = iConf.valign;
             if (iConf.color) node.color = iConf.color;
-        } else if (node instanceof fgui.GButton) {
-            const bConf = elData as IButtonConfig;
-            let parsedMode = fgui.ButtonMode.Common;
-            if (bConf.mode !== undefined) {
-                if (typeof bConf.mode === "string") {
-                    const l = bConf.mode.toLowerCase();
-                    if (l === "check") parsedMode = fgui.ButtonMode.Check;
-                    else if (l === "radio") parsedMode = fgui.ButtonMode.Radio;
-                } else {
-                    parsedMode = bConf.mode;
-                }
-            }
-            node["_mode"] = parsedMode;
-            if (bConf.downEffect !== undefined) {
-                node["_downEffect"] = bConf.downEffect;
-                if (bConf.downEffectValue !== undefined) {
-                    node["_downEffectValue"] = bConf.downEffectValue;
-                }
-                if (bConf.downEffect === 2) {
-                    node.setPivot(0.5, 0.5, node.pivotAsAnchor);
-                }
-            }
-            if (!bConf.controllers || !bConf.controllers.some(c => c.name === "button")) {
-                bConf.controllers = [
-                    { name: "button", pages: ["up", "down", "over", "selectedOver"], selectedIndex: 0 },
-                    ...(bConf.controllers || [])
-                ];
+            if (iConf.url) {
+                const resPath = UIFactory.formatResUrl(iConf.url);
+                node.url = Laya.URL.formatURL(resPath);
             }
         } else if (node instanceof fgui.GGroup) {
             const grpConf = elData as IGroupConfig;
@@ -377,40 +344,22 @@ export class UIFactoryPipeline {
             }
             node.ensureSizeCorrect();
         }
-        // 2. 外部资源 URL 此时才注入并开始加载 (对齐 GLoader.setup_afterAdd)
-        else if (node instanceof fgui.GLoader) {
-            const iConf = elData as IIconConfig;
-            if (iConf.url) {
-                const resPath = UIFactory.formatResUrl(iConf.url);
-                node.url = Laya.URL.formatURL(resPath);
-            }
-        }
-        // 3. 按钮 Title 与 Icon 注入 (对齐 GButton.setup_afterAdd 第 3832 行)
+        // 2. 按钮 Title 与 Icon 注入 (对齐 GButton.setup_afterAdd 第 3832 行)
         else if (node instanceof fgui.GButton) {
             const bConf = elData as IButtonConfig;
-            if (bConf.title) node.title = bConf.title;
-            if (bConf.icon) node.icon = bConf.icon;
-            if (bConf.selectedTitle) node.selectedTitle = bConf.selectedTitle;
-            if (bConf.selectedIcon) node.selectedIcon = bConf.selectedIcon;
+            if (bConf.title !== undefined) node.title = bConf.title;
+            if (bConf.icon !== undefined) node.icon = UIFactory.formatResUrl(bConf.icon);
+            if (bConf.selectedTitle !== undefined) node.selectedTitle = bConf.selectedTitle;
+            if (bConf.selectedIcon !== undefined) node.selectedIcon = UIFactory.formatResUrl(bConf.selectedIcon);
             if (bConf.titleColor) node.titleColor = bConf.titleColor;
             if (bConf.titleFontSize) node.titleFontSize = bConf.titleFontSize;
             if (bConf.selected !== undefined) node.selected = bConf.selected;
-            if (bConf.sound) node["_sound"] = bConf.sound;
-            if (bConf.soundVolumeScale !== undefined) node["_soundVolumeScale"] = bConf.soundVolumeScale;
 
-            // 对齐 GButton.setup_afterAdd 第 3858~3860 行：关联单选组或切页控制器
+            // 对齐 GButton.setup_afterAdd 第 3858~3860 行：仅从直接父容器查找关联控制器
             if (bConf.relatedController) {
-                let targetCtrl: Nullable<fgui.Controller> = null;
-                if (typeof bConf.relatedController === "string") {
-                    let curP: Nullable<fgui.GComponent> = parentNode;
-                    while (curP) {
-                        targetCtrl = curP.getController(bConf.relatedController);
-                        if (targetCtrl) break;
-                        curP = curP.parent as fgui.GComponent;
-                    }
-                } else {
-                    targetCtrl = bConf.relatedController;
-                }
+                const targetCtrl = typeof bConf.relatedController === "string"
+                    ? parentNode.getController(bConf.relatedController)
+                    : bConf.relatedController;
                 if (targetCtrl) {
                     node.relatedController = targetCtrl;
                     if (bConf.pageId) {
@@ -425,7 +374,7 @@ export class UIFactoryPipeline {
                 }
             }
         }
-        // 4. GLabel 内容注入 (对齐 GLabel.setup_afterAdd)
+        // 3. GLabel 内容注入 (对齐 GLabel.setup_afterAdd)
         else if (node instanceof fgui.GLabel) {
             const lConf = elData as ILabelConfig;
             if (lConf.title) node.title = lConf.title;
@@ -435,7 +384,7 @@ export class UIFactoryPipeline {
             if (lConf.color) node.color = lConf.color;
             if (lConf.editable !== undefined) node.editable = lConf.editable;
         }
-        // 5. GComboBox 选项数据与选择控制器注入 (对齐 GComboBox.setup_afterAdd)
+        // 4. GComboBox 选项数据与选择控制器注入 (对齐 GComboBox.setup_afterAdd)
         else if (node instanceof fgui.GComboBox) {
             const cbConf = elData as IComboBoxConfig;
             if (cbConf.items) node.items = cbConf.items;
@@ -445,53 +394,29 @@ export class UIFactoryPipeline {
             if (cbConf.value !== undefined) node.value = cbConf.value;
 
             if (cbConf.selectionController) {
-                let targetCtrl: Nullable<fgui.Controller> = null;
-                if (typeof cbConf.selectionController === "string") {
-                    let curP: Nullable<fgui.GComponent> = parentNode;
-                    while (curP) {
-                        targetCtrl = curP.getController(cbConf.selectionController);
-                        if (targetCtrl) break;
-                        curP = curP.parent as fgui.GComponent;
-                    }
-                } else {
-                    targetCtrl = cbConf.selectionController;
-                }
+                const targetCtrl = typeof cbConf.selectionController === "string"
+                    ? parentNode.getController(cbConf.selectionController)
+                    : cbConf.selectionController;
                 if (targetCtrl) {
                     node.selectionController = targetCtrl;
                 }
             }
         }
-        // 6. GList / GTree 属性控制器与分页控制器双向绑定
+        // 5. GList / GTree 属性控制器与分页控制器绑定 (对齐 GList.setup_afterAdd 仅查直接父容器)
         else if (node instanceof fgui.GList) {
             const listConf = elData as IListConfig;
             if (listConf.selectionController) {
-                let targetCtrl: Nullable<fgui.Controller> = null;
-                if (typeof listConf.selectionController === "string") {
-                    let curP: Nullable<fgui.GComponent> = parentNode;
-                    while (curP) {
-                        targetCtrl = curP.getController(listConf.selectionController);
-                        if (targetCtrl) break;
-                        curP = curP.parent as fgui.GComponent;
-                    }
-                } else {
-                    targetCtrl = listConf.selectionController;
-                }
+                const targetCtrl = typeof listConf.selectionController === "string"
+                    ? parentNode.getController(listConf.selectionController)
+                    : listConf.selectionController;
                 if (targetCtrl) {
                     node.selectionController = targetCtrl;
                 }
             }
             if (listConf.pageController && node.scrollPane) {
-                let targetCtrl: Nullable<fgui.Controller> = null;
-                if (typeof listConf.pageController === "string") {
-                    let curP: Nullable<fgui.GComponent> = parentNode;
-                    while (curP) {
-                        targetCtrl = curP.getController(listConf.pageController);
-                        if (targetCtrl) break;
-                        curP = curP.parent as fgui.GComponent;
-                    }
-                } else {
-                    targetCtrl = listConf.pageController;
-                }
+                const targetCtrl = typeof listConf.pageController === "string"
+                    ? parentNode.getController(listConf.pageController)
+                    : listConf.pageController;
                 if (targetCtrl) {
                     node.scrollPane.pageController = targetCtrl;
                 }

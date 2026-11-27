@@ -296,7 +296,11 @@ export class RelationsWorkbench extends GComponent {
 
     private _setupTargetDragging(): void {
         this._targetBox.draggable = true;
-        this._targetBox.dragBounds = new Laya.Rectangle(10, 10, this._sandboxStage.width - 20, this._sandboxStage.height - 20);
+        const updateDragBounds = () => {
+            this._targetBox.dragBounds = this._sandboxStage.localToGlobalRect(10, 10, this._sandboxStage.width - 20, this._sandboxStage.height - 20);
+        };
+        updateDragBounds();
+        this._targetBox.on(fgui.Events.DRAG_START, this, updateDragBounds);
 
         this._targetBox.on(Laya.Event.MOUSE_DOWN, this, () => {
             if (this._handlesGroup) this._handlesGroup.visible = true;
