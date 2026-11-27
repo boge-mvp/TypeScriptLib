@@ -3,6 +3,7 @@ import { IViewConfig } from "./IViewConfig";
 import { UIFactory } from "./UIFactory";
 import { UIFactoryExtensions } from "./UIFactoryExtensions";
 import { UIFactoryPipeline } from "./UIFactoryPipeline";
+import {IPanelConfig} from "./IPanelConfig";
 
 /**
  * FGUI 五阶段容器构建管线执行器 (从 UIFactory 抽离以保持门面精简)
@@ -44,6 +45,7 @@ export class UIFactoryPanelBuilder {
                     panelNode.margin.right = elData.padding.right ?? 0;
                 }
                 panelNode.setupScrollPanel(overflowVal, elData.scrollType);
+                UIFactoryPanelBuilder.setupNativeScrollBars(panelNode, elData);
                 if (elData.pageController && panelNode.scrollPane) {
                     let targetCtrl: Nullable<fgui.Controller> = null;
                     if (typeof elData.pageController === "string") {
@@ -348,5 +350,56 @@ export class UIFactoryPanelBuilder {
         } finally {
             fgui.UIPackage._constructing--;
         }
+    }
+
+    /**
+     * 1:1 还原 FGUI 官方 ScrollPane.setup 二进制滚动条装配流程
+     */
+    private static setupNativeScrollBars(panelNode: fgui.GComponent, elData: IBaseElementConfig & IViewConfig): void {
+        const pane = panelNode.scrollPane;
+        if (!pane || !fgui.GScrollBar) return;
+
+        let displayType = fgui.UIConfig.defaultScrollBarDisplay;
+        if (elData.scrollBarDisplay === "visible") displayType = fgui.ScrollBarDisplayType.Visible;
+        else if (elData.scrollBarDisplay === "auto") displayType = fgui.ScrollBarDisplayType.Auto;
+        else if (elData.scrollBarDisplay === "hidden") displayType = fgui.ScrollBarDisplayType.Hidden;
+
+        if (elData.scrollBarMargin) {
+            pane["_scrollBarMargin"].top = elData.scrollBarMargin.top ?? 0;
+            pane["_scrollBarMargin"].bottom = elData.scrollBarMargin.bottom ?? 0;
+            pane["_scrollBarMargin"].left = elData.scrollBarMargin.left ?? 0;
+            pane["_scrollBarMargin"].right = elData.scrollBarMargin.right ?? 0;
+        }
+        if (elData.scrollBarFloating !== undefined) pane["_floating"] = elData.scrollBarFloating;
+        if (elData.scrollBarDisplayOnLeft !== undefined) pane["_displayOnLeft"] = elData.scrollBarDisplayOnLeft;
+
+        const scrollType = elData.scrollType !== undefined ? elData.scrollType : fgui.ScrollType.Vertical;
+        const vtRes = elData.vtScrollBar || fgui.UIConfig.verticalScrollBar;
+        const hzRes = elData.hzScrollBar || fgui.UIConfig.horizontalScrollBar;
+
+        if (displayType !== fgui.ScrollBarDisplayType.Hidden) {
+            if ((scrollType === fgui.ScrollType.Both || scrollType === fgui.ScrollType.Vertical) && vtRes) {
+                const sb = UIFactory.createFromConfig<fgui.GScrollBar>(vtRes);
+                if (sb && sb instanceof fgui.GScrollBar) {
+                    pane["_vtScrollBar"] = sb;
+                    sb.setScrollPane(pane, true);
+                    panelNode.displayObject.addChild(sb.displayObject);
+                }
+            }
+            if ((scrollType === fgui.ScrollType.Both || scrollType === fgui.ScrollType.Horizontal) && hzRes) {
+                const sb = UIFactory.createFromConfig<fgui.GScrollBar>(hzRes);
+                if (sb && sb instanceof fgui.GScrollBar) {
+                    pane["_hzScrollBar"] = sb;
+                    sb.setScrollPane(pane, false);
+                    panelNode.displayObject.addChild(sb.displayObject);
+                }
+            }
+            pane["_scrollBarDisplayAuto"] = displayType === fgui.ScrollBarDisplayType.Auto;
+            if (pane["_scrollBarDisplayAuto"]) {
+                if (pane["_vtScrollBar"]) pane["_vtScrollBar"].displayObject.visible = false;
+                if (pane["_hzScrollBar"]) pane["_hzScrollBar"].displayObject.visible = false;
+            }
+        }
+        pane.setSize(panelNode.width, panelNode.height);
     }
 }

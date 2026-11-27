@@ -29,6 +29,18 @@ export type IViewConfig = {
     scrollType?: number;
     /** 滚动容器双向绑定的分页控制器 (名称或 Controller 实例，挂载至 scrollPane.pageController) */
     pageController?: string | fgui.Controller;
+    /** 垂直滚动条资源路径或配置名称 (1:1 对齐官方 ScrollPane vtScrollBarRes) */
+    vtScrollBar?: string;
+    /** 水平滚动条资源路径或配置名称 (1:1 对齐官方 ScrollPane hzScrollBarRes) */
+    hzScrollBar?: string;
+    /** 滚动条显示模式 ("default" | "visible" | "auto" | "hidden") */
+    scrollBarDisplay?: "default" | "visible" | "auto" | "hidden";
+    /** 滚动条是否浮动于视口之上 (不扣减视口宽高) */
+    scrollBarFloating?: boolean;
+    /** 垂直滚动条是否显示在左侧 */
+    scrollBarDisplayOnLeft?: boolean;
+    /** 滚动条内边距 */
+    scrollBarMargin?: { top?: number; bottom?: number; left?: number; right?: number };
     /** 容器溢出裁剪状态 (0 - Visible, 1 - Hidden, 2 - Scroll) */
     overflow?: number | string;
     /** 容器自定义遮罩目标（子元件名称或路径） */

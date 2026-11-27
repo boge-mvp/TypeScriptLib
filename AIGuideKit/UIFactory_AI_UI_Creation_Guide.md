@@ -173,11 +173,14 @@
      - 名为 `"bar"` 或 `"bar_v"` 的图元：映射为进度填充体；
      - 名为 `"title"` 的文本：映射为百分比文本；
      - 名为 `"grip"` 的图元（GSlider 特有）：映射为手柄并自动激活物理拖拽手势。
+   - **`GProgressBar` 常用配置**：支持 `min` / `max` / `value`、`reverse`（反向填充）、`titleType`（`0:Percent` / `1:ValueAndMax` / `2:Value` / `3:Max`）；值变化动效通过运行期调用官方原生 `progress.tweenValue(val, duration)` 触发。
 3. **交互式输入框 (GTextInput)**：
    - 配置 `type: "text", isInput: true, promptText: "请输入内容..."`，UIFactory 自动产出原生 `fgui.GTextInput`，底层自动挂载输入框并支持光标对焦与键盘键入。
 4. **纯代码下拉框、滚动条、序列帧、树与骨骼扩展契约**：
    - **`GComboBox` (`"combobox"`)**：支持可选 `dropdown` 外部模板路径；未指定 `dropdown` 时自动生成内置轻量弹出列表（含 `PureList`），并自动绑定 `ROLL_OVER` / `ROLL_OUT` / `MOUSE_DOWN` 原生弹出交互。
-   - **`GScrollBar` (`"scrollbar"`)**：支持 `target` 声明同级滚动容器名称与 `vertical` 方向，自动与目标 `ScrollPane` 完成双向滚动同步，未绑定目标时点击内置防空保护。
+   - **`GScrollBar` (`"scrollbar"`) & `ScrollPane` 原生滚动条**：
+     - **官方原生注入（推荐）**：滚动容器（`panel` / `list` / `tree`）可直接在自身配置中声明 `vtScrollBar` / `hzScrollBar`（如 `"res/layout/scrollBarVt.json"`）、`scrollBarDisplay`（`"default" | "visible" | "auto" | "hidden"`）、`scrollBarFloating`（悬浮不占位）、`scrollBarDisplayOnLeft`、`scrollBarMargin`，由 `ScrollPane` 原生自动接管视口扣减、位置对齐、`displayPerc` 伸缩与滚动同步。
+     - **外部同级绑定**：独立 `"scrollbar"` 节点亦支持 `target` 声明同级滚动容器名称与 `vertical` 方向，自动与目标 `ScrollPane` 同步。
    - **`GTree` (`"tree"`)**：底层使用 `PureTree`（挂载升级版 `PureCodeItemPool`，支持 `defaultItem` 命中 `UIFactory.getConfig` 自动实例化 JSON 模板），并支持声明式 `nodes` 多级树节点递归构建与默认渲染。
    - **`GMovieClip` (`"movieclip"`)**：支持 `frames: string[]` 外部图片序列帧异步加载，及 `interval` / `swing` / `repeatDelay` 原生播放参数透传。
    - **`GLoader3D` (`"loader3d"`)**：`DefineConfig` 注入 `GLoader3D.prototype.loadExternal` 与 `onChange` 适配，支持纯路径加载外部 Spine 3.8/4.0 `.json`/`.skel` 骨骼资源并切换 `animationName` / `skinName`。

@@ -99,8 +99,11 @@ export class UIFactoryExtensions {
                 const slider = panelNode;
                 const sConf = elData as ISliderConfig;
 
-                // 必须先在 bar 处于初始满宽 (_barMaxWidth) 时绑定 grip 的 Right_Right / Bottom_Bottom 关联！
-                // 随后再设置 min / max / value 触发 update()，这样 bar 宽度变化时才能通过关联系统将 grip 精确同步到对应位置
+                if (sConf.reverse !== undefined) slider["_reverse"] = sConf.reverse;
+                const isReversed = !!slider["_reverse"];
+
+                // 必须先在 bar 处于初始满宽 (_barMaxWidth) 时绑定 grip 的关联！
+                // 正向绑定 Right_Right / Bottom_Bottom，反向绑定 Left_Left / Top_Top
                 if (!slider["_gripObject"]) {
                     const gripChild = slider.getChild("grip");
                     if (gripChild) {
@@ -108,9 +111,15 @@ export class UIFactoryExtensions {
                         gripChild.on(Laya.Event.MOUSE_DOWN, slider, slider["__gripMouseDown"]);
 
                         if (slider["_barObjectH"]) {
-                            gripChild.addRelation(slider["_barObjectH"], fgui.RelationType.Right_Right);
+                            gripChild.addRelation(
+                                slider["_barObjectH"],
+                                isReversed ? fgui.RelationType.Left_Left : fgui.RelationType.Right_Right
+                            );
                         } else if (slider["_barObjectV"]) {
-                            gripChild.addRelation(slider["_barObjectV"], fgui.RelationType.Bottom_Bottom);
+                            gripChild.addRelation(
+                                slider["_barObjectV"],
+                                isReversed ? fgui.RelationType.Top_Top : fgui.RelationType.Bottom_Bottom
+                            );
                         }
                     }
                 }
@@ -130,6 +139,7 @@ export class UIFactoryExtensions {
                 if (pConf.min !== undefined) pBar.min = pConf.min;
                 if (pConf.max !== undefined) pBar.max = pConf.max;
                 if (pConf.titleType !== undefined) pBar.titleType = pConf.titleType;
+                if (pConf.reverse !== undefined) pBar["_reverse"] = pConf.reverse;
                 if (pConf.value !== undefined) pBar.value = pConf.value;
                 // 100% 对齐官方 GProgressBar.setup_afterAdd 第 8375 行：
                 // 无论 setter 是否因数值与默认值相同被拦截，属性装配终态必须无条件强制执行一次 update 刷新条宽度与标题！
