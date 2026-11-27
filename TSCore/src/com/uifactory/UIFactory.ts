@@ -183,7 +183,7 @@ export class UIFactory {
         overrides?: Partial<IElementConfig>,
         containerW?: number,
         containerH?: number,
-        userClass?: new () => fgui.GObject
+        userClass?: new () => T
     ): Nullable<T> {
         const template = UIFactory.getConfig(nameOrUrl);
         if (!template) {
@@ -192,7 +192,7 @@ export class UIFactory {
         }
         const finalConfig: IElementConfig = (overrides ? {...template, ...overrides} : template) as IElementConfig;
         const normalized = nameOrUrl.replace(/\\/g, "/");
-        const customClass = userClass || UIFactory.extensions[normalized];
+        const customClass = userClass || (UIFactory.extensions[normalized] as new() => T);
 
         if (finalConfig.type === "panel" || !finalConfig.type) {
             UIFactory.validateLayoutConfig(finalConfig as IPanelConfig, normalized);
@@ -322,7 +322,7 @@ export class UIFactory {
         elData: IElementConfig,
         containerW: number = 0,
         containerH: number = 0,
-        userClass?: new () => fgui.GObject
+        userClass?: new () => T
     ): Nullable<T> {
         let finalData: IElementConfig = elData;
         let extClass: (new () => fgui.GObject) | undefined = userClass;
@@ -431,8 +431,8 @@ export class UIFactory {
      * @param elData 文本声明式配置
      * @returns 实例化的 GBasicTextField 对象
      */
-    public static createText(elData: ITextConfig): fgui.GTextField {
-        return UIFactory.createElement<fgui.GTextField>(elData, 0, 0)!;
+    public static createText<T extends fgui.GTextField>(elData: ITextConfig): T {
+        return UIFactory.createElement<T>(elData, 0, 0)!;
     }
 
     /**
@@ -441,8 +441,8 @@ export class UIFactory {
      * @param elData 富文本声明式配置
      * @returns 实例化的 GRichTextField 对象
      */
-    public static createRichTextField(elData: ITextConfig): fgui.GRichTextField {
-        return UIFactory.createElement<fgui.GRichTextField>({...elData, isUbb: true}, 0, 0)!;
+    public static createRichTextField<T extends fgui.GRichTextField>(elData: ITextConfig): T {
+        return UIFactory.createElement<T>({...elData, isUbb: true}, 0, 0)!;
     }
 
     /**
@@ -451,8 +451,8 @@ export class UIFactory {
      * @param elData 输入框声明式配置
      * @returns 实例化的 GTextInput 对象
      */
-    public static createTextInput(elData: ITextConfig): fgui.GTextInput {
-        return UIFactory.createElement<fgui.GTextInput>({...elData, isInput: true}, 0, 0)!;
+    public static createTextInput<T extends fgui.GTextInput>(elData: ITextConfig): T {
+        return UIFactory.createElement<T>({...elData, isInput: true}, 0, 0)!;
     }
 
     /**
@@ -461,8 +461,8 @@ export class UIFactory {
      * @param elData 图像配置对象
      * @returns 实例化的 GLoader 对象
      */
-    public static createIcon(elData: IIconConfig): fgui.GLoader {
-        return UIFactory.createElement<fgui.GLoader>(elData, 0, 0)!;
+    public static createIcon<T extends fgui.GLoader>(elData: IIconConfig): T {
+        return UIFactory.createElement<T>(elData, 0, 0)!;
     }
 
     /**
@@ -471,8 +471,8 @@ export class UIFactory {
      * @param elData 图形配置对象（支持矩形、圆角矩形、圆、椭圆等）
      * @returns 实例化的 GGraph 对象
      */
-    public static createGraph(elData: IGraphConfig): fgui.GGraph {
-        return UIFactory.createElement<fgui.GGraph>(elData, 0, 0)!;
+    public static createGraph<T extends fgui.GGraph>(elData: IGraphConfig): T {
+        return UIFactory.createElement<T>(elData, 0, 0)!;
     }
 
     /**
@@ -483,8 +483,8 @@ export class UIFactory {
      * @param containerH 父容器高度
      * @returns 实例化的列表对象
      */
-    public static createList(elData: IListConfig, containerW: number, containerH: number): fgui.GList {
-        return UIFactory.createElement<fgui.GList>(elData, containerW, containerH)!;
+    public static createList<T extends fgui.GList>(elData: IListConfig, containerW: number, containerH: number): T {
+        return UIFactory.createElement<T>(elData, containerW, containerH)!;
     }
 
     /**
@@ -495,8 +495,8 @@ export class UIFactory {
      * @param elData 按钮配置对象
      * @returns 实例化的 GButton 对象
      */
-    public static createButton(elData: IButtonConfig): fgui.GButton {
-        return UIFactory.createElement<fgui.GButton>(elData, 0, 0)!;
+    public static createButton<T extends fgui.GButton>(elData: IButtonConfig): T {
+        return UIFactory.createElement<T>(elData, 0, 0)!;
     }
 
     /**
@@ -505,8 +505,8 @@ export class UIFactory {
      * @param elData 组配置对象 (含 layout、excludeInvisibles 等)
      * @returns 实例化的 GGroup 对象
      */
-    public static createGroup(elData: IGroupConfig): fgui.GGroup {
-        return UIFactory.createElement<fgui.GGroup>(elData, 0, 0)!;
+    public static createGroup<T extends fgui.GGroup>(elData: IGroupConfig): T {
+        return UIFactory.createElement<T>(elData, 0, 0)!;
     }
 
     /**
@@ -515,8 +515,8 @@ export class UIFactory {
      * @param elData 标签配置对象 (含 title、icon、titleColor 等)
      * @returns 实例化的 GLabel 对象
      */
-    public static createLabel(elData: ILabelConfig): fgui.GLabel {
-        return UIFactory.createElement<fgui.GLabel>(elData, 0, 0)!;
+    public static createLabel<T extends fgui.GLabel>(elData: ILabelConfig): T {
+        return UIFactory.createElement<T>(elData, 0, 0)!;
     }
 
     /**
@@ -525,8 +525,8 @@ export class UIFactory {
      * @param elData 下拉选框配置对象 (含 items、values、selectionController 等)
      * @returns 实例化的 GComboBox 对象
      */
-    public static createComboBox(elData: IComboBoxConfig): fgui.GComboBox {
-        return UIFactory.createElement<fgui.GComboBox>(elData, 0, 0)!;
+    public static createComboBox<T extends fgui.GComboBox>(elData: IComboBoxConfig): T {
+        return UIFactory.createElement<T>(elData, 0, 0)!;
     }
 
     /**
@@ -535,8 +535,8 @@ export class UIFactory {
      * @param elData 滚动条配置对象
      * @returns 实例化的 GScrollBar 对象
      */
-    public static createScrollBar(elData: IScrollBarConfig): fgui.GScrollBar {
-        return UIFactory.createElement<fgui.GScrollBar>(elData, 0, 0)!;
+    public static createScrollBar<T extends fgui.GScrollBar>(elData: IScrollBarConfig): T {
+        return UIFactory.createElement<T>(elData, 0, 0)!;
     }
 
     /**
@@ -547,8 +547,8 @@ export class UIFactory {
      * @param containerH 容器高度
      * @returns 实例化的 GTree 对象
      */
-    public static createTree(elData: ITreeConfig, containerW?: number, containerH?: number): fgui.GTree {
-        return UIFactory.createElement<fgui.GTree>(elData, containerW || 0, containerH || 0)!;
+    public static createTree<T extends fgui.GTree>(elData: ITreeConfig, containerW?: number, containerH?: number): T {
+        return UIFactory.createElement<T>(elData, containerW || 0, containerH || 0)!;
     }
 
     /**
@@ -557,8 +557,8 @@ export class UIFactory {
      * @param elData 序列帧动画配置对象
      * @returns 实例化的 GMovieClip 对象
      */
-    public static createMovieClip(elData: IMovieClipConfig): fgui.GMovieClip {
-        return UIFactory.createElement<fgui.GMovieClip>(elData, 0, 0)!;
+    public static createMovieClip<T extends fgui.GMovieClip>(elData: IMovieClipConfig): T {
+        return UIFactory.createElement<T>(elData, 0, 0)!;
     }
 
     /**
@@ -567,8 +567,8 @@ export class UIFactory {
      * @param elData 3D加载器配置对象
      * @returns 实例化的 GLoader3D 对象
      */
-    public static createLoader3D(elData: ILoader3DConfig): fgui.GLoader3D {
-        return UIFactory.createElement<fgui.GLoader3D>(elData, 0, 0)!;
+    public static createLoader3D<T extends fgui.GLoader3D>(elData: ILoader3DConfig): T {
+        return UIFactory.createElement<T>(elData, 0, 0)!;
     }
 
     /**
@@ -577,8 +577,8 @@ export class UIFactory {
      * @param elData 图片配置对象
      * @returns 实例化的 GImage 对象
      */
-    public static createImage(elData: IImageConfig): fgui.GImage {
-        return UIFactory.createElement<fgui.GImage>(elData, 0, 0)!;
+    public static createImage<T extends fgui.GImage>(elData: IImageConfig): T {
+        return UIFactory.createElement<T>(elData, 0, 0)!;
     }
 
     /**
@@ -587,8 +587,8 @@ export class UIFactory {
      * @param elData 进度条配置对象
      * @returns 实例化的 GProgressBar 对象
      */
-    public static createProgressBar(elData: IProgressBarConfig): fgui.GProgressBar {
-        return UIFactory.createElement<fgui.GProgressBar>(elData, 0, 0)!;
+    public static createProgressBar<T extends fgui.GProgressBar>(elData: IProgressBarConfig): T {
+        return UIFactory.createElement<T>(elData, 0, 0)!;
     }
 
     /**
@@ -597,8 +597,8 @@ export class UIFactory {
      * @param elData 滑动条配置对象
      * @returns 实例化的 GSlider 对象
      */
-    public static createSlider(elData: ISliderConfig): fgui.GSlider {
-        return UIFactory.createElement<fgui.GSlider>(elData, 0, 0)!;
+    public static createSlider<T extends fgui.GSlider>(elData: ISliderConfig): T {
+        return UIFactory.createElement<T>(elData, 0, 0)!;
     }
 
     /**
@@ -612,14 +612,14 @@ export class UIFactory {
      * @param userClass
      * @returns 实例化的 GComponent 对象
      */
-    public static createPanel(
+    public static createPanel<T extends fgui.GComponent>(
         elData: IPanelConfig,
         containerW?: number,
         containerH?: number,
-        userClass?: new () => fgui.GObject
-    ): fgui.GComponent {
+        userClass?: new () => T
+    ): T {
         UIFactory.validateLayoutConfig(elData, elData.name || "panel");
-        const node = UIFactory.createElement<fgui.GComponent>(elData, containerW || 0, containerH || 0, userClass)!;
+        const node = UIFactory.createElement<T>(elData, containerW || 0, containerH || 0, userClass)!;
         if (elData.x !== undefined) node.x = elData.x;
         if (elData.y !== undefined) node.y = elData.y;
         return node;

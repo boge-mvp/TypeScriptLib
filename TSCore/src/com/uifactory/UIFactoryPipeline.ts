@@ -15,6 +15,7 @@ import { EPanel } from "./EPanel";
 import { PureList, PureTree } from "./PureList";
 import { UIFactoryExtensions } from "./UIFactoryExtensions";
 import { UIFactory } from "./UIFactory";
+import {GSpineSkeleton} from "../view/GSpineSkeleton";
 
 /**
  * UIFactory 构建管线原子执行器
@@ -78,7 +79,7 @@ export class UIFactoryPipeline {
             case "movieclip":
                 return new fgui.GMovieClip();
             case "loader3d":
-                return new fgui.GLoader3D();
+                return new GSpineSkeleton();
             case "image":
                 return new fgui.GImage();
             default:
