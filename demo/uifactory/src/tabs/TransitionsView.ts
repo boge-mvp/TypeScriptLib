@@ -7,7 +7,7 @@ import GTextField = fgui.GTextField;
  *
  * 遵循官方规范：直接继承 fgui.GComponent，并在 onConstruct 生命周期钩子中自闭环完成所有逻辑绑定。
  */
-export class Tab2TransitionView extends GComponent {
+export class TransitionsView extends GComponent {
 
     protected override onConstruct(): void {
         super.onConstruct();

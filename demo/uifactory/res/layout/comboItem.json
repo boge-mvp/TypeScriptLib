@@ -1,0 +1,41 @@
+{
+  "type": "button",
+  "name": "comboItem",
+  "width": 196,
+  "height": 36,
+  "mode": "Common",
+  "controllers": [
+    { "name": "button", "pages": ["up", "down", "over", "selectedOver"], "selectedIndex": 0 }
+  ],
+  "elements": [
+    {
+      "type": "graph",
+      "name": "bg",
+      "width": 196,
+      "height": 36,
+      "shape": "rect",
+      "fillColor": "#1e293b",
+      "gearColor": {
+        "controller": "button",
+        "pages": {
+          "up": { "color": "#1e293b" },
+          "down": { "color": "#0284c7" },
+          "over": { "color": "#334155" },
+          "selectedOver": { "color": "#0284c7" }
+        }
+      }
+    },
+    {
+      "type": "text",
+      "name": "title",
+      "x": 10,
+      "y": 6,
+      "width": 176,
+      "height": 24,
+      "fontSize": 13,
+      "color": "#f1f5f9",
+      "valign": "middle",
+      "text": "选项"
+    }
+  ]
+}

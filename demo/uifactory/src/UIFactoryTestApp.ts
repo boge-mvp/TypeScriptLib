@@ -4,12 +4,15 @@ import UIFactory = tsCore.UIFactory;
 import DefineConfig = tsCore.DefineConfig;
 
 import { MainView } from "./MainView";
-import { Tab1GearsView } from "./tabs/Tab1GearsView";
-import { Tab2TransitionView } from "./tabs/Tab2TransitionView";
-import { Tab3ButtonsView } from "./tabs/Tab3ButtonsView";
-import { Tab4FlexboxView } from "./tabs/Tab4FlexboxView";
-import { Tab5SlotView } from "./tabs/Tab5SlotView";
-import { Tab6RelationsView } from "./tabs/Tab6RelationsView";
+import { PrimitivesView } from "./tabs/PrimitivesView";
+import { MediaView } from "./tabs/MediaView";
+import { FormView } from "./tabs/FormView";
+import { ContainersView } from "./tabs/ContainersView";
+import { FlexboxWorkbench } from "./tabs/FlexboxWorkbench";
+import { RelationsWorkbench } from "./tabs/RelationsWorkbench";
+import { GearsView } from "./tabs/GearsView";
+import { TransitionsView } from "./tabs/TransitionsView";
+import { ShowcaseExtensionView } from "./tabs/ShowcaseExtensionView";
 
 /**
  * UIFactory 纯代码引擎 — 官方全特性交互验证工作台 (主启动入口)
@@ -51,14 +54,17 @@ export class UIFactoryTestApp {
         }
 
         // 3. 全场景类映射注册 (100% 对齐官方 fgui.UIObjectFactory.setExtension)
-        //    主页面与 6 个 Tab 视图均映射为继承自 fgui.GComponent 的实体类
+        //    主页面与 9 个正交测试 Tab 视图均映射为继承自 fgui.GComponent 的实体类
         UIFactory.setExtension("res/layout/mainView.json", MainView);
-        UIFactory.setExtension("res/layout/tab1Gears.json", Tab1GearsView);
-        UIFactory.setExtension("res/layout/tab2Transition.json", Tab2TransitionView);
-        UIFactory.setExtension("res/layout/tab3Buttons.json", Tab3ButtonsView);
-        UIFactory.setExtension("res/layout/tab4Flexbox.json", Tab4FlexboxView);
-        UIFactory.setExtension("res/layout/tab5Slot.json", Tab5SlotView);
-        UIFactory.setExtension("res/layout/tab6Relations.json", Tab6RelationsView);
+        UIFactory.setExtension("res/layout/primitivesPanel.json", PrimitivesView);
+        UIFactory.setExtension("res/layout/mediaPanel.json", MediaView);
+        UIFactory.setExtension("res/layout/formPanel.json", FormView);
+        UIFactory.setExtension("res/layout/containersPanel.json", ContainersView);
+        UIFactory.setExtension("res/layout/flexboxWorkbench.json", FlexboxWorkbench);
+        UIFactory.setExtension("res/layout/relationsWorkbench.json", RelationsWorkbench);
+        UIFactory.setExtension("res/layout/gearsPanel.json", GearsView);
+        UIFactory.setExtension("res/layout/transitionsPanel.json", TransitionsView);
+        UIFactory.setExtension("res/layout/showcaseExtensionPanel.json", ShowcaseExtensionView);
 
         // 4. 异步加载布局合包
         await UIFactory.loadBundle("res/ui_bundle.bin");

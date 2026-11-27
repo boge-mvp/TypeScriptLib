@@ -1,0 +1,798 @@
+{
+  "type": "panel",
+  "name": "tab3Form",
+  "width": 1432,
+  "height": 600,
+  "background": {
+    "type": "graph",
+    "shape": "rect",
+    "fillColor": "#131b2e",
+    "lineSize": 1,
+    "lineColor": "#1e293b",
+    "cornerRadius": 16
+  },
+  "controllers": [
+    {
+      "name": "radioCtrl",
+      "pages": ["low", "mid", "high"],
+      "selectedIndex": 1
+    }
+  ],
+  "elements": [
+    {
+      "type": "text",
+      "name": "pageTitle",
+      "x": 24,
+      "y": 16,
+      "width": 860,
+      "height": 28,
+      "text": "Tab 3 · 表单与基础交互 (Button / Input / Label / Slider / ProgressBar / ComboBox)",
+      "fontSize": 18,
+      "bold": true,
+      "color": "#f8fafc"
+    },
+    {
+      "type": "text",
+      "name": "pageSub",
+      "x": 24,
+      "y": 46,
+      "width": 1100,
+      "height": 20,
+      "text": "验证 Common/Check/Radio 按钮、GTextInput 输入、GLabel 标签、GSlider 独立拖拽、GProgressBar 独立进度控制及 GComboBox 下拉选框。",
+      "fontSize": 13,
+      "color": "#94a3b8"
+    },
+    {
+      "type": "graph",
+      "name": "cardBtnBg",
+      "x": 24,
+      "y": 80,
+      "width": 684,
+      "height": 240,
+      "shape": "rect",
+      "fillColor": "#0f172a",
+      "lineSize": 1,
+      "lineColor": "#334155",
+      "cornerRadius": 12
+    },
+    {
+      "type": "text",
+      "name": "cardBtnHeader",
+      "x": 40,
+      "y": 94,
+      "width": 652,
+      "height": 24,
+      "text": "3.1 GButton (Common 按压 / Check 复选 / Radio 单选组)",
+      "fontSize": 14,
+      "bold": true,
+      "color": "#38bdf8"
+    },
+    {
+      "type": "button",
+      "name": "btnActionCommon",
+      "x": 40,
+      "y": 132,
+      "width": 168,
+      "height": 44,
+      "title": "点击计数 (0)",
+      "titleFontSize": 13,
+      "downEffect": 2,
+      "downEffectValue": 0.92,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 168, "height": 44, "shape": "rect", "fillColor": "#0284c7", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "width": 168, "height": 44, "align": "center", "valign": "middle", "fontSize": 13, "bold": true, "color": "#ffffff" }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "chkAutoSave",
+      "x": 232,
+      "y": 136,
+      "width": 220,
+      "height": 36,
+      "mode": "Check",
+      "selected": true,
+      "title": "自动保存配置 (Check)",
+      "elements": [
+        { "type": "graph", "name": "hitBg", "width": 220, "height": 36, "shape": "rect", "fillColor": null },
+        {
+          "type": "graph",
+          "name": "box",
+          "x": 0,
+          "y": 6,
+          "width": 24,
+          "height": 24,
+          "shape": "rect",
+          "fillColor": "#1e293b",
+          "lineSize": 2,
+          "lineColor": "#38bdf8",
+          "cornerRadius": 6,
+          "gearColor": {
+            "controller": "button",
+            "pages": {
+              "up": { "color": "#1e293b", "strokeColor": "#64748b" },
+              "down": { "color": "#0369a1", "strokeColor": "#38bdf8" },
+              "over": { "color": "#334155", "strokeColor": "#94a3b8" },
+              "selectedOver": { "color": "#0284c7", "strokeColor": "#7dd3fc" }
+            }
+          }
+        },
+        {
+          "type": "text",
+          "name": "tick",
+          "x": 0,
+          "y": 6,
+          "width": 24,
+          "height": 24,
+          "text": "✓",
+          "fontSize": 16,
+          "bold": true,
+          "color": "#ffffff",
+          "align": "center",
+          "valign": "middle",
+          "gearDisplay": { "controller": "button", "pages": ["down", "selectedOver"] }
+        },
+        { "type": "text", "name": "title", "x": 34, "y": 6, "width": 186, "height": 24, "fontSize": 13, "color": "#e2e8f0", "valign": "middle" }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "radioLabel",
+      "x": 40,
+      "y": 198,
+      "width": 120,
+      "height": 32,
+      "text": "画质单选组：",
+      "fontSize": 13,
+      "color": "#94a3b8",
+      "valign": "middle"
+    },
+    {
+      "type": "group",
+      "name": "radioGroup",
+      "x": 160,
+      "y": 196,
+      "width": 460,
+      "height": 36,
+      "groupLayout": "horizontal",
+      "columnGap": 12
+    },
+    {
+      "type": "button",
+      "name": "radLow",
+      "group": "radioGroup",
+      "y": 196,
+      "width": 120,
+      "height": 36,
+      "mode": "Radio",
+      "relatedController": "radioCtrl",
+      "pageId": "low",
+      "title": "低画质",
+      "elements": [
+        {
+          "type": "graph",
+          "name": "bg",
+          "width": 120,
+          "height": 36,
+          "shape": "rect",
+          "fillColor": "#1e293b",
+          "lineSize": 1,
+          "lineColor": "#334155",
+          "cornerRadius": 8,
+          "gearColor": {
+            "controller": "button",
+            "pages": {
+              "up": { "color": "#1e293b", "strokeColor": "#334155" },
+              "down": { "color": "#0284c7", "strokeColor": "#38bdf8" },
+              "over": { "color": "#334155", "strokeColor": "#64748b" },
+              "selectedOver": { "color": "#0284c7", "strokeColor": "#7dd3fc" }
+            }
+          }
+        },
+        { "type": "text", "name": "title", "width": 120, "height": 36, "align": "center", "valign": "middle", "fontSize": 13, "bold": true, "color": "#f1f5f9" }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "radMid",
+      "group": "radioGroup",
+      "y": 196,
+      "width": 120,
+      "height": 36,
+      "mode": "Radio",
+      "selected": true,
+      "relatedController": "radioCtrl",
+      "pageId": "mid",
+      "title": "均衡画质",
+      "elements": [
+        {
+          "type": "graph",
+          "name": "bg",
+          "width": 120,
+          "height": 36,
+          "shape": "rect",
+          "fillColor": "#1e293b",
+          "lineSize": 1,
+          "lineColor": "#334155",
+          "cornerRadius": 8,
+          "gearColor": {
+            "controller": "button",
+            "pages": {
+              "up": { "color": "#1e293b", "strokeColor": "#334155" },
+              "down": { "color": "#0284c7", "strokeColor": "#38bdf8" },
+              "over": { "color": "#334155", "strokeColor": "#64748b" },
+              "selectedOver": { "color": "#0284c7", "strokeColor": "#7dd3fc" }
+            }
+          }
+        },
+        { "type": "text", "name": "title", "width": 120, "height": 36, "align": "center", "valign": "middle", "fontSize": 13, "bold": true, "color": "#f1f5f9" }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "radHigh",
+      "group": "radioGroup",
+      "y": 196,
+      "width": 120,
+      "height": 36,
+      "mode": "Radio",
+      "relatedController": "radioCtrl",
+      "pageId": "high",
+      "title": "极高画质",
+      "elements": [
+        {
+          "type": "graph",
+          "name": "bg",
+          "width": 120,
+          "height": 36,
+          "shape": "rect",
+          "fillColor": "#1e293b",
+          "lineSize": 1,
+          "lineColor": "#334155",
+          "cornerRadius": 8,
+          "gearColor": {
+            "controller": "button",
+            "pages": {
+              "up": { "color": "#1e293b", "strokeColor": "#334155" },
+              "down": { "color": "#0284c7", "strokeColor": "#38bdf8" },
+              "over": { "color": "#334155", "strokeColor": "#64748b" },
+              "selectedOver": { "color": "#0284c7", "strokeColor": "#7dd3fc" }
+            }
+          }
+        },
+        { "type": "text", "name": "title", "width": 120, "height": 36, "align": "center", "valign": "middle", "fontSize": 13, "bold": true, "color": "#f1f5f9" }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "formBtnStatus",
+      "x": 40,
+      "y": 260,
+      "width": 652,
+      "height": 24,
+      "text": "交互状态：自动保存 = 开启 | 当前画质 = mid | 按钮点击 = 0 次",
+      "fontSize": 13,
+      "color": "#38bdf8"
+    },
+    {
+      "type": "graph",
+      "name": "cardInputBg",
+      "x": 724,
+      "y": 80,
+      "width": 684,
+      "height": 240,
+      "shape": "rect",
+      "fillColor": "#0f172a",
+      "lineSize": 1,
+      "lineColor": "#334155",
+      "cornerRadius": 12
+    },
+    {
+      "type": "text",
+      "name": "cardInputHeader",
+      "x": 740,
+      "y": 94,
+      "width": 652,
+      "height": 24,
+      "text": "3.2 GTextInput 输入框与 GLabel 复合标签",
+      "fontSize": 14,
+      "bold": true,
+      "color": "#38bdf8"
+    },
+    {
+      "type": "graph",
+      "name": "inputBoxBg",
+      "x": 740,
+      "y": 132,
+      "width": 320,
+      "height": 44,
+      "shape": "rect",
+      "fillColor": "#1e293b",
+      "lineSize": 1,
+      "lineColor": "#475569",
+      "cornerRadius": 8
+    },
+    {
+      "type": "text",
+      "name": "txtUserInput",
+      "x": 752,
+      "y": 140,
+      "width": 296,
+      "height": 28,
+      "isInput": true,
+      "promptText": "请输入用户名或测试文本...",
+      "fontSize": 14,
+      "color": "#f8fafc",
+      "valign": "middle"
+    },
+    {
+      "type": "text",
+      "name": "inputMirrorText",
+      "x": 1076,
+      "y": 136,
+      "width": 316,
+      "height": 36,
+      "text": "实时输入回显：(空)",
+      "fontSize": 13,
+      "color": "#94a3b8",
+      "valign": "middle"
+    },
+    {
+      "type": "label",
+      "name": "demoLabel",
+      "x": 740,
+      "y": 200,
+      "width": 320,
+      "height": 56,
+      "title": "GLabel 标准复合标签 (带图元与标题)",
+      "icon": "res/symbols/item_2.png",
+      "titleColor": "#f8fafc",
+      "titleFontSize": 14,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 320, "height": 56, "shape": "rect", "fillColor": "#1e293b", "lineSize": 1, "lineColor": "#334155", "cornerRadius": 8 },
+        { "type": "icon", "name": "icon", "x": 12, "y": 8, "width": 40, "height": 40, "fill": "scale" },
+        { "type": "text", "name": "title", "x": 64, "y": 14, "width": 244, "height": 28, "fontSize": 14, "color": "#f8fafc", "valign": "middle" }
+      ]
+    },
+    {
+      "type": "graph",
+      "name": "cardSliderBg",
+      "x": 24,
+      "y": 336,
+      "width": 444,
+      "height": 240,
+      "shape": "rect",
+      "fillColor": "#0f172a",
+      "lineSize": 1,
+      "lineColor": "#334155",
+      "cornerRadius": 12
+    },
+    {
+      "type": "text",
+      "name": "cardSliderHeader",
+      "x": 40,
+      "y": 350,
+      "width": 412,
+      "height": 24,
+      "text": "3.3 GSlider 独立滑动条 (拖拽手柄 / 点击轨道)",
+      "fontSize": 14,
+      "bold": true,
+      "color": "#38bdf8"
+    },
+    {
+      "type": "slider",
+      "name": "demoSlider",
+      "x": 40,
+      "y": 404,
+      "width": 320,
+      "height": 28,
+      "min": 0,
+      "max": 100,
+      "value": 65,
+      "changeOnClick": true,
+      "elements": [
+        { "type": "graph", "name": "bg", "x": 0, "y": 0, "width": 320, "height": 28, "shape": "rect", "fillColor": null },
+        { "type": "graph", "name": "track", "x": 0, "y": 10, "width": 320, "height": 8, "shape": "rect", "fillColor": "#1e293b", "cornerRadius": 4 },
+        { "type": "graph", "name": "bar", "x": 0, "y": 10, "width": 320, "height": 8, "shape": "rect", "fillColor": "#38bdf8", "cornerRadius": 4 },
+        { "type": "graph", "name": "grip", "x": 296, "y": 2, "width": 24, "height": 24, "shape": "ellipse", "fillColor": "#f8fafc", "lineSize": 3, "lineColor": "#0284c7" }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "sliderValueText",
+      "x": 372,
+      "y": 402,
+      "width": 80,
+      "height": 32,
+      "text": "65%",
+      "fontSize": 16,
+      "bold": true,
+      "color": "#38bdf8",
+      "valign": "middle"
+    },
+    {
+      "type": "group",
+      "name": "sliderPresetGroup",
+      "x": 40,
+      "y": 444,
+      "width": 412,
+      "height": 32,
+      "groupLayout": "horizontal",
+      "columnGap": 12
+    },
+    {
+      "type": "button",
+      "name": "btnSlider0",
+      "group": "sliderPresetGroup",
+      "y": 444,
+      "width": 96,
+      "height": 32,
+      "title": "置为 0%",
+      "downEffect": 2,
+      "downEffectValue": 0.94,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 96, "height": 32, "shape": "rect", "fillColor": "#334155", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "width": 96, "height": 32, "align": "center", "valign": "middle", "fontSize": 12, "bold": true, "color": "#f8fafc" }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "btnSlider50",
+      "group": "sliderPresetGroup",
+      "y": 444,
+      "width": 96,
+      "height": 32,
+      "title": "置为 50%",
+      "downEffect": 2,
+      "downEffectValue": 0.94,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 96, "height": 32, "shape": "rect", "fillColor": "#0284c7", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "width": 96, "height": 32, "align": "center", "valign": "middle", "fontSize": 12, "bold": true, "color": "#ffffff" }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "btnSlider100",
+      "group": "sliderPresetGroup",
+      "y": 444,
+      "width": 96,
+      "height": 32,
+      "title": "置为 100%",
+      "downEffect": 2,
+      "downEffectValue": 0.94,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 96, "height": 32, "shape": "rect", "fillColor": "#0284c7", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "width": 96, "height": 32, "align": "center", "valign": "middle", "fontSize": 12, "bold": true, "color": "#ffffff" }
+      ]
+    },
+    {
+      "type": "group",
+      "name": "sliderOptGroup",
+      "x": 40,
+      "y": 488,
+      "width": 412,
+      "height": 32,
+      "groupLayout": "horizontal",
+      "columnGap": 8
+    },
+    {
+      "type": "button",
+      "name": "btnSliderWhole",
+      "group": "sliderOptGroup",
+      "y": 488,
+      "width": 124,
+      "height": 32,
+      "title": "整数步进: 关",
+      "downEffect": 2,
+      "downEffectValue": 0.94,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 124, "height": 32, "shape": "rect", "fillColor": "#1e293b", "lineSize": 1, "lineColor": "#475569", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "width": 124, "height": 32, "align": "center", "valign": "middle", "fontSize": 12, "color": "#e2e8f0" }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "btnSliderReverse",
+      "group": "sliderOptGroup",
+      "y": 488,
+      "width": 124,
+      "height": 32,
+      "title": "反向滑动: 关",
+      "downEffect": 2,
+      "downEffectValue": 0.94,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 124, "height": 32, "shape": "rect", "fillColor": "#1e293b", "lineSize": 1, "lineColor": "#475569", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "width": 124, "height": 32, "align": "center", "valign": "middle", "fontSize": 12, "color": "#e2e8f0" }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "btnSliderClick",
+      "group": "sliderOptGroup",
+      "y": 488,
+      "width": 132,
+      "height": 32,
+      "title": "点击跳转: 开",
+      "downEffect": 2,
+      "downEffectValue": 0.94,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 132, "height": 32, "shape": "rect", "fillColor": "#1e293b", "lineSize": 1, "lineColor": "#38bdf8", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "width": 132, "height": 32, "align": "center", "valign": "middle", "fontSize": 12, "color": "#38bdf8" }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "sliderOptStatus",
+      "x": 40,
+      "y": 532,
+      "width": 412,
+      "height": 24,
+      "text": "wholeNumbers=false | reverse=false | changeOnClick=true",
+      "fontSize": 12,
+      "color": "#94a3b8",
+      "valign": "middle"
+    },
+    {
+      "type": "graph",
+      "name": "cardProgressBg",
+      "x": 484,
+      "y": 336,
+      "width": 444,
+      "height": 240,
+      "shape": "rect",
+      "fillColor": "#0f172a",
+      "lineSize": 1,
+      "lineColor": "#334155",
+      "cornerRadius": 12
+    },
+    {
+      "type": "text",
+      "name": "cardProgressHeader",
+      "x": 500,
+      "y": 350,
+      "width": 412,
+      "height": 24,
+      "text": "3.4 GProgressBar 独立进度条 (支持 reverse / titleType)",
+      "fontSize": 14,
+      "bold": true,
+      "color": "#38bdf8"
+    },
+    {
+      "type": "progressbar",
+      "name": "demoProgress",
+      "x": 500,
+      "y": 392,
+      "width": 412,
+      "height": 32,
+      "min": 0,
+      "max": 100,
+      "value": 50,
+      "titleType": 0,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 412, "height": 32, "shape": "rect", "fillColor": "#1e293b", "lineSize": 1, "lineColor": "#334155", "cornerRadius": 8 },
+        { "type": "graph", "name": "bar", "x": 2, "y": 2, "width": 408, "height": 28, "shape": "rect", "fillColor": "#16a34a", "cornerRadius": 6 },
+        { "type": "text", "name": "title", "width": 412, "height": 32, "text": "50%", "align": "center", "valign": "middle", "fontSize": 13, "bold": true, "color": "#ffffff" }
+      ]
+    },
+    {
+      "type": "group",
+      "name": "progressCtrlGroup",
+      "x": 500,
+      "y": 444,
+      "width": 412,
+      "height": 32,
+      "groupLayout": "horizontal",
+      "columnGap": 12
+    },
+    {
+      "type": "button",
+      "name": "btnProgressSub",
+      "group": "progressCtrlGroup",
+      "y": 444,
+      "width": 116,
+      "height": 32,
+      "title": "回退 -15%",
+      "downEffect": 2,
+      "downEffectValue": 0.94,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 116, "height": 32, "shape": "rect", "fillColor": "#334155", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "width": 116, "height": 32, "align": "center", "valign": "middle", "fontSize": 12, "bold": true, "color": "#f8fafc" }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "btnProgressAdd",
+      "group": "progressCtrlGroup",
+      "y": 444,
+      "width": 128,
+      "height": 32,
+      "title": "推进 +15%",
+      "downEffect": 2,
+      "downEffectValue": 0.94,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 128, "height": 32, "shape": "rect", "fillColor": "#16a34a", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "width": 128, "height": 32, "align": "center", "valign": "middle", "fontSize": 12, "bold": true, "color": "#ffffff" }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "btnProgressReset",
+      "group": "progressCtrlGroup",
+      "y": 444,
+      "width": 116,
+      "height": 32,
+      "title": "重置 0%",
+      "downEffect": 2,
+      "downEffectValue": 0.94,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 116, "height": 32, "shape": "rect", "fillColor": "#475569", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "width": 116, "height": 32, "align": "center", "valign": "middle", "fontSize": 12, "bold": true, "color": "#f8fafc" }
+      ]
+    },
+    {
+      "type": "group",
+      "name": "progressOptGroup",
+      "x": 500,
+      "y": 488,
+      "width": 412,
+      "height": 32,
+      "groupLayout": "horizontal",
+      "columnGap": 12
+    },
+    {
+      "type": "button",
+      "name": "btnProgressReverse",
+      "group": "progressOptGroup",
+      "y": 488,
+      "width": 116,
+      "height": 32,
+      "title": "反向: 关",
+      "downEffect": 2,
+      "downEffectValue": 0.94,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 116, "height": 32, "shape": "rect", "fillColor": "#1e293b", "lineSize": 1, "lineColor": "#475569", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "width": 116, "height": 32, "align": "center", "valign": "middle", "fontSize": 12, "color": "#e2e8f0" }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "btnProgressTitleType",
+      "group": "progressOptGroup",
+      "y": 488,
+      "width": 132,
+      "height": 32,
+      "title": "模式: Percent",
+      "downEffect": 2,
+      "downEffectValue": 0.94,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 132, "height": 32, "shape": "rect", "fillColor": "#1e293b", "lineSize": 1, "lineColor": "#38bdf8", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "width": 132, "height": 32, "align": "center", "valign": "middle", "fontSize": 12, "color": "#38bdf8" }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "btnProgressTween",
+      "group": "progressOptGroup",
+      "y": 488,
+      "width": 140,
+      "height": 32,
+      "title": "动效(tween): 开",
+      "downEffect": 2,
+      "downEffectValue": 0.94,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 140, "height": 32, "shape": "rect", "fillColor": "#1e293b", "lineSize": 1, "lineColor": "#4ade80", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "width": 140, "height": 32, "align": "center", "valign": "middle", "fontSize": 12, "color": "#4ade80" }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "progressOptStatus",
+      "x": 500,
+      "y": 532,
+      "width": 412,
+      "height": 24,
+      "text": "reverse=false | titleType=Percent(0) | tween=true | value=50",
+      "fontSize": 12,
+      "color": "#94a3b8",
+      "valign": "middle"
+    },
+    {
+      "type": "graph",
+      "name": "cardComboBg",
+      "x": 944,
+      "y": 336,
+      "width": 464,
+      "height": 240,
+      "shape": "rect",
+      "fillColor": "#0f172a",
+      "lineSize": 1,
+      "lineColor": "#334155",
+      "cornerRadius": 12
+    },
+    {
+      "type": "text",
+      "name": "cardComboHeader",
+      "x": 960,
+      "y": 350,
+      "width": 432,
+      "height": 24,
+      "text": "3.5 GComboBox 原生下拉选框 (标准 / 带滚动条长列表)",
+      "fontSize": 14,
+      "bold": true,
+      "color": "#38bdf8"
+    },
+    {
+      "type": "combobox",
+      "name": "demoCombo",
+      "x": 960,
+      "y": 392,
+      "width": 204,
+      "height": 40,
+      "dropdown": "res/layout/comboDropdown.json",
+      "items": ["WebGL 高性能模式", "Canvas 兼容模式", "Spine 3.8 加速", "极简节能模式"],
+      "values": ["webgl", "canvas", "spine38", "eco"],
+      "selectedIndex": 0,
+      "visibleItemCount": 4,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 204, "height": 40, "shape": "rect", "fillColor": "#1e293b", "lineSize": 1, "lineColor": "#38bdf8", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "x": 10, "y": 8, "width": 162, "height": 24, "fontSize": 12, "color": "#f8fafc", "valign": "middle" },
+        { "type": "text", "name": "arrow", "x": 176, "y": 8, "width": 20, "height": 24, "text": "▾", "fontSize": 14, "color": "#38bdf8", "align": "center", "valign": "middle" }
+      ]
+    },
+    {
+      "type": "combobox",
+      "name": "demoComboScroll",
+      "x": 1180,
+      "y": 392,
+      "width": 204,
+      "height": 40,
+      "dropdown": "res/layout/comboDropdown.json",
+      "items": [
+        "01. 简体中文 (zh-CN)",
+        "02. 繁體中文 (zh-TW)",
+        "03. English (en-US)",
+        "04. 日本語 (ja-JP)",
+        "05. 한국어 (ko-KR)",
+        "06. Français (fr-FR)",
+        "07. Deutsch (de-DE)",
+        "08. Español (es-ES)",
+        "09. Português (pt-BR)",
+        "10. Italiano (it-IT)",
+        "11. Tiếng Việt (vi-VN)",
+        "12. ภาษาไทย (th-TH)"
+      ],
+      "values": ["zh-CN", "zh-TW", "en-US", "ja-JP", "ko-KR", "fr-FR", "de-DE", "es-ES", "pt-BR", "it-IT", "vi-VN", "th-TH"],
+      "selectedIndex": 0,
+      "visibleItemCount": 4,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 204, "height": 40, "shape": "rect", "fillColor": "#1e293b", "lineSize": 1, "lineColor": "#a855f7", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "x": 10, "y": 8, "width": 162, "height": 24, "fontSize": 12, "color": "#f8fafc", "valign": "middle" },
+        { "type": "text", "name": "arrow", "x": 176, "y": 8, "width": 20, "height": 24, "text": "▾", "fontSize": 14, "color": "#c084fc", "align": "center", "valign": "middle" }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "comboResultText",
+      "x": 960,
+      "y": 454,
+      "width": 432,
+      "height": 36,
+      "text": "当前选中项：WebGL 高性能模式 (value: webgl)",
+      "fontSize": 13,
+      "color": "#4ade80",
+      "valign": "middle"
+    },
+    {
+      "type": "text",
+      "name": "comboScrollHint",
+      "x": 960,
+      "y": 506,
+      "width": 432,
+      "height": 44,
+      "text": "左侧 4 项常规下拉；右侧 12 项超出 visibleItemCount(4)，弹出后显示悬浮滚动条。",
+      "fontSize": 12,
+      "color": "#94a3b8",
+      "valign": "middle"
+    }
+  ]
+}

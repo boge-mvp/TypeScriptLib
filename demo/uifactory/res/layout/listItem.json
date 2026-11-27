@@ -1,0 +1,68 @@
+{
+  "type": "button",
+  "name": "listItem",
+  "width": 360,
+  "height": 48,
+  "mode": "Check",
+  "controllers": [
+    { "name": "button", "pages": ["0", "1", "2", "3"], "selectedIndex": 0 }
+  ],
+  "elements": [
+    {
+      "type": "graph",
+      "name": "bg",
+      "width": 360,
+      "height": 48,
+      "shape": "rect",
+      "fillColor": "#1e293b",
+      "lineSize": 1,
+      "lineColor": "#334155",
+      "cornerRadius": 8,
+      "gearColor": {
+        "controller": "button",
+        "pages": {
+          "0": { "color": "#1e293b", "outlineColor": "#334155" },
+          "1": { "color": "#0c4a6e", "outlineColor": "#38bdf8" },
+          "2": { "color": "#273549", "outlineColor": "#475569" },
+          "3": { "color": "#075985", "outlineColor": "#7dd3fc" }
+        }
+      }
+    },
+    {
+      "type": "icon",
+      "name": "icon",
+      "x": 10,
+      "y": 6,
+      "width": 36,
+      "height": 36,
+      "fill": "scale",
+      "url": "res/symbols/item_1.png"
+    },
+    {
+      "type": "text",
+      "name": "title",
+      "x": 56,
+      "y": 12,
+      "width": 220,
+      "height": 24,
+      "fontSize": 14,
+      "bold": true,
+      "color": "#f8fafc",
+      "valign": "middle",
+      "text": "列表项"
+    },
+    {
+      "type": "text",
+      "name": "badge",
+      "x": 284,
+      "y": 14,
+      "width": 64,
+      "height": 20,
+      "fontSize": 12,
+      "color": "#38bdf8",
+      "align": "right",
+      "valign": "middle",
+      "text": "#01"
+    }
+  ]
+}

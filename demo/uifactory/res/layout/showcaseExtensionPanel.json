@@ -1,0 +1,290 @@
+{
+  "type": "panel",
+  "name": "showcaseExtensionPanel",
+  "width": 1432,
+  "height": 600,
+  "background": {
+    "type": "graph",
+    "shape": "rect",
+    "fillColor": "#131b2e",
+    "lineSize": 1,
+    "lineColor": "#1e293b",
+    "cornerRadius": 16
+  },
+  "elements": [
+    {
+      "type": "text",
+      "name": "pageTitle",
+      "x": 24,
+      "y": 16,
+      "width": 900,
+      "height": 28,
+      "text": "Tab 9 · 实战场景与扩展 API (Slot 转轴 + 18 个 create* + setExtension / registerCreator)",
+      "fontSize": 18,
+      "bold": true,
+      "color": "#f8fafc"
+    },
+    {
+      "type": "text",
+      "name": "pageSub",
+      "x": 24,
+      "y": 46,
+      "width": 1100,
+      "height": 20,
+      "text": "左侧实战老虎机 3×3 滚动转轴（PureList + slotItem）；右上验证 18 个静态 create* 方法；右下实测 setExtension 扩展类、registerConfig 与 registerCreator 自定义元件类型。",
+      "fontSize": 13,
+      "color": "#94a3b8"
+    },
+    {
+      "type": "graph",
+      "name": "cardSlotBg",
+      "x": 24,
+      "y": 80,
+      "width": 600,
+      "height": 496,
+      "shape": "rect",
+      "fillColor": "#0f172a",
+      "lineSize": 1,
+      "lineColor": "#334155",
+      "cornerRadius": 12
+    },
+    {
+      "type": "text",
+      "name": "slotHeader",
+      "x": 40,
+      "y": 94,
+      "width": 568,
+      "height": 24,
+      "text": "9.1 实战老虎机 3×3 转轴 (PureList + 循环滚动)",
+      "fontSize": 14,
+      "bold": true,
+      "color": "#38bdf8"
+    },
+    {
+      "type": "graph",
+      "name": "slotMachineFrame",
+      "x": 140,
+      "y": 144,
+      "width": 368,
+      "height": 296,
+      "shape": "rect",
+      "fillColor": "#1e293b",
+      "lineSize": 2,
+      "lineColor": "#f59e0b",
+      "cornerRadius": 12
+    },
+    {
+      "type": "list",
+      "name": "reel0",
+      "x": 160,
+      "y": 156,
+      "width": 88,
+      "height": 272,
+      "overflow": "scroll",
+      "defaultItem": "res/layout/slotItem.json",
+      "lineGap": 4,
+      "touchable": false
+    },
+    {
+      "type": "list",
+      "name": "reel1",
+      "x": 280,
+      "y": 156,
+      "width": 88,
+      "height": 272,
+      "overflow": "scroll",
+      "defaultItem": "res/layout/slotItem.json",
+      "lineGap": 4,
+      "touchable": false
+    },
+    {
+      "type": "list",
+      "name": "reel2",
+      "x": 400,
+      "y": 156,
+      "width": 88,
+      "height": 272,
+      "overflow": "scroll",
+      "defaultItem": "res/layout/slotItem.json",
+      "lineGap": 4,
+      "touchable": false
+    },
+    {
+      "type": "button",
+      "name": "btnSpinSlot",
+      "x": 204,
+      "y": 464,
+      "width": 240,
+      "height": 48,
+      "title": "开始旋转 SPIN",
+      "downEffect": 2,
+      "downEffectValue": 0.94,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 240, "height": 48, "shape": "rect", "fillColor": "#d97706", "cornerRadius": 10 },
+        { "type": "text", "name": "title", "width": 240, "height": 48, "align": "center", "valign": "middle", "fontSize": 15, "bold": true, "color": "#ffffff" }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "slotResultText",
+      "x": 40,
+      "y": 528,
+      "width": 568,
+      "height": 28,
+      "text": "转轴状态：待机中，点击 SPIN 启动 3 轴异步停止动画",
+      "fontSize": 13,
+      "color": "#cbd5e1",
+      "align": "center"
+    },
+    {
+      "type": "graph",
+      "name": "cardApiBg",
+      "x": 640,
+      "y": 80,
+      "width": 768,
+      "height": 256,
+      "shape": "rect",
+      "fillColor": "#0f172a",
+      "lineSize": 1,
+      "lineColor": "#334155",
+      "cornerRadius": 12
+    },
+    {
+      "type": "text",
+      "name": "apiHeader",
+      "x": 656,
+      "y": 94,
+      "width": 736,
+      "height": 24,
+      "text": "9.2 UIFactory 18 种 create* 工厂方法自检与引擎诊断",
+      "fontSize": 14,
+      "bold": true,
+      "color": "#38bdf8"
+    },
+    {
+      "type": "button",
+      "name": "btnRunApiAudit",
+      "x": 656,
+      "y": 128,
+      "width": 248,
+      "height": 36,
+      "title": "执行 18 个工厂 API 实时自检",
+      "downEffect": 2,
+      "downEffectValue": 0.94,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 248, "height": 36, "shape": "rect", "fillColor": "#0284c7", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "width": 248, "height": 36, "align": "center", "valign": "middle", "fontSize": 13, "bold": true, "color": "#ffffff" }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "apiAuditResult",
+      "x": 656,
+      "y": 174,
+      "width": 736,
+      "height": 148,
+      "fontSize": 12,
+      "leading": 4,
+      "color": "#a7f3d0",
+      "text": "点击上方按钮，将在内存中实时调用并断言 UIFactory 全系 18 个静态创建方法（createText / createRichTextField / createTextInput / createIcon / createGraph / createButton / createPanel / createList / createGroup / createLabel / createComboBox / createScrollBar / createTree / createMovieClip / createImage / createProgressBar / createSlider / createElement）。"
+    },
+    {
+      "type": "graph",
+      "name": "cardExtBg",
+      "x": 640,
+      "y": 352,
+      "width": 768,
+      "height": 224,
+      "shape": "rect",
+      "fillColor": "#0f172a",
+      "lineSize": 1,
+      "lineColor": "#334155",
+      "cornerRadius": 12
+    },
+    {
+      "type": "text",
+      "name": "extHeader",
+      "x": 656,
+      "y": 366,
+      "width": 736,
+      "height": 24,
+      "text": "9.3 UIFactory 扩展机制测试 (setExtension / registerConfig / registerCreator)",
+      "fontSize": 14,
+      "bold": true,
+      "color": "#38bdf8"
+    },
+    {
+      "type": "group",
+      "name": "extBtnGroup",
+      "x": 656,
+      "y": 400,
+      "width": 736,
+      "height": 36,
+      "groupLayout": "horizontal",
+      "columnGap": 12
+    },
+    {
+      "type": "button",
+      "name": "btnTestSetExtension",
+      "group": "extBtnGroup",
+      "y": 400,
+      "width": 236,
+      "height": 36,
+      "title": "测试 setExtension + registerConfig",
+      "downEffect": 2,
+      "downEffectValue": 0.94,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 236, "height": 36, "shape": "rect", "fillColor": "#7c3aed", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "width": 236, "height": 36, "align": "center", "valign": "middle", "fontSize": 12, "bold": true, "color": "#ffffff" }
+      ]
+    },
+    {
+      "type": "button",
+      "name": "btnTestRegisterCreator",
+      "group": "extBtnGroup",
+      "y": 400,
+      "width": 236,
+      "height": 36,
+      "title": "测试 registerCreator 自定义元件",
+      "downEffect": 2,
+      "downEffectValue": 0.94,
+      "elements": [
+        { "type": "graph", "name": "bg", "width": 236, "height": 36, "shape": "rect", "fillColor": "#059669", "cornerRadius": 8 },
+        { "type": "text", "name": "title", "width": 236, "height": 36, "align": "center", "valign": "middle", "fontSize": 12, "bold": true, "color": "#ffffff" }
+      ]
+    },
+    {
+      "type": "graph",
+      "name": "extPreviewBg",
+      "x": 656,
+      "y": 448,
+      "width": 320,
+      "height": 112,
+      "shape": "rect",
+      "fillColor": "#1e293b",
+      "lineSize": 1,
+      "lineColor": "#475569",
+      "cornerRadius": 8
+    },
+    {
+      "type": "panel",
+      "name": "extPreviewHost",
+      "x": 656,
+      "y": 448,
+      "width": 320,
+      "height": 112
+    },
+    {
+      "type": "text",
+      "name": "extAuditResult",
+      "x": 992,
+      "y": 448,
+      "width": 400,
+      "height": 112,
+      "fontSize": 12,
+      "leading": 6,
+      "color": "#cbd5e1",
+      "text": "等待执行扩展测试...\n• setExtension：绑定自定义 GComponent 子类到动态配置路径\n• registerCreator：注册 \"neon-pill\" 新元素类型并通过 createElement 创建"
+    }
+  ]
+}

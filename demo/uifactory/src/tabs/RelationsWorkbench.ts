@@ -2,18 +2,12 @@ import GComponent = fgui.GComponent;
 import GButton = fgui.GButton;
 import GTextField = fgui.GTextField;
 
-interface IRelationMeta {
-    type: string;
-    label: string;
-    desc: string;
-}
-
 /**
- * Tab 6: 官方 24 项全系 Relations 关联系统检视面板
+ * Tab 5: 官方 25 项全系 Relations 关联系统检视面板
  *
  * 遵循官方规范：直接继承 fgui.GComponent，并在 onConstruct 生命周期钩子中自闭环完成所有逻辑绑定。
  */
-export class Tab6RelationsView extends GComponent {
+export class RelationsWorkbench extends GComponent {
 
     private _sandboxStage!: GComponent;
     private _targetBox!: GComponent;
@@ -29,10 +23,10 @@ export class Tab6RelationsView extends GComponent {
     private _pctButtons: Record<string, GButton> = {};
     private _activeRelations: Map<string, boolean> = new Map();
 
-    private static readonly INITIAL_TARGET_BASELINE = { x: 180, y: 140, width: 220, height: 160 };
-    private static readonly INITIAL_FOLLOWER_BASELINE = { x: 440, y: 140, width: 180, height: 160 };
+    private static readonly INITIAL_TARGET_BASELINE = { x: 70, y: 70, width: 160, height: 100 };
+    private static readonly INITIAL_FOLLOWER_BASELINE = { x: 250, y: 85, width: 120, height: 60 };
 
-    private static readonly ALL_RELATIONS: IRelationMeta[] = [
+    private static readonly ALL_RELATIONS: Array<{ type: string; label: string; desc: string }> = [
         { type: "Left_Left", label: "左", desc: "跟随目标的左边缘位移" },
         { type: "Left_Center", label: "中", desc: "跟随目标的水平中心位移" },
         { type: "Left_Right", label: "右", desc: "跟随目标的右边缘位移" },
@@ -49,6 +43,7 @@ export class Tab6RelationsView extends GComponent {
         { type: "Bottom_Bottom", label: "底", desc: "底边缘跟随目标底边缘" },
         { type: "Width", label: "宽", desc: "宽度随目标宽度等量/等比变化" },
         { type: "Height", label: "高", desc: "高度随目标高度等量/等比变化" },
+        { type: "Size", label: "宽+高(Size)", desc: "宽高同时随目标等量/等比变化" },
         { type: "LeftExt_Left", label: "左", desc: "左边缘随目标左边缘而延展宽度(右边缘不动)" },
         { type: "LeftExt_Right", label: "右", desc: "左边缘随目标右边缘而延展宽度(右边缘不动)" },
         { type: "RightExt_Left", label: "左", desc: "右边缘随目标左边缘而延展宽度(左边缘不动)" },
@@ -59,12 +54,12 @@ export class Tab6RelationsView extends GComponent {
         { type: "BottomExt_Bottom", label: "底", desc: "底边缘随目标底边缘而延展高度(顶边缘不动)" }
     ];
 
-    private static readonly HANDLE_KEYS = ["tl", "t", "tr", "r", "br", "b", "bl", "l"];
+    private static readonly HANDLE_KEYS = ["nw", "n", "ne", "e", "se", "s", "sw", "w"];
     private static readonly CURSOR_MAP: Record<string, string> = {
-        tl: "nwse-resize", br: "nwse-resize",
-        tr: "nesw-resize", bl: "nesw-resize",
-        t: "ns-resize", b: "ns-resize",
-        l: "ew-resize", r: "ew-resize"
+        nw: "nwse-resize", se: "nwse-resize",
+        ne: "nesw-resize", sw: "nesw-resize",
+        n: "ns-resize", s: "ns-resize",
+        w: "ew-resize", e: "ew-resize"
     };
 
     protected override onConstruct(): void {
@@ -97,7 +92,7 @@ export class Tab6RelationsView extends GComponent {
             }
 
             if (fguiInspectorBox) {
-                for (const meta of Tab6RelationsView.ALL_RELATIONS) {
+                for (const meta of RelationsWorkbench.ALL_RELATIONS) {
                     const cell = fguiInspectorBox.getChild(`cell_${meta.type}`) as GComponent;
                     if (!cell) continue;
                     const relBtn = cell.getChild(`relBtn_${meta.type}`) as GButton;
@@ -134,45 +129,45 @@ export class Tab6RelationsView extends GComponent {
                     { type: "Left_Right", percent: false },
                     { type: "Middle_Middle", percent: false }
                 ]);
-                this._bindPresetBtn(presetRow1, "btnPresetCenterSync", [
-                    { type: "Center_Center", percent: false },
-                    { type: "Middle_Middle", percent: false }
-                ]);
-                this._bindPresetBtn(presetRow1, "btnPresetWidthSync", [
-                    { type: "Width", percent: false },
-                    { type: "Bottom_Top", percent: false }
-                ]);
-            }
-
-            const presetRow2 = rightMatrixPanel.getChild("presetRow2") as GComponent;
-            if (presetRow2) {
-                this._bindPresetBtn(presetRow2, "btnPresetPercentAnchor", [
-                    { type: "Left_Left", percent: true },
-                    { type: "Top_Top", percent: true }
-                ]);
-                this._bindPresetBtn(presetRow2, "btnPresetExtRight", [
-                    { type: "RightExt_Right", percent: false },
-                    { type: "Bottom_Bottom", percent: false }
-                ]);
-                this._bindPresetBtn(presetRow2, "btnPresetFullClone", [
-                    { type: "Left_Left", percent: false },
-                    { type: "Top_Top", percent: false },
+                this._bindPresetBtn(presetRow1, "btnPresetSize", [
                     { type: "Width", percent: false },
                     { type: "Height", percent: false }
                 ]);
+                this._bindPresetBtn(presetRow1, "btnPresetCenter", [
+                    { type: "Center_Center", percent: false },
+                    { type: "Middle_Middle", percent: false }
+                ]);
+                this._bindPresetBtn(presetRow1, "btnPresetExtH", [
+                    { type: "LeftExt_Left", percent: false },
+                    { type: "RightExt_Right", percent: false }
+                ]);
+                this._bindPresetBtn(presetRow1, "btnPresetExtV", [
+                    { type: "TopExt_Top", percent: false },
+                    { type: "BottomExt_Bottom", percent: false }
+                ]);
+                const btnClear = presetRow1.getChild("btnClearRelations") as GButton;
+                if (btnClear) {
+                    btnClear.onClick(this, () => this._clearAllRelations());
+                }
             }
         }
 
-        const controlBar = leftWorkbench.getChild("controlBar") as GComponent;
-        if (controlBar) {
-            const btnReset = controlBar.getChild("btnResetTarget") as GButton;
-            if (btnReset) {
-                btnReset.onClick(this, () => this._resetTargetBaseline());
+        const layoutModeRow = leftWorkbench.getChild("layoutModeRow") as GComponent;
+        if (layoutModeRow) {
+            const modeCtrl = layoutModeRow.getController("modeCtrl");
+            if (modeCtrl) {
+                modeCtrl.on(fgui.Events.STATE_CHANGED, this, () => {
+                    this._applyLayoutMode(modeCtrl.selectedPage);
+                });
             }
-
-            const btnClear = controlBar.getChild("btnClearRelations") as GButton;
-            if (btnClear) {
-                btnClear.onClick(this, () => this._clearAllRelations());
+            const btnTogglePivot = layoutModeRow.getChild("btnTogglePivot") as GButton;
+            if (btnTogglePivot) {
+                btnTogglePivot.on(fgui.Events.STATE_CHANGED, this, () => {
+                    const useCenter = btnTogglePivot.selected;
+                    this._targetBox.setPivot(useCenter ? 0.5 : 0, useCenter ? 0.5 : 0);
+                    btnTogglePivot.title = useCenter ? "B轴心: (0.5,0.5)" : "B轴心: (0,0)";
+                    this._updateTelemetryAndLabels();
+                });
             }
         }
 
@@ -182,6 +177,26 @@ export class Tab6RelationsView extends GComponent {
             { type: "Left_Right", percent: false },
             { type: "Middle_Middle", percent: false }
         ]);
+    }
+
+    private _applyLayoutMode(mode: string): void {
+        const tb = RelationsWorkbench.INITIAL_TARGET_BASELINE;
+        this._targetBox.setXY(tb.x, tb.y);
+        this._targetBox.setSize(tb.width, tb.height);
+        this._followerBox.relations.clearAll();
+        if (mode === "inside") {
+            this._targetBox.setSize(260, 180);
+            this._followerBox.setXY(tb.x + 20, tb.y + 20);
+            this._followerBox.setSize(120, 60);
+        } else if (mode === "bottom") {
+            this._followerBox.setXY(tb.x + 20, tb.y + tb.height + 24);
+            this._followerBox.setSize(120, 60);
+        } else {
+            const fb = RelationsWorkbench.INITIAL_FOLLOWER_BASELINE;
+            this._followerBox.setXY(fb.x, fb.y);
+            this._followerBox.setSize(fb.width, fb.height);
+        }
+        this._rebuildRelationsFromCurrentBaseline();
     }
 
     private _bindPresetBtn(parent: GComponent, btnName: string, rels: { type: string; percent: boolean }[]): void {
@@ -208,7 +223,7 @@ export class Tab6RelationsView extends GComponent {
         this._followerBox.relations.clearAll();
 
         if (updateUI) {
-            for (const meta of Tab6RelationsView.ALL_RELATIONS) {
+            for (const meta of RelationsWorkbench.ALL_RELATIONS) {
                 const rBtn = this._relButtons[meta.type];
                 const pBtn = this._pctButtons[meta.type];
                 if (rBtn) rBtn.selected = false;
@@ -219,8 +234,8 @@ export class Tab6RelationsView extends GComponent {
     }
 
     private _resetTargetBaseline(): void {
-        const tb = Tab6RelationsView.INITIAL_TARGET_BASELINE;
-        const fb = Tab6RelationsView.INITIAL_FOLLOWER_BASELINE;
+        const tb = RelationsWorkbench.INITIAL_TARGET_BASELINE;
+        const fb = RelationsWorkbench.INITIAL_FOLLOWER_BASELINE;
 
         this._targetBox.setXY(tb.x, tb.y);
         this._targetBox.setSize(tb.width, tb.height);
@@ -269,9 +284,9 @@ export class Tab6RelationsView extends GComponent {
         }
 
         if (this._configPreviewText) {
-            const relArray: any[] = [];
+            const relArray: Array<{ target: string; type: string; usePercent?: boolean }> = [];
             for (const [t, p] of this._activeRelations.entries()) {
-                const item: any = { target: "targetBox", type: t };
+                const item: { target: string; type: string; usePercent?: boolean } = { target: "targetBox", type: t };
                 if (p) item.usePercent = true;
                 relArray.push(item);
             }
@@ -283,6 +298,14 @@ export class Tab6RelationsView extends GComponent {
         this._targetBox.draggable = true;
         this._targetBox.dragBounds = new Laya.Rectangle(10, 10, this._sandboxStage.width - 20, this._sandboxStage.height - 20);
 
+        this._targetBox.on(Laya.Event.MOUSE_DOWN, this, () => {
+            if (this._handlesGroup) this._handlesGroup.visible = true;
+        });
+        this._sandboxStage.on(Laya.Event.MOUSE_DOWN, this, (evt: Laya.Event) => {
+            if (evt.target === this._sandboxStage.displayObject && this._handlesGroup) {
+                this._handlesGroup.visible = false;
+            }
+        });
         this._targetBox.on(fgui.Events.DRAG_MOVE, this, () => {
             this._updateTelemetryAndLabels();
         });
@@ -292,12 +315,12 @@ export class Tab6RelationsView extends GComponent {
     }
 
     private _setupHandleScaling(): void {
-        for (const dir of Tab6RelationsView.HANDLE_KEYS) {
+        for (const dir of RelationsWorkbench.HANDLE_KEYS) {
             const handle = this._targetBox.getChild(`handle_${dir}`);
             if (!handle) continue;
 
             handle.on(Laya.Event.MOUSE_OVER, this, () => {
-                Laya.Mouse.cursor = Tab6RelationsView.CURSOR_MAP[dir] || "default";
+                Laya.Mouse.cursor = RelationsWorkbench.CURSOR_MAP[dir] || "default";
             });
             handle.on(Laya.Event.MOUSE_OUT, this, () => {
                 Laya.Mouse.cursor = "default";
@@ -331,20 +354,20 @@ export class Tab6RelationsView extends GComponent {
             const minW = 100;
             const minH = 80;
 
-            if (dir.includes("r")) {
+            if (dir.includes("e")) {
                 newW = Math.max(minW, startW + dx);
             }
-            if (dir.includes("l")) {
+            if (dir.includes("w")) {
                 const candW = startW - dx;
                 if (candW >= minW) {
                     newW = candW;
                     newX = startX + dx;
                 }
             }
-            if (dir.includes("b")) {
+            if (dir.includes("s")) {
                 newH = Math.max(minH, startH + dy);
             }
-            if (dir.includes("t")) {
+            if (dir.includes("n")) {
                 const candH = startH - dy;
                 if (candH >= minH) {
                     newH = candH;

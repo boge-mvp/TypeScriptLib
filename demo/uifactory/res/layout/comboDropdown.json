@@ -1,0 +1,31 @@
+{
+  "type": "panel",
+  "name": "comboDropdown",
+  "width": 204,
+  "height": 156,
+  "background": {
+    "type": "graph",
+    "shape": "rect",
+    "fillColor": "#0f172a",
+    "lineSize": 1,
+    "lineColor": "#38bdf8",
+    "cornerRadius": 8
+  },
+  "elements": [
+    {
+      "type": "list",
+      "name": "list",
+      "x": 4,
+      "y": 4,
+      "width": 196,
+      "height": 148,
+      "overflow": "scroll",
+      "scroll": "vertical",
+      "scrollBarDisplay": "visible",
+      "scrollBarFloating": true,
+      "vtScrollBar": "res/layout/scrollBarVt.json",
+      "defaultItem": "res/layout/comboItem.json",
+      "lineGap": 2
+    }
+  ]
+}

@@ -1,16 +1,10 @@
 {
   "type": "panel",
-  "name": "tab6Panel",
-  "x": 236,
-  "y": 12,
+  "name": "tab5RelationsWorkbench",
+  "x": 0,
+  "y": 0,
   "width": 1228,
   "height": 646,
-  "gearDisplay": {
-    "controller": "tabCtrl",
-    "pages": [
-      "tab6"
-    ]
-  },
   "background": {
     "color": "#1e293b",
     "cornerRadius": 8
@@ -222,11 +216,27 @@
                   "width": 20,
                   "height": 20,
                   "relations": [
-                    { "target": "parent", "type": "Left_Left" },
-                    { "target": "parent", "type": "Top_Top" }
+                    {
+                      "target": "parent",
+                      "type": "Left_Left"
+                    },
+                    {
+                      "target": "parent",
+                      "type": "Top_Top"
+                    }
                   ],
                   "elements": [
-                    { "type": "graph", "x": 5, "y": 5, "width": 10, "height": 10, "fillColor": "#ffffff", "cornerRadius": 2, "lineSize": 1.5, "lineColor": "#0284c7" }
+                    {
+                      "type": "graph",
+                      "x": 5,
+                      "y": 5,
+                      "width": 10,
+                      "height": 10,
+                      "fillColor": "#ffffff",
+                      "cornerRadius": 2,
+                      "lineSize": 1.5,
+                      "lineColor": "#0284c7"
+                    }
                   ]
                 },
                 {
@@ -238,11 +248,27 @@
                   "width": 20,
                   "height": 20,
                   "relations": [
-                    { "target": "parent", "type": "Center_Center" },
-                    { "target": "parent", "type": "Top_Top" }
+                    {
+                      "target": "parent",
+                      "type": "Center_Center"
+                    },
+                    {
+                      "target": "parent",
+                      "type": "Top_Top"
+                    }
                   ],
                   "elements": [
-                    { "type": "graph", "x": 5, "y": 5, "width": 10, "height": 10, "fillColor": "#ffffff", "cornerRadius": 2, "lineSize": 1.5, "lineColor": "#0284c7" }
+                    {
+                      "type": "graph",
+                      "x": 5,
+                      "y": 5,
+                      "width": 10,
+                      "height": 10,
+                      "fillColor": "#ffffff",
+                      "cornerRadius": 2,
+                      "lineSize": 1.5,
+                      "lineColor": "#0284c7"
+                    }
                   ]
                 },
                 {
@@ -254,11 +280,27 @@
                   "width": 20,
                   "height": 20,
                   "relations": [
-                    { "target": "parent", "type": "Right_Right" },
-                    { "target": "parent", "type": "Top_Top" }
+                    {
+                      "target": "parent",
+                      "type": "Right_Right"
+                    },
+                    {
+                      "target": "parent",
+                      "type": "Top_Top"
+                    }
                   ],
                   "elements": [
-                    { "type": "graph", "x": 5, "y": 5, "width": 10, "height": 10, "fillColor": "#ffffff", "cornerRadius": 2, "lineSize": 1.5, "lineColor": "#0284c7" }
+                    {
+                      "type": "graph",
+                      "x": 5,
+                      "y": 5,
+                      "width": 10,
+                      "height": 10,
+                      "fillColor": "#ffffff",
+                      "cornerRadius": 2,
+                      "lineSize": 1.5,
+                      "lineColor": "#0284c7"
+                    }
                   ]
                 },
                 {
@@ -270,11 +312,27 @@
                   "width": 20,
                   "height": 20,
                   "relations": [
-                    { "target": "parent", "type": "Right_Right" },
-                    { "target": "parent", "type": "Middle_Middle" }
+                    {
+                      "target": "parent",
+                      "type": "Right_Right"
+                    },
+                    {
+                      "target": "parent",
+                      "type": "Middle_Middle"
+                    }
                   ],
                   "elements": [
-                    { "type": "graph", "x": 5, "y": 5, "width": 10, "height": 10, "fillColor": "#ffffff", "cornerRadius": 2, "lineSize": 1.5, "lineColor": "#0284c7" }
+                    {
+                      "type": "graph",
+                      "x": 5,
+                      "y": 5,
+                      "width": 10,
+                      "height": 10,
+                      "fillColor": "#ffffff",
+                      "cornerRadius": 2,
+                      "lineSize": 1.5,
+                      "lineColor": "#0284c7"
+                    }
                   ]
                 },
                 {
@@ -286,11 +344,27 @@
                   "width": 20,
                   "height": 20,
                   "relations": [
-                    { "target": "parent", "type": "Right_Right" },
-                    { "target": "parent", "type": "Bottom_Bottom" }
+                    {
+                      "target": "parent",
+                      "type": "Right_Right"
+                    },
+                    {
+                      "target": "parent",
+                      "type": "Bottom_Bottom"
+                    }
                   ],
                   "elements": [
-                    { "type": "graph", "x": 5, "y": 5, "width": 10, "height": 10, "fillColor": "#ffffff", "cornerRadius": 2, "lineSize": 1.5, "lineColor": "#0284c7" }
+                    {
+                      "type": "graph",
+                      "x": 5,
+                      "y": 5,
+                      "width": 10,
+                      "height": 10,
+                      "fillColor": "#ffffff",
+                      "cornerRadius": 2,
+                      "lineSize": 1.5,
+                      "lineColor": "#0284c7"
+                    }
                   ]
                 },
                 {
@@ -302,11 +376,27 @@
                   "width": 20,
                   "height": 20,
                   "relations": [
-                    { "target": "parent", "type": "Center_Center" },
-                    { "target": "parent", "type": "Bottom_Bottom" }
+                    {
+                      "target": "parent",
+                      "type": "Center_Center"
+                    },
+                    {
+                      "target": "parent",
+                      "type": "Bottom_Bottom"
+                    }
                   ],
                   "elements": [
-                    { "type": "graph", "x": 5, "y": 5, "width": 10, "height": 10, "fillColor": "#ffffff", "cornerRadius": 2, "lineSize": 1.5, "lineColor": "#0284c7" }
+                    {
+                      "type": "graph",
+                      "x": 5,
+                      "y": 5,
+                      "width": 10,
+                      "height": 10,
+                      "fillColor": "#ffffff",
+                      "cornerRadius": 2,
+                      "lineSize": 1.5,
+                      "lineColor": "#0284c7"
+                    }
                   ]
                 },
                 {
@@ -318,11 +408,27 @@
                   "width": 20,
                   "height": 20,
                   "relations": [
-                    { "target": "parent", "type": "Left_Left" },
-                    { "target": "parent", "type": "Bottom_Bottom" }
+                    {
+                      "target": "parent",
+                      "type": "Left_Left"
+                    },
+                    {
+                      "target": "parent",
+                      "type": "Bottom_Bottom"
+                    }
                   ],
                   "elements": [
-                    { "type": "graph", "x": 5, "y": 5, "width": 10, "height": 10, "fillColor": "#ffffff", "cornerRadius": 2, "lineSize": 1.5, "lineColor": "#0284c7" }
+                    {
+                      "type": "graph",
+                      "x": 5,
+                      "y": 5,
+                      "width": 10,
+                      "height": 10,
+                      "fillColor": "#ffffff",
+                      "cornerRadius": 2,
+                      "lineSize": 1.5,
+                      "lineColor": "#0284c7"
+                    }
                   ]
                 },
                 {
@@ -334,11 +440,27 @@
                   "width": 20,
                   "height": 20,
                   "relations": [
-                    { "target": "parent", "type": "Left_Left" },
-                    { "target": "parent", "type": "Middle_Middle" }
+                    {
+                      "target": "parent",
+                      "type": "Left_Left"
+                    },
+                    {
+                      "target": "parent",
+                      "type": "Middle_Middle"
+                    }
                   ],
                   "elements": [
-                    { "type": "graph", "x": 5, "y": 5, "width": 10, "height": 10, "fillColor": "#ffffff", "cornerRadius": 2, "lineSize": 1.5, "lineColor": "#0284c7" }
+                    {
+                      "type": "graph",
+                      "x": 5,
+                      "y": 5,
+                      "width": 10,
+                      "height": 10,
+                      "fillColor": "#ffffff",
+                      "cornerRadius": 2,
+                      "lineSize": 1.5,
+                      "lineColor": "#0284c7"
+                    }
                   ]
                 }
               ]
@@ -415,7 +537,7 @@
         {
           "type": "panel",
           "name": "layoutModeRow",
-          "src": "res/layout/tab6ModeBar.json",
+          "src": "res/layout/relationsModeBar.json",
           "x": 0,
           "y": 528,
           "width": 576,

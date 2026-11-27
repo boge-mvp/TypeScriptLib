@@ -1,0 +1,34 @@
+{
+  "type": "scrollbar",
+  "name": "scrollBarVt",
+  "width": 14,
+  "height": 100,
+  "fixedGripSize": false,
+  "elements": [
+    {
+      "type": "graph",
+      "name": "bar",
+      "x": 0,
+      "y": 0,
+      "width": 14,
+      "height": 100,
+      "shape": "rect",
+      "fillColor": "#1e293b",
+      "cornerRadius": 7,
+      "relations": [
+        { "target": "", "type": "Size" }
+      ]
+    },
+    {
+      "type": "graph",
+      "name": "grip",
+      "x": 2,
+      "y": 0,
+      "width": 10,
+      "height": 32,
+      "shape": "rect",
+      "fillColor": "#38bdf8",
+      "cornerRadius": 5
+    }
+  ]
+}

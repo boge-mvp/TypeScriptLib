@@ -1,0 +1,56 @@
+{
+  "type": "panel",
+  "name": "scrollRowItem",
+  "width": 410,
+  "height": 44,
+  "elements": [
+    {
+      "type": "graph",
+      "name": "bg",
+      "x": 0,
+      "y": 0,
+      "width": 410,
+      "height": 44,
+      "shape": "rect",
+      "fillColor": "#0f172a",
+      "lineSize": 1,
+      "lineColor": "#334155",
+      "cornerRadius": 8,
+      "relations": [
+        { "target": "", "type": "Size" }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "rowTitle",
+      "x": 14,
+      "y": 8,
+      "width": 324,
+      "height": 28,
+      "fontSize": 13,
+      "color": "#e2e8f0",
+      "valign": "middle",
+      "text": "ScrollPane 内容行",
+      "relations": [
+        { "target": "", "type": "Width" }
+      ]
+    },
+    {
+      "type": "text",
+      "name": "rowBadge",
+      "x": 346,
+      "y": 10,
+      "width": 52,
+      "height": 24,
+      "fontSize": 12,
+      "bold": true,
+      "color": "#38bdf8",
+      "align": "right",
+      "valign": "middle",
+      "text": "#01",
+      "relations": [
+        { "target": "", "type": "Right_Right" }
+      ]
+    }
+  ]
+}

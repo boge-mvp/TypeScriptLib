@@ -4,11 +4,11 @@ import IPanelConfig = tsCore.IPanelConfig;
 import UIFactory = tsCore.UIFactory;
 
 /**
- * Tab 4: Flexbox 弹性排版与自适应流式折行检视面板
+ * Tab 5: Flexbox 弹性排版与自适应流式折行检视面板
  *
  * 遵循官方规范：直接继承 fgui.GComponent，并在 onConstruct 生命周期钩子中自闭环完成所有逻辑绑定。
  */
-export class Tab4FlexboxView extends GComponent {
+export class FlexboxWorkbench extends GComponent {
 
     private _flexPreviewBox!: GComponent;
     private _dynamicFlex!: GComponent;
@@ -28,14 +28,14 @@ export class Tab4FlexboxView extends GComponent {
         const tb = this.getChild("controlToolbar") as GComponent;
         this._flexPreviewBox = this.getChild("flexPreviewBox") as GComponent;
         if (!tb || !this._flexPreviewBox) {
-            console.warn("[Tab4FlexboxView] 未找到 controlToolbar 或 flexPreviewBox 容器！");
+            console.warn("[FlexboxWorkbench] 未找到 controlToolbar 或 flexPreviewBox 容器！");
             return;
         }
 
         this._dynamicFlex = this._flexPreviewBox.getChild("dynamicFlex") as GComponent;
 
-        // 1. 精确定位 dynamicFlex 的原始配置结构模板（源自纯静态 tab4Flexbox.json）
-        const tabConfig = UIFactory.getConfig<IPanelConfig>("res/layout/tab4Flexbox.json");
+        // 1. 精确定位 dynamicFlex 的原始配置结构模板（源自纯静态 flexboxWorkbench.json）
+        const tabConfig = UIFactory.getConfig<IPanelConfig>("res/layout/flexboxWorkbench.json");
         if (tabConfig && tabConfig.elements) {
             const previewBoxConf = tabConfig.elements.find(e => e.name === "flexPreviewBox") as IPanelConfig;
             if (previewBoxConf && previewBoxConf.elements) {

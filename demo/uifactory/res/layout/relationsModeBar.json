@@ -1,6 +1,6 @@
 {
   "type": "panel",
-  "name": "tab6ModeBar",
+  "name": "relationsModeBar",
   "width": 576,
   "height": 36,
   "layoutType": "horizontal",

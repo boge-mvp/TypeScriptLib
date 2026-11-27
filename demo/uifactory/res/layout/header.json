@@ -1,32 +1,65 @@
 {
   "type": "panel",
   "name": "header",
-  "x": 0,
-  "y": 0,
   "width": 1480,
   "height": 50,
-  "background": { "color": "#1e293b" },
-  "layoutType": "horizontal",
-  "alignItems": "center",
-  "padding": { "left": 24, "right": 24, "top": 0, "bottom": 0 },
+  "background": {
+    "type": "graph",
+    "shape": "rect",
+    "fillColor": "#0f172a",
+    "lineSize": 1,
+    "lineColor": "#1e293b"
+  },
   "elements": [
     {
-      "type": "text",
-      "name": "title",
-      "text": "UIFactory 4.0 纯代码引擎 — 官方全特性交互验证工作台",
-      "fontSize": 18,
-      "bold": true,
-      "color": "#38bdf8",
-      "width": 650
+      "type": "graph",
+      "name": "brandBadge",
+      "x": 20,
+      "y": 11,
+      "width": 6,
+      "height": 28,
+      "shape": "rect",
+      "fillColor": "#38bdf8",
+      "cornerRadius": 3
     },
     {
       "type": "text",
-      "name": "subTitle",
-      "text": "10 Gears Matrix | Transition | Native Button/Slider/Bar | Flexbox | 3A Slot | 24 Relations Matrix",
+      "name": "headerTitle",
+      "x": 36,
+      "y": 10,
+      "width": 440,
+      "height": 30,
+      "text": "UIFactory 4.0 全组件正交测试矩阵",
+      "fontSize": 18,
+      "bold": true,
+      "color": "#f8fafc",
+      "valign": "middle"
+    },
+    {
+      "type": "text",
+      "name": "headerSub",
+      "x": 490,
+      "y": 11,
+      "width": 620,
+      "height": 28,
+      "text": "9 大独立模块 · 18 种内置类型 · 10 大 Gears · Flexbox / Relations 全矩阵",
       "fontSize": 12,
       "color": "#94a3b8",
-      "width": 760,
-      "align": "right"
+      "valign": "middle"
+    },
+    {
+      "type": "text",
+      "name": "statusHint",
+      "x": 1130,
+      "y": 11,
+      "width": 326,
+      "height": 28,
+      "text": "TAB 1/9 ACTIVE (1480×720)",
+      "fontSize": 12,
+      "bold": true,
+      "color": "#38bdf8",
+      "align": "right",
+      "valign": "middle"
     }
   ]
 }
