@@ -30,8 +30,8 @@ export class TransitionsView extends GComponent {
         // 1. 控制器状态机监听 (纯只读审计输出，直驱 Controller Page 值，0 行字典映射代码！)
         if (easeCtrl) {
             easeCtrl.on(fgui.Events.STATE_CHANGED, this, () => {
-                // @ts-ignore
-                appendLog(`[Radio驱动] 缓动曲线选中: ${easeCtrl.selectedPage} (EaseType=${fgui.EaseType[easeCtrl.selectedPage]})`);
+                const easeMap = fgui.EaseType as unknown as Record<string, number>;
+                appendLog(`[Radio驱动] 缓动曲线选中: ${easeCtrl.selectedPage} (EaseType=${easeMap[easeCtrl.selectedPage]})`);
             });
         }
 
@@ -56,7 +56,26 @@ export class TransitionsView extends GComponent {
         const btnPlay = this.getChild("btnPlayCustom") as GButton;
         if (btnPlay) {
             btnPlay.onClick(this, () => {
-                appendLog(`[动效触发] 播放自定义 Transition 动效`);
+                const act = actionCtrl?.selectedPage || "scale";
+                const dur = Number(durationCtrl?.selectedPage || "0.5") || 0.5;
+                const easeName = easeCtrl?.selectedPage || "QuadOut";
+                const trans = this.getTransition(`trans_${act}`);
+                if (trans) {
+                    trans.stop(true);
+                    // 根据当前选择的时长动态调整播放倍速（基准时长 0.5s）
+                    trans.timeScale = 0.5 / dur;
+                    const easeEnum = (fgui.EaseType as unknown as Record<string, number>)[easeName];
+                    const items = trans["_items"] as Array<{ tweenConfig?: { easeType: number } }> | undefined;
+                    if (items && easeEnum !== undefined) {
+                        for (const item of items) {
+                            if (item.tweenConfig) item.tweenConfig.easeType = easeEnum;
+                        }
+                    }
+                    trans.play();
+                    appendLog(`[动效触发] 播放 trans_${act} | 缓动=${easeName} | 时长=${dur}s`);
+                } else {
+                    appendLog(`[动效警告] 未找到 trans_${act}`);
+                }
             });
         }
 

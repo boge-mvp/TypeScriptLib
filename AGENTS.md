@@ -12,6 +12,7 @@ LayaAir 游戏开发框架（npm 包 `@boge-mvp/game-lib`，发布于 GitHub Pac
 - `npm run build:gamelib` — 依赖 `TSCore/bin/*.d.ts`，**必须先跑 build:tscore（顺序敏感）**
 - `npm run build` — 完整发布链 clean → tscore → gamelib → packResources（刷新根 `bin/ dist/ webp/ assets/`，即 npm 包内容物）
 - `npm run pack` — build + npm pack；`npm run build:demo` — demo 示例工程
+- `npm run schema:uifactory` — 从 `TSCore/src/com/uifactory/I*Config.ts` 生成 `AIGuideKit/uifactory-layout.schema.json` 并校验 demo 布局 JSON
 - 改 TSCore 源码后根目录 `bin/tsCore.d.ts` 不会立即刷新，需完整 `npm run build`（packResources 阶段）
 
 ## Demo 与 Web 页面测试约定
@@ -50,6 +51,11 @@ LayaAir 游戏开发框架（npm 包 `@boge-mvp/game-lib`，发布于 GitHub Pac
 
 - **管辖目录与文档**：
   1. 底层代码：`TSCore/src/com/uifactory/` 全目录代码（包含逻辑与排版实现模块及全部 `I*Config.ts` 协议文件）；
-  2. 规范矩阵：`AIGuideKit/` 目录三大核心事实源文档（`UIFactory_AI_UI_Creation_Guide.md`、`UIFactory_Engine_Dev_Spec.md`、`UIFactory_Architecture_Philosophy_And_Advantages.md`）。
+  2. 规范矩阵：`AIGuideKit/` 目录核心事实源文档与 Schema（`uifactory-layout.schema.json`、`UIFactory_AI_UI_Creation_Guide.md`、`UIFactory_Engine_Dev_Spec.md`、`UIFactory_Architecture_Philosophy_And_Advantages.md`）。
+- **`uifactory-layout.schema.json` 与 `UIFactory_AI_UI_Creation_Guide.md` 维护方略**：
+  1. **职责正交划分**：
+     - **`AIGuideKit/uifactory-layout.schema.json`（结构与枚举唯一事实源）**：由 `TSCore/src/com/uifactory/I*Config.ts` 通过 `npm run schema:uifactory`（即 `node scripts/gen-uifactory-schema.js`）自动生成，负责精确约束全部字段名、必填项、类型及合法枚举；
+     - **`AIGuideKit/UIFactory_AI_UI_Creation_Guide.md`（语义与架构实战手册）**：聚焦 Schema 无法表达的架构选型（`GGraph` vs `GGroup` vs `Panel`）、跨字段因果关系（`GSlider` 满宽/反向对齐、`GList` `autoResizeItem`）、无动态 API 时的 JSON 重建范式及 TS/LayaAir 运行期集成边界，避免与 Schema 重复罗列冗余枚举表。
+  2. **正向内容覆盖与持续沉淀**：凡新增/变更 `TSCore/src/com/uifactory/I*Config.ts` 协议，必须执行 `npm run schema:uifactory` 刷新并校验 Schema；凡在开发中暴露出新型运行时或跨字段边界问题，抽象为通用架构契约同步更新至 `UIFactory_AI_UI_Creation_Guide.md`（剥离偶发 Bug 复盘废话）。
 - **双向同步与闭环验证要求**：
   1. 规范双向同步：代码变更或实战避坑约束沉淀必须同步更新到 `AIGuideKit/` 对应规范文档；

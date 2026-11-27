@@ -483,7 +483,7 @@ export class UIFactory {
      * @param containerH 父容器高度
      * @returns 实例化的列表对象
      */
-    public static createList<T extends fgui.GList>(elData: IListConfig, containerW: number, containerH: number): T {
+    public static createList<T extends fgui.GList>(elData: IListConfig, containerW: number = 0, containerH: number = 0): T {
         return UIFactory.createElement<T>(elData, containerW, containerH)!;
     }
 

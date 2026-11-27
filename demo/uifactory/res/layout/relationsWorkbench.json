@@ -3,8 +3,8 @@
   "name": "tab5RelationsWorkbench",
   "x": 0,
   "y": 0,
-  "width": 1228,
-  "height": 646,
+  "width": 1052,
+  "height": 648,
   "background": {
     "color": "#1e293b",
     "cornerRadius": 8
@@ -12,29 +12,29 @@
   "elements": [
     {
       "type": "text",
-      "x": 24,
+      "x": 21,
       "y": 14,
       "text": "⑥ FGUI 原生关联系统 (Relations) — 25 项全矩阵 + % 百分比交互检视工作台",
       "fontSize": 16,
       "bold": true,
       "color": "#f8fafc",
-      "width": 900
+      "width": 1004
     },
     {
       "type": "text",
-      "x": 24,
+      "x": 21,
       "y": 36,
       "text": "左侧实时滑动 Target B 的 X / Y / 宽 / 高 / 轴心；右侧 1:1 复刻 FGUI 编辑器全部 10 行关联项与 [%] 百分比开关，支持任意多选叠加！",
       "fontSize": 12,
       "color": "#94a3b8",
-      "width": 1180
+      "width": 1011
     },
     {
       "type": "panel",
       "name": "leftWorkbench",
-      "x": 24,
+      "x": 20,
       "y": 58,
-      "width": 576,
+      "width": 480,
       "height": 570,
       "elements": [
         {
@@ -42,7 +42,7 @@
           "name": "sandboxStage",
           "x": 0,
           "y": 0,
-          "width": 576,
+          "width": 480,
           "height": 480,
           "overflow": 1,
           "background": {
@@ -54,12 +54,12 @@
           "elements": [
             {
               "type": "text",
-              "x": 12,
+              "x": 10,
               "y": 8,
               "text": "🟦 参照物 Target B: 🖱️点击选中显示 8 点位手柄 | 按住自由位移 | 拖拽四周 8 个手柄自由缩放",
               "fontSize": 11,
               "color": "#64748b",
-              "width": 552
+              "width": 473
             },
             {
               "type": "panel",
@@ -512,7 +512,7 @@
           "name": "telemetryBar",
           "x": 0,
           "y": 486,
-          "width": 576,
+          "width": 480,
           "height": 36,
           "background": {
             "color": "#0f172a",
@@ -524,9 +524,9 @@
             {
               "type": "text",
               "name": "telemetryText",
-              "x": 12,
+              "x": 10,
               "y": 9,
-              "width": 552,
+              "width": 456,
               "text": "📊 实时遥测: B(70, 70, 160×90)  →  A(250, 85, 120×60) | 偏移量 Δ=(+0, +0, +0, +0)",
               "fontSize": 12,
               "bold": true,
@@ -540,7 +540,7 @@
           "src": "res/layout/relationsModeBar.json",
           "x": 0,
           "y": 528,
-          "width": 576,
+          "width": 493,
           "height": 36
         }
       ]
@@ -548,9 +548,9 @@
     {
       "type": "panel",
       "name": "rightMatrixPanel",
-      "x": 616,
+      "x": 516,
       "y": 58,
-      "width": 592,
+      "width": 516,
       "height": 570,
       "background": {
         "color": "#0f172a",
@@ -561,33 +561,33 @@
       "elements": [
         {
           "type": "text",
-          "x": 16,
+          "x": 14,
           "y": 10,
           "text": "⚡ 一键高频关联组合预设 (也可在下方矩阵任意手动勾选 / 叠加 %)：",
           "fontSize": 12,
           "bold": true,
           "color": "#38bdf8",
-          "width": 560
+          "width": 480
         },
         {
           "type": "panel",
           "name": "presetRow1",
-          "x": 16,
+          "x": 14,
           "y": 32,
-          "width": 560,
+          "width": 480,
           "height": 30,
           "layoutType": "horizontal",
-          "gap": 6,
+          "gap": 5,
           "elements": [
             {
               "type": "button",
               "name": "btnPresetFollowRight",
-              "width": 108,
+              "width": 93,
               "height": 28,
               "elements": [
                 {
                   "type": "graph",
-                  "width": 108,
+                  "width": 93,
                   "height": 28,
                   "fillColor": "#1d4ed8",
                   "cornerRadius": 4
@@ -596,7 +596,7 @@
                   "type": "text",
                   "name": "title",
                   "text": "左->右(伴生右推)",
-                  "width": 108,
+                  "width": 93,
                   "height": 28,
                   "align": "center",
                   "valign": "middle",
@@ -609,12 +609,12 @@
             {
               "type": "button",
               "name": "btnPresetSize",
-              "width": 96,
+              "width": 82,
               "height": 28,
               "elements": [
                 {
                   "type": "graph",
-                  "width": 96,
+                  "width": 82,
                   "height": 28,
                   "fillColor": "#1d4ed8",
                   "cornerRadius": 4
@@ -623,7 +623,7 @@
                   "type": "text",
                   "name": "title",
                   "text": "宽->宽+高->高",
-                  "width": 96,
+                  "width": 82,
                   "height": 28,
                   "align": "center",
                   "valign": "middle",
@@ -636,12 +636,12 @@
             {
               "type": "button",
               "name": "btnPresetCenter",
-              "width": 96,
+              "width": 82,
               "height": 28,
               "elements": [
                 {
                   "type": "graph",
-                  "width": 96,
+                  "width": 82,
                   "height": 28,
                   "fillColor": "#1d4ed8",
                   "cornerRadius": 4
@@ -650,7 +650,7 @@
                   "type": "text",
                   "name": "title",
                   "text": "左右+上下居中",
-                  "width": 96,
+                  "width": 82,
                   "height": 28,
                   "align": "center",
                   "valign": "middle",
@@ -663,12 +663,12 @@
             {
               "type": "button",
               "name": "btnPresetExtH",
-              "width": 96,
+              "width": 82,
               "height": 28,
               "elements": [
                 {
                   "type": "graph",
-                  "width": 96,
+                  "width": 82,
                   "height": 28,
                   "fillColor": "#047857",
                   "cornerRadius": 4
@@ -677,7 +677,7 @@
                   "type": "text",
                   "name": "title",
                   "text": "左延展+右延展",
-                  "width": 96,
+                  "width": 82,
                   "height": 28,
                   "align": "center",
                   "valign": "middle",
@@ -690,12 +690,12 @@
             {
               "type": "button",
               "name": "btnPresetExtV",
-              "width": 96,
+              "width": 82,
               "height": 28,
               "elements": [
                 {
                   "type": "graph",
-                  "width": 96,
+                  "width": 82,
                   "height": 28,
                   "fillColor": "#047857",
                   "cornerRadius": 4
@@ -704,7 +704,7 @@
                   "type": "text",
                   "name": "title",
                   "text": "顶延展+底延展",
-                  "width": 96,
+                  "width": 82,
                   "height": 28,
                   "align": "center",
                   "valign": "middle",
@@ -717,12 +717,12 @@
             {
               "type": "button",
               "name": "btnClearRelations",
-              "width": 44,
+              "width": 38,
               "height": 28,
               "elements": [
                 {
                   "type": "graph",
-                  "width": 44,
+                  "width": 38,
                   "height": 28,
                   "fillColor": "#dc2626",
                   "cornerRadius": 4
@@ -731,7 +731,7 @@
                   "type": "text",
                   "name": "title",
                   "text": "清空",
-                  "width": 44,
+                  "width": 38,
                   "height": 28,
                   "align": "center",
                   "valign": "middle",
@@ -746,9 +746,9 @@
         {
           "type": "panel",
           "name": "fguiInspectorBox",
-          "x": 16,
+          "x": 14,
           "y": 68,
-          "width": 560,
+          "width": 480,
           "height": 392,
           "background": {
             "color": "#1e2430",
@@ -760,9 +760,9 @@
             {
               "type": "panel",
               "name": "cell_Width",
-              "x": 24,
+              "x": 21,
               "y": 10,
-              "width": 134,
+              "width": 115,
               "height": 30,
               "elements": [
                 {
@@ -770,13 +770,13 @@
                   "name": "relBtn_Width",
                   "x": 0,
                   "y": 0,
-                  "width": 96,
+                  "width": 82,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 96,
+                      "width": 82,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -785,7 +785,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 96,
+                      "width": 82,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -803,7 +803,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "宽 -> 宽",
-                      "width": 96,
+                      "width": 82,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -828,15 +828,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_Width",
-                  "x": 100,
+                  "x": 86,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -845,7 +845,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -863,7 +863,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -890,9 +890,9 @@
             {
               "type": "panel",
               "name": "cell_Height",
-              "x": 204,
+              "x": 175,
               "y": 10,
-              "width": 134,
+              "width": 115,
               "height": 30,
               "elements": [
                 {
@@ -900,13 +900,13 @@
                   "name": "relBtn_Height",
                   "x": 0,
                   "y": 0,
-                  "width": 96,
+                  "width": 82,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 96,
+                      "width": 82,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -915,7 +915,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 96,
+                      "width": 82,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -933,7 +933,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "高 -> 高",
-                      "width": 96,
+                      "width": 82,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -958,15 +958,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_Height",
-                  "x": 100,
+                  "x": 86,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -975,7 +975,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -993,7 +993,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -1020,9 +1020,9 @@
             {
               "type": "panel",
               "name": "cell_Size",
-              "x": 380,
+              "x": 326,
               "y": 10,
-              "width": 142,
+              "width": 122,
               "height": 30,
               "elements": [
                 {
@@ -1030,13 +1030,13 @@
                   "name": "relBtn_Size",
                   "x": 0,
                   "y": 0,
-                  "width": 104,
+                  "width": 89,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 104,
+                      "width": 89,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -1045,7 +1045,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 104,
+                      "width": 89,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -1063,7 +1063,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "宽+高(Size)",
-                      "width": 104,
+                      "width": 89,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -1088,15 +1088,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_Size",
-                  "x": 108,
+                  "x": 93,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -1105,7 +1105,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -1123,7 +1123,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -1150,9 +1150,9 @@
             {
               "type": "panel",
               "name": "cell_Center_Center",
-              "x": 24,
+              "x": 21,
               "y": 48,
-              "width": 134,
+              "width": 115,
               "height": 30,
               "elements": [
                 {
@@ -1160,13 +1160,13 @@
                   "name": "relBtn_Center_Center",
                   "x": 0,
                   "y": 0,
-                  "width": 96,
+                  "width": 82,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 96,
+                      "width": 82,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -1175,7 +1175,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 96,
+                      "width": 82,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -1193,7 +1193,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "左右居中",
-                      "width": 96,
+                      "width": 82,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -1218,15 +1218,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_Center_Center",
-                  "x": 100,
+                  "x": 86,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -1235,7 +1235,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -1253,7 +1253,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -1280,9 +1280,9 @@
             {
               "type": "panel",
               "name": "cell_Middle_Middle",
-              "x": 204,
+              "x": 175,
               "y": 48,
-              "width": 134,
+              "width": 115,
               "height": 30,
               "elements": [
                 {
@@ -1290,13 +1290,13 @@
                   "name": "relBtn_Middle_Middle",
                   "x": 0,
                   "y": 0,
-                  "width": 96,
+                  "width": 82,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 96,
+                      "width": 82,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -1305,7 +1305,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 96,
+                      "width": 82,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -1323,7 +1323,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "上下居中",
-                      "width": 96,
+                      "width": 82,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -1348,15 +1348,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_Middle_Middle",
-                  "x": 100,
+                  "x": 86,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -1365,7 +1365,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -1383,7 +1383,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -1409,9 +1409,9 @@
             },
             {
               "type": "text",
-              "x": 18,
+              "x": 15,
               "y": 92,
-              "width": 84,
+              "width": 72,
               "text": "左 ->",
               "align": "right",
               "fontSize": 13,
@@ -1421,9 +1421,9 @@
             {
               "type": "panel",
               "name": "cell_Left_Left",
-              "x": 114,
+              "x": 98,
               "y": 86,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -1431,13 +1431,13 @@
                   "name": "relBtn_Left_Left",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -1446,7 +1446,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -1464,7 +1464,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "左",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -1489,15 +1489,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_Left_Left",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -1506,7 +1506,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -1524,7 +1524,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -1551,9 +1551,9 @@
             {
               "type": "panel",
               "name": "cell_Left_Center",
-              "x": 264,
+              "x": 226,
               "y": 86,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -1561,13 +1561,13 @@
                   "name": "relBtn_Left_Center",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -1576,7 +1576,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -1594,7 +1594,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "中",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -1619,15 +1619,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_Left_Center",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -1636,7 +1636,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -1654,7 +1654,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -1681,9 +1681,9 @@
             {
               "type": "panel",
               "name": "cell_Left_Right",
-              "x": 414,
+              "x": 355,
               "y": 86,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -1691,13 +1691,13 @@
                   "name": "relBtn_Left_Right",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -1706,7 +1706,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -1724,7 +1724,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "右",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -1749,15 +1749,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_Left_Right",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -1766,7 +1766,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -1784,7 +1784,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -1810,9 +1810,9 @@
             },
             {
               "type": "text",
-              "x": 18,
+              "x": 15,
               "y": 128,
-              "width": 84,
+              "width": 72,
               "text": "右 ->",
               "align": "right",
               "fontSize": 13,
@@ -1822,9 +1822,9 @@
             {
               "type": "panel",
               "name": "cell_Right_Left",
-              "x": 114,
+              "x": 98,
               "y": 122,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -1832,13 +1832,13 @@
                   "name": "relBtn_Right_Left",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -1847,7 +1847,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -1865,7 +1865,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "左",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -1890,15 +1890,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_Right_Left",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -1907,7 +1907,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -1925,7 +1925,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -1952,9 +1952,9 @@
             {
               "type": "panel",
               "name": "cell_Right_Center",
-              "x": 264,
+              "x": 226,
               "y": 122,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -1962,13 +1962,13 @@
                   "name": "relBtn_Right_Center",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -1977,7 +1977,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -1995,7 +1995,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "中",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -2020,15 +2020,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_Right_Center",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -2037,7 +2037,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -2055,7 +2055,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -2082,9 +2082,9 @@
             {
               "type": "panel",
               "name": "cell_Right_Right",
-              "x": 414,
+              "x": 355,
               "y": 122,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -2092,13 +2092,13 @@
                   "name": "relBtn_Right_Right",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -2107,7 +2107,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -2125,7 +2125,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "右",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -2150,15 +2150,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_Right_Right",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -2167,7 +2167,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -2185,7 +2185,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -2211,9 +2211,9 @@
             },
             {
               "type": "text",
-              "x": 18,
+              "x": 15,
               "y": 164,
-              "width": 84,
+              "width": 72,
               "text": "顶 ->",
               "align": "right",
               "fontSize": 13,
@@ -2223,9 +2223,9 @@
             {
               "type": "panel",
               "name": "cell_Top_Top",
-              "x": 114,
+              "x": 98,
               "y": 158,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -2233,13 +2233,13 @@
                   "name": "relBtn_Top_Top",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -2248,7 +2248,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -2266,7 +2266,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "顶",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -2291,15 +2291,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_Top_Top",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -2308,7 +2308,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -2326,7 +2326,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -2353,9 +2353,9 @@
             {
               "type": "panel",
               "name": "cell_Top_Middle",
-              "x": 264,
+              "x": 226,
               "y": 158,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -2363,13 +2363,13 @@
                   "name": "relBtn_Top_Middle",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -2378,7 +2378,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -2396,7 +2396,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "中",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -2421,15 +2421,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_Top_Middle",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -2438,7 +2438,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -2456,7 +2456,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -2483,9 +2483,9 @@
             {
               "type": "panel",
               "name": "cell_Top_Bottom",
-              "x": 414,
+              "x": 355,
               "y": 158,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -2493,13 +2493,13 @@
                   "name": "relBtn_Top_Bottom",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -2508,7 +2508,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -2526,7 +2526,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "底",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -2551,15 +2551,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_Top_Bottom",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -2568,7 +2568,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -2586,7 +2586,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -2612,9 +2612,9 @@
             },
             {
               "type": "text",
-              "x": 18,
+              "x": 15,
               "y": 200,
-              "width": 84,
+              "width": 72,
               "text": "底 ->",
               "align": "right",
               "fontSize": 13,
@@ -2624,9 +2624,9 @@
             {
               "type": "panel",
               "name": "cell_Bottom_Top",
-              "x": 114,
+              "x": 98,
               "y": 194,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -2634,13 +2634,13 @@
                   "name": "relBtn_Bottom_Top",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -2649,7 +2649,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -2667,7 +2667,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "顶",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -2692,15 +2692,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_Bottom_Top",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -2709,7 +2709,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -2727,7 +2727,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -2754,9 +2754,9 @@
             {
               "type": "panel",
               "name": "cell_Bottom_Middle",
-              "x": 264,
+              "x": 226,
               "y": 194,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -2764,13 +2764,13 @@
                   "name": "relBtn_Bottom_Middle",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -2779,7 +2779,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -2797,7 +2797,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "中",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -2822,15 +2822,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_Bottom_Middle",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -2839,7 +2839,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -2857,7 +2857,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -2884,9 +2884,9 @@
             {
               "type": "panel",
               "name": "cell_Bottom_Bottom",
-              "x": 414,
+              "x": 355,
               "y": 194,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -2894,13 +2894,13 @@
                   "name": "relBtn_Bottom_Bottom",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -2909,7 +2909,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -2927,7 +2927,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "底",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -2952,15 +2952,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_Bottom_Bottom",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -2969,7 +2969,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -2987,7 +2987,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -3013,9 +3013,9 @@
             },
             {
               "type": "text",
-              "x": 18,
+              "x": 15,
               "y": 240,
-              "width": 84,
+              "width": 72,
               "text": "左延展 ->",
               "align": "right",
               "fontSize": 13,
@@ -3025,9 +3025,9 @@
             {
               "type": "panel",
               "name": "cell_LeftExt_Left",
-              "x": 114,
+              "x": 98,
               "y": 234,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -3035,13 +3035,13 @@
                   "name": "relBtn_LeftExt_Left",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -3050,7 +3050,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -3068,7 +3068,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "左",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -3093,15 +3093,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_LeftExt_Left",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -3110,7 +3110,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -3128,7 +3128,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -3155,9 +3155,9 @@
             {
               "type": "panel",
               "name": "cell_LeftExt_Right",
-              "x": 414,
+              "x": 355,
               "y": 234,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -3165,13 +3165,13 @@
                   "name": "relBtn_LeftExt_Right",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -3180,7 +3180,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -3198,7 +3198,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "右",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -3223,15 +3223,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_LeftExt_Right",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -3240,7 +3240,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -3258,7 +3258,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -3284,9 +3284,9 @@
             },
             {
               "type": "text",
-              "x": 18,
+              "x": 15,
               "y": 276,
-              "width": 84,
+              "width": 72,
               "text": "右延展 ->",
               "align": "right",
               "fontSize": 13,
@@ -3296,9 +3296,9 @@
             {
               "type": "panel",
               "name": "cell_RightExt_Left",
-              "x": 114,
+              "x": 98,
               "y": 270,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -3306,13 +3306,13 @@
                   "name": "relBtn_RightExt_Left",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -3321,7 +3321,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -3339,7 +3339,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "左",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -3364,15 +3364,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_RightExt_Left",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -3381,7 +3381,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -3399,7 +3399,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -3426,9 +3426,9 @@
             {
               "type": "panel",
               "name": "cell_RightExt_Right",
-              "x": 414,
+              "x": 355,
               "y": 270,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -3436,13 +3436,13 @@
                   "name": "relBtn_RightExt_Right",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -3451,7 +3451,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -3469,7 +3469,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "右",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -3494,15 +3494,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_RightExt_Right",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -3511,7 +3511,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -3529,7 +3529,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -3555,9 +3555,9 @@
             },
             {
               "type": "text",
-              "x": 18,
+              "x": 15,
               "y": 312,
-              "width": 84,
+              "width": 72,
               "text": "顶延展 ->",
               "align": "right",
               "fontSize": 13,
@@ -3567,9 +3567,9 @@
             {
               "type": "panel",
               "name": "cell_TopExt_Top",
-              "x": 114,
+              "x": 98,
               "y": 306,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -3577,13 +3577,13 @@
                   "name": "relBtn_TopExt_Top",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -3592,7 +3592,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -3610,7 +3610,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "顶",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -3635,15 +3635,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_TopExt_Top",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -3652,7 +3652,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -3670,7 +3670,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -3697,9 +3697,9 @@
             {
               "type": "panel",
               "name": "cell_TopExt_Bottom",
-              "x": 414,
+              "x": 355,
               "y": 306,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -3707,13 +3707,13 @@
                   "name": "relBtn_TopExt_Bottom",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -3722,7 +3722,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -3740,7 +3740,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "底",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -3765,15 +3765,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_TopExt_Bottom",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -3782,7 +3782,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -3800,7 +3800,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -3826,9 +3826,9 @@
             },
             {
               "type": "text",
-              "x": 18,
+              "x": 15,
               "y": 348,
-              "width": 84,
+              "width": 72,
               "text": "底延展 ->",
               "align": "right",
               "fontSize": 13,
@@ -3838,9 +3838,9 @@
             {
               "type": "panel",
               "name": "cell_BottomExt_Top",
-              "x": 114,
+              "x": 98,
               "y": 342,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -3848,13 +3848,13 @@
                   "name": "relBtn_BottomExt_Top",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -3863,7 +3863,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -3881,7 +3881,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "顶",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -3906,15 +3906,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_BottomExt_Top",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -3923,7 +3923,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -3941,7 +3941,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -3968,9 +3968,9 @@
             {
               "type": "panel",
               "name": "cell_BottomExt_Bottom",
-              "x": 414,
+              "x": 355,
               "y": 342,
-              "width": 94,
+              "width": 81,
               "height": 30,
               "elements": [
                 {
@@ -3978,13 +3978,13 @@
                   "name": "relBtn_BottomExt_Bottom",
                   "x": 0,
                   "y": 0,
-                  "width": 56,
+                  "width": 48,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2b3445",
                       "lineSize": 1,
@@ -3993,7 +3993,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "fillColor": "#2563eb",
                       "lineSize": 1,
@@ -4011,7 +4011,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "底",
-                      "width": 56,
+                      "width": 48,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -4036,15 +4036,15 @@
                 {
                   "type": "button",
                   "name": "pctBtn_BottomExt_Bottom",
-                  "x": 60,
+                  "x": 51,
                   "y": 0,
-                  "width": 30,
+                  "width": 26,
                   "height": 28,
                   "mode": "Check",
                   "elements": [
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#1e293b",
                       "lineSize": 1,
@@ -4053,7 +4053,7 @@
                     },
                     {
                       "type": "graph",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "fillColor": "#0284c7",
                       "lineSize": 1,
@@ -4071,7 +4071,7 @@
                       "type": "text",
                       "name": "title",
                       "text": "%",
-                      "width": 30,
+                      "width": 26,
                       "height": 28,
                       "align": "center",
                       "valign": "middle",
@@ -4100,9 +4100,9 @@
         {
           "type": "panel",
           "name": "configPreviewBox",
-          "x": 16,
+          "x": 14,
           "y": 468,
-          "width": 560,
+          "width": 480,
           "height": 92,
           "background": {
             "color": "#090d16",
@@ -4114,9 +4114,9 @@
             {
               "type": "text",
               "name": "configPreviewText",
-              "x": 12,
+              "x": 10,
               "y": 8,
-              "width": 536,
+              "width": 459,
               "height": 76,
               "text": "当前激活关联 (relations): 正在初始化...",
               "fontSize": 11,

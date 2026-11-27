@@ -1,0 +1,2669 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://boge-mvp.github.io/TypeScriptLib/uifactory-layout.schema.json",
+  "title": "UIFactory Layout & Element Configuration Schema",
+  "description": "Auto-generated from TSCore/src/com/uifactory/I*Config.ts. Do not edit manually; run `node scripts/gen-uifactory-schema.js`.",
+  "$ref": "#/$defs/IElementConfig",
+  "$defs": {
+    "IGraphicsCmdConfig": {
+      "anyOf": [
+        {
+          "type": "object",
+          "properties": {
+            "cmd": {
+              "type": "string",
+              "const": "clear"
+            },
+            "args": {
+              "type": "array",
+              "items": [],
+              "minItems": 0,
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "cmd"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cmd": {
+              "type": "string",
+              "const": "destroy"
+            },
+            "args": {
+              "type": "array",
+              "items": [],
+              "minItems": 0,
+              "maxItems": 0
+            }
+          },
+          "required": [
+            "cmd"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cmd": {
+              "type": "string",
+              "const": "alpha"
+            },
+            "args": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "number"
+                }
+              ],
+              "minItems": 1,
+              "maxItems": 1
+            }
+          },
+          "required": [
+            "cmd",
+            "args"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cmd": {
+              "type": "string",
+              "const": "drawLine"
+            },
+            "args": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                },
+                {}
+              ],
+              "minItems": 6,
+              "maxItems": 6
+            }
+          },
+          "required": [
+            "cmd",
+            "args"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cmd": {
+              "type": "string",
+              "const": "drawLines"
+            },
+            "args": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                {
+                  "type": "string"
+                },
+                {}
+              ],
+              "minItems": 5,
+              "maxItems": 5
+            }
+          },
+          "required": [
+            "cmd",
+            "args"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cmd": {
+              "type": "string",
+              "const": "drawCurves"
+            },
+            "args": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                {
+                  "type": "string"
+                },
+                {}
+              ],
+              "minItems": 5,
+              "maxItems": 5
+            }
+          },
+          "required": [
+            "cmd",
+            "args"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cmd": {
+              "type": "string",
+              "const": "drawRect"
+            },
+            "args": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                {},
+                {}
+              ],
+              "minItems": 7,
+              "maxItems": 7
+            }
+          },
+          "required": [
+            "cmd",
+            "args"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cmd": {
+              "type": "string",
+              "const": "drawCircle"
+            },
+            "args": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                {},
+                {}
+              ],
+              "minItems": 6,
+              "maxItems": 6
+            }
+          },
+          "required": [
+            "cmd",
+            "args"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cmd": {
+              "type": "string",
+              "const": "drawPie"
+            },
+            "args": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                {},
+                {}
+              ],
+              "minItems": 8,
+              "maxItems": 8
+            }
+          },
+          "required": [
+            "cmd",
+            "args"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cmd": {
+              "type": "string",
+              "const": "drawPoly"
+            },
+            "args": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                },
+                {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "null"
+                    }
+                  ]
+                },
+                {},
+                {}
+              ],
+              "minItems": 6,
+              "maxItems": 6
+            }
+          },
+          "required": [
+            "cmd",
+            "args"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cmd": {
+              "type": "string",
+              "const": "drawPath"
+            },
+            "args": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "array",
+                  "items": {}
+                },
+                {},
+                {}
+              ],
+              "minItems": 5,
+              "maxItems": 5
+            }
+          },
+          "required": [
+            "cmd",
+            "args"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cmd": {
+              "type": "string",
+              "enum": [
+                "loadImage",
+                "drawImage"
+              ]
+            },
+            "args": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {},
+                {}
+              ],
+              "minItems": 5,
+              "maxItems": 5
+            }
+          },
+          "required": [
+            "cmd",
+            "args"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cmd": {
+              "type": "string",
+              "const": "drawTexture"
+            },
+            "args": {
+              "type": "array",
+              "items": [
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {},
+                {}
+              ],
+              "minItems": 10,
+              "maxItems": 10
+            }
+          },
+          "required": [
+            "cmd",
+            "args"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cmd": {
+              "type": "string",
+              "const": "fillTexture"
+            },
+            "args": {
+              "type": "array",
+              "items": [
+                {},
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {},
+                {},
+                {},
+                {},
+                {}
+              ],
+              "minItems": 8,
+              "maxItems": 8
+            }
+          },
+          "required": [
+            "cmd",
+            "args"
+          ]
+        },
+        {
+          "type": "object",
+          "properties": {
+            "cmd": {
+              "type": "string",
+              "enum": [
+                "fillText",
+                "strokeText"
+              ]
+            },
+            "args": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {},
+                {}
+              ],
+              "minItems": 8,
+              "maxItems": 8
+            }
+          },
+          "required": [
+            "cmd",
+            "args"
+          ]
+        }
+      ],
+      "description": "矢量绘图指令配置（按顺序应用于节点的 Laya.Graphics）"
+    },
+    "ILayoutConfig": {
+      "type": "object",
+      "properties": {
+        "alignX": {
+          "type": "string",
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ],
+          "description": "水平对齐方式: \"left\"(靠左) | \"center\"(水平居中) | \"right\"(靠右)"
+        },
+        "offsetX": {
+          "type": "number",
+          "description": "水平对齐后的像素偏移量"
+        },
+        "leftPercent": {
+          "type": "number",
+          "description": "水平百分比定位：左边缘占容器宽度的比例 (0 ~ 1)"
+        },
+        "rightPercent": {
+          "type": "number",
+          "description": "水平百分比定位：右边缘占容器宽度的比例 (0 ~ 1)"
+        },
+        "alignY": {
+          "type": "string",
+          "enum": [
+            "top",
+            "middle",
+            "bottom"
+          ],
+          "description": "垂直对齐方式: \"top\"(靠顶) | \"middle\"(垂直居中) | \"bottom\"(靠底)"
+        },
+        "offsetY": {
+          "type": "number",
+          "description": "垂直对齐后的像素偏移量"
+        },
+        "topPercent": {
+          "type": "number",
+          "description": "垂直百分比定位：顶边缘占容器高度的比例 (0 ~ 1)"
+        },
+        "bottomPercent": {
+          "type": "number",
+          "description": "垂直百分比定位：底边缘占容器高度的比例 (0 ~ 1)"
+        }
+      },
+      "description": "弹性对齐与自适应百分比对齐排版定位配置"
+    },
+    "IBaseElementConfig": {
+      "type": "object",
+      "properties": {
+        "graphics": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/IGraphicsCmdConfig"
+          },
+          "description": "矢量绘图命令配置组，可针对任意节点或背景绘制任意复杂的 Laya 矢量图"
+        },
+        "name": {
+          "type": "string",
+          "description": "组件在 UI 层级中的唯一命名标识符 (用于底层代码逻辑通过 getChild 获取寻址)"
+        },
+        "src": {
+          "type": "string",
+          "description": "外部组件/独立页面模板的引用地址或注册标识 (对齐官方 FGUI 的 src 属性) 官方核心设计原则： 1. 独立页面组件化：页面之间可以任意相互引用，父页面仅持有对子页面的引用标识 (src)， 父页面完全无需（也绝不应）内联定义子页面的内部子节点结构； 2. 容器多态解耦：页面内的容器节点要么是空白容器，要么是通过 src 引用其他独立页面配置， 彻底消除单文件深层嵌套地狱，实现组件的高内聚与跨页面复用； 3. 实例重写能力：父页面可通过 width、height、x、y、relations、gears 等属性对引用组件的实例表现进行微调重写。"
+        },
+        "width": {
+          "type": "number",
+          "description": "物理包裹或固定的像素宽度 (不配或配 0 则高度自适应或自动撑开)"
+        },
+        "height": {
+          "type": "number",
+          "description": "物理包裹或固定的像素高度 (不配或配 0 则高度自适应或自动撑开)"
+        },
+        "scale": {
+          "type": "number",
+          "description": "整体物理缩放系数 (等同于同时对 scaleX/scaleY 设置相同的值)"
+        },
+        "scaleX": {
+          "type": "number",
+          "description": "水平缩放系数"
+        },
+        "scaleY": {
+          "type": "number",
+          "description": "垂直缩放系数"
+        },
+        "pivotX": {
+          "type": "number",
+          "description": "锚点 X 坐标百分比 (0 ~ 1，决定旋转与位移的基准点)"
+        },
+        "pivotY": {
+          "type": "number",
+          "description": "锚点 Y 坐标百分比 (0 ~ 1，决定旋转与位移的基准点)"
+        },
+        "asAnchor": {
+          "type": "boolean",
+          "description": "是否将轴心点(pivotX, pivotY)作为定位的锚点 (Anchor) - `false`（默认/缺省）：组件的定位坐标 `x, y` 仍然是代表其左上角 (Top-Left) 位置。 - `true`：组件的定位坐标 `x, y` 对应的将是其轴心点在父容器中的物理像素位置。"
+        },
+        "alpha": {
+          "type": "number",
+          "description": "整体不透明度 (0 ~ 1)"
+        },
+        "rotation": {
+          "type": "number",
+          "description": "旋转角度 (0 ~ 360 度)"
+        },
+        "visible": {
+          "type": "boolean",
+          "description": "是否可见"
+        },
+        "touchable": {
+          "type": "boolean",
+          "description": "是否可交互"
+        },
+        "grayed": {
+          "type": "boolean",
+          "description": "是否置灰"
+        },
+        "layout": {
+          "$ref": "#/$defs/ILayoutConfig",
+          "description": "弹性对齐与自适应百分比排版对齐定位 (优先于绝对定位属性 x/y)"
+        },
+        "x": {
+          "type": "number",
+          "description": "绝对定位像素 X 坐标 (一旦配置该项，将忽略 layout 排版对齐)"
+        },
+        "y": {
+          "type": "number",
+          "description": "绝对定位像素 Y 坐标 (一旦配置该项，将忽略 layout 排版对齐)"
+        },
+        "position": {
+          "type": "string",
+          "const": "absolute",
+          "description": "定位模式: \"absolute\" 表示脱离父容器流式布局，不受 alignItems/justifyContent 影响"
+        },
+        "gearDisplay": {
+          "type": "object",
+          "properties": {
+            "controller": {
+              "type": "string",
+              "description": "绑定的控制器名称，缺省时自动匹配父容器名为 \"button\" 的控制器或首个可用控制器"
+            },
+            "pages": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "在控制器的哪些页面下显示（页面名称列表，如 [\"up\", \"down\"]）"
+            }
+          },
+          "required": [
+            "pages"
+          ],
+          "description": "控制器页面显隐状态绑定（GearDisplay：指定在控制器的哪些页面下保持可见）"
+        },
+        "gearXY": {
+          "$ref": "#/$defs/IGearXYConfig",
+          "description": "位置随控制器联动 (GearXY)"
+        },
+        "gearSize": {
+          "$ref": "#/$defs/IGearSizeConfig",
+          "description": "尺寸与缩放随控制器联动 (GearSize)"
+        },
+        "gearLook": {
+          "$ref": "#/$defs/IGearLookConfig",
+          "description": "视觉外观（透明/旋转/置灰）随控制器联动 (GearLook)"
+        },
+        "gearColor": {
+          "$ref": "#/$defs/IGearColorConfig",
+          "description": "颜色随控制器联动 (GearColor)"
+        },
+        "gearText": {
+          "$ref": "#/$defs/IGearTextConfig",
+          "description": "文本随控制器联动 (GearText)"
+        },
+        "gearIcon": {
+          "$ref": "#/$defs/IGearIconConfig",
+          "description": "图标随控制器联动 (GearIcon)"
+        },
+        "gearAnimation": {
+          "$ref": "#/$defs/IGearAnimationConfig",
+          "description": "动画状态随控制器联动 (GearAnimation)"
+        },
+        "gearDisplay2": {
+          "$ref": "#/$defs/IGearDisplay2Config",
+          "description": "复合条件显隐随控制器联动 (GearDisplay2)"
+        },
+        "gearFontSize": {
+          "$ref": "#/$defs/IGearFontSizeConfig",
+          "description": "字体大小随控制器联动 (GearFontSize)"
+        },
+        "tooltips": {
+          "type": "string",
+          "description": "鼠标悬浮提示文本 (tooltips)"
+        },
+        "data": {
+          "description": "用户自定义业务数据对象 (data)"
+        },
+        "blendMode": {
+          "type": "string",
+          "description": "混合模式 (如 \"normal\", \"add\", \"multiply\", \"screen\" 等)"
+        },
+        "group": {
+          "type": "string",
+          "description": "所属的 GGroup 组名称，在同一直接父容器内自动归属于对应 GGroup 元件"
+        },
+        "relations": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "target": {
+                "type": "string",
+                "description": "目标组件名称；若不填或为 \"parent\" 则关联到当前直接父容器"
+              },
+              "type": {
+                "anyOf": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "number"
+                  }
+                ],
+                "description": "关联规则类型 (如 \"Right_Right\", \"Left_Right\", \"Size\", \"Width\", \"Height\", \"Center_Center\", \"Bottom_Bottom\") 或数字枚举"
+              },
+              "usePercent": {
+                "type": "boolean",
+                "description": "是否使用百分比距离 (默认 false)"
+              }
+            },
+            "required": [
+              "type"
+            ]
+          },
+          "description": "FGUI 原生关联系统配置 (Relations) 支持将自身与容器、父级或同级兄弟组件建立自动联动 (如左左、左右、右右、顶顶、高宽拉伸等)"
+        }
+      },
+      "description": "界面所有可视化元组件的通用基础物理排版尺寸与定位配置（基类）"
+    },
+    "IGraphConfig": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/IBaseElementConfig"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "graph",
+              "description": "元素类型：固定为 \"graph\""
+            },
+            "shape": {
+              "type": "string",
+              "enum": [
+                "rect",
+                "ellipse",
+                "circle"
+              ],
+              "description": "图形类型：0-无, 1-矩形/圆角矩形, 2-圆/椭圆, 3-多边形, 4-正多边形 (对应 FGUI 原生 GGraph)"
+            },
+            "lineSize": {
+              "type": "number",
+              "description": "描边线宽度"
+            },
+            "lineColor": {
+              "type": "string",
+              "description": "描边线条颜色值"
+            },
+            "fillColor": {
+              "type": "string",
+              "description": "填充颜色值"
+            },
+            "cornerRadius": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              ],
+              "description": "圆角半径：单一数值(4角相同) 或 4 个圆角组成的数组 [左上,右上,右下,左下]"
+            }
+          },
+          "required": [
+            "type"
+          ]
+        }
+      ],
+      "description": "矢量图形绘制元素配置"
+    },
+    "IIconConfig": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/IBaseElementConfig"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "icon",
+              "description": "元素类型：固定为 \"icon\""
+            },
+            "url": {
+              "type": "string",
+              "description": "图片资源路径 (格式如: \"ui://common/my-image\" 或 \"res/xxx.png\")"
+            },
+            "sizeGrid": {
+              "type": "string",
+              "description": "FGUI 九宫格切边拉伸数据，格式为: \"left,top,right,bottom\" (如 \"30,30,30,30\")"
+            },
+            "clip": {
+              "type": "boolean",
+              "description": "是否对超出 width / height 范围的图像进行 scrollRect 物理裁剪"
+            },
+            "fill": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ],
+              "description": "图片填充模式：none/scale/scalefree/scalematchheight/scalematchwidth/scalenoborder 或数字"
+            },
+            "shrinkOnly": {
+              "type": "boolean",
+              "description": "仅缩小不放大"
+            },
+            "autoSize": {
+              "type": "boolean",
+              "description": "是否自动调整大小"
+            },
+            "align": {
+              "type": "string",
+              "enum": [
+                "left",
+                "center",
+                "right"
+              ],
+              "description": "水平对齐方式"
+            },
+            "valign": {
+              "type": "string",
+              "enum": [
+                "top",
+                "middle",
+                "bottom"
+              ],
+              "description": "垂直对齐方式"
+            },
+            "color": {
+              "type": "string",
+              "description": "颜色值"
+            }
+          },
+          "required": [
+            "type",
+            "url"
+          ]
+        }
+      ],
+      "description": "图片/装载器元素配置"
+    },
+    "IPanelConfig": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/IBaseElementConfig"
+        },
+        {
+          "$ref": "#/$defs/IViewConfig"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "panel",
+              "description": "元素类型：固定为 \"panel\""
+            }
+          },
+          "required": [
+            "type"
+          ]
+        }
+      ],
+      "description": "面板容器组件配置 (支持递归嵌套 elements 形成独立层级)"
+    },
+    "IListConfig": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/IBaseElementConfig"
+        },
+        {
+          "$ref": "#/$defs/IViewConfig"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "list",
+              "description": "元素类型：固定为 \"list\""
+            },
+            "defaultItem": {
+              "type": "string",
+              "description": "默认子项资源 URL"
+            },
+            "listLayout": {
+              "type": "string",
+              "enum": [
+                "SingleColumn",
+                "SingleRow",
+                "FlowHorizontal",
+                "FlowVertical",
+                "Pagination"
+              ],
+              "description": "列表项排列布局"
+            },
+            "selectionMode": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string",
+                  "const": "Single"
+                },
+                {
+                  "type": "string",
+                  "const": "Multiple"
+                },
+                {
+                  "type": "string",
+                  "const": "Multiple_SingleClick"
+                },
+                {
+                  "type": "string",
+                  "const": "None"
+                }
+              ],
+              "description": "列表单选/多选交互模式 (\"Single\" | \"Multiple\" | \"Multiple_SingleClick\" | \"None\" 或数字)"
+            },
+            "selectedIndex": {
+              "type": "number",
+              "description": "初始默认选中的子项索引 (默认为 -1 或 0)"
+            },
+            "selectionController": {
+              "type": "string",
+              "description": "双向绑定的选择状态控制器 (名称或 Controller 实例)"
+            },
+            "pageController": {
+              "type": "string",
+              "description": "双向绑定的滚动分页控制器 (名称或 Controller 实例，挂载至 scrollPane.pageController)"
+            },
+            "lineGap": {
+              "type": "number",
+              "description": "行间距"
+            },
+            "columnGap": {
+              "type": "number",
+              "description": "列间距"
+            },
+            "itemWidth": {
+              "type": "number",
+              "description": "强制规定子项渲染所占的格子物理宽度"
+            },
+            "itemHeight": {
+              "type": "number",
+              "description": "强制规定子项渲染所占的格子物理高度"
+            },
+            "align": {
+              "type": "string",
+              "enum": [
+                "left",
+                "center",
+                "right"
+              ],
+              "description": "列表整体在水平方向的对齐方式"
+            },
+            "verticalAlign": {
+              "type": "string",
+              "enum": [
+                "top",
+                "middle",
+                "bottom"
+              ],
+              "description": "列表整体在垂直方向的对齐方式"
+            },
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/IPanelConfig"
+              },
+              "description": "列表静态填充的数据子项列表 (通过 itemRenderer 递归填充)"
+            },
+            "lineCount": {
+              "type": "number",
+              "description": "列表项行数，仅在 listLayout 为 Pagination 或 FlowVertical 时有效"
+            },
+            "columnCount": {
+              "type": "number",
+              "description": "列表项列数，仅在 listLayout 为 FlowHorizontal 或 Pagination 时有效"
+            },
+            "autoResizeItem": {
+              "type": "boolean",
+              "description": "是否自动调整子项尺寸以匹配 itemWidth/itemHeight"
+            }
+          },
+          "required": [
+            "type"
+          ]
+        }
+      ],
+      "description": "动态网格/滚动列表配置"
+    },
+    "ITextConfig": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/IBaseElementConfig"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "text",
+              "description": "元素类型：固定为 \"text\""
+            },
+            "text": {
+              "type": "string",
+              "description": "文本显示具体内容"
+            },
+            "font": {
+              "type": "string",
+              "description": "字体名称"
+            },
+            "fontSize": {
+              "type": "number",
+              "description": "字体大小 (默认 20)"
+            },
+            "color": {
+              "type": "string",
+              "description": "字体十六进制颜色值 (如: \"#ffffff\", \"#e99e00\")"
+            },
+            "align": {
+              "type": "string",
+              "enum": [
+                "left",
+                "center",
+                "right"
+              ],
+              "description": "文本内部字符的水平对齐方式"
+            },
+            "valign": {
+              "type": "string",
+              "enum": [
+                "top",
+                "middle",
+                "bottom"
+              ],
+              "description": "文本内部字符的垂直对齐方式"
+            },
+            "leading": {
+              "type": "number",
+              "description": "行高间距 (默认 4)"
+            },
+            "letterSpacing": {
+              "type": "number",
+              "description": "字间距 (默认 0)"
+            },
+            "underline": {
+              "type": "boolean",
+              "description": "是否添加下划线"
+            },
+            "italic": {
+              "type": "boolean",
+              "description": "是否为斜体"
+            },
+            "bold": {
+              "type": "boolean",
+              "description": "是否加粗"
+            },
+            "singleLine": {
+              "type": "boolean",
+              "description": "是否单行文本限制 (超出自动省略/不换行)"
+            },
+            "stroke": {
+              "type": "number",
+              "description": "描边粗细像素"
+            },
+            "strokeColor": {
+              "type": "string",
+              "description": "描边颜色值"
+            },
+            "isUbb": {
+              "type": "boolean",
+              "description": "是否启用 UBB 语法富文本解析 (同时会自动将 \"\\n\" 转换为 \"<br/>\")"
+            },
+            "isInput": {
+              "type": "boolean",
+              "description": "是否为可交互输入文本框 (实例化 fgui.GTextInput)"
+            },
+            "promptText": {
+              "type": "string",
+              "description": "输入框提示文案 (promptText)"
+            }
+          },
+          "required": [
+            "type"
+          ]
+        }
+      ],
+      "description": "文本元素配置"
+    },
+    "IElementConfig": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/ITextConfig"
+        },
+        {
+          "$ref": "#/$defs/IIconConfig"
+        },
+        {
+          "$ref": "#/$defs/IGraphConfig"
+        },
+        {
+          "$ref": "#/$defs/IPanelConfig"
+        },
+        {
+          "$ref": "#/$defs/IListConfig"
+        },
+        {
+          "$ref": "#/$defs/IButtonConfig"
+        },
+        {
+          "$ref": "#/$defs/ISliderConfig"
+        },
+        {
+          "$ref": "#/$defs/IProgressBarConfig"
+        },
+        {
+          "$ref": "#/$defs/IGroupConfig"
+        },
+        {
+          "$ref": "#/$defs/ILabelConfig"
+        },
+        {
+          "$ref": "#/$defs/IComboBoxConfig"
+        },
+        {
+          "$ref": "#/$defs/IScrollBarConfig"
+        },
+        {
+          "$ref": "#/$defs/ITreeConfig"
+        },
+        {
+          "$ref": "#/$defs/IMovieClipConfig"
+        },
+        {
+          "$ref": "#/$defs/ILoader3DConfig"
+        },
+        {
+          "$ref": "#/$defs/IImageConfig"
+        }
+      ],
+      "description": "页面所有组件配置的多态联合类型 (对齐官方 19 大原生组件体系)"
+    },
+    "IPaddingConfig": {
+      "type": "object",
+      "properties": {
+        "top": {
+          "type": "number",
+          "description": "顶边距 (默认 30)"
+        },
+        "bottom": {
+          "type": "number",
+          "description": "底边距 (默认 30)"
+        },
+        "left": {
+          "type": "number",
+          "description": "左边距 (默认 40)"
+        },
+        "right": {
+          "type": "number",
+          "description": "右边距 (默认 40)"
+        }
+      },
+      "description": "视口边缘缩进安全边距"
+    },
+    "TransitionActionType": {
+      "type": "string",
+      "enum": [
+        "xy",
+        "size",
+        "scale",
+        "pivot",
+        "alpha",
+        "rotation",
+        "color",
+        "shake",
+        "visible",
+        "animation",
+        "sound",
+        "transition",
+        "colorFilter",
+        "skew",
+        "text",
+        "icon"
+      ],
+      "description": "动效动作类型定义"
+    },
+    "IViewConfig": {
+      "type": "object",
+      "properties": {
+        "controllers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/IControllerConfig"
+          },
+          "description": "容器挂载的控制器列表（支持多页面状态机与单选组控制）"
+        },
+        "transitions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ITransitionConfig"
+          },
+          "description": "容器挂载的动效列表（支持补间动画与自动播放）"
+        },
+        "background": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "$ref": "#/$defs/IIconConfig"
+            },
+            {
+              "$ref": "#/$defs/IGraphConfig"
+            },
+            {
+              "type": "object",
+              "properties": {
+                "color": {
+                  "type": "string"
+                },
+                "fillColor": {
+                  "type": "string"
+                },
+                "cornerRadius": {
+                  "anyOf": [
+                    {
+                      "type": "number"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  ]
+                },
+                "lineSize": {
+                  "type": "number"
+                },
+                "lineColor": {
+                  "type": "string"
+                }
+              }
+            }
+          ],
+          "description": "面板背景：可以是纯图片 URL、颜色值、也可以是嵌套的 icon/graph 元素配置或背景样式简写"
+        },
+        "elements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/IElementConfig"
+          },
+          "description": "面板内部嵌套的一维层级 Elements 子级元件列表"
+        },
+        "padding": {
+          "$ref": "#/$defs/IPaddingConfig",
+          "description": "面板的安全内边距，主要在滚动时使用"
+        },
+        "scrollType": {
+          "type": "number",
+          "description": "面板内容的滚动方式 (0 - 横向, 1 - 纵向, 2 - 双向)"
+        },
+        "pageController": {
+          "type": "string",
+          "description": "滚动容器双向绑定的分页控制器 (名称或 Controller 实例，挂载至 scrollPane.pageController)"
+        },
+        "vtScrollBar": {
+          "type": "string",
+          "description": "垂直滚动条资源路径或配置名称 (1:1 对齐官方 ScrollPane vtScrollBarRes)"
+        },
+        "hzScrollBar": {
+          "type": "string",
+          "description": "水平滚动条资源路径或配置名称 (1:1 对齐官方 ScrollPane hzScrollBarRes)"
+        },
+        "scrollBarDisplay": {
+          "type": "string",
+          "enum": [
+            "default",
+            "visible",
+            "auto",
+            "hidden"
+          ],
+          "description": "滚动条显示模式 (\"default\" | \"visible\" | \"auto\" | \"hidden\")"
+        },
+        "scrollBarFloating": {
+          "type": "boolean",
+          "description": "滚动条是否浮动于视口之上 (不扣减视口宽高)"
+        },
+        "scrollBarDisplayOnLeft": {
+          "type": "boolean",
+          "description": "垂直滚动条是否显示在左侧"
+        },
+        "scrollBarMargin": {
+          "type": "object",
+          "properties": {
+            "top": {
+              "type": "number"
+            },
+            "bottom": {
+              "type": "number"
+            },
+            "left": {
+              "type": "number"
+            },
+            "right": {
+              "type": "number"
+            }
+          },
+          "description": "滚动条内边距"
+        },
+        "overflow": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "容器溢出裁剪状态 (0 - Visible, 1 - Hidden, 2 - Scroll)"
+        },
+        "mask": {
+          "type": "string",
+          "description": "容器自定义遮罩目标（子元件名称或路径）"
+        },
+        "maskInverted": {
+          "type": "boolean",
+          "description": "遮罩是否反向（反向遮罩/镂空效果）"
+        },
+        "layoutType": {
+          "type": "string",
+          "enum": [
+            "none",
+            "vertical",
+            "horizontal"
+          ],
+          "description": "面板子级元件的定位排版方式： - \"none\": 传统绝对定位，子元件按各自 x/y 坐标独立排布 (默认) - \"vertical\": 纵向流式自动向下累加排布，忽略子级写死的绝对 Y 坐标 - \"horizontal\": 横向流式自动向右累加排布，忽略子级写死的绝对 X 坐标"
+        },
+        "gap": {
+          "type": "number",
+          "description": "子代一维流动布局排版时的子元件固定像素间距"
+        },
+        "flexWrap": {
+          "type": "boolean",
+          "description": "是否在 layoutType 为 \"horizontal\" 时启用弹性自适应折行 (Flex Wrap)"
+        },
+        "alignItems": {
+          "type": "string",
+          "enum": [
+            "flex-start",
+            "center",
+            "flex-end",
+            "stretch"
+          ],
+          "description": "父容器对交叉轴子元件对齐的统一约束 (Align Items) \"stretch\" 暂未实现完全物理拉伸，先按 flex-start 对齐表现"
+        },
+        "justifyContent": {
+          "type": "string",
+          "enum": [
+            "flex-start",
+            "center",
+            "flex-end",
+            "space-between",
+            "space-around",
+            "space-evenly"
+          ],
+          "description": "父容器对主轴方向上所有子元件排列对齐的统一约束 (Justify Content)"
+        }
+      },
+      "description": "容器视图通用配置（背景、子级、滚动、流式布局、控制器与动效）"
+    },
+    "IButtonConfig": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/IBaseElementConfig"
+        },
+        {
+          "$ref": "#/$defs/IViewConfig"
+        },
+        {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "button",
+              "description": "元素类型：固定为 \"button\""
+            },
+            "skin": {
+              "type": "string",
+              "description": "按钮组件皮肤 (FGUI Package 资源路径)"
+            },
+            "mode": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "string",
+                  "const": "Common"
+                },
+                {
+                  "type": "string",
+                  "const": "Check"
+                },
+                {
+                  "type": "string",
+                  "const": "Radio"
+                },
+                {
+                  "type": "string"
+                }
+              ],
+              "description": "按钮模式：0: Common(普通按钮), 1: Check(多选/开关), 2: Radio(单选按钮) 或字符串 \"Common\" | \"Check\" | \"Radio\""
+            },
+            "downEffect": {
+              "type": "number",
+              "description": "按下效果：0: None(无效果), 1: Darken(变暗), 2: Scale(居中缩放)"
+            },
+            "downEffectValue": {
+              "type": "number",
+              "description": "按下效果强度数值：当 downEffect=1(变暗) 时表示 RGB 缩放比例(默认 0.8)；当 downEffect=2(缩放) 时表示尺寸缩放比例(默认 0.95)"
+            },
+            "sound": {
+              "type": "string",
+              "description": "按钮音效资源路径 (例如 \"res/sound/click.mp3\")"
+            },
+            "soundVolumeScale": {
+              "type": "number",
+              "description": "按钮音效音量缩放 (默认 1.0)"
+            },
+            "title": {
+              "type": "string",
+              "description": "默认标题文本 (映射至子级 \"title\" 文本组件)"
+            },
+            "icon": {
+              "type": "string",
+              "description": "默认图标路径 (映射至子级 \"icon\" 图标组件)"
+            },
+            "selectedTitle": {
+              "type": "string",
+              "description": "选中态标题文本 (Check/Radio 模式)"
+            },
+            "selectedIcon": {
+              "type": "string",
+              "description": "选中态图标路径 (Check/Radio 模式)"
+            },
+            "titleColor": {
+              "type": "string",
+              "description": "标题颜色"
+            },
+            "titleFontSize": {
+              "type": "number",
+              "description": "标题字号"
+            },
+            "selected": {
+              "type": "boolean",
+              "description": "初始是否选中 (Check/Radio 模式)"
+            },
+            "relatedController": {
+              "type": "string",
+              "description": "联动单选控制器 (Radio 模式，可传控制器名称或实例)"
+            },
+            "pageId": {
+              "type": "string",
+              "description": "关联控制器页面 ID (Radio 模式)"
+            }
+          },
+          "required": [
+            "type"
+          ]
+        }
+      ],
+      "description": "按钮元素配置 对齐 FGUI 原生 constructExtension 与 setup_afterAdd 属性定义"
+    },
+    "IGearTweenConfig": {
+      "type": "object",
+      "properties": {
+        "tween": {
+          "type": "boolean",
+          "description": "切页时是否执行平滑补间动画，默认为 false"
+        },
+        "duration": {
+          "type": "number",
+          "description": "缓动持续时间（秒），默认为 0.3"
+        },
+        "easeType": {
+          "type": "number",
+          "description": "缓动方程类型（对应 FGUI EaseType 数字枚举，如 4: QuadOut）"
+        },
+        "delay": {
+          "type": "number",
+          "description": "延迟触发时间（秒），默认为 0"
+        }
+      },
+      "description": "Gear 补间缓动通用配置"
+    },
+    "IGearXYConfig": {
+      "type": "object",
+      "properties": {
+        "tween": {
+          "type": "boolean",
+          "description": "切页时是否执行平滑补间动画，默认为 false"
+        },
+        "duration": {
+          "type": "number",
+          "description": "缓动持续时间（秒），默认为 0.3"
+        },
+        "easeType": {
+          "type": "number",
+          "description": "缓动方程类型（对应 FGUI EaseType 数字枚举，如 4: QuadOut）"
+        },
+        "delay": {
+          "type": "number",
+          "description": "延迟触发时间（秒），默认为 0"
+        },
+        "controller": {
+          "type": "string",
+          "description": "绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器"
+        },
+        "pages": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "x": {
+                "type": "number"
+              },
+              "y": {
+                "type": "number"
+              },
+              "px": {
+                "type": "number"
+              },
+              "py": {
+                "type": "number"
+              }
+            },
+            "required": [
+              "x",
+              "y"
+            ]
+          },
+          "description": "各页面对应的坐标配置，键为页面名称，值为坐标对象"
+        }
+      },
+      "required": [
+        "pages"
+      ],
+      "description": "位置随控制器页面联动配置 (GearXY)"
+    },
+    "IGearSizeConfig": {
+      "type": "object",
+      "properties": {
+        "tween": {
+          "type": "boolean",
+          "description": "切页时是否执行平滑补间动画，默认为 false"
+        },
+        "duration": {
+          "type": "number",
+          "description": "缓动持续时间（秒），默认为 0.3"
+        },
+        "easeType": {
+          "type": "number",
+          "description": "缓动方程类型（对应 FGUI EaseType 数字枚举，如 4: QuadOut）"
+        },
+        "delay": {
+          "type": "number",
+          "description": "延迟触发时间（秒），默认为 0"
+        },
+        "controller": {
+          "type": "string",
+          "description": "绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器"
+        },
+        "pages": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "width": {
+                "type": "number"
+              },
+              "height": {
+                "type": "number"
+              },
+              "scaleX": {
+                "type": "number"
+              },
+              "scaleY": {
+                "type": "number"
+              },
+              "scale": {
+                "type": "number"
+              }
+            }
+          },
+          "description": "各页面对应的宽高与缩放配置，键为页面名称"
+        }
+      },
+      "required": [
+        "pages"
+      ],
+      "description": "尺寸与缩放随控制器页面联动配置 (GearSize)"
+    },
+    "IGearLookConfig": {
+      "type": "object",
+      "properties": {
+        "tween": {
+          "type": "boolean",
+          "description": "切页时是否执行平滑补间动画，默认为 false"
+        },
+        "duration": {
+          "type": "number",
+          "description": "缓动持续时间（秒），默认为 0.3"
+        },
+        "easeType": {
+          "type": "number",
+          "description": "缓动方程类型（对应 FGUI EaseType 数字枚举，如 4: QuadOut）"
+        },
+        "delay": {
+          "type": "number",
+          "description": "延迟触发时间（秒），默认为 0"
+        },
+        "controller": {
+          "type": "string",
+          "description": "绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器"
+        },
+        "pages": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "alpha": {
+                "type": "number"
+              },
+              "rotation": {
+                "type": "number"
+              },
+              "grayed": {
+                "type": "boolean"
+              },
+              "touchable": {
+                "type": "boolean"
+              }
+            }
+          },
+          "description": "各页面对应的视觉属性配置，键为页面名称"
+        }
+      },
+      "required": [
+        "pages"
+      ],
+      "description": "透明度、旋转与可交互性随控制器页面联动配置 (GearLook)"
+    },
+    "IGearColorConfig": {
+      "type": "object",
+      "properties": {
+        "controller": {
+          "type": "string",
+          "description": "绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器"
+        },
+        "pages": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "color": {
+                "type": "string"
+              },
+              "strokeColor": {
+                "type": "string"
+              }
+            }
+          },
+          "description": "各页面对应的颜色配置，键为页面名称"
+        },
+        "tween": {
+          "type": "boolean",
+          "description": "是否开启颜色平滑过渡动画 (默认 false)"
+        },
+        "duration": {
+          "type": "number",
+          "description": "动画过渡时长 (秒，默认 0.3)"
+        },
+        "easeType": {
+          "type": "number",
+          "description": "缓动算法类型 (参考 fgui.EaseType)"
+        }
+      },
+      "required": [
+        "pages"
+      ],
+      "description": "文本或边框颜色随控制器页面联动配置 (GearColor)"
+    },
+    "IGearTextConfig": {
+      "type": "object",
+      "properties": {
+        "controller": {
+          "type": "string",
+          "description": "绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器"
+        },
+        "pages": {
+          "type": "object",
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "text": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          },
+          "description": "各页面对应的文本内容，键为页面名称"
+        }
+      },
+      "required": [
+        "pages"
+      ],
+      "description": "文本內容随控制器页面联动配置 (GearText)"
+    },
+    "IGearIconConfig": {
+      "type": "object",
+      "properties": {
+        "controller": {
+          "type": "string",
+          "description": "绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器"
+        },
+        "pages": {
+          "type": "object",
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "icon": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  }
+                }
+              }
+            ]
+          },
+          "description": "各页面对应的图标 URL 地址，键为页面名称"
+        }
+      },
+      "required": [
+        "pages"
+      ],
+      "description": "图标/图片地址随控制器页面联动配置 (GearIcon)"
+    },
+    "IGearAnimationConfig": {
+      "type": "object",
+      "properties": {
+        "controller": {
+          "type": "string",
+          "description": "绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器"
+        },
+        "pages": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "playing": {
+                "type": "boolean"
+              },
+              "frame": {
+                "type": "number"
+              }
+            }
+          },
+          "description": "各页面对应的动画状态，键为页面名称"
+        }
+      },
+      "required": [
+        "pages"
+      ],
+      "description": "动画组件播放状态随控制器页面联动配置 (GearAnimation)"
+    },
+    "IGearDisplay2Config": {
+      "type": "object",
+      "properties": {
+        "controller": {
+          "type": "string",
+          "description": "绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器"
+        },
+        "pages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "在控制器的哪些页面下显示"
+        },
+        "condition": {
+          "type": "number",
+          "enum": [
+            0,
+            1
+          ],
+          "description": "判定条件：0 表示 AND（必须同时满足），1 表示 OR（满足其一即可显示）"
+        }
+      },
+      "required": [
+        "pages"
+      ],
+      "description": "复合多条件显隐随控制器联动配置 (GearDisplay2)"
+    },
+    "IGearFontSizeConfig": {
+      "type": "object",
+      "properties": {
+        "controller": {
+          "type": "string",
+          "description": "绑定的控制器名称，缺省时自动匹配父容器中的首个可用控制器"
+        },
+        "pages": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "number"
+          },
+          "description": "各页面对应的字号大小（像素），键为页面名称"
+        }
+      },
+      "required": [
+        "pages"
+      ],
+      "description": "字体大小随控制器页面联动配置 (GearFontSize)"
+    },
+    "IControllerActionConfig": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "playTransition",
+          "description": "动作类型，目前原生支持切页播放过渡动效"
+        },
+        "transitionName": {
+          "type": "string",
+          "description": "需要触发播放的过渡动效名称"
+        },
+        "playTimes": {
+          "type": "number",
+          "description": "播放次数，默认 1 次，-1 表示无限循环"
+        },
+        "delay": {
+          "type": "number",
+          "description": "延迟触发时间（秒），默认 0"
+        },
+        "stopOnExit": {
+          "type": "boolean",
+          "description": "离开页面时是否自动停止动画"
+        },
+        "fromPage": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "触发来源页面名称列表（若不声明则任何来源页面均可触发）"
+        },
+        "toPage": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "触发目标页面名称列表（若不声明则切换到任意目标页面均触发）"
+        }
+      },
+      "required": [
+        "type",
+        "transitionName"
+      ],
+      "description": "控制器关联动作配置协议"
+    },
+    "IControllerPageDef": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "页面物理 ID（如 \"c0\", \"_1\", \"p1\"），缺省时自动自增生成"
+        },
+        "name": {
+          "type": "string",
+          "description": "页面业务别名（如 \"up\", \"normal\", \"grayed\"）"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "description": "控制器单页面完整定义（对齐官方物理 ID 与业务别名成对模型）"
+    },
+    "IControllerConfig": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "控制器名称，如 \"button\", \"tab\", \"c1\", \"mode\" 等"
+        },
+        "pages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "页面名称列表（简单模式），例如 [\"up\", \"down\", \"over\", \"selectedOver\"] 或 [\"page0\", \"page1\"]"
+        },
+        "pageIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "页面物理 ID 列表（与 pages 索引一一对应）"
+        },
+        "pageDefs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/IControllerPageDef"
+          },
+          "description": "页面完整结构定义列表（复合模式，包含 id 与 name）"
+        },
+        "selectedIndex": {
+          "type": "number",
+          "description": "默认选中的页面索引，默认为 0"
+        },
+        "selectedPage": {
+          "type": "string",
+          "description": "默认选中的页面名称（如果设置，优先级高于 selectedIndex）"
+        },
+        "selectedPageId": {
+          "type": "string",
+          "description": "默认选中的页面物理 ID"
+        },
+        "autoRadioGroupDepth": {
+          "type": "boolean",
+          "description": "是否自动调整单选组件层级深度"
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/IControllerActionConfig"
+          },
+          "description": "控制器切页触发动作列表"
+        },
+        "onChanged": {
+          "description": "状态切换监听回调"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "description": "页面/组件控制器配置协议"
+    },
+    "ISliderConfig": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "slider"
+        },
+        "value": {
+          "type": "number",
+          "description": "当前值 (默认为 50)"
+        },
+        "min": {
+          "type": "number",
+          "description": "最小值 (默认为 0)"
+        },
+        "max": {
+          "type": "number",
+          "description": "最大值 (默认为 100)"
+        },
+        "wholeNumbers": {
+          "type": "boolean",
+          "description": "是否只允许整数步进"
+        },
+        "changeOnClick": {
+          "type": "boolean",
+          "description": "点击轨道时是否自动跳转定位 (默认为 true)"
+        },
+        "titleType": {
+          "type": "number",
+          "description": "标签显示模式 (0 - Percent, 1 - ValueAndMax, 2 - Value, 3 - Max)"
+        },
+        "reverse": {
+          "type": "boolean",
+          "description": "是否反向滑动"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "description": "原生 GSlider 滑动条组件配置定义 完全遵循 FGUI 官方 GSlider 规范： 内部部件： - bar: 滑动条轨道底图或进度指示条 (必须命名为 bar) - grip: 拖拽滑动小手柄 (必须命名为 grip) - title: (可选) 数值或百分比文本标签 (命名为 title)"
+    },
+    "IProgressBarConfig": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "progressbar"
+        },
+        "value": {
+          "type": "number",
+          "description": "当前值 (默认为 50)"
+        },
+        "min": {
+          "type": "number",
+          "description": "最小值 (默认为 0)"
+        },
+        "max": {
+          "type": "number",
+          "description": "最大值 (默认为 100)"
+        },
+        "titleType": {
+          "type": "number",
+          "description": "标签显示模式 (0 - Percent, 1 - ValueAndMax, 2 - Value, 3 - Max)"
+        },
+        "reverse": {
+          "type": "boolean",
+          "description": "是否反向填充"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "description": "原生 GProgressBar 进度条组件配置定义 完全遵循 FGUI 官方 GProgressBar 规范： 内部部件： - bar: 进度指示条 (必须命名为 bar) - title: (可选) 数值或百分比文本标签 (命名为 title) - ani: (可选) 动画帧指示元件"
+    },
+    "IGroupConfig": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "group",
+          "description": "元素类型：固定为 \"group\""
+        },
+        "groupLayout": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "const": "None"
+            },
+            {
+              "type": "string",
+              "const": "Horizontal"
+            },
+            {
+              "type": "string",
+              "const": "Vertical"
+            }
+          ],
+          "description": "组内子项流动布局方式 (0 - None, 1 - Horizontal, 2 - Vertical)"
+        },
+        "lineGap": {
+          "type": "number",
+          "description": "行间距"
+        },
+        "columnGap": {
+          "type": "number",
+          "description": "列间距"
+        },
+        "excludeInvisibles": {
+          "type": "boolean",
+          "description": "计算组包围盒时是否自动排除不可见元件 (默认为 false)"
+        },
+        "autoSizeDisabled": {
+          "type": "boolean",
+          "description": "是否禁用自动调整组尺寸 (默认为 false)"
+        },
+        "mainGridIndex": {
+          "type": "number",
+          "description": "主格索引 (布局使用)"
+        },
+        "mainGridMinSize": {
+          "type": "number",
+          "description": "主格最小尺寸 (布局使用)"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "description": "组容器组件配置 (fgui.GGroup) 核心特性： 1. 逻辑与排版分组：将多个子元件归属到同一个逻辑组中，通过组进行整体显隐、移动或透明度控制； 2. 自动包围盒与排除隐藏：支持 excludeInvisibles（自动剔除隐藏元件计算组包围盒）与 autoSizeDisabled。"
+    },
+    "ILabelConfig": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "label",
+          "description": "元素类型：固定为 \"label\""
+        },
+        "title": {
+          "type": "string",
+          "description": "标签标题文本 (映射至内部 \"title\" 组件)"
+        },
+        "icon": {
+          "type": "string",
+          "description": "标签图标路径 (映射至内部 \"icon\" 组件)"
+        },
+        "titleColor": {
+          "type": "string",
+          "description": "标题文本颜色"
+        },
+        "titleFontSize": {
+          "type": "number",
+          "description": "标题文本字号"
+        },
+        "color": {
+          "type": "string",
+          "description": "整体颜色"
+        },
+        "editable": {
+          "type": "boolean",
+          "description": "文本是否可编辑"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "description": "原生标签组件配置 (fgui.GLabel) 核心特性： 官方标准复合组件，内部自动映射 titleObject 与 iconObject， 具备自动文本内容更新与齿轮绑定能力。"
+    },
+    "IComboBoxConfig": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "combobox",
+          "description": "元素类型：固定为 \"combobox\""
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "文本显示列表"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "对应的数据值列表"
+        },
+        "icons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "对应的图标资源列表"
+        },
+        "selectedIndex": {
+          "type": "number",
+          "description": "当前选中的项索引 (默认为 0)"
+        },
+        "value": {
+          "type": "string",
+          "description": "当前选中的数据值"
+        },
+        "visibleItemCount": {
+          "type": "number",
+          "description": "弹出下拉菜单的最大可视子项数量"
+        },
+        "popupDirection": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "string",
+              "const": "Auto"
+            },
+            {
+              "type": "string",
+              "const": "Up"
+            },
+            {
+              "type": "string",
+              "const": "Down"
+            }
+          ],
+          "description": "弹出方向 (0 - Auto, 1 - Up, 2 - Down)"
+        },
+        "selectionController": {
+          "type": "string",
+          "description": "双向绑定的选择状态控制器 (名称或实例)"
+        },
+        "dropdown": {
+          "type": "string",
+          "description": "弹出下拉列表组件模板路径 (如 \"res/layout/comboDropdown.json\")"
+        },
+        "titleColor": {
+          "type": "string",
+          "description": "标题文本颜色"
+        },
+        "titleFontSize": {
+          "type": "number",
+          "description": "标题文本字号"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "description": "原生下拉菜单/下拉选框配置 (fgui.GComboBox) 核心特性： 包含弹出列表 (dropdown)、文本标题 (title)、图标 (icon) 及选项数据绑定； 支持绑定 selectionController 属性控制器，选项切换时双向同步控制器状态。"
+    },
+    "IScrollBarConfig": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "scrollbar",
+          "description": "元素类型：固定为 \"scrollbar\""
+        },
+        "fixedGripSize": {
+          "type": "boolean",
+          "description": "是否固定手柄长度 (默认为 false，随内容比例动态伸缩)"
+        },
+        "target": {
+          "type": "string",
+          "description": "关联的目标滚动容器名称 (同级容器名，自动绑定其 scrollPane)"
+        },
+        "vertical": {
+          "type": "boolean",
+          "description": "是否为纵向滚动条 (默认为 true)"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "description": "原生独立滚动条组件配置 (fgui.GScrollBar) 核心部件： - grip: 滚动拖拽手柄 - bar: 滚动条滑动轨道 - arrow1: (可选) 上/左方向翻页按钮 - arrow2: (可选) 下/右方向翻页按钮"
+    },
+    "ITreeNodeConfig": {
+      "type": "object",
+      "properties": {
+        "text": {
+          "type": "string",
+          "description": "节点显示文本"
+        },
+        "icon": {
+          "type": "string",
+          "description": "节点图标资源路径"
+        },
+        "data": {
+          "description": "节点自定义业务数据"
+        },
+        "isFolder": {
+          "type": "boolean",
+          "description": "是否为文件夹节点 (不传时若存在 children 则自动视为 true)"
+        },
+        "expanded": {
+          "type": "boolean",
+          "description": "初始是否展开 (默认 false)"
+        },
+        "resURL": {
+          "type": "string",
+          "description": "自定义节点模板路径"
+        },
+        "children": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ITreeNodeConfig"
+          },
+          "description": "子节点列表"
+        }
+      },
+      "description": "声明式树节点数据配置 (用于 GTree 初始化构建)"
+    },
+    "ITreeConfig": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "tree",
+          "description": "元素类型：固定为 \"tree\""
+        },
+        "defaultItem": {
+          "type": "string",
+          "description": "树节点默认模板路径 (如 \"res/layout/treeItem.json\")"
+        },
+        "lineGap": {
+          "type": "number",
+          "description": "行间距像素"
+        },
+        "selectionMode": {
+          "type": "string",
+          "enum": [
+            "Single",
+            "Multiple",
+            "Multiple_SingleClick",
+            "None"
+          ],
+          "description": "列表选择模式"
+        },
+        "indent": {
+          "type": "number",
+          "description": "每级缩进像素 (默认为 15)"
+        },
+        "clickToExpand": {
+          "type": "number",
+          "description": "点击展开折叠模式 (0 - 无, 1 - 单击, 2 - 双击)"
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ITreeNodeConfig"
+          },
+          "description": "声明式树节点数据"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "description": "原生树形组件配置 (fgui.GTree) 继承自 fgui.GList，支持多层级 GTreeNode 树结构递归展开与折叠。"
+    },
+    "IMovieClipConfig": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "movieclip",
+          "description": "元素类型：固定为 \"movieclip\""
+        },
+        "url": {
+          "type": "string",
+          "description": "动画资源 URL 或包内路径"
+        },
+        "frames": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "外部序列帧图片路径列表 (纯 JSON 模式加载外部帧纹理)"
+        },
+        "interval": {
+          "type": "number",
+          "description": "每帧播放间隔毫秒数 (默认约 100ms)"
+        },
+        "swing": {
+          "type": "boolean",
+          "description": "是否开启往返摇摆播放 (默认为 false)"
+        },
+        "repeatDelay": {
+          "type": "number",
+          "description": "循环重复播放之间的延迟毫秒数 (默认为 0)"
+        },
+        "playing": {
+          "type": "boolean",
+          "description": "初始是否处于播放状态 (默认为 true)"
+        },
+        "frame": {
+          "type": "number",
+          "description": "初始定格帧序号 (默认为 0)"
+        },
+        "timeScale": {
+          "type": "number",
+          "description": "播放时间缩放倍率 (默认为 1.0)"
+        },
+        "color": {
+          "type": "string",
+          "description": "颜色滤镜值"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "description": "原生序列帧动画组件配置 (fgui.GMovieClip)"
+    },
+    "ILoader3DConfig": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "loader3d",
+          "description": "元素类型：固定为 \"loader3d\""
+        },
+        "url": {
+          "type": "string",
+          "description": "3D 资源路径或骨骼动画路径"
+        },
+        "animationName": {
+          "type": "string",
+          "description": "初始播放的动画名称"
+        },
+        "skinName": {
+          "type": "string",
+          "description": "皮肤名称"
+        },
+        "playing": {
+          "type": "boolean",
+          "description": "初始是否播放"
+        },
+        "loop": {
+          "type": "boolean",
+          "description": "是否循环播放"
+        },
+        "frame": {
+          "type": "number",
+          "description": "当前帧序号"
+        },
+        "align": {
+          "type": "string",
+          "enum": [
+            "left",
+            "center",
+            "right"
+          ],
+          "description": "水平对齐方式"
+        },
+        "valign": {
+          "type": "string",
+          "enum": [
+            "top",
+            "middle",
+            "bottom"
+          ],
+          "description": "垂直对齐方式"
+        },
+        "color": {
+          "type": "string",
+          "description": "颜色滤镜值"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "description": "原生 3D / Spine 骨骼模型加载器配置 (fgui.GLoader3D)"
+    },
+    "IImageConfig": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "image",
+          "description": "元素类型：固定为 \"image\""
+        },
+        "url": {
+          "type": "string",
+          "description": "图片资源 URL"
+        },
+        "color": {
+          "type": "string",
+          "description": "颜色滤镜值"
+        },
+        "flip": {
+          "type": "number",
+          "description": "翻转模式 (0-None, 1-Horizontal, 2-Vertical, 3-Both)"
+        },
+        "fillMethod": {
+          "type": "number",
+          "description": "填充模式 (0-None, 1-Horizontal, 2-Vertical, 3-Radial90, 4-Radial180, 5-Radial360)"
+        },
+        "fillOrigin": {
+          "type": "number",
+          "description": "填充起点 (0-Top, 1-Bottom, 2-Left, 3-Right)"
+        },
+        "fillClockwise": {
+          "type": "boolean",
+          "description": "环形填充时是否顺时针方向"
+        },
+        "fillAmount": {
+          "type": "number",
+          "description": "当前填充进度比例 (0 ~ 1)"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "description": "原生轻量图片配置 (fgui.GImage)"
+    },
+    "ITransitionItemConfig": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/$defs/TransitionActionType",
+          "description": "动作类型，如 \"scale\", \"alpha\", \"xy\", \"rotation\", \"shake\" 等"
+        },
+        "target": {
+          "type": "string",
+          "description": "目标子节点名称（或直接传入 GObject 引用；缺省或为空表示容器自身）"
+        },
+        "targetId": {
+          "type": "string",
+          "description": "目标子节点名称别名（与 target 等价）"
+        },
+        "time": {
+          "type": "number",
+          "description": "开始触发时间偏移（秒），默认为 0"
+        },
+        "duration": {
+          "type": "number",
+          "description": "持续时间（秒）"
+        },
+        "easeType": {
+          "type": "number",
+          "description": "缓动方程类型（对应 FGUI EaseType 数字枚举，如 EaseType.QuadOut=4，默认 QuadOut）"
+        },
+        "repeat": {
+          "type": "number",
+          "description": "重复次数（-1 表示单项循环，默认 0）"
+        },
+        "yoyo": {
+          "type": "boolean",
+          "description": "是否往返播放 (Yoyo)"
+        },
+        "tween": {
+          "type": "boolean",
+          "description": "是否启用补间（当声明了 duration 时自动为 true）"
+        },
+        "tweenConfig": {
+          "type": "object",
+          "properties": {
+            "duration": {
+              "type": "number"
+            },
+            "easeType": {
+              "type": "number"
+            },
+            "repeat": {
+              "type": "number"
+            },
+            "yoyo": {
+              "type": "boolean"
+            },
+            "startValue": {},
+            "endValue": {}
+          },
+          "description": "嵌套补间配置兼容字段"
+        },
+        "label": {
+          "type": "string",
+          "description": "关键帧标签名"
+        },
+        "endLabel": {
+          "type": "string",
+          "description": "结束帧标签名"
+        },
+        "startValue": {
+          "description": "起始值：如 scale 为 [1, 1]，alpha 为 0，xy 为 [0, 0]，rotation 为 0"
+        },
+        "endValue": {
+          "description": "目标值：如 scale 为 [1.2, 1.2]，alpha 为 1，xy 为 [100, 200]，rotation 为 360"
+        },
+        "value": {
+          "description": "静态固定值（用于无需补间的动作类型，如 visible, text, icon）"
+        },
+        "shake": {
+          "type": "object",
+          "properties": {
+            "amplitude": {
+              "type": "number"
+            },
+            "duration": {
+              "type": "number"
+            }
+          },
+          "required": [
+            "amplitude",
+            "duration"
+          ],
+          "description": "震动配置（用于 shake 类型）：{ amplitude: number, duration: number }"
+        },
+        "hook": {
+          "description": "关键帧回调钩子"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "description": "动效单项动作配置"
+    },
+    "ITransitionConfig": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "动效唯一名称，可通过 component.getTransition(name) 检索"
+        },
+        "autoPlay": {
+          "type": "boolean",
+          "description": "添加到舞台时是否自动播放，默认为 false"
+        },
+        "autoPlayTimes": {
+          "type": "number",
+          "description": "自动播放次数（-1 表示无限循环），默认为 1"
+        },
+        "autoPlayDelay": {
+          "type": "number",
+          "description": "自动播放延迟（秒），默认为 0"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ITransitionItemConfig"
+          },
+          "description": "补间动作条目集合"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "description": "动效整体配置协议"
+    }
+  }
+}

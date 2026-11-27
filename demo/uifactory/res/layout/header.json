@@ -1,7 +1,7 @@
 {
   "type": "panel",
   "name": "header",
-  "width": 1480,
+  "width": 1280,
   "height": 50,
   "background": {
     "type": "graph",
@@ -14,7 +14,7 @@
     {
       "type": "graph",
       "name": "brandBadge",
-      "x": 20,
+      "x": 16,
       "y": 11,
       "width": 6,
       "height": 28,
@@ -25,9 +25,9 @@
     {
       "type": "text",
       "name": "headerTitle",
-      "x": 36,
+      "x": 32,
       "y": 10,
-      "width": 440,
+      "width": 360,
       "height": 30,
       "text": "UIFactory 4.0 全组件正交测试矩阵",
       "fontSize": 18,
@@ -38,11 +38,11 @@
     {
       "type": "text",
       "name": "headerSub",
-      "x": 490,
+      "x": 400,
       "y": 11,
-      "width": 620,
+      "width": 580,
       "height": 28,
-      "text": "9 大独立模块 · 18 种内置类型 · 10 大 Gears · Flexbox / Relations 全矩阵",
+      "text": "10 大独立模块 · 18 种内置类型 · 10 大 Gears · Flexbox / Relations 全矩阵",
       "fontSize": 12,
       "color": "#94a3b8",
       "valign": "middle"
@@ -50,11 +50,11 @@
     {
       "type": "text",
       "name": "statusHint",
-      "x": 1130,
+      "x": 992,
       "y": 11,
-      "width": 326,
+      "width": 268,
       "height": 28,
-      "text": "TAB 1/9 ACTIVE (1480×720)",
+      "text": "TAB 1/10 ACTIVE (1280×720)",
       "fontSize": 12,
       "bold": true,
       "color": "#38bdf8",

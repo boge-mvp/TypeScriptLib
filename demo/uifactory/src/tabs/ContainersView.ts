@@ -120,14 +120,12 @@ export class ContainersView extends GComponent {
                 btnSbDisplay.title = `显示: ${sbModes[sbModeIdx]}`;
                 rebuildViewport();
             });
-            btnSbFloating?.onClick(this, () => {
-                sbFloating = !sbFloating;
-                btnSbFloating.title = sbFloating ? "悬浮: 开(悬浮)" : "悬浮: 关(占位)";
+            btnSbFloating?.on(fgui.Events.STATE_CHANGED, this, () => {
+                sbFloating = btnSbFloating.selected;
                 rebuildViewport();
             });
-            btnSbLeft?.onClick(this, () => {
-                sbLeft = !sbLeft;
-                btnSbLeft.title = sbLeft ? "侧边: 左侧" : "侧边: 右侧";
+            btnSbLeft?.on(fgui.Events.STATE_CHANGED, this, () => {
+                sbLeft = btnSbLeft.selected;
                 rebuildViewport();
             });
         }

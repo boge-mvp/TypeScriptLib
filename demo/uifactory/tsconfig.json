@@ -3,6 +3,7 @@
     "../../tsconfig.json"
   ],
   "compilerOptions": {
+    "rootDir": "./src",
     "outDir": "./bin",
     "declaration": false
   },

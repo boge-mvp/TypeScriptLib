@@ -22,21 +22,11 @@ export class FormView extends GComponent {
         const chkAutoSave = this.getChild("chkAutoSave") as Nullable<GButton>;
         const formBtnStatus = this.getChild("formBtnStatus") as Nullable<GTextField>;
         const radioCtrl = this.getController("radioCtrl");
-        const radButtons: Array<{ btn: Nullable<GButton>; page: string }> = [
-            { btn: this.getChild("radLow") as Nullable<GButton>, page: "low" },
-            { btn: this.getChild("radMid") as Nullable<GButton>, page: "mid" },
-            { btn: this.getChild("radHigh") as Nullable<GButton>, page: "high" }
-        ];
 
         const refreshBtnStatus = () => {
             if (!formBtnStatus) return;
             const auto = chkAutoSave?.selected ? "开启" : "关闭";
             const page = radioCtrl?.selectedPage || "mid";
-            for (const item of radButtons) {
-                if (item.btn) {
-                    item.btn.selected = (item.page === page);
-                }
-            }
             formBtnStatus.text = `交互状态：自动保存 = ${auto} | 当前画质 = ${page} | 按钮点击 = ${this._clickCount} 次`;
         };
 
@@ -108,10 +98,9 @@ export class FormView extends GComponent {
                 slider.value = 100;
                 syncSliderText();
             });
-            btnWhole?.onClick(this, () => {
+            btnWhole?.on(fgui.Events.STATE_CHANGED, this, () => {
                 if (!slider) return;
-                slider.wholeNumbers = !slider.wholeNumbers;
-                btnWhole.title = `整数步进: ${slider.wholeNumbers ? "开" : "关"}`;
+                slider.wholeNumbers = btnWhole.selected;
                 syncSliderText();
             });
             btnSliderRev?.onClick(this, () => {
@@ -146,10 +135,9 @@ export class FormView extends GComponent {
                 btnSliderRev.title = `反向滑动: ${sliderReversed ? "开" : "关"}`;
                 syncSliderText();
             });
-            btnSliderClick?.onClick(this, () => {
+            btnSliderClick?.on(fgui.Events.STATE_CHANGED, this, () => {
                 if (!slider) return;
-                slider.changeOnClick = !slider.changeOnClick;
-                btnSliderClick.title = `点击跳转: ${slider.changeOnClick ? "开" : "关"}`;
+                slider.changeOnClick = btnSliderClick.selected;
                 syncSliderText();
             });
             syncSliderText();
@@ -222,28 +210,20 @@ export class FormView extends GComponent {
                 btnProgTitle.title = `模式: ${titleShortNames[nextType]}`;
                 syncProgressStatus();
             });
-            btnProgTween?.onClick(this, () => {
-                useTween = !useTween;
-                btnProgTween.title = `动效(tween): ${useTween ? "开" : "关"}`;
+            btnProgTween?.on(fgui.Events.STATE_CHANGED, this, () => {
+                useTween = btnProgTween.selected;
                 syncProgressStatus();
             });
             syncProgressStatus();
         }
 
-        // 3.5 GComboBox 常规与带滚动条选框回调（同步 dropdown 缩放比例）
+        // 3.5 GComboBox 常规与带滚动条选框回调
         const combo = this.getChild("demoCombo") as Nullable<GComboBox>;
         const comboScroll = this.getChild("demoComboScroll") as Nullable<GComboBox>;
         const comboResult = this.getChild("comboResultText") as Nullable<GTextField>;
 
         const bindCombo = (cb: Nullable<GComboBox>, label: string) => {
             if (!cb) return;
-            cb.on(Laya.Event.MOUSE_DOWN, this, () => {
-                if (cb.dropdown) {
-                    const sx = this.scaleX || 1;
-                    const sy = this.scaleY || 1;
-                    cb.dropdown.setScale(sx, sy);
-                }
-            });
             cb.on(fgui.Events.STATE_CHANGED, this, () => {
                 if (comboResult) {
                     comboResult.text = `[${label}] ${cb.text} (value: ${cb.value})`;

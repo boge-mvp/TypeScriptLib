@@ -1,7 +1,7 @@
 # UIFactory 纯代码 UI 构建与多端自适应指南 (面向 AI 界面构建与代码生成)
 
-> **文档性质**：面向代码生成智能体（AI Agent）及开发者的**全局公用界面构建实战指南**。
-> **核心使命**：指导代码生成智能体与开发者使用 `UIFactory` 声明式配置驱动（JSON Schema）构建高品质、多端响应式防拉伸变形的 FGUI 纯代码界面，以及挂接 Spine 3.8 骨骼动画与矢量特效。
+> **文档性质**：面向代码生成智能体（AI Agent）及开发者的**UIFactory 架构与语义契约实战指南**。
+> **JSON Schema 单一字段事实源**：`AIGuideKit/uifactory-layout.schema.json`（由 `TSCore/src/com/uifactory/I*Config.ts` 通过 `node scripts/gen-uifactory-schema.js` 自动生成）。所有组件字段名、必填项、数字/字符串枚举值以该 Schema 为唯一事实源，本文档聚焦 **Schema 无法表达的架构选型、跨字段因果关系与运行期物理约束**。
 > **命名空间约定**：纯代码工厂入口在全局或框架中以 `UIFactory` 命名暴露，本文所有示例均直接以 `UIFactory.xxx` 纯净语法示范。
 
 ---
@@ -162,29 +162,24 @@
 | `"loader3d"` | `fgui.GLoader3D` | `createLoader3D` | 原生 3D 模型与 Spine 骨骼渲染装载器 |
 | `"image"` | `fgui.GImage` | `createImage` | 原生静态图片组件 (支持翻转与多种 fillMethod 环形填充) |
 
-### 3.2 原生扩展部件映射契约 (Button, Checkbox, Radio, Slider, Input)
-1. **GButton 按压反馈与模式**：
-   - **中心向心缩放**（推荐纯代码按钮）：配置 `downEffect: 2, downEffectValue: 0.92`。UIFactory 会自动设置 `setPivot(0.5, 0.5, pivotAsAnchor)`，保持顶层布局 `(x, y)` 零位移，按压时向几何中心平滑微缩；
-   - **滤镜变暗反馈**：配置 `downEffect: 1, downEffectValue: 0.65`（适合带底图按钮）；
-   - **Checkbox 复选模式**：配置 `mode: "Check"`。内部放置对勾文本或图元，并绑定 `gearDisplay: { controller: "button", pages: ["down", "selectedOver"] }`，即可实现全自动原生的勾选显隐；
-   - **Radio 单选模式**：配置 `mode: "Radio", relatedController: "radioCtrl", pageId: "optA"`，且单选按钮组共同受根节点控制。
-2. **进度条与可拖拽滑动条 (GProgressBar / GSlider)**：
-   - 在组件容器中，包含具有规范名称的子元件：
-     - 名为 `"bar"` 或 `"bar_v"` 的图元：映射为进度填充体；
-     - 名为 `"title"` 的文本：映射为百分比文本；
-     - 名为 `"grip"` 的图元（GSlider 特有）：映射为手柄并自动激活物理拖拽手势。
-   - **`GProgressBar` 常用配置**：支持 `min` / `max` / `value`、`reverse`（反向填充）、`titleType`（`0:Percent` / `1:ValueAndMax` / `2:Value` / `3:Max`）；值变化动效通过运行期调用官方原生 `progress.tweenValue(val, duration)` 触发。
-3. **交互式输入框 (GTextInput)**：
-   - 配置 `type: "text", isInput: true, promptText: "请输入内容..."`，UIFactory 自动产出原生 `fgui.GTextInput`，底层自动挂载输入框并支持光标对焦与键盘键入。
-4. **纯代码下拉框、滚动条、序列帧、树与骨骼扩展契约**：
-   - **`GComboBox` (`"combobox"`)**：支持可选 `dropdown` 外部模板路径；未指定 `dropdown` 时自动生成内置轻量弹出列表（含 `PureList`），并自动绑定 `ROLL_OVER` / `ROLL_OUT` / `MOUSE_DOWN` 原生弹出交互。
-   - **`GScrollBar` (`"scrollbar"`) & `ScrollPane` 原生滚动条**：
-     - **官方原生注入（推荐）**：滚动容器（`panel` / `list` / `tree`）可直接在自身配置中声明 `vtScrollBar` / `hzScrollBar`（如 `"res/layout/scrollBarVt.json"`）、`scrollBarDisplay`（`"default" | "visible" | "auto" | "hidden"`）、`scrollBarFloating`（悬浮不占位）、`scrollBarDisplayOnLeft`、`scrollBarMargin`，由 `ScrollPane` 原生自动接管视口扣减、位置对齐、`displayPerc` 伸缩与滚动同步。
-     - **外部同级绑定**：独立 `"scrollbar"` 节点亦支持 `target` 声明同级滚动容器名称与 `vertical` 方向，自动与目标 `ScrollPane` 同步。
-   - **`GTree` (`"tree"`)**：底层使用 `PureTree`（挂载升级版 `PureCodeItemPool`，支持 `defaultItem` 命中 `UIFactory.getConfig` 自动实例化 JSON 模板），并支持声明式 `nodes` 多级树节点递归构建与默认渲染。
-   - **`GMovieClip` (`"movieclip"`)**：支持 `frames: string[]` 外部图片序列帧异步加载，及 `interval` / `swing` / `repeatDelay` 原生播放参数透传。
-   - **`GLoader3D` (`"loader3d"`)**：`DefineConfig` 注入 `GLoader3D.prototype.loadExternal` 与 `onChange` 适配，支持纯路径加载外部 Spine 3.8/4.0 `.json`/`.skel` 骨骼资源并切换 `animationName` / `skinName`。
-   - **快捷工厂方法**：全部 19 种内置类型均已提供对应 `UIFactory.create*` 静态快捷创建方法（含 `createProgressBar` 与 `createSlider`）。
+### 3.2 原生扩展部件语义与运行时契约（字段详情见 `uifactory-layout.schema.json`）
+
+1. **GButton (`button`)**：
+   - 内置 `"button"` 控制器页面名固定为 **`["up", "down", "over", "selectedOver"]`**，`gearColor` 描边色字段为 **`"strokeColor"`**（非 `"outlineColor"`）。
+   - `downEffect: 2, downEffectValue: 0.92` 为中心向心缩放（自动设置 `pivot=0.5`）。
+   - `mode: "Check"` 内部勾选图元绑定 `gearDisplay: { controller: "button", pages: ["down", "selectedOver"] }`；选中自动改文案直接配 `title` + `selectedTitle`（注：`btn.title` getter 永远返回 `_title`，实际显示文本在 `btn.getChild("title").text`）。
+   - `mode: "Radio"` 配合 `relatedController` + `pageId` 由根节点控制器自动互斥。
+2. **GProgressBar / GSlider**：
+   - 子元件标准命名：`"bar"` / `"bar_v"`（填充条）、`"title"`（文本）、`"grip"`（`GSlider` 手柄）及建议透明全高热区 `"bg"`（`fillColor: null` + `changeOnClick: true`）。
+   - **`GSlider` 初始位置因果约束**：正向滑块 `grip` 初始必须置于 `bar` **右/底端**；`reverse: true` 时 `grip` 初始必须置于 `bar` **左/顶端**（由引擎绑定 `Left_Left` / `Top_Top`）。
+   - **`GProgressBar` 动效**：运行期通过原生 `progress.tweenValue(val, duration)` 触发平滑过渡。
+3. **GImage vs GLoader**：
+   - **`GImage` (`"image"`)** 与 **`GLoader` (`"icon"`)** 均使用 **`url`**（非 `src`），字段类型见 Schema：`GImage` 的 `flip`（`0:None, 1:Horizontal, 2:Vertical, 3:Both`）与 `fillMethod`（`0:None, 1:Horz, 2:Vert, 3:R90, 4:R180, 5:R360`）为数字枚举；`GLoader` 的 `fill` 为字符串枚举（`"none" | "scale" | "scaleMatchHeight" | "scaleMatchWidth" | "scaleFree" | "scaleNoBorder"`，亦兼容 `0..5`）且 `UIFactory.createIcon` 必填 `url`。
+4. **GList / GComboBox / ScrollPane / GScrollBar / GTree**：
+   - **`GList` (`"list"`)**：行卡片需随滚动条占位/悬浮自适应宽度时，必须用 `type: "list"` + `autoResizeItem: true`，且行模板内部配合合法 `relations`；虚拟列表 `itemRenderer` 必须使用 `Laya.Handler.create(this, fn, undefined, false)`。
+   - **`GComboBox` (`"combobox"`)**：`dropdown` 内 `list` 与 `defaultItem` 宽度须与主按钮一致，避免右侧留白。
+   - **`ScrollPane` 与 `GScrollBar`**：滚动容器可直接配置 `vtScrollBar` / `hzScrollBar` / `scrollBarDisplay`（`visible` 常显 / `auto` 滚动时显现 0.5s 淡出 / `hidden` 隐藏）/ `scrollBarFloating`（`true` 悬浮不占 `viewWidth`）/ `scrollBarDisplayOnLeft` / `scrollBarMargin`，亦可用独立 `scrollbar` + `target` 同级绑定。
+   - 全部 18 种内置类型均提供 `UIFactory.create*` 静态工厂方法。
 
 ---
 
@@ -209,8 +204,8 @@
 | 齿轮属性 | FGUI 原生类 | 功能说明 | 关键配置参数范例 |
 |---|---|---|---|
 | `gearDisplay` | GearDisplay (0) | 页面显隐控制（未选中页面完全移出渲染树，零渲染开销） | `gearDisplay: { controller: "modeCtrl", pages: ["viewA"] }` |
-| `gearXY` | GearXY (1) | 双轴坐标平滑移动，支持缓动补间 | `gearXY: { controller: "modeCtrl", tween: true, duration: 0.4, pages: { viewA: { x: 10, y: 20 }, viewB: { x: 80, y: 100 } } }` |
-| `gearSize` | GearSize (2) | 宽高与缩放平滑过渡 | `gearSize: { controller: "modeCtrl", tween: true, duration: 0.4, pages: { viewA: { width: 60, height: 60, scale: 1.0 }, viewB: { width: 90, height: 90, scale: 1.2 } } }` |
+| `gearXY` | GearXY (1) | 双轴坐标平滑移动，支持缓动补间（**页面值必须为对象 `{ x, y }`，严禁 `[x, y]` 数组**） | `gearXY: { controller: "modeCtrl", tween: true, duration: 0.4, pages: { viewA: { x: 10, y: 20 }, viewB: { x: 80, y: 100 } } }` |
+| `gearSize` | GearSize (2) | 宽高与缩放平滑过渡（**页面值必须为对象 `{ width, height, scaleX?, scaleY? }`，严禁数组**） | `gearSize: { controller: "modeCtrl", tween: true, duration: 0.4, pages: { viewA: { width: 60, height: 60, scaleX: 1.0, scaleY: 1.0 }, viewB: { width: 90, height: 90, scaleX: 1.2, scaleY: 1.2 } } }` |
 | `gearLook` | GearLook (3) | 透明度、旋转、置灰(grayed)、可触控(touchable) 4维联动 | `gearLook: { controller: "modeCtrl", tween: true, duration: 0.4, pages: { viewA: { alpha: 1.0, rotation: 0 }, viewB: { alpha: 0.5, rotation: 45 } } }` |
 | `gearColor` | GearColor (4) | 文本或矢量底色的颜色切换 | `gearColor: { controller: "modeCtrl", pages: { viewA: { color: "#2563eb" }, viewB: { color: "#dc2626" } } }` |
 | `gearAnimation`| GearAnimation (5) | 序列帧动画播放/定格控制 | `gearAnimation: { controller: "modeCtrl", pages: { viewA: { playing: true }, viewB: { playing: false, frame: 0 } } }` |
@@ -228,6 +223,36 @@
 > 3. **显隐排版**：使用 `gearDisplay` / `gearDisplay2`，由控制器自动管理渲染树节点的挂载与剔除；
 > 4. **位移与缩放**：使用 `gearXY` / `gearSize`，由控制器自动执行平滑补间动画；
 > 5. **列表与下拉双向绑定**：在 `GList` 与 `GComboBox` 上直接声明 `selectionController` 与 `pageController`，选中项切换与控制器状态双向自动联动，零手写胶水代码。
+
+### 4.5 相对关联 (`relations`) 与动效 (`transitions`)
+
+- **`relations`**：格式为 `"relations": [{ "target": "目标名或空字符串", "type": "枚举名", "usePercent"?: true }]`（结构定义见 Schema `IBaseElementConfig.relations`）。`type` 必须使用合法 FGUI `RelationType` 枚举名（如 `"Left_Left"`, `"Right_Right"`, `"Center_Center"`, `"Middle_Middle"`, `"Width"`, `"Height"`, `"Size"`, `"LeftExt_Left"` 等，严禁编造 `"Width_Width"`）。
+- **`transitions` 与 `PlayTransitionAction`**：在根面板配置 `"transitions"` 数组，并通过 `this.getTransition("name").play(...)` 或控制器 `actions`（`type: "playTransition"`）触发；完整 `items[].type` 枚举由 Schema（`ITransitionItemConfig`）约束：
+
+```json
+{
+  "controllers": [
+    {
+      "name": "pageCtrl",
+      "pages": ["hidden", "shown"],
+      "selectedIndex": 0,
+      "actions": [
+        { "type": "playTransition", "fromPage": ["hidden"], "toPage": ["shown"], "transitionName": "enterAnim", "playTimes": 1, "delay": 0 }
+      ]
+    }
+  ],
+  "transitions": [
+    {
+      "name": "enterAnim",
+      "items": [
+        { "time": 0, "type": "alpha", "target": "cardBox", "tween": true, "duration": 0.35, "startValue": 0, "endValue": 1, "easeType": 5 },
+        { "time": 0, "type": "scale", "target": "cardBox", "tween": true, "duration": 0.4, "startValue": [0.85, 0.85], "endValue": [1, 1], "easeType": 27 }
+      ]
+    }
+  ]
+}
+```
+- 常用 `easeType`：`0: Linear`, `5: QuadOut`, `24: ElasticOut`, `27: BackOut`, `30: BounceOut`；运行期可通过 `trans.timeScale = 0.5 / dur` 控制倍速，通过 `trans.play(null, 1, 0, 0, -1, reverse)` 控制正向/反向播放。
 
 ---
 
@@ -358,7 +383,7 @@ fgui.GRoot.inst.addChild(settingDialog);
 
 ## 七、 架构物理红线与避坑清单 (Physical Invariants & Redlines)
 
-为确保代码生成与纯代码配置在任何运行环境下 100% 稳定运行、杜绝黑屏/拉伸/死锁，必须严格遵守以下十大物理红线：
+为确保代码生成与纯代码配置在任何运行环境下 100% 稳定运行、杜绝黑屏/拉伸/死锁，必须严格遵守以下十三大物理红线：
 
 ### 1. 🚨 铁律一：滚动容器（overflow: 2）的直接子级禁止使用相对居中（layout: alignX/alignY）
 - **现象与根因**：ScrollPane 视口滚动会高频修改视口偏移，而 `layout: { alignX: "center", alignY: "middle" }` 会在底层建立 `Center_Center` 关联。一旦滚动或容器尺寸变动，两者相互拉扯，导致内容在视口中**剧烈抖动、闪烁甚至瞬间跳回屏幕中央**！
@@ -397,5 +422,17 @@ fgui.GRoot.inst.addChild(settingDialog);
 - **正确规范**：所有 UI 布局树必须作为独立的纯静态声明式 JSON 文件（如 `res/layout/*.json`）存放；业务代码仅负责通过加载器拉取 JSON、调用 `UIFactory.createPanel(config)` 实例化，并通过 `container.getChild("...")` 绑定交互事件与状态更新。
 
 ### 10. 🚨 铁律十：原生滑块 (GSlider) 手柄关联必须在初始满宽状态下建立
-- **现象与根因**：GSlider 的拖拽手柄 `grip` 依托 FGUI 官方关联系统（Relations）通过 `Right_Right`（横向）或 `Bottom_Bottom`（纵向）跟随 `bar` 位移。如果在 `bar` 被当前值提前缩窄后再建立关联，关联系统会记录错误的初始相对偏移，导致滑块手柄大幅跑偏或冲出轨道。
-- **正确规范**：扩展装配管线必须在 `bar` 处于设计满宽（`_barMaxWidth`）状态下完成 `grip` 与 `bar` 的 `addRelation`，随后再设置 `value` 并触发 `update()` 驱动手柄同步至目标位置。
+- **现象与根因**：GSlider 的拖拽手柄 `grip` 依托 FGUI 官方关联系统（Relations）通过 `Right_Right`/`Bottom_Bottom`（正向）或 `Left_Left`/`Top_Top`（`reverse: true` 反向）跟随 `bar` 位移。如果在 `bar` 被当前值提前缩窄后再建立关联，关联系统会记录错误的初始相对偏移，导致滑块手柄大幅跑偏或冲出轨道。
+- **正确规范**：扩展装配管线必须在 `bar` 处于设计满宽（`_barMaxWidth`）状态下完成 `grip` 与 `bar` 的 `addRelation`（正向放右/底端，反向放左/顶端），随后再设置 `value` 并触发 `update()` 驱动手柄同步至目标位置。
+
+### 11. 🚨 铁律十一：独立工厂 `create*` 显式定位与禁止对面板使用 `scale` 适配
+- **现象与根因**：独立调用 `UIFactory.createSlider`、`createProgressBar`、`createPanel` 等返回的对象坐标默认为 `(0, 0)`（因为 `x`/`y` 通常由父容器管线应用）；同时，若对包含 `GComboBox` 等弹窗组件的父面板使用 `scaleX/scaleY` 缩放适配，挂载于未缩放 `GRoot` 上的下拉弹窗将无法继承父级缩放而出现宽度错位。
+- **正确规范**：独立调用 `UIFactory.create*` 后挂载到父容器前必须显式 `inst.setXY(conf.x ?? 0, conf.y ?? 0)`；除非专门测试缩放功能（如 `GearSize`/缩放动效靶子），否则严禁对面板容器使用 `scaleX`/`scaleY` 缩放适配，应直接按目标视口 `1:1` 布局。
+
+### 12. 🚨 铁律十二：官方无动态 API 时「改 JSON 重构组件」测试原则
+- **现象与根因**：FGUI 官方部分属性仅在构造期读取（如 `GProgressBar._reverse`、`GSlider._reverse`、`ScrollPane._scrollBarDisplay`），运行期无动态 setter/getter；直接修改私有字段会引发几何关联状态不一致。
+- **正确规范**：需要动态切换此类属性时，在视图控制器中克隆原始配置 JSON、修改目标字段（如 `reverse`、反向 `grip.x`、`scrollBarDisplay`），销毁旧实例（`dispose()`）后通过 `UIFactory.create*` 重新走完整创建流程并 `addChildAt` 放回原位。
+
+### 13. 🚨 铁律十三：JSON 优先配置与 TypeScript 运行期集成边界
+- **JSON 优先**：能在 JSON 中声明的能力（`list.selectionController`、`button.relatedController`、`mode: "Check"` + `title`/`selectedTitle`、`gearText` 等）一律在 JSON 中实现，禁止在 `.ts` 中编写重复的按钮绑定循环或手动文案切换代码。
+- **TypeScript 严格类型边界**：`GTextField.align` / `valign` 类型为字符串字面量 `"left" | "center" | "right"` 与 `"top" | "middle" | "bottom"`（禁止赋 `fgui.AlignType` 枚举值）；`GList.itemRenderer` 必须使用 `Laya.Handler.create(this, fn, undefined, false)`。

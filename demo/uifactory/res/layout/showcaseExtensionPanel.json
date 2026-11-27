@@ -1,8 +1,8 @@
 {
   "type": "panel",
   "name": "showcaseExtensionPanel",
-  "width": 1432,
-  "height": 600,
+  "width": 1052,
+  "height": 648,
   "background": {
     "type": "graph",
     "shape": "rect",
@@ -15,9 +15,9 @@
     {
       "type": "text",
       "name": "pageTitle",
-      "x": 24,
+      "x": 18,
       "y": 16,
-      "width": 900,
+      "width": 1004,
       "height": 28,
       "text": "Tab 9 · 实战场景与扩展 API (Slot 转轴 + 18 个 create* + setExtension / registerCreator)",
       "fontSize": 18,
@@ -27,9 +27,9 @@
     {
       "type": "text",
       "name": "pageSub",
-      "x": 24,
+      "x": 18,
       "y": 46,
-      "width": 1100,
+      "width": 1004,
       "height": 20,
       "text": "左侧实战老虎机 3×3 滚动转轴（PureList + slotItem）；右上验证 18 个静态 create* 方法；右下实测 setExtension 扩展类、registerConfig 与 registerCreator 自定义元件类型。",
       "fontSize": 13,
@@ -38,9 +38,9 @@
     {
       "type": "graph",
       "name": "cardSlotBg",
-      "x": 24,
+      "x": 18,
       "y": 80,
-      "width": 600,
+      "width": 441,
       "height": 496,
       "shape": "rect",
       "fillColor": "#0f172a",
@@ -51,9 +51,9 @@
     {
       "type": "text",
       "name": "slotHeader",
-      "x": 40,
+      "x": 29,
       "y": 94,
-      "width": 568,
+      "width": 417,
       "height": 24,
       "text": "9.1 实战老虎机 3×3 转轴 (PureList + 循环滚动)",
       "fontSize": 14,
@@ -63,9 +63,9 @@
     {
       "type": "graph",
       "name": "slotMachineFrame",
-      "x": 140,
+      "x": 103,
       "y": 144,
-      "width": 368,
+      "width": 270,
       "height": 296,
       "shape": "rect",
       "fillColor": "#1e293b",
@@ -76,9 +76,9 @@
     {
       "type": "list",
       "name": "reel0",
-      "x": 160,
+      "x": 118,
       "y": 156,
-      "width": 88,
+      "width": 65,
       "height": 272,
       "overflow": "scroll",
       "defaultItem": "res/layout/slotItem.json",
@@ -88,9 +88,9 @@
     {
       "type": "list",
       "name": "reel1",
-      "x": 280,
+      "x": 206,
       "y": 156,
-      "width": 88,
+      "width": 65,
       "height": 272,
       "overflow": "scroll",
       "defaultItem": "res/layout/slotItem.json",
@@ -100,9 +100,9 @@
     {
       "type": "list",
       "name": "reel2",
-      "x": 400,
+      "x": 294,
       "y": 156,
-      "width": 88,
+      "width": 65,
       "height": 272,
       "overflow": "scroll",
       "defaultItem": "res/layout/slotItem.json",
@@ -112,24 +112,42 @@
     {
       "type": "button",
       "name": "btnSpinSlot",
-      "x": 204,
+      "x": 150,
       "y": 464,
-      "width": 240,
+      "width": 176,
       "height": 48,
       "title": "开始旋转 SPIN",
       "downEffect": 2,
       "downEffectValue": 0.94,
       "elements": [
-        { "type": "graph", "name": "bg", "width": 240, "height": 48, "shape": "rect", "fillColor": "#d97706", "cornerRadius": 10 },
-        { "type": "text", "name": "title", "width": 240, "height": 48, "align": "center", "valign": "middle", "fontSize": 15, "bold": true, "color": "#ffffff" }
+        {
+          "type": "graph",
+          "name": "bg",
+          "width": 176,
+          "height": 48,
+          "shape": "rect",
+          "fillColor": "#d97706",
+          "cornerRadius": 10
+        },
+        {
+          "type": "text",
+          "name": "title",
+          "width": 176,
+          "height": 48,
+          "align": "center",
+          "valign": "middle",
+          "fontSize": 15,
+          "bold": true,
+          "color": "#ffffff"
+        }
       ]
     },
     {
       "type": "text",
       "name": "slotResultText",
-      "x": 40,
+      "x": 29,
       "y": 528,
-      "width": 568,
+      "width": 417,
       "height": 28,
       "text": "转轴状态：待机中，点击 SPIN 启动 3 轴异步停止动画",
       "fontSize": 13,
@@ -139,9 +157,9 @@
     {
       "type": "graph",
       "name": "cardApiBg",
-      "x": 640,
+      "x": 470,
       "y": 80,
-      "width": 768,
+      "width": 564,
       "height": 256,
       "shape": "rect",
       "fillColor": "#0f172a",
@@ -152,9 +170,9 @@
     {
       "type": "text",
       "name": "apiHeader",
-      "x": 656,
+      "x": 482,
       "y": 94,
-      "width": 736,
+      "width": 541,
       "height": 24,
       "text": "9.2 UIFactory 18 种 create* 工厂方法自检与引擎诊断",
       "fontSize": 14,
@@ -164,24 +182,42 @@
     {
       "type": "button",
       "name": "btnRunApiAudit",
-      "x": 656,
+      "x": 482,
       "y": 128,
-      "width": 248,
+      "width": 182,
       "height": 36,
       "title": "执行 18 个工厂 API 实时自检",
       "downEffect": 2,
       "downEffectValue": 0.94,
       "elements": [
-        { "type": "graph", "name": "bg", "width": 248, "height": 36, "shape": "rect", "fillColor": "#0284c7", "cornerRadius": 8 },
-        { "type": "text", "name": "title", "width": 248, "height": 36, "align": "center", "valign": "middle", "fontSize": 13, "bold": true, "color": "#ffffff" }
+        {
+          "type": "graph",
+          "name": "bg",
+          "width": 182,
+          "height": 36,
+          "shape": "rect",
+          "fillColor": "#0284c7",
+          "cornerRadius": 8
+        },
+        {
+          "type": "text",
+          "name": "title",
+          "width": 182,
+          "height": 36,
+          "align": "center",
+          "valign": "middle",
+          "fontSize": 13,
+          "bold": true,
+          "color": "#ffffff"
+        }
       ]
     },
     {
       "type": "text",
       "name": "apiAuditResult",
-      "x": 656,
+      "x": 482,
       "y": 174,
-      "width": 736,
+      "width": 541,
       "height": 148,
       "fontSize": 12,
       "leading": 4,
@@ -191,9 +227,9 @@
     {
       "type": "graph",
       "name": "cardExtBg",
-      "x": 640,
+      "x": 470,
       "y": 352,
-      "width": 768,
+      "width": 564,
       "height": 224,
       "shape": "rect",
       "fillColor": "#0f172a",
@@ -204,9 +240,9 @@
     {
       "type": "text",
       "name": "extHeader",
-      "x": 656,
+      "x": 482,
       "y": 366,
-      "width": 736,
+      "width": 541,
       "height": 24,
       "text": "9.3 UIFactory 扩展机制测试 (setExtension / registerConfig / registerCreator)",
       "fontSize": 14,
@@ -216,26 +252,44 @@
     {
       "type": "group",
       "name": "extBtnGroup",
-      "x": 656,
+      "x": 482,
       "y": 400,
-      "width": 736,
+      "width": 541,
       "height": 36,
-      "groupLayout": "horizontal",
-      "columnGap": 12
+      "groupLayout": "Horizontal",
+      "columnGap": 9
     },
     {
       "type": "button",
       "name": "btnTestSetExtension",
       "group": "extBtnGroup",
       "y": 400,
-      "width": 236,
+      "width": 173,
       "height": 36,
       "title": "测试 setExtension + registerConfig",
       "downEffect": 2,
       "downEffectValue": 0.94,
       "elements": [
-        { "type": "graph", "name": "bg", "width": 236, "height": 36, "shape": "rect", "fillColor": "#7c3aed", "cornerRadius": 8 },
-        { "type": "text", "name": "title", "width": 236, "height": 36, "align": "center", "valign": "middle", "fontSize": 12, "bold": true, "color": "#ffffff" }
+        {
+          "type": "graph",
+          "name": "bg",
+          "width": 173,
+          "height": 36,
+          "shape": "rect",
+          "fillColor": "#7c3aed",
+          "cornerRadius": 8
+        },
+        {
+          "type": "text",
+          "name": "title",
+          "width": 173,
+          "height": 36,
+          "align": "center",
+          "valign": "middle",
+          "fontSize": 12,
+          "bold": true,
+          "color": "#ffffff"
+        }
       ]
     },
     {
@@ -243,22 +297,40 @@
       "name": "btnTestRegisterCreator",
       "group": "extBtnGroup",
       "y": 400,
-      "width": 236,
+      "width": 173,
       "height": 36,
       "title": "测试 registerCreator 自定义元件",
       "downEffect": 2,
       "downEffectValue": 0.94,
       "elements": [
-        { "type": "graph", "name": "bg", "width": 236, "height": 36, "shape": "rect", "fillColor": "#059669", "cornerRadius": 8 },
-        { "type": "text", "name": "title", "width": 236, "height": 36, "align": "center", "valign": "middle", "fontSize": 12, "bold": true, "color": "#ffffff" }
+        {
+          "type": "graph",
+          "name": "bg",
+          "width": 173,
+          "height": 36,
+          "shape": "rect",
+          "fillColor": "#059669",
+          "cornerRadius": 8
+        },
+        {
+          "type": "text",
+          "name": "title",
+          "width": 173,
+          "height": 36,
+          "align": "center",
+          "valign": "middle",
+          "fontSize": 12,
+          "bold": true,
+          "color": "#ffffff"
+        }
       ]
     },
     {
       "type": "graph",
       "name": "extPreviewBg",
-      "x": 656,
+      "x": 482,
       "y": 448,
-      "width": 320,
+      "width": 235,
       "height": 112,
       "shape": "rect",
       "fillColor": "#1e293b",
@@ -269,17 +341,17 @@
     {
       "type": "panel",
       "name": "extPreviewHost",
-      "x": 656,
+      "x": 482,
       "y": 448,
-      "width": 320,
+      "width": 235,
       "height": 112
     },
     {
       "type": "text",
       "name": "extAuditResult",
-      "x": 992,
+      "x": 729,
       "y": 448,
-      "width": 400,
+      "width": 294,
       "height": 112,
       "fontSize": 12,
       "leading": 6,

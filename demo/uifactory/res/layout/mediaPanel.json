@@ -1,8 +1,8 @@
 {
   "type": "panel",
   "name": "tab2Media",
-  "width": 1432,
-  "height": 600,
+  "width": 1052,
+  "height": 648,
   "background": {
     "type": "graph",
     "shape": "rect",
@@ -15,9 +15,9 @@
     {
       "type": "text",
       "name": "pageTitle",
-      "x": 24,
+      "x": 18,
       "y": 16,
-      "width": 700,
+      "width": 1004,
       "height": 28,
       "text": "Tab 2 · 序列帧动画 (GMovieClip)",
       "fontSize": 18,
@@ -27,9 +27,9 @@
     {
       "type": "text",
       "name": "pageSub",
-      "x": 24,
+      "x": 18,
       "y": 46,
-      "width": 1000,
+      "width": 1004,
       "height": 20,
       "text": "验证 GMovieClip 外部 frames 序列帧加载、变速与往返播放。",
       "fontSize": 13,
@@ -38,9 +38,9 @@
     {
       "type": "graph",
       "name": "mcCardBg",
-      "x": 24,
+      "x": 18,
       "y": 80,
-      "width": 684,
+      "width": 502,
       "height": 496,
       "shape": "rect",
       "fillColor": "#0f172a",
@@ -51,9 +51,9 @@
     {
       "type": "text",
       "name": "mcHeader",
-      "x": 40,
+      "x": 29,
       "y": 96,
-      "width": 652,
+      "width": 479,
       "height": 24,
       "text": "2.1 GMovieClip (外部 frames 序列帧播放器)",
       "fontSize": 15,
@@ -63,9 +63,9 @@
     {
       "type": "graph",
       "name": "mcStageBg",
-      "x": 40,
+      "x": 29,
       "y": 136,
-      "width": 652,
+      "width": 479,
       "height": 240,
       "shape": "rect",
       "fillColor": "#1e293b",
@@ -76,7 +76,7 @@
     {
       "type": "movieclip",
       "name": "demoMovieClip",
-      "x": 296,
+      "x": 217,
       "y": 186,
       "width": 140,
       "height": 140,
@@ -97,9 +97,9 @@
     {
       "type": "text",
       "name": "mcStatusText",
-      "x": 40,
+      "x": 29,
       "y": 388,
-      "width": 652,
+      "width": 479,
       "height": 24,
       "text": "状态：播放中 | timeScale: 1.0x | swing: false | 8 帧序列",
       "fontSize": 13,
@@ -108,27 +108,45 @@
     {
       "type": "group",
       "name": "mcControlBar",
-      "x": 40,
+      "x": 29,
       "y": 428,
-      "width": 652,
+      "width": 479,
       "height": 44,
-      "groupLayout": "horizontal",
-      "columnGap": 12
+      "groupLayout": "Horizontal",
+      "columnGap": 9
     },
     {
       "type": "button",
       "name": "btnMcToggle",
       "group": "mcControlBar",
       "y": 428,
-      "width": 140,
+      "width": 103,
       "height": 44,
       "title": "暂停 / 播放",
       "titleFontSize": 13,
       "downEffect": 2,
       "downEffectValue": 0.94,
       "elements": [
-        { "type": "graph", "name": "bg", "width": 140, "height": 44, "shape": "rect", "fillColor": "#0284c7", "cornerRadius": 8 },
-        { "type": "text", "name": "title", "width": 140, "height": 44, "align": "center", "valign": "middle", "fontSize": 13, "bold": true, "color": "#ffffff" }
+        {
+          "type": "graph",
+          "name": "bg",
+          "width": 103,
+          "height": 44,
+          "shape": "rect",
+          "fillColor": "#0284c7",
+          "cornerRadius": 8
+        },
+        {
+          "type": "text",
+          "name": "title",
+          "width": 103,
+          "height": 44,
+          "align": "center",
+          "valign": "middle",
+          "fontSize": 13,
+          "bold": true,
+          "color": "#ffffff"
+        }
       ]
     },
     {
@@ -136,15 +154,32 @@
       "name": "btnMcSpeed",
       "group": "mcControlBar",
       "y": 428,
-      "width": 140,
+      "width": 103,
       "height": 44,
       "title": "切换倍速 (1x/2x)",
       "titleFontSize": 13,
       "downEffect": 2,
       "downEffectValue": 0.94,
       "elements": [
-        { "type": "graph", "name": "bg", "width": 140, "height": 44, "shape": "rect", "fillColor": "#334155", "cornerRadius": 8 },
-        { "type": "text", "name": "title", "width": 140, "height": 44, "align": "center", "valign": "middle", "fontSize": 13, "color": "#f1f5f9" }
+        {
+          "type": "graph",
+          "name": "bg",
+          "width": 103,
+          "height": 44,
+          "shape": "rect",
+          "fillColor": "#334155",
+          "cornerRadius": 8
+        },
+        {
+          "type": "text",
+          "name": "title",
+          "width": 103,
+          "height": 44,
+          "align": "center",
+          "valign": "middle",
+          "fontSize": 13,
+          "color": "#f1f5f9"
+        }
       ]
     },
     {
@@ -152,15 +187,32 @@
       "name": "btnMcSwing",
       "group": "mcControlBar",
       "y": 428,
-      "width": 140,
+      "width": 103,
       "height": 44,
       "title": "往返 Swing",
       "titleFontSize": 13,
       "downEffect": 2,
       "downEffectValue": 0.94,
       "elements": [
-        { "type": "graph", "name": "bg", "width": 140, "height": 44, "shape": "rect", "fillColor": "#334155", "cornerRadius": 8 },
-        { "type": "text", "name": "title", "width": 140, "height": 44, "align": "center", "valign": "middle", "fontSize": 13, "color": "#f1f5f9" }
+        {
+          "type": "graph",
+          "name": "bg",
+          "width": 103,
+          "height": 44,
+          "shape": "rect",
+          "fillColor": "#334155",
+          "cornerRadius": 8
+        },
+        {
+          "type": "text",
+          "name": "title",
+          "width": 103,
+          "height": 44,
+          "align": "center",
+          "valign": "middle",
+          "fontSize": 13,
+          "color": "#f1f5f9"
+        }
       ]
     },
     {
@@ -168,15 +220,32 @@
       "name": "btnMcStep",
       "group": "mcControlBar",
       "y": 428,
-      "width": 140,
+      "width": 103,
       "height": 44,
       "title": "单帧步进 +1",
       "titleFontSize": 13,
       "downEffect": 2,
       "downEffectValue": 0.94,
       "elements": [
-        { "type": "graph", "name": "bg", "width": 140, "height": 44, "shape": "rect", "fillColor": "#334155", "cornerRadius": 8 },
-        { "type": "text", "name": "title", "width": 140, "height": 44, "align": "center", "valign": "middle", "fontSize": 13, "color": "#f1f5f9" }
+        {
+          "type": "graph",
+          "name": "bg",
+          "width": 103,
+          "height": 44,
+          "shape": "rect",
+          "fillColor": "#334155",
+          "cornerRadius": 8
+        },
+        {
+          "type": "text",
+          "name": "title",
+          "width": 103,
+          "height": 44,
+          "align": "center",
+          "valign": "middle",
+          "fontSize": 13,
+          "color": "#f1f5f9"
+        }
       ]
     }
   ]

@@ -16,6 +16,7 @@
     "build:demo": "node demo/build.js",
     "build": "npm run clean && npm run build:tscore && npm run build:gamelib && node packNpmLib.js packResources",
     "pack": "npm run build && npm pack",
+    "schema:uifactory": "node scripts/gen-uifactory-schema.js",
     "test-install": "for /f %i in ('dir /b *.tgz') do npm install -g %i"
   },
   "repository": {

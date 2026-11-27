@@ -1,7 +1,7 @@
 {
   "type": "panel",
   "name": "comboDropdown",
-  "width": 204,
+  "width": 152,
   "height": 156,
   "background": {
     "type": "graph",
@@ -17,7 +17,7 @@
       "name": "list",
       "x": 4,
       "y": 4,
-      "width": 196,
+      "width": 144,
       "height": 148,
       "overflow": "scroll",
       "scroll": "vertical",

@@ -1,7 +1,7 @@
 {
   "type": "panel",
   "name": "mainView",
-  "width": 1480,
+  "width": 1280,
   "height": 720,
   "background": {
     "type": "graph",
@@ -11,7 +11,18 @@
   "controllers": [
     {
       "name": "tabCtrl",
-      "pages": ["0", "1", "2", "3", "4", "5", "6", "7", "8"],
+      "pages": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9"
+      ],
       "selectedIndex": 0
     }
   ],
@@ -30,10 +41,10 @@
     {
       "type": "graph",
       "name": "sidebarBg",
-      "x": 16,
-      "y": 62,
-      "width": 208,
-      "height": 646,
+      "x": 12,
+      "y": 60,
+      "width": 192,
+      "height": 648,
       "shape": "rect",
       "fillColor": "#1e293b",
       "cornerRadius": 8,
@@ -44,9 +55,9 @@
     {
       "type": "text",
       "name": "menuHeader",
-      "x": 28,
+      "x": 20,
       "y": 72,
-      "width": 184,
+      "width": 176,
       "height": 26,
       "fontSize": 14,
       "bold": true,
@@ -59,9 +70,9 @@
     {
       "type": "graph",
       "name": "headerDivider",
-      "x": 28,
+      "x": 20,
       "y": 102,
-      "width": 184,
+      "width": 176,
       "height": 1,
       "shape": "rect",
       "fillColor": "#334155",
@@ -70,20 +81,21 @@
     {
       "type": "list",
       "name": "tabList",
-      "x": 28,
+      "x": 20,
       "y": 112,
-      "width": 184,
+      "width": 176,
       "height": 584,
       "listLayout": "SingleColumn",
       "selectionMode": "Single",
-      "lineGap": 6,
+      "selectionController": "tabCtrl",
+      "lineGap": 0,
       "selectedIndex": 0,
       "group": "sidebarGroup",
       "elements": [
         {
           "type": "button",
           "name": "tabBtn_0",
-          "width": 184,
+          "width": 176,
           "height": 56,
           "mode": "Radio",
           "selected": true,
@@ -91,7 +103,7 @@
             {
               "type": "graph",
               "name": "bg",
-              "width": 184,
+              "width": 176,
               "height": 56,
               "shape": "rect",
               "fillColor": "#0f172a",
@@ -101,20 +113,32 @@
               "gearColor": {
                 "controller": "button",
                 "pages": {
-                  "up": { "color": "#0f172a", "strokeColor": "#334155" },
-                  "down": { "color": "#0284c7", "strokeColor": "#38bdf8" },
-                  "over": { "color": "#1e293b", "strokeColor": "#64748b" },
-                  "selectedOver": { "color": "#0284c7", "strokeColor": "#7dd3fc" }
+                  "up": {
+                    "color": "#0f172a",
+                    "strokeColor": "#334155"
+                  },
+                  "down": {
+                    "color": "#0284c7",
+                    "strokeColor": "#38bdf8"
+                  },
+                  "over": {
+                    "color": "#1e293b",
+                    "strokeColor": "#64748b"
+                  },
+                  "selectedOver": {
+                    "color": "#0284c7",
+                    "strokeColor": "#7dd3fc"
+                  }
                 }
               }
             },
             {
               "type": "text",
               "name": "title",
-              "text": "1. 原子与富文本",
+              "text": "1. 文本与矢量图元",
               "x": 12,
-              "y": 9,
-              "width": 160,
+              "y": 8,
+              "width": 152,
               "height": 20,
               "fontSize": 13,
               "bold": true,
@@ -127,8 +151,8 @@
               "name": "subLabel",
               "text": "Text / RichText / Graph",
               "x": 12,
-              "y": 31,
-              "width": 160,
+              "y": 30,
+              "width": 152,
               "height": 16,
               "fontSize": 11,
               "color": "#94a3b8",
@@ -140,14 +164,15 @@
         {
           "type": "button",
           "name": "tabBtn_1",
-          "width": 184,
+          "width": 176,
           "height": 56,
           "mode": "Radio",
+          "selected": false,
           "elements": [
             {
               "type": "graph",
               "name": "bg",
-              "width": 184,
+              "width": 176,
               "height": 56,
               "shape": "rect",
               "fillColor": "#0f172a",
@@ -157,20 +182,101 @@
               "gearColor": {
                 "controller": "button",
                 "pages": {
-                  "up": { "color": "#0f172a", "strokeColor": "#334155" },
-                  "down": { "color": "#0284c7", "strokeColor": "#38bdf8" },
-                  "over": { "color": "#1e293b", "strokeColor": "#64748b" },
-                  "selectedOver": { "color": "#0284c7", "strokeColor": "#7dd3fc" }
+                  "up": {
+                    "color": "#0f172a",
+                    "strokeColor": "#334155"
+                  },
+                  "down": {
+                    "color": "#0284c7",
+                    "strokeColor": "#38bdf8"
+                  },
+                  "over": {
+                    "color": "#1e293b",
+                    "strokeColor": "#64748b"
+                  },
+                  "selectedOver": {
+                    "color": "#0284c7",
+                    "strokeColor": "#7dd3fc"
+                  }
                 }
               }
             },
             {
               "type": "text",
               "name": "title",
-              "text": "2. 序列帧动画",
+              "text": "2. 图标与图片裁剪",
               "x": 12,
-              "y": 9,
-              "width": 160,
+              "y": 8,
+              "width": 152,
+              "height": 20,
+              "fontSize": 13,
+              "bold": true,
+              "color": "#e2e8f0",
+              "align": "left",
+              "valign": "middle"
+            },
+            {
+              "type": "text",
+              "name": "subLabel",
+              "text": "GLoader / GImage",
+              "x": 12,
+              "y": 30,
+              "width": 152,
+              "height": 16,
+              "fontSize": 11,
+              "color": "#94a3b8",
+              "align": "left",
+              "valign": "middle"
+            }
+          ]
+        },
+        {
+          "type": "button",
+          "name": "tabBtn_2",
+          "width": 176,
+          "height": 56,
+          "mode": "Radio",
+          "selected": false,
+          "elements": [
+            {
+              "type": "graph",
+              "name": "bg",
+              "width": 176,
+              "height": 56,
+              "shape": "rect",
+              "fillColor": "#0f172a",
+              "lineSize": 1,
+              "lineColor": "#334155",
+              "cornerRadius": 8,
+              "gearColor": {
+                "controller": "button",
+                "pages": {
+                  "up": {
+                    "color": "#0f172a",
+                    "strokeColor": "#334155"
+                  },
+                  "down": {
+                    "color": "#0284c7",
+                    "strokeColor": "#38bdf8"
+                  },
+                  "over": {
+                    "color": "#1e293b",
+                    "strokeColor": "#64748b"
+                  },
+                  "selectedOver": {
+                    "color": "#0284c7",
+                    "strokeColor": "#7dd3fc"
+                  }
+                }
+              }
+            },
+            {
+              "type": "text",
+              "name": "title",
+              "text": "3. 序列帧动画",
+              "x": 12,
+              "y": 8,
+              "width": 152,
               "height": 20,
               "fontSize": 13,
               "bold": true,
@@ -183,8 +289,8 @@
               "name": "subLabel",
               "text": "GMovieClip 播放控制",
               "x": 12,
-              "y": 31,
-              "width": 160,
+              "y": 30,
+              "width": 152,
               "height": 16,
               "fontSize": 11,
               "color": "#94a3b8",
@@ -195,15 +301,16 @@
         },
         {
           "type": "button",
-          "name": "tabBtn_2",
-          "width": 184,
+          "name": "tabBtn_3",
+          "width": 176,
           "height": 56,
           "mode": "Radio",
+          "selected": false,
           "elements": [
             {
               "type": "graph",
               "name": "bg",
-              "width": 184,
+              "width": 176,
               "height": 56,
               "shape": "rect",
               "fillColor": "#0f172a",
@@ -213,20 +320,32 @@
               "gearColor": {
                 "controller": "button",
                 "pages": {
-                  "up": { "color": "#0f172a", "strokeColor": "#334155" },
-                  "down": { "color": "#0284c7", "strokeColor": "#38bdf8" },
-                  "over": { "color": "#1e293b", "strokeColor": "#64748b" },
-                  "selectedOver": { "color": "#0284c7", "strokeColor": "#7dd3fc" }
+                  "up": {
+                    "color": "#0f172a",
+                    "strokeColor": "#334155"
+                  },
+                  "down": {
+                    "color": "#0284c7",
+                    "strokeColor": "#38bdf8"
+                  },
+                  "over": {
+                    "color": "#1e293b",
+                    "strokeColor": "#64748b"
+                  },
+                  "selectedOver": {
+                    "color": "#0284c7",
+                    "strokeColor": "#7dd3fc"
+                  }
                 }
               }
             },
             {
               "type": "text",
               "name": "title",
-              "text": "3. 表单基础交互",
+              "text": "4. 表单基础交互",
               "x": 12,
-              "y": 9,
-              "width": 160,
+              "y": 8,
+              "width": 152,
               "height": 20,
               "fontSize": 13,
               "bold": true,
@@ -239,8 +358,8 @@
               "name": "subLabel",
               "text": "Button / Slider / Bar",
               "x": 12,
-              "y": 31,
-              "width": 160,
+              "y": 30,
+              "width": 152,
               "height": 16,
               "fontSize": 11,
               "color": "#94a3b8",
@@ -251,15 +370,16 @@
         },
         {
           "type": "button",
-          "name": "tabBtn_3",
-          "width": 184,
+          "name": "tabBtn_4",
+          "width": 176,
           "height": 56,
           "mode": "Radio",
+          "selected": false,
           "elements": [
             {
               "type": "graph",
               "name": "bg",
-              "width": 184,
+              "width": 176,
               "height": 56,
               "shape": "rect",
               "fillColor": "#0f172a",
@@ -269,20 +389,32 @@
               "gearColor": {
                 "controller": "button",
                 "pages": {
-                  "up": { "color": "#0f172a", "strokeColor": "#334155" },
-                  "down": { "color": "#0284c7", "strokeColor": "#38bdf8" },
-                  "over": { "color": "#1e293b", "strokeColor": "#64748b" },
-                  "selectedOver": { "color": "#0284c7", "strokeColor": "#7dd3fc" }
+                  "up": {
+                    "color": "#0f172a",
+                    "strokeColor": "#334155"
+                  },
+                  "down": {
+                    "color": "#0284c7",
+                    "strokeColor": "#38bdf8"
+                  },
+                  "over": {
+                    "color": "#1e293b",
+                    "strokeColor": "#64748b"
+                  },
+                  "selectedOver": {
+                    "color": "#0284c7",
+                    "strokeColor": "#7dd3fc"
+                  }
                 }
               }
             },
             {
               "type": "text",
               "name": "title",
-              "text": "4. 复合导航容器",
+              "text": "5. 复合导航容器",
               "x": 12,
-              "y": 9,
-              "width": 160,
+              "y": 8,
+              "width": 152,
               "height": 20,
               "fontSize": 13,
               "bold": true,
@@ -295,8 +427,8 @@
               "name": "subLabel",
               "text": "List / Tree / ScrollBar",
               "x": 12,
-              "y": 31,
-              "width": 160,
+              "y": 30,
+              "width": 152,
               "height": 16,
               "fontSize": 11,
               "color": "#94a3b8",
@@ -307,15 +439,16 @@
         },
         {
           "type": "button",
-          "name": "tabBtn_4",
-          "width": 184,
+          "name": "tabBtn_5",
+          "width": 176,
           "height": 56,
           "mode": "Radio",
+          "selected": false,
           "elements": [
             {
               "type": "graph",
               "name": "bg",
-              "width": 184,
+              "width": 176,
               "height": 56,
               "shape": "rect",
               "fillColor": "#0f172a",
@@ -325,20 +458,32 @@
               "gearColor": {
                 "controller": "button",
                 "pages": {
-                  "up": { "color": "#0f172a", "strokeColor": "#334155" },
-                  "down": { "color": "#0284c7", "strokeColor": "#38bdf8" },
-                  "over": { "color": "#1e293b", "strokeColor": "#64748b" },
-                  "selectedOver": { "color": "#0284c7", "strokeColor": "#7dd3fc" }
+                  "up": {
+                    "color": "#0f172a",
+                    "strokeColor": "#334155"
+                  },
+                  "down": {
+                    "color": "#0284c7",
+                    "strokeColor": "#38bdf8"
+                  },
+                  "over": {
+                    "color": "#1e293b",
+                    "strokeColor": "#64748b"
+                  },
+                  "selectedOver": {
+                    "color": "#0284c7",
+                    "strokeColor": "#7dd3fc"
+                  }
                 }
               }
             },
             {
               "type": "text",
               "name": "title",
-              "text": "5. Flexbox 排版",
+              "text": "6. Flexbox 排版",
               "x": 12,
-              "y": 9,
-              "width": 160,
+              "y": 8,
+              "width": 152,
               "height": 20,
               "fontSize": 13,
               "bold": true,
@@ -351,8 +496,8 @@
               "name": "subLabel",
               "text": "流式测量与对齐工作台",
               "x": 12,
-              "y": 31,
-              "width": 160,
+              "y": 30,
+              "width": 152,
               "height": 16,
               "fontSize": 11,
               "color": "#94a3b8",
@@ -363,15 +508,16 @@
         },
         {
           "type": "button",
-          "name": "tabBtn_5",
-          "width": 184,
+          "name": "tabBtn_6",
+          "width": 176,
           "height": 56,
           "mode": "Radio",
+          "selected": false,
           "elements": [
             {
               "type": "graph",
               "name": "bg",
-              "width": 184,
+              "width": 176,
               "height": 56,
               "shape": "rect",
               "fillColor": "#0f172a",
@@ -381,20 +527,32 @@
               "gearColor": {
                 "controller": "button",
                 "pages": {
-                  "up": { "color": "#0f172a", "strokeColor": "#334155" },
-                  "down": { "color": "#0284c7", "strokeColor": "#38bdf8" },
-                  "over": { "color": "#1e293b", "strokeColor": "#64748b" },
-                  "selectedOver": { "color": "#0284c7", "strokeColor": "#7dd3fc" }
+                  "up": {
+                    "color": "#0f172a",
+                    "strokeColor": "#334155"
+                  },
+                  "down": {
+                    "color": "#0284c7",
+                    "strokeColor": "#38bdf8"
+                  },
+                  "over": {
+                    "color": "#1e293b",
+                    "strokeColor": "#64748b"
+                  },
+                  "selectedOver": {
+                    "color": "#0284c7",
+                    "strokeColor": "#7dd3fc"
+                  }
                 }
               }
             },
             {
               "type": "text",
               "name": "title",
-              "text": "6. Relations 关联",
+              "text": "7. Relations 关联",
               "x": 12,
-              "y": 9,
-              "width": 160,
+              "y": 8,
+              "width": 152,
               "height": 20,
               "fontSize": 13,
               "bold": true,
@@ -407,8 +565,8 @@
               "name": "subLabel",
               "text": "25 项全矩阵交互检视",
               "x": 12,
-              "y": 31,
-              "width": 160,
+              "y": 30,
+              "width": 152,
               "height": 16,
               "fontSize": 11,
               "color": "#94a3b8",
@@ -419,15 +577,16 @@
         },
         {
           "type": "button",
-          "name": "tabBtn_6",
-          "width": 184,
+          "name": "tabBtn_7",
+          "width": 176,
           "height": 56,
           "mode": "Radio",
+          "selected": false,
           "elements": [
             {
               "type": "graph",
               "name": "bg",
-              "width": 184,
+              "width": 176,
               "height": 56,
               "shape": "rect",
               "fillColor": "#0f172a",
@@ -437,20 +596,32 @@
               "gearColor": {
                 "controller": "button",
                 "pages": {
-                  "up": { "color": "#0f172a", "strokeColor": "#334155" },
-                  "down": { "color": "#0284c7", "strokeColor": "#38bdf8" },
-                  "over": { "color": "#1e293b", "strokeColor": "#64748b" },
-                  "selectedOver": { "color": "#0284c7", "strokeColor": "#7dd3fc" }
+                  "up": {
+                    "color": "#0f172a",
+                    "strokeColor": "#334155"
+                  },
+                  "down": {
+                    "color": "#0284c7",
+                    "strokeColor": "#38bdf8"
+                  },
+                  "over": {
+                    "color": "#1e293b",
+                    "strokeColor": "#64748b"
+                  },
+                  "selectedOver": {
+                    "color": "#0284c7",
+                    "strokeColor": "#7dd3fc"
+                  }
                 }
               }
             },
             {
               "type": "text",
               "name": "title",
-              "text": "7. 状态齿轮系统",
+              "text": "8. 状态齿轮系统",
               "x": 12,
-              "y": 9,
-              "width": 160,
+              "y": 8,
+              "width": 152,
               "height": 20,
               "fontSize": 13,
               "bold": true,
@@ -463,8 +634,8 @@
               "name": "subLabel",
               "text": "10 大 Gears 与属性检视",
               "x": 12,
-              "y": 31,
-              "width": 160,
+              "y": 30,
+              "width": 152,
               "height": 16,
               "fontSize": 11,
               "color": "#94a3b8",
@@ -475,15 +646,16 @@
         },
         {
           "type": "button",
-          "name": "tabBtn_7",
-          "width": 184,
+          "name": "tabBtn_8",
+          "width": 176,
           "height": 56,
           "mode": "Radio",
+          "selected": false,
           "elements": [
             {
               "type": "graph",
               "name": "bg",
-              "width": 184,
+              "width": 176,
               "height": 56,
               "shape": "rect",
               "fillColor": "#0f172a",
@@ -493,20 +665,32 @@
               "gearColor": {
                 "controller": "button",
                 "pages": {
-                  "up": { "color": "#0f172a", "strokeColor": "#334155" },
-                  "down": { "color": "#0284c7", "strokeColor": "#38bdf8" },
-                  "over": { "color": "#1e293b", "strokeColor": "#64748b" },
-                  "selectedOver": { "color": "#0284c7", "strokeColor": "#7dd3fc" }
+                  "up": {
+                    "color": "#0f172a",
+                    "strokeColor": "#334155"
+                  },
+                  "down": {
+                    "color": "#0284c7",
+                    "strokeColor": "#38bdf8"
+                  },
+                  "over": {
+                    "color": "#1e293b",
+                    "strokeColor": "#64748b"
+                  },
+                  "selectedOver": {
+                    "color": "#0284c7",
+                    "strokeColor": "#7dd3fc"
+                  }
                 }
               }
             },
             {
               "type": "text",
               "name": "title",
-              "text": "8. 动效时间轴",
+              "text": "9. 动效时间轴",
               "x": 12,
-              "y": 9,
-              "width": 160,
+              "y": 8,
+              "width": 152,
               "height": 20,
               "fontSize": 13,
               "bold": true,
@@ -519,8 +703,8 @@
               "name": "subLabel",
               "text": "Transition 与缓动曲线",
               "x": 12,
-              "y": 31,
-              "width": 160,
+              "y": 30,
+              "width": 152,
               "height": 16,
               "fontSize": 11,
               "color": "#94a3b8",
@@ -531,15 +715,16 @@
         },
         {
           "type": "button",
-          "name": "tabBtn_8",
-          "width": 184,
+          "name": "tabBtn_9",
+          "width": 176,
           "height": 56,
           "mode": "Radio",
+          "selected": false,
           "elements": [
             {
               "type": "graph",
               "name": "bg",
-              "width": 184,
+              "width": 176,
               "height": 56,
               "shape": "rect",
               "fillColor": "#0f172a",
@@ -549,20 +734,32 @@
               "gearColor": {
                 "controller": "button",
                 "pages": {
-                  "up": { "color": "#0f172a", "strokeColor": "#334155" },
-                  "down": { "color": "#0284c7", "strokeColor": "#38bdf8" },
-                  "over": { "color": "#1e293b", "strokeColor": "#64748b" },
-                  "selectedOver": { "color": "#0284c7", "strokeColor": "#7dd3fc" }
+                  "up": {
+                    "color": "#0f172a",
+                    "strokeColor": "#334155"
+                  },
+                  "down": {
+                    "color": "#0284c7",
+                    "strokeColor": "#38bdf8"
+                  },
+                  "over": {
+                    "color": "#1e293b",
+                    "strokeColor": "#64748b"
+                  },
+                  "selectedOver": {
+                    "color": "#0284c7",
+                    "strokeColor": "#7dd3fc"
+                  }
                 }
               }
             },
             {
               "type": "text",
               "name": "title",
-              "text": "9. 实战与扩展 API",
+              "text": "10. 实战与扩展 API",
               "x": 12,
-              "y": 9,
-              "width": 160,
+              "y": 8,
+              "width": 152,
               "height": 20,
               "fontSize": 13,
               "bold": true,
@@ -573,10 +770,10 @@
             {
               "type": "text",
               "name": "subLabel",
-              "text": "Slot / 18 API 自检",
+              "text": "Slot / 18 API / 扩展",
               "x": 12,
-              "y": 31,
-              "width": 160,
+              "y": 30,
+              "width": 152,
               "height": 16,
               "fontSize": 11,
               "color": "#94a3b8",
@@ -590,86 +787,132 @@
     {
       "type": "panel",
       "name": "tab0",
-      "src": "res/layout/primitivesPanel.json",
-      "x": 242,
-      "y": 130,
-      "scaleX": 0.85,
-      "scaleY": 0.85,
-      "gearDisplay": { "controller": "tabCtrl", "pages": ["0"] }
+      "src": "res/layout/textGraphPanel.json",
+      "x": 216,
+      "y": 60,
+      "gearDisplay": {
+        "controller": "tabCtrl",
+        "pages": [
+          "0"
+        ]
+      }
     },
     {
       "type": "panel",
       "name": "tab1",
-      "src": "res/layout/mediaPanel.json",
-      "x": 242,
-      "y": 130,
-      "scaleX": 0.85,
-      "scaleY": 0.85,
-      "gearDisplay": { "controller": "tabCtrl", "pages": ["1"] }
+      "src": "res/layout/loaderImagePanel.json",
+      "x": 216,
+      "y": 60,
+      "gearDisplay": {
+        "controller": "tabCtrl",
+        "pages": [
+          "1"
+        ]
+      }
     },
     {
       "type": "panel",
       "name": "tab2",
-      "src": "res/layout/formPanel.json",
-      "x": 242,
-      "y": 130,
-      "scaleX": 0.85,
-      "scaleY": 0.85,
-      "gearDisplay": { "controller": "tabCtrl", "pages": ["2"] }
+      "src": "res/layout/mediaPanel.json",
+      "x": 216,
+      "y": 60,
+      "gearDisplay": {
+        "controller": "tabCtrl",
+        "pages": [
+          "2"
+        ]
+      }
     },
     {
       "type": "panel",
       "name": "tab3",
-      "src": "res/layout/containersPanel.json",
-      "x": 242,
-      "y": 130,
-      "scaleX": 0.85,
-      "scaleY": 0.85,
-      "gearDisplay": { "controller": "tabCtrl", "pages": ["3"] }
+      "src": "res/layout/formPanel.json",
+      "x": 216,
+      "y": 60,
+      "gearDisplay": {
+        "controller": "tabCtrl",
+        "pages": [
+          "3"
+        ]
+      }
     },
     {
       "type": "panel",
       "name": "tab4",
-      "src": "res/layout/flexboxWorkbench.json",
-      "x": 236,
-      "y": 62,
-      "gearDisplay": { "controller": "tabCtrl", "pages": ["4"] }
+      "src": "res/layout/containersPanel.json",
+      "x": 216,
+      "y": 60,
+      "gearDisplay": {
+        "controller": "tabCtrl",
+        "pages": [
+          "4"
+        ]
+      }
     },
     {
       "type": "panel",
       "name": "tab5",
-      "src": "res/layout/relationsWorkbench.json",
-      "x": 236,
-      "y": 62,
-      "gearDisplay": { "controller": "tabCtrl", "pages": ["5"] }
+      "src": "res/layout/flexboxWorkbench.json",
+      "x": 216,
+      "y": 60,
+      "gearDisplay": {
+        "controller": "tabCtrl",
+        "pages": [
+          "5"
+        ]
+      }
     },
     {
       "type": "panel",
       "name": "tab6",
-      "src": "res/layout/gearsPanel.json",
-      "x": 242,
-      "y": 130,
-      "scaleX": 0.85,
-      "scaleY": 0.85,
-      "gearDisplay": { "controller": "tabCtrl", "pages": ["6"] }
+      "src": "res/layout/relationsWorkbench.json",
+      "x": 216,
+      "y": 60,
+      "gearDisplay": {
+        "controller": "tabCtrl",
+        "pages": [
+          "6"
+        ]
+      }
     },
     {
       "type": "panel",
       "name": "tab7",
-      "src": "res/layout/transitionsPanel.json",
-      "x": 236,
-      "y": 62,
-      "gearDisplay": { "controller": "tabCtrl", "pages": ["7"] }
+      "src": "res/layout/gearsPanel.json",
+      "x": 216,
+      "y": 60,
+      "gearDisplay": {
+        "controller": "tabCtrl",
+        "pages": [
+          "7"
+        ]
+      }
     },
     {
       "type": "panel",
       "name": "tab8",
+      "src": "res/layout/transitionsPanel.json",
+      "x": 216,
+      "y": 60,
+      "gearDisplay": {
+        "controller": "tabCtrl",
+        "pages": [
+          "8"
+        ]
+      }
+    },
+    {
+      "type": "panel",
+      "name": "tab9",
       "src": "res/layout/showcaseExtensionPanel.json",
-      "x": 242,
-      "y": 130,
-      "scaleX": 0.85,
-      "scaleY": 0.85,
-      "gearDisplay": { "controller": "tabCtrl", "pages": ["8"] }
+      "x": 216,
+      "y": 60,
+      "gearDisplay": {
+        "controller": "tabCtrl",
+        "pages": [
+          "9"
+        ]
+      }
     }
   ]
 }

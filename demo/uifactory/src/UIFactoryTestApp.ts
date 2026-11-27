@@ -4,7 +4,8 @@ import UIFactory = tsCore.UIFactory;
 import DefineConfig = tsCore.DefineConfig;
 
 import { MainView } from "./MainView";
-import { PrimitivesView } from "./tabs/PrimitivesView";
+import { TextGraphView } from "./tabs/TextGraphView";
+import { LoaderImageView } from "./tabs/LoaderImageView";
 import { MediaView } from "./tabs/MediaView";
 import { FormView } from "./tabs/FormView";
 import { ContainersView } from "./tabs/ContainersView";
@@ -41,8 +42,8 @@ export class UIFactoryTestApp {
 
         console.log("[UIFactoryTestApp] 初始化 LayaAir 2.x 画布与 FGUI 底座...");
 
-        // 2. 初始化 1480x720 纯 WebGL 画布
-        Laya.init(1480, 720, Laya.WebGL);
+        // 2. 初始化 1280x720 纯 WebGL 画布
+        Laya.init(1280, 720, Laya.WebGL);
         Laya.stage.scaleMode = Laya.Stage.SCALE_SHOWALL;
         Laya.stage.alignH = Laya.Stage.ALIGN_CENTER;
         Laya.stage.alignV = Laya.Stage.ALIGN_MIDDLE;
@@ -54,9 +55,10 @@ export class UIFactoryTestApp {
         }
 
         // 3. 全场景类映射注册 (100% 对齐官方 fgui.UIObjectFactory.setExtension)
-        //    主页面与 9 个正交测试 Tab 视图均映射为继承自 fgui.GComponent 的实体类
+        //    主页面与 10 个正交测试 Tab 视图均映射为继承自 fgui.GComponent 的实体类
         UIFactory.setExtension("res/layout/mainView.json", MainView);
-        UIFactory.setExtension("res/layout/primitivesPanel.json", PrimitivesView);
+        UIFactory.setExtension("res/layout/textGraphPanel.json", TextGraphView);
+        UIFactory.setExtension("res/layout/loaderImagePanel.json", LoaderImageView);
         UIFactory.setExtension("res/layout/mediaPanel.json", MediaView);
         UIFactory.setExtension("res/layout/formPanel.json", FormView);
         UIFactory.setExtension("res/layout/containersPanel.json", ContainersView);

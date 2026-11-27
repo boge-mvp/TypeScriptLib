@@ -1,13 +1,19 @@
 {
   "type": "panel",
   "name": "slideCardContainer",
-  "width": 520,
-  "height": 120,
-  "background": { "color": "#090d16", "cornerRadius": 8 },
+  "width": 456,
+  "height": 360,
+  "background": {
+    "color": "#090d16",
+    "cornerRadius": 8
+  },
   "controllers": [
     {
       "name": "transPageCtrl",
-      "pages": ["cardPageA", "cardPageB"],
+      "pages": [
+        "cardPageA",
+        "cardPageB"
+      ],
       "selectedIndex": 0,
       "actions": [
         {
@@ -29,8 +35,14 @@
           "time": 0,
           "duration": 0.45,
           "easeType": 5,
-          "startValue": [450, 0],
-          "endValue": [0, 0]
+          "startValue": [
+            450,
+            0
+          ],
+          "endValue": [
+            0,
+            0
+          ]
         },
         {
           "type": "xy",
@@ -38,8 +50,14 @@
           "time": 0,
           "duration": 0.45,
           "easeType": 5,
-          "startValue": [450, 0],
-          "endValue": [0, 0]
+          "startValue": [
+            450,
+            0
+          ],
+          "endValue": [
+            0,
+            0
+          ]
         },
         {
           "type": "alpha",
@@ -64,14 +82,19 @@
     {
       "type": "group",
       "name": "battlePassGroup",
-      "gearDisplay": { "controller": "transPageCtrl", "pages": ["cardPageA"] }
+      "gearDisplay": {
+        "controller": "transPageCtrl",
+        "pages": [
+          "cardPageA"
+        ]
+      }
     },
     {
       "type": "graph",
       "name": "battlePassBg",
       "x": 0,
       "y": 0,
-      "width": 520,
+      "width": 439,
       "height": 120,
       "fillColor": "#78350f",
       "cornerRadius": 8,
@@ -79,38 +102,104 @@
       "lineColor": "#f59e0b",
       "group": "battlePassGroup"
     },
-    { "type": "text", "x": 16, "y": 12, "width": 340, "text": "👑 黄金战斗通行证 (Battle Pass · S3)", "fontSize": 14, "bold": true, "color": "#fef08a", "group": "battlePassGroup" },
-    { "type": "text", "x": 16, "y": 34, "width": 340, "text": "当前等级: Lv.50 (已满级) · 赛季结算倒计时: 3天", "fontSize": 11, "color": "#fde68a", "group": "battlePassGroup" },
-    { "type": "graph", "x": 16, "y": 56, "width": 330, "height": 10, "fillColor": "#451a03", "cornerRadius": 5, "group": "battlePassGroup" },
-    { "type": "graph", "x": 16, "y": 56, "width": 330, "height": 10, "fillColor": "#22c55e", "cornerRadius": 5, "group": "battlePassGroup" },
-    { "type": "text", "x": 16, "y": 74, "width": 340, "text": "奖励状态: 全部 50 级奖励已解锁，点击领取！", "fontSize": 11, "color": "#fef3c7", "group": "battlePassGroup" },
+    {
+      "type": "text",
+      "x": 14,
+      "y": 12,
+      "width": 287,
+      "text": "👑 黄金战斗通行证 (Battle Pass · S3)",
+      "fontSize": 14,
+      "bold": true,
+      "color": "#fef08a",
+      "group": "battlePassGroup"
+    },
+    {
+      "type": "text",
+      "x": 14,
+      "y": 34,
+      "width": 287,
+      "text": "当前等级: Lv.50 (已满级) · 赛季结算倒计时: 3天",
+      "fontSize": 11,
+      "color": "#fde68a",
+      "group": "battlePassGroup"
+    },
+    {
+      "type": "graph",
+      "x": 14,
+      "y": 56,
+      "width": 279,
+      "height": 10,
+      "fillColor": "#451a03",
+      "cornerRadius": 5,
+      "group": "battlePassGroup"
+    },
+    {
+      "type": "graph",
+      "x": 14,
+      "y": 56,
+      "width": 279,
+      "height": 10,
+      "fillColor": "#22c55e",
+      "cornerRadius": 5,
+      "group": "battlePassGroup"
+    },
+    {
+      "type": "text",
+      "x": 14,
+      "y": 74,
+      "width": 287,
+      "text": "奖励状态: 全部 50 级奖励已解锁，点击领取！",
+      "fontSize": 11,
+      "color": "#fef3c7",
+      "group": "battlePassGroup"
+    },
     {
       "type": "button",
       "name": "btnClaimReward",
-      "x": 375,
+      "x": 317,
       "y": 36,
-      "width": 125,
+      "width": 106,
       "height": 44,
       "downEffect": 2,
       "downEffectValue": 0.92,
       "group": "battlePassGroup",
       "elements": [
-        { "type": "graph", "width": 125, "height": 44, "fillColor": "#eab308", "cornerRadius": 6 },
-        { "type": "text", "width": 125, "height": 44, "text": "🎁 领取大奖", "align": "center", "valign": "middle", "fontSize": 13, "bold": true, "color": "#713f12" }
+        {
+          "type": "graph",
+          "width": 106,
+          "height": 44,
+          "fillColor": "#eab308",
+          "cornerRadius": 6
+        },
+        {
+          "type": "text",
+          "width": 106,
+          "height": 44,
+          "text": "🎁 领取大奖",
+          "align": "center",
+          "valign": "middle",
+          "fontSize": 13,
+          "bold": true,
+          "color": "#713f12"
+        }
       ]
     },
-
     {
       "type": "group",
       "name": "mythicDealGroup",
-      "gearDisplay": { "controller": "transPageCtrl", "pages": ["cardPageB"] }
+      "gearDisplay": {
+        "controller": "transPageCtrl",
+        "pages": [
+          "cardPageB"
+        ]
+      }
     },
     {
       "type": "graph",
       "name": "mythicDealBg",
       "x": 0,
       "y": 0,
-      "width": 520,
+      "width": 439,
       "height": 120,
       "fillColor": "#4c1d95",
       "cornerRadius": 8,
@@ -118,23 +207,77 @@
       "lineColor": "#c084fc",
       "group": "mythicDealGroup"
     },
-    { "type": "text", "x": 16, "y": 12, "width": 340, "text": "💎 神秘限时特惠 (Mythic Deal · 5折)", "fontSize": 14, "bold": true, "color": "#e9d5ff", "group": "mythicDealGroup" },
-    { "type": "text", "x": 16, "y": 34, "width": 340, "text": "内含: 10,000 钻石 + 典藏神话皮肤 · 限量仅余 12 份", "fontSize": 11, "color": "#ddd6fe", "group": "mythicDealGroup" },
-    { "type": "text", "x": 16, "y": 56, "width": 340, "text": "优惠价: $19.99 (原价 $39.99 -50%)", "fontSize": 12, "bold": true, "color": "#38bdf8", "group": "mythicDealGroup" },
-    { "type": "text", "x": 16, "y": 74, "width": 340, "text": "⏳ 剩余活动时间: 02:45:12 (限时抢购)", "fontSize": 11, "color": "#fca5a5", "group": "mythicDealGroup" },
+    {
+      "type": "text",
+      "x": 14,
+      "y": 12,
+      "width": 287,
+      "text": "💎 神秘限时特惠 (Mythic Deal · 5折)",
+      "fontSize": 14,
+      "bold": true,
+      "color": "#e9d5ff",
+      "group": "mythicDealGroup"
+    },
+    {
+      "type": "text",
+      "x": 14,
+      "y": 34,
+      "width": 287,
+      "text": "内含: 10,000 钻石 + 典藏神话皮肤 · 限量仅余 12 份",
+      "fontSize": 11,
+      "color": "#ddd6fe",
+      "group": "mythicDealGroup"
+    },
+    {
+      "type": "text",
+      "x": 14,
+      "y": 56,
+      "width": 287,
+      "text": "优惠价: $19.99 (原价 $39.99 -50%)",
+      "fontSize": 12,
+      "bold": true,
+      "color": "#38bdf8",
+      "group": "mythicDealGroup"
+    },
+    {
+      "type": "text",
+      "x": 14,
+      "y": 74,
+      "width": 287,
+      "text": "⏳ 剩余活动时间: 02:45:12 (限时抢购)",
+      "fontSize": 11,
+      "color": "#fca5a5",
+      "group": "mythicDealGroup"
+    },
     {
       "type": "button",
       "name": "btnBuyDeal",
-      "x": 375,
+      "x": 317,
       "y": 36,
-      "width": 125,
+      "width": 106,
       "height": 44,
       "downEffect": 2,
       "downEffectValue": 0.92,
       "group": "mythicDealGroup",
       "elements": [
-        { "type": "graph", "width": 125, "height": 44, "fillColor": "#9333ea", "cornerRadius": 6 },
-        { "type": "text", "width": 125, "height": 44, "text": "⚡ 立即购买", "align": "center", "valign": "middle", "fontSize": 13, "bold": true, "color": "#ffffff" }
+        {
+          "type": "graph",
+          "width": 106,
+          "height": 44,
+          "fillColor": "#9333ea",
+          "cornerRadius": 6
+        },
+        {
+          "type": "text",
+          "width": 106,
+          "height": 44,
+          "text": "⚡ 立即购买",
+          "align": "center",
+          "valign": "middle",
+          "fontSize": 13,
+          "bold": true,
+          "color": "#ffffff"
+        }
       ]
     }
   ]

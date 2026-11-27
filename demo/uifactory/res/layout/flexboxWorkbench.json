@@ -3,44 +3,44 @@
   "name": "tab5FlexboxWorkbench",
   "x": 0,
   "y": 0,
-  "width": 1228,
-  "height": 646,
+  "width": 1052,
+  "height": 648,
   "background": {
     "color": "#1e293b",
     "cornerRadius": 8
   },
   "padding": {
-    "left": 24,
+    "left": 21,
     "top": 16,
-    "right": 24,
+    "right": 21,
     "bottom": 16
   },
   "elements": [
     {
       "type": "text",
-      "x": 24,
+      "x": 21,
       "y": 16,
       "text": "④ 交互式 Flexbox 排版操纵台 (Interactive Layout Workbench)",
       "fontSize": 16,
       "bold": true,
       "color": "#f8fafc",
-      "width": 800
+      "width": 1004
     },
     {
       "type": "text",
-      "x": 24,
+      "x": 21,
       "y": 38,
       "text": "点击工具栏按钮实时切换排版参数，UIFactory 瞬间在预览区重新执行两遍测量排版，直观感受流式布局特性！",
       "fontSize": 12,
       "color": "#94a3b8",
-      "width": 1100
+      "width": 1004
     },
     {
       "type": "panel",
       "name": "controlToolbar",
-      "x": 24,
+      "x": 21,
       "y": 56,
-      "width": 1184,
+      "width": 1014,
       "height": 62,
       "background": {
         "color": "#0f172a",
@@ -49,15 +49,15 @@
       "layoutType": "horizontal",
       "alignItems": "center",
       "padding": {
-        "left": 16,
-        "right": 16
+        "left": 14,
+        "right": 14
       },
-      "gap": 16,
+      "gap": 14,
       "elements": [
         {
           "type": "button",
           "name": "btnToggleWrap",
-          "width": 180,
+          "width": 154,
           "height": 44,
           "mode": "Check",
           "selected": true,
@@ -69,7 +69,7 @@
             {
               "type": "graph",
               "name": "bg",
-              "width": 180,
+              "width": 154,
               "height": 44,
               "fillColor": "#2563eb",
               "cornerRadius": 6,
@@ -95,7 +95,7 @@
               "type": "text",
               "name": "title",
               "text": "折行: flexWrap=TRUE",
-              "width": 180,
+              "width": 154,
               "height": 44,
               "align": "center",
               "valign": "middle",
@@ -108,7 +108,7 @@
         {
           "type": "button",
           "name": "btnJustify",
-          "width": 240,
+          "width": 206,
           "height": 44,
           "downEffect": 2,
           "downEffectValue": 0.95,
@@ -116,7 +116,7 @@
             {
               "type": "graph",
               "name": "bg",
-              "width": 240,
+              "width": 206,
               "height": 44,
               "fillColor": "#334155",
               "cornerRadius": 6
@@ -125,7 +125,7 @@
               "type": "text",
               "name": "title",
               "text": "主轴: flex-start",
-              "width": 240,
+              "width": 206,
               "height": 44,
               "align": "center",
               "valign": "middle",
@@ -138,7 +138,7 @@
         {
           "type": "button",
           "name": "btnAlign",
-          "width": 220,
+          "width": 188,
           "height": 44,
           "downEffect": 2,
           "downEffectValue": 0.95,
@@ -146,7 +146,7 @@
             {
               "type": "graph",
               "name": "bg",
-              "width": 220,
+              "width": 188,
               "height": 44,
               "fillColor": "#334155",
               "cornerRadius": 6
@@ -155,7 +155,7 @@
               "type": "text",
               "name": "title",
               "text": "交叉轴: center",
-              "width": 220,
+              "width": 188,
               "height": 44,
               "align": "center",
               "valign": "middle",
@@ -168,7 +168,7 @@
         {
           "type": "button",
           "name": "btnGap",
-          "width": 160,
+          "width": 137,
           "height": 44,
           "downEffect": 2,
           "downEffectValue": 0.95,
@@ -176,7 +176,7 @@
             {
               "type": "graph",
               "name": "bg",
-              "width": 160,
+              "width": 137,
               "height": 44,
               "fillColor": "#334155",
               "cornerRadius": 6
@@ -185,7 +185,7 @@
               "type": "text",
               "name": "title",
               "text": "间距 gap: 12px",
-              "width": 160,
+              "width": 137,
               "height": 44,
               "align": "center",
               "valign": "middle",
@@ -200,9 +200,9 @@
     {
       "type": "panel",
       "name": "flexPreviewBox",
-      "x": 24,
+      "x": 21,
       "y": 124,
-      "width": 1184,
+      "width": 1014,
       "height": 480,
       "background": {
         "color": "#0f172a",
@@ -214,32 +214,32 @@
         {
           "type": "panel",
           "name": "dynamicFlex",
-          "x": 20,
+          "x": 17,
           "y": 20,
-          "width": 1144,
+          "width": 980,
           "height": 440,
           "layoutType": "horizontal",
           "flexWrap": true,
           "justifyContent": "flex-start",
           "alignItems": "center",
-          "gap": 12,
+          "gap": 10,
           "padding": {
-            "left": 16,
+            "left": 14,
             "top": 16,
-            "right": 16,
+            "right": 14,
             "bottom": 16
           },
           "elements": [
             {
               "type": "panel",
               "name": "tag_0",
-              "width": 120,
+              "width": 103,
               "height": 46,
               "elements": [
                 {
                   "type": "graph",
                   "name": "bg",
-                  "width": 120,
+                  "width": 103,
                   "height": 46,
                   "fillColor": "#3b82f6",
                   "cornerRadius": 8
@@ -247,7 +247,7 @@
                 {
                   "type": "text",
                   "text": "Tag #1 (120px)",
-                  "width": 120,
+                  "width": 103,
                   "height": 46,
                   "align": "center",
                   "valign": "middle",
@@ -260,13 +260,13 @@
             {
               "type": "panel",
               "name": "tag_1",
-              "width": 150,
+              "width": 129,
               "height": 46,
               "elements": [
                 {
                   "type": "graph",
                   "name": "bg",
-                  "width": 150,
+                  "width": 129,
                   "height": 46,
                   "fillColor": "#10b981",
                   "cornerRadius": 8
@@ -274,7 +274,7 @@
                 {
                   "type": "text",
                   "text": "Tag #2 (150px)",
-                  "width": 150,
+                  "width": 129,
                   "height": 46,
                   "align": "center",
                   "valign": "middle",
@@ -287,13 +287,13 @@
             {
               "type": "panel",
               "name": "tag_2",
-              "width": 100,
+              "width": 86,
               "height": 46,
               "elements": [
                 {
                   "type": "graph",
                   "name": "bg",
-                  "width": 100,
+                  "width": 86,
                   "height": 46,
                   "fillColor": "#f59e0b",
                   "cornerRadius": 8
@@ -301,7 +301,7 @@
                 {
                   "type": "text",
                   "text": "Tag #3 (100px)",
-                  "width": 100,
+                  "width": 86,
                   "height": 46,
                   "align": "center",
                   "valign": "middle",
@@ -314,13 +314,13 @@
             {
               "type": "panel",
               "name": "tag_3",
-              "width": 140,
+              "width": 120,
               "height": 46,
               "elements": [
                 {
                   "type": "graph",
                   "name": "bg",
-                  "width": 140,
+                  "width": 120,
                   "height": 46,
                   "fillColor": "#ef4444",
                   "cornerRadius": 8
@@ -328,7 +328,7 @@
                 {
                   "type": "text",
                   "text": "Tag #4 (140px)",
-                  "width": 140,
+                  "width": 120,
                   "height": 46,
                   "align": "center",
                   "valign": "middle",
@@ -341,13 +341,13 @@
             {
               "type": "panel",
               "name": "tag_4",
-              "width": 110,
+              "width": 94,
               "height": 46,
               "elements": [
                 {
                   "type": "graph",
                   "name": "bg",
-                  "width": 110,
+                  "width": 94,
                   "height": 46,
                   "fillColor": "#8b5cf6",
                   "cornerRadius": 8
@@ -355,7 +355,7 @@
                 {
                   "type": "text",
                   "text": "Tag #5 (110px)",
-                  "width": 110,
+                  "width": 94,
                   "height": 46,
                   "align": "center",
                   "valign": "middle",
@@ -368,13 +368,13 @@
             {
               "type": "panel",
               "name": "tag_5",
-              "width": 130,
+              "width": 111,
               "height": 46,
               "elements": [
                 {
                   "type": "graph",
                   "name": "bg",
-                  "width": 130,
+                  "width": 111,
                   "height": 46,
                   "fillColor": "#ec4899",
                   "cornerRadius": 8
@@ -382,7 +382,7 @@
                 {
                   "type": "text",
                   "text": "Tag #6 (130px)",
-                  "width": 130,
+                  "width": 111,
                   "height": 46,
                   "align": "center",
                   "valign": "middle",
@@ -395,13 +395,13 @@
             {
               "type": "panel",
               "name": "tag_6",
-              "width": 160,
+              "width": 137,
               "height": 46,
               "elements": [
                 {
                   "type": "graph",
                   "name": "bg",
-                  "width": 160,
+                  "width": 137,
                   "height": 46,
                   "fillColor": "#06b6d4",
                   "cornerRadius": 8
@@ -409,7 +409,7 @@
                 {
                   "type": "text",
                   "text": "Tag #7 (160px)",
-                  "width": 160,
+                  "width": 137,
                   "height": 46,
                   "align": "center",
                   "valign": "middle",
@@ -422,13 +422,13 @@
             {
               "type": "panel",
               "name": "tag_7",
-              "width": 95,
+              "width": 81,
               "height": 46,
               "elements": [
                 {
                   "type": "graph",
                   "name": "bg",
-                  "width": 95,
+                  "width": 81,
                   "height": 46,
                   "fillColor": "#84cc16",
                   "cornerRadius": 8
@@ -436,7 +436,7 @@
                 {
                   "type": "text",
                   "text": "Tag #8 (95px)",
-                  "width": 95,
+                  "width": 81,
                   "height": 46,
                   "align": "center",
                   "valign": "middle",
@@ -449,13 +449,13 @@
             {
               "type": "panel",
               "name": "tag_8",
-              "width": 125,
+              "width": 107,
               "height": 46,
               "elements": [
                 {
                   "type": "graph",
                   "name": "bg",
-                  "width": 125,
+                  "width": 107,
                   "height": 46,
                   "fillColor": "#14b8a6",
                   "cornerRadius": 8
@@ -463,7 +463,7 @@
                 {
                   "type": "text",
                   "text": "Tag #9 (125px)",
-                  "width": 125,
+                  "width": 107,
                   "height": 46,
                   "align": "center",
                   "valign": "middle",
@@ -476,13 +476,13 @@
             {
               "type": "panel",
               "name": "tag_9",
-              "width": 145,
+              "width": 124,
               "height": 46,
               "elements": [
                 {
                   "type": "graph",
                   "name": "bg",
-                  "width": 145,
+                  "width": 124,
                   "height": 46,
                   "fillColor": "#6366f1",
                   "cornerRadius": 8
@@ -490,7 +490,7 @@
                 {
                   "type": "text",
                   "text": "Tag #10 (145px)",
-                  "width": 145,
+                  "width": 124,
                   "height": 46,
                   "align": "center",
                   "valign": "middle",
@@ -503,13 +503,13 @@
             {
               "type": "panel",
               "name": "tag_10",
-              "width": 115,
+              "width": 99,
               "height": 46,
               "elements": [
                 {
                   "type": "graph",
                   "name": "bg",
-                  "width": 115,
+                  "width": 99,
                   "height": 46,
                   "fillColor": "#f97316",
                   "cornerRadius": 8
@@ -517,7 +517,7 @@
                 {
                   "type": "text",
                   "text": "Tag #11 (115px)",
-                  "width": 115,
+                  "width": 99,
                   "height": 46,
                   "align": "center",
                   "valign": "middle",
@@ -530,13 +530,13 @@
             {
               "type": "panel",
               "name": "tag_11",
-              "width": 135,
+              "width": 116,
               "height": 46,
               "elements": [
                 {
                   "type": "graph",
                   "name": "bg",
-                  "width": 135,
+                  "width": 116,
                   "height": 46,
                   "fillColor": "#0ea5e9",
                   "cornerRadius": 8
@@ -544,7 +544,7 @@
                 {
                   "type": "text",
                   "text": "Tag #12 (135px)",
-                  "width": 135,
+                  "width": 116,
                   "height": 46,
                   "align": "center",
                   "valign": "middle",

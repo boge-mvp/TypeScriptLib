@@ -8,8 +8,6 @@ import GTextField = fgui.GTextField;
  */
 export class GearsView extends GComponent {
 
-    private _currentAnimFrame: number = 0;
-
     protected override onConstruct(): void {
         super.onConstruct();
 
@@ -21,7 +19,6 @@ export class GearsView extends GComponent {
         const badge = (this.getChild("inspectorBadge") || this.getChild("badgeBg")) as GComponent;
         const inspLog = this.getChild("inspectorLog") as GTextField;
         const condTip = this.getChild("condTip") as GTextField;
-        const animStatus = this.getChild("animStatus") as GTextField;
 
         const updateCondTip = () => {
             if (condTip && gearCtrl && condCtrl) {
@@ -46,18 +43,7 @@ export class GearsView extends GComponent {
         }
         updateCondTip();
 
-        // 2. 动画帧模拟播放
-        Laya.timer.loop(300, this, () => {
-            if (!animStatus) return;
-            if (gearCtrl && gearCtrl.selectedPage === "stateA") {
-                this._currentAnimFrame = (this._currentAnimFrame + 1) % 4;
-                animStatus.text = `A: 循环播放中 第${this._currentAnimFrame}帧 ▶`;
-            } else {
-                animStatus.text = "B: 暂停 定格第2帧 ⏸";
-            }
-        });
-
-        // 3. 检视器只读审计日志监听
+        // 2. 检视器只读审计日志监听
         if (lookCtrl) {
             lookCtrl.on(fgui.Events.STATE_CHANGED, this, () => {
                 if (inspLog) {

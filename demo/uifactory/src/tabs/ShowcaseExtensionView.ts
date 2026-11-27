@@ -94,7 +94,7 @@ export class ShowcaseExtensionView extends GComponent {
                 ["createText", UIFactory.createText({ type: "text", text: "ok" })],
                 ["createRichTextField", UIFactory.createRichTextField({ type: "text", isUbb: true, text: "[b]ok[/b]" })],
                 ["createTextInput", UIFactory.createTextInput({ type: "text", isInput: true })],
-                ["createIcon", UIFactory.createIcon({ type: "icon" })],
+                ["createIcon", UIFactory.createIcon({ type: "icon", url: "res/symbols/item_1.png" })],
                 ["createGraph", UIFactory.createGraph({ type: "graph", width: 10, height: 10 })],
                 ["createButton", UIFactory.createButton({ type: "button", title: "btn" })],
                 ["createPanel", UIFactory.createPanel({ type: "panel", width: 20, height: 20 })],
@@ -136,7 +136,7 @@ export class ShowcaseExtensionView extends GComponent {
         UIFactory.registerConfig(extConfigUrl, {
             type: "panel",
             name: "runtimeExtBadge",
-            width: 288,
+            width: 204,
             height: 76,
             background: {
                 type: "graph",
@@ -152,7 +152,7 @@ export class ShowcaseExtensionView extends GComponent {
                     name: "badgeLabel",
                     x: 12,
                     y: 18,
-                    width: 264,
+                    width: 180,
                     height: 40,
                     text: "placeholder",
                     fontSize: 13,
@@ -167,7 +167,7 @@ export class ShowcaseExtensionView extends GComponent {
 
         UIFactory.registerCreator("neon-pill", (elData) => {
             const comp = new GComponent();
-            const w = elData.width || 288;
+            const w = elData.width || 204;
             const h = elData.height || 52;
             comp.setSize(w, h);
             const bg = new GGraph();
@@ -179,8 +179,8 @@ export class ShowcaseExtensionView extends GComponent {
             txt.fontSize = 13;
             txt.bold = true;
             txt.color = "#ecfdf5";
-            txt.align = fgui.AlignType.Center;
-            txt.valign = fgui.VertAlignType.Middle;
+            txt.align = "center";
+            txt.valign = "middle";
             txt.text = (elData as { label?: string }).label || "NeonPill 自定义元件";
             comp.addChild(txt);
             return comp;
@@ -191,7 +191,7 @@ export class ShowcaseExtensionView extends GComponent {
             extHost.removeChildren(0, -1, true);
             const inst = UIFactory.createFromConfig<CustomBadgeExtension>(extConfigUrl);
             if (inst) {
-                inst.setXY(16, 18);
+                inst.setXY(11, 18);
                 extHost.addChild(inst);
                 const isExt = inst instanceof CustomBadgeExtension;
                 if (extResult) {
@@ -205,8 +205,8 @@ export class ShowcaseExtensionView extends GComponent {
             this._extSpawnCount++;
             extHost.removeChildren(0, -1, true);
             const customEl = UIFactory.createElement(
-                { type: "neon-pill", width: 288, height: 52, label: `NeonPill #${this._extSpawnCount} (registerCreator)` } as unknown as tsCore.IElementConfig,
-                16,
+                { type: "neon-pill", width: 204, height: 52, label: `NeonPill #${this._extSpawnCount} (registerCreator)` } as unknown as tsCore.IElementConfig,
+                11,
                 30
             );
             if (customEl) {

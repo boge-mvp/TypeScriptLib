@@ -3,8 +3,8 @@
   "name": "tab6Gears",
   "x": 0,
   "y": 0,
-  "width": 1432,
-  "height": 600,
+  "width": 1052,
+  "height": 648,
   "background": {
     "type": "graph",
     "shape": "rect",
@@ -62,52 +62,66 @@
   ],
   "elements": [
     {
+      "type": "graph",
+      "name": "matrixBg",
+      "x": 20,
+      "y": 112,
+      "width": 584,
+      "height": 516,
+      "fillColor": "#0b1120",
+      "cornerRadius": 8,
+      "lineSize": 1,
+      "lineColor": "#1e293b"
+    },
+    {
+      "type": "graph",
+      "name": "inspectorBg",
+      "x": 616,
+      "y": 70,
+      "width": 416,
+      "height": 558,
+      "fillColor": "#0f172a",
+      "cornerRadius": 8,
+      "lineSize": 1,
+      "lineColor": "#334155"
+    },
+    {
       "type": "text",
-      "x": 126,
-      "y": 16,
+      "x": 20,
+      "y": 14,
       "text": "① 基础属性实时检视器 + FGUI 全系 10 大 Gears 状态机矩阵",
       "fontSize": 16,
       "bold": true,
       "color": "#f8fafc",
-      "width": 500
+      "width": 1012,
+      "height": 24
     },
     {
       "type": "text",
-      "x": 126,
-      "y": 38,
+      "x": 20,
+      "y": 42,
       "text": "左侧为全系 10 大 Gears 矩阵；右侧为属性检视器。纯正 FGUI 架构：Graph 画背景 + Group 功能分区 + Root 控制器全自闭环！",
       "fontSize": 12,
       "color": "#94a3b8",
-      "width": 680
+      "width": 1012,
+      "height": 20
     },
     {
       "type": "button",
       "name": "btnToggleCondA",
-      "x": 842,
-      "y": 12,
-      "width": 230,
-      "height": 38,
+      "x": 20,
+      "y": 70,
+      "width": 176,
+      "height": 34,
       "mode": "Check",
       "relatedController": "gearCtrl",
       "pageId": "stateB",
-      "controllers": [
-        {
-          "name": "button",
-          "pages": [
-            "up",
-            "down",
-            "over",
-            "selectedOver"
-          ],
-          "selectedIndex": 0
-        }
-      ],
       "elements": [
         {
           "type": "graph",
           "name": "bg",
-          "width": 230,
-          "height": 38,
+          "width": 176,
+          "height": 34,
           "fillColor": "#2563eb",
           "cornerRadius": 6,
           "gearColor": {
@@ -132,8 +146,8 @@
           "type": "text",
           "name": "title",
           "text": "条件 A: stateA (点击切 stateB)",
-          "width": 230,
-          "height": 38,
+          "width": 176,
+          "height": 34,
           "align": "center",
           "valign": "middle",
           "color": "#ffffff",
@@ -154,31 +168,19 @@
     {
       "type": "button",
       "name": "btnToggleCondB",
-      "x": 1087,
-      "y": 12,
-      "width": 220,
-      "height": 38,
+      "x": 208,
+      "y": 70,
+      "width": 176,
+      "height": 34,
       "mode": "Check",
       "relatedController": "condCtrl",
       "pageId": "c2",
-      "controllers": [
-        {
-          "name": "button",
-          "pages": [
-            "up",
-            "down",
-            "over",
-            "selectedOver"
-          ],
-          "selectedIndex": 0
-        }
-      ],
       "elements": [
         {
           "type": "graph",
           "name": "bg",
-          "width": 220,
-          "height": 38,
+          "width": 176,
+          "height": 34,
           "fillColor": "#475569",
           "cornerRadius": 6,
           "gearColor": {
@@ -203,8 +205,8 @@
           "type": "text",
           "name": "title",
           "text": "条件 B: c1 (点击切 c2)",
-          "width": 220,
-          "height": 38,
+          "width": 176,
+          "height": 34,
           "align": "center",
           "valign": "middle",
           "color": "#ffffff",
@@ -224,23 +226,11 @@
     },
     {
       "type": "graph",
-      "name": "matrixBg",
-      "x": 122,
-      "y": 64,
-      "width": 720,
-      "height": 520,
-      "fillColor": "#0b1120",
-      "cornerRadius": 8,
-      "lineSize": 1,
-      "lineColor": "#1e293b"
-    },
-    {
-      "type": "graph",
       "name": "cardBg_0_0",
-      "x": 130,
-      "y": 72,
-      "width": 136,
-      "height": 245,
+      "x": 32,
+      "y": 124,
+      "width": 276,
+      "height": 92,
       "fillColor": "#0f172a",
       "cornerRadius": 6,
       "lineSize": 1,
@@ -248,21 +238,22 @@
     },
     {
       "type": "text",
-      "x": 138,
-      "y": 80,
-      "width": 120,
+      "x": 42,
+      "y": 130,
+      "width": 256,
       "text": "0. GearDisplay: 显隐+占位",
       "fontSize": 10,
       "bold": true,
-      "color": "#94a3b8"
+      "color": "#94a3b8",
+      "height": 18
     },
     {
       "type": "graph",
       "name": "targetObj_0_0",
-      "x": 138,
-      "y": 112,
-      "width": 120,
-      "height": 75,
+      "x": 42,
+      "y": 154,
+      "width": 126,
+      "height": 34,
       "fillColor": "#0ea5e9",
       "cornerRadius": 6,
       "gearDisplay": {
@@ -274,9 +265,9 @@
     },
     {
       "type": "text",
-      "x": 140,
-      "y": 127,
-      "width": 116,
+      "x": 174,
+      "y": 154,
+      "width": 124,
       "text": "State A: 可见\nState B: 移除占位",
       "fontSize": 11,
       "color": "#ffffff",
@@ -287,25 +278,27 @@
         "pages": [
           "stateA"
         ]
-      }
+      },
+      "height": 34
     },
     {
       "type": "text",
-      "x": 138,
-      "y": 197,
-      "width": 120,
+      "x": 42,
+      "y": 194,
+      "width": 256,
       "text": "A: 渲染上屏 | B: 彻底脱离层级",
       "fontSize": 9,
       "color": "#94a3b8",
-      "align": "center"
+      "align": "center",
+      "height": 18
     },
     {
       "type": "graph",
       "name": "cardBg_1_0",
-      "x": 274,
-      "y": 72,
-      "width": 136,
-      "height": 245,
+      "x": 316,
+      "y": 124,
+      "width": 276,
+      "height": 92,
       "fillColor": "#0f172a",
       "cornerRadius": 6,
       "lineSize": 1,
@@ -313,21 +306,22 @@
     },
     {
       "type": "text",
-      "x": 282,
-      "y": 80,
-      "width": 120,
+      "x": 326,
+      "y": 130,
+      "width": 256,
       "text": "1. GearXY: X位移+Y位移",
       "fontSize": 10,
       "bold": true,
-      "color": "#94a3b8"
+      "color": "#94a3b8",
+      "height": 18
     },
     {
       "type": "graph",
       "name": "targetObj_1_0",
-      "x": 284,
-      "y": 107,
-      "width": 65,
-      "height": 60,
+      "x": 326,
+      "y": 154,
+      "width": 64,
+      "height": 34,
       "fillColor": "#3b82f6",
       "cornerRadius": 8,
       "gearXY": {
@@ -336,33 +330,34 @@
         "duration": 0.8,
         "pages": {
           "stateA": {
-            "x": 284,
-            "y": 107
+            "x": 326,
+            "y": 154
           },
           "stateB": {
-            "x": 339,
-            "y": 142
+            "x": 514,
+            "y": 154
           }
         }
       }
     },
     {
       "type": "text",
-      "x": 278,
-      "y": 245,
-      "width": 128,
+      "x": 326,
+      "y": 194,
+      "width": 256,
       "text": "A:(10,35) -> B:(65,70) (0.8s过渡)",
       "fontSize": 9,
       "color": "#94a3b8",
-      "align": "center"
+      "align": "center",
+      "height": 18
     },
     {
       "type": "graph",
       "name": "cardBg_2_0",
-      "x": 418,
-      "y": 72,
-      "width": 136,
-      "height": 245,
+      "x": 32,
+      "y": 224,
+      "width": 276,
+      "height": 92,
       "fillColor": "#0f172a",
       "cornerRadius": 6,
       "lineSize": 1,
@@ -370,21 +365,22 @@
     },
     {
       "type": "text",
-      "x": 426,
-      "y": 80,
-      "width": 120,
+      "x": 42,
+      "y": 230,
+      "width": 256,
       "text": "2. GearSize: 宽高+缩放",
       "fontSize": 10,
       "bold": true,
-      "color": "#94a3b8"
+      "color": "#94a3b8",
+      "height": 18
     },
     {
       "type": "graph",
       "name": "targetObj_2_0",
-      "x": 438,
-      "y": 107,
-      "width": 65,
-      "height": 65,
+      "x": 42,
+      "y": 254,
+      "width": 88,
+      "height": 34,
       "fillColor": "#10b981",
       "cornerRadius": 8,
       "gearSize": {
@@ -393,35 +389,34 @@
         "duration": 0.8,
         "pages": {
           "stateA": {
-            "width": 65,
-            "height": 65,
-            "scale": 1
+            "width": 88,
+            "height": 34
           },
           "stateB": {
-            "width": 85,
-            "height": 75,
-            "scale": 1.25
+            "width": 200,
+            "height": 36
           }
         }
       }
     },
     {
       "type": "text",
-      "x": 422,
-      "y": 245,
-      "width": 128,
+      "x": 42,
+      "y": 294,
+      "width": 256,
       "text": "A: 65x65(1.0) -> B: 85x75(1.25)",
       "fontSize": 9,
       "color": "#94a3b8",
-      "align": "center"
+      "align": "center",
+      "height": 18
     },
     {
       "type": "graph",
       "name": "cardBg_3_0",
-      "x": 562,
-      "y": 72,
-      "width": 136,
-      "height": 245,
+      "x": 316,
+      "y": 224,
+      "width": 276,
+      "height": 92,
       "fillColor": "#0f172a",
       "cornerRadius": 6,
       "lineSize": 1,
@@ -429,21 +424,22 @@
     },
     {
       "type": "text",
-      "x": 570,
-      "y": 80,
-      "width": 120,
+      "x": 326,
+      "y": 230,
+      "width": 256,
       "text": "3. GearLook: 透明+旋转+置灰",
       "fontSize": 9,
       "bold": true,
-      "color": "#94a3b8"
+      "color": "#94a3b8",
+      "height": 18
     },
     {
       "type": "graph",
       "name": "targetObj_3_0",
-      "x": 598,
-      "y": 107,
-      "width": 65,
-      "height": 65,
+      "x": 326,
+      "y": 254,
+      "width": 256,
+      "height": 34,
       "fillColor": "#8b5cf6",
       "cornerRadius": 8,
       "pivotX": 0.5,
@@ -467,21 +463,22 @@
     },
     {
       "type": "text",
-      "x": 566,
-      "y": 245,
-      "width": 128,
+      "x": 326,
+      "y": 294,
+      "width": 256,
       "text": "A: 1.0 0° | B: 0.45 25°置灰",
       "fontSize": 9,
       "color": "#94a3b8",
-      "align": "center"
+      "align": "center",
+      "height": 18
     },
     {
       "type": "graph",
       "name": "cardBg_4_0",
-      "x": 706,
-      "y": 72,
-      "width": 128,
-      "height": 245,
+      "x": 32,
+      "y": 324,
+      "width": 276,
+      "height": 92,
       "fillColor": "#0f172a",
       "cornerRadius": 6,
       "lineSize": 1,
@@ -489,21 +486,22 @@
     },
     {
       "type": "text",
-      "x": 714,
-      "y": 80,
-      "width": 112,
+      "x": 42,
+      "y": 330,
+      "width": 256,
       "text": "4. GearColor: 填充+描边",
       "fontSize": 10,
       "bold": true,
-      "color": "#94a3b8"
+      "color": "#94a3b8",
+      "height": 18
     },
     {
       "type": "graph",
       "name": "targetObj_4_0",
-      "x": 734,
-      "y": 107,
-      "width": 72,
-      "height": 65,
+      "x": 42,
+      "y": 354,
+      "width": 256,
+      "height": 34,
       "fillColor": "#3b82f6",
       "lineSize": 2,
       "lineColor": "#60a5fa",
@@ -524,21 +522,22 @@
     },
     {
       "type": "text",
-      "x": 710,
-      "y": 245,
-      "width": 120,
+      "x": 42,
+      "y": 394,
+      "width": 256,
       "text": "A: 蓝底亮蓝边 -> B: 红底粉红边",
       "fontSize": 9,
       "color": "#94a3b8",
-      "align": "center"
+      "align": "center",
+      "height": 18
     },
     {
       "type": "graph",
       "name": "cardBg_0_1",
-      "x": 130,
-      "y": 327,
-      "width": 136,
-      "height": 245,
+      "x": 316,
+      "y": 324,
+      "width": 276,
+      "height": 92,
       "fillColor": "#0f172a",
       "cornerRadius": 6,
       "lineSize": 1,
@@ -546,42 +545,52 @@
     },
     {
       "type": "text",
-      "x": 138,
-      "y": 335,
-      "width": 120,
+      "x": 326,
+      "y": 330,
+      "width": 256,
       "text": "5. GearAnimation: 帧切换",
       "fontSize": 10,
       "bold": true,
-      "color": "#94a3b8"
+      "color": "#94a3b8",
+      "height": 18
     },
     {
       "type": "text",
       "name": "animStatus",
-      "x": 138,
-      "y": 420,
-      "width": 120,
-      "text": "A: 播放中 第0帧 ▶",
+      "x": 326,
+      "y": 354,
+      "width": 256,
+      "text": "A: 播放中 ▶",
       "fontSize": 10,
       "color": "#38bdf8",
-      "align": "center"
+      "align": "center",
+      "gearText": {
+        "controller": "gearCtrl",
+        "pages": {
+          "stateA": "A: 播放中 ▶",
+          "stateB": "B: 暂停 第2帧 ⏸"
+        }
+      },
+      "height": 34
     },
     {
       "type": "text",
-      "x": 138,
-      "y": 500,
-      "width": 120,
+      "x": 326,
+      "y": 394,
+      "width": 256,
       "text": "A: 帧循环播放 | B: 停于首帧",
       "fontSize": 9,
       "color": "#94a3b8",
-      "align": "center"
+      "align": "center",
+      "height": 18
     },
     {
       "type": "graph",
       "name": "cardBg_1_1",
-      "x": 274,
-      "y": 327,
-      "width": 136,
-      "height": 245,
+      "x": 32,
+      "y": 424,
+      "width": 276,
+      "height": 92,
       "fillColor": "#0f172a",
       "cornerRadius": 6,
       "lineSize": 1,
@@ -589,20 +598,21 @@
     },
     {
       "type": "text",
-      "x": 282,
-      "y": 335,
-      "width": 120,
+      "x": 42,
+      "y": 430,
+      "width": 256,
       "text": "6. GearText: 多语言文案",
       "fontSize": 10,
       "bold": true,
-      "color": "#94a3b8"
+      "color": "#94a3b8",
+      "height": 18
     },
     {
       "type": "text",
       "name": "targetObj_1_1",
-      "x": 278,
-      "y": 395,
-      "width": 128,
+      "x": 42,
+      "y": 454,
+      "width": 256,
       "text": "⭐ 正常状态 (OK)",
       "fontSize": 12,
       "bold": true,
@@ -614,25 +624,27 @@
           "stateA": "⭐ 正常状态 (OK)",
           "stateB": "🚨 紧急预警 (WARN)"
         }
-      }
+      },
+      "height": 34
     },
     {
       "type": "text",
-      "x": 278,
-      "y": 500,
-      "width": 128,
+      "x": 42,
+      "y": 494,
+      "width": 256,
       "text": "A: 正常OK | B: 紧急预警WARN",
       "fontSize": 9,
       "color": "#94a3b8",
-      "align": "center"
+      "align": "center",
+      "height": 18
     },
     {
       "type": "graph",
       "name": "cardBg_2_1",
-      "x": 418,
-      "y": 327,
-      "width": 136,
-      "height": 245,
+      "x": 316,
+      "y": 424,
+      "width": 276,
+      "height": 92,
       "fillColor": "#0f172a",
       "cornerRadius": 6,
       "lineSize": 1,
@@ -640,20 +652,21 @@
     },
     {
       "type": "text",
-      "x": 426,
-      "y": 335,
-      "width": 120,
+      "x": 326,
+      "y": 430,
+      "width": 256,
       "text": "7. GearIcon: 资源图切换",
       "fontSize": 10,
       "bold": true,
-      "color": "#94a3b8"
+      "color": "#94a3b8",
+      "height": 18
     },
     {
       "type": "text",
       "name": "targetObj_2_1",
-      "x": 422,
-      "y": 395,
-      "width": 128,
+      "x": 326,
+      "y": 454,
+      "width": 256,
       "text": "💎 宝石 (Icon A)",
       "fontSize": 13,
       "bold": true,
@@ -665,25 +678,27 @@
           "stateA": "💎 宝石 (Icon A)",
           "stateB": "👑 皇冠 (Icon B)"
         }
-      }
+      },
+      "height": 34
     },
     {
       "type": "text",
-      "x": 422,
-      "y": 500,
-      "width": 128,
+      "x": 326,
+      "y": 494,
+      "width": 256,
       "text": "A: 宝石蓝 | B: 皇冠金",
       "fontSize": 9,
       "color": "#94a3b8",
-      "align": "center"
+      "align": "center",
+      "height": 18
     },
     {
       "type": "graph",
       "name": "cardBg_3_1",
-      "x": 562,
-      "y": 327,
-      "width": 136,
-      "height": 245,
+      "x": 32,
+      "y": 524,
+      "width": 276,
+      "height": 92,
       "fillColor": "#0f172a",
       "cornerRadius": 6,
       "lineSize": 1,
@@ -691,21 +706,22 @@
     },
     {
       "type": "text",
-      "x": 570,
-      "y": 335,
-      "width": 120,
+      "x": 42,
+      "y": 530,
+      "width": 256,
       "text": "8. GearDisplay2: OR门控",
       "fontSize": 10,
       "bold": true,
-      "color": "#94a3b8"
+      "color": "#94a3b8",
+      "height": 18
     },
     {
       "type": "button",
       "name": "targetObj_3_1",
-      "x": 578,
-      "y": 380,
-      "width": 104,
-      "height": 42,
+      "x": 42,
+      "y": 554,
+      "width": 256,
+      "height": 34,
       "gearDisplay2": {
         "controller": "condCtrl",
         "pages": [
@@ -716,15 +732,15 @@
       "elements": [
         {
           "type": "graph",
-          "width": 104,
-          "height": 42,
+          "width": 256,
+          "height": 34,
           "fillColor": "#ea580c",
           "cornerRadius": 6
         },
         {
           "type": "text",
-          "width": 104,
-          "height": 42,
+          "width": 256,
+          "height": 34,
           "text": "门控满足 ✔",
           "align": "center",
           "valign": "middle",
@@ -737,31 +753,33 @@
     {
       "type": "text",
       "name": "condTip",
-      "x": 566,
-      "y": 435,
-      "width": 128,
+      "x": 396,
+      "y": 68,
+      "width": 208,
       "text": "[A=B] OR [B=c2]",
       "fontSize": 10,
       "color": "#cbd5e1",
-      "align": "center"
+      "align": "center",
+      "height": 38
     },
     {
       "type": "text",
-      "x": 566,
-      "y": 500,
-      "width": 128,
+      "x": 42,
+      "y": 594,
+      "width": 256,
       "text": "双控制器布尔逻辑或 OR 运算",
       "fontSize": 9,
       "color": "#94a3b8",
-      "align": "center"
+      "align": "center",
+      "height": 18
     },
     {
       "type": "graph",
       "name": "cardBg_4_1",
-      "x": 706,
-      "y": 327,
-      "width": 128,
-      "height": 245,
+      "x": 316,
+      "y": 524,
+      "width": 276,
+      "height": 92,
       "fillColor": "#0f172a",
       "cornerRadius": 6,
       "lineSize": 1,
@@ -769,20 +787,21 @@
     },
     {
       "type": "text",
-      "x": 714,
-      "y": 335,
-      "width": 112,
+      "x": 326,
+      "y": 530,
+      "width": 256,
       "text": "9. GearFontSize: 字号跨阶",
       "fontSize": 9,
       "bold": true,
-      "color": "#94a3b8"
+      "color": "#94a3b8",
+      "height": 18
     },
     {
       "type": "text",
       "name": "targetObj_4_1",
-      "x": 710,
-      "y": 395,
-      "width": 120,
+      "x": 326,
+      "y": 554,
+      "width": 256,
       "text": "AA 字号自适应",
       "fontSize": 12,
       "bold": true,
@@ -794,40 +813,33 @@
           "stateA": 12,
           "stateB": 20
         }
-      }
+      },
+      "height": 34
     },
     {
       "type": "text",
-      "x": 710,
-      "y": 500,
-      "width": 120,
+      "x": 326,
+      "y": 594,
+      "width": 256,
       "text": "A: 12px常规 | B: 20px标题粗阶",
       "fontSize": 9,
       "color": "#94a3b8",
-      "align": "center"
-    },
-    {
-      "type": "graph",
-      "name": "inspectorBg",
-      "x": 858,
-      "y": 64,
-      "width": 456,
-      "height": 520,
-      "fillColor": "#0f172a",
-      "cornerRadius": 8,
-      "lineSize": 1,
-      "lineColor": "#334155"
+      "align": "center",
+      "height": 18
     },
     {
       "type": "group",
       "name": "inspectorGroup",
-      "x": 102
+      "x": 632,
+      "y": 82,
+      "width": 384,
+      "height": 532
     },
     {
       "type": "text",
-      "x": 876,
-      "y": 80,
-      "width": 420,
+      "x": 632,
+      "y": 82,
+      "width": 384,
       "height": 22,
       "text": "🛠️ 基础可视属性实时检视器 (Property Inspector)",
       "fontSize": 13,
@@ -838,10 +850,10 @@
     {
       "type": "graph",
       "name": "badgeStageBg",
-      "x": 876,
-      "y": 105,
-      "width": 420,
-      "height": 85,
+      "x": 632,
+      "y": 110,
+      "width": 384,
+      "height": 92,
       "fillColor": "#020617",
       "cornerRadius": 6,
       "lineSize": 1,
@@ -851,9 +863,9 @@
     {
       "type": "graph",
       "name": "badgeBg",
-      "x": 936,
-      "y": 112,
-      "width": 300,
+      "x": 714,
+      "y": 121,
+      "width": 220,
       "height": 70,
       "pivotX": 0.5,
       "pivotY": 0.5,
@@ -943,13 +955,13 @@
     {
       "type": "text",
       "name": "badgeTitle",
-      "x": 948,
-      "y": 124,
+      "x": 724,
+      "y": 127,
       "text": "🎯 目标测试可视元件 (GComponent)",
       "fontSize": 12,
       "bold": true,
       "color": "#ffffff",
-      "width": 276,
+      "width": 200,
       "pivotX": 0.5,
       "pivotY": 0.5,
       "group": "inspectorGroup",
@@ -1005,14 +1017,15 @@
             "scale": 0.75
           }
         }
-      }
+      },
+      "height": 24
     },
     {
       "type": "text",
       "name": "badgeStatus",
-      "x": 948,
-      "y": 150,
-      "width": 276,
+      "x": 724,
+      "y": 155,
+      "width": 200,
       "fontSize": 10,
       "color": "#e2e8f0",
       "pivotX": 0.5,
@@ -1063,13 +1076,14 @@
           "l07": "外观: alpha=0.7 | rot=30° | 文字背景同步旋转",
           "l03": "外观: alpha=0.3 | rot=60° | 文字背景同步旋转"
         }
-      }
+      },
+      "height": 24
     },
     {
       "type": "text",
-      "x": 876,
-      "y": 196,
-      "width": 300,
+      "x": 632,
+      "y": 212,
+      "width": 384,
       "height": 18,
       "text": "① 外观透明与旋转 (GearLook):",
       "fontSize": 11,
@@ -1080,9 +1094,9 @@
     {
       "type": "button",
       "name": "btnLook_10",
-      "x": 876,
-      "y": 216,
-      "width": 128,
+      "x": 632,
+      "y": 234,
+      "width": 124,
       "height": 32,
       "mode": "Radio",
       "relatedController": "lookCtrl",
@@ -1105,7 +1119,7 @@
         {
           "type": "graph",
           "name": "bg",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "fillColor": "#2563eb",
           "cornerRadius": 6,
@@ -1130,7 +1144,7 @@
         {
           "type": "text",
           "name": "title",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "text": "1.0 (正常水平)",
           "align": "center",
@@ -1144,9 +1158,9 @@
     {
       "type": "button",
       "name": "btnLook_07",
-      "x": 1012,
-      "y": 216,
-      "width": 128,
+      "x": 762,
+      "y": 234,
+      "width": 124,
       "height": 32,
       "mode": "Radio",
       "relatedController": "lookCtrl",
@@ -1168,7 +1182,7 @@
         {
           "type": "graph",
           "name": "bg",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "fillColor": "#334155",
           "cornerRadius": 6,
@@ -1193,7 +1207,7 @@
         {
           "type": "text",
           "name": "title",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "text": "0.7 (倾斜30°)",
           "align": "center",
@@ -1206,9 +1220,9 @@
     {
       "type": "button",
       "name": "btnLook_03",
-      "x": 1148,
-      "y": 216,
-      "width": 128,
+      "x": 892,
+      "y": 234,
+      "width": 124,
       "height": 32,
       "mode": "Radio",
       "relatedController": "lookCtrl",
@@ -1230,7 +1244,7 @@
         {
           "type": "graph",
           "name": "bg",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "fillColor": "#334155",
           "cornerRadius": 6,
@@ -1255,7 +1269,7 @@
         {
           "type": "text",
           "name": "title",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "text": "0.3 (倾斜60°)",
           "align": "center",
@@ -1267,9 +1281,9 @@
     },
     {
       "type": "text",
-      "x": 876,
-      "y": 254,
-      "width": 300,
+      "x": 632,
+      "y": 274,
+      "width": 384,
       "height": 18,
       "text": "② 尺寸与等比缩放 (GearSize):",
       "fontSize": 11,
@@ -1280,9 +1294,9 @@
     {
       "type": "button",
       "name": "btnScale_10",
-      "x": 876,
-      "y": 274,
-      "width": 128,
+      "x": 632,
+      "y": 296,
+      "width": 124,
       "height": 32,
       "mode": "Radio",
       "relatedController": "scaleCtrl",
@@ -1305,7 +1319,7 @@
         {
           "type": "graph",
           "name": "bg",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "fillColor": "#2563eb",
           "cornerRadius": 6,
@@ -1330,7 +1344,7 @@
         {
           "type": "text",
           "name": "title",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "text": "1.0x (原始尺寸)",
           "align": "center",
@@ -1344,9 +1358,9 @@
     {
       "type": "button",
       "name": "btnScale_12",
-      "x": 1012,
-      "y": 274,
-      "width": 128,
+      "x": 762,
+      "y": 296,
+      "width": 124,
       "height": 32,
       "mode": "Radio",
       "relatedController": "scaleCtrl",
@@ -1368,7 +1382,7 @@
         {
           "type": "graph",
           "name": "bg",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "fillColor": "#334155",
           "cornerRadius": 6,
@@ -1393,7 +1407,7 @@
         {
           "type": "text",
           "name": "title",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "text": "1.25x (等比放大)",
           "align": "center",
@@ -1406,9 +1420,9 @@
     {
       "type": "button",
       "name": "btnScale_08",
-      "x": 1148,
-      "y": 274,
-      "width": 128,
+      "x": 892,
+      "y": 296,
+      "width": 124,
       "height": 32,
       "mode": "Radio",
       "relatedController": "scaleCtrl",
@@ -1430,7 +1444,7 @@
         {
           "type": "graph",
           "name": "bg",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "fillColor": "#334155",
           "cornerRadius": 6,
@@ -1455,7 +1469,7 @@
         {
           "type": "text",
           "name": "title",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "text": "0.75x (等比微缩)",
           "align": "center",
@@ -1467,9 +1481,9 @@
     },
     {
       "type": "text",
-      "x": 876,
-      "y": 312,
-      "width": 300,
+      "x": 632,
+      "y": 336,
+      "width": 384,
       "height": 18,
       "text": "③ 矢量底色与描边 (GearColor):",
       "fontSize": 11,
@@ -1480,9 +1494,9 @@
     {
       "type": "button",
       "name": "btnColor_Blue",
-      "x": 876,
-      "y": 332,
-      "width": 128,
+      "x": 632,
+      "y": 358,
+      "width": 124,
       "height": 32,
       "mode": "Radio",
       "relatedController": "colorCtrl",
@@ -1505,7 +1519,7 @@
         {
           "type": "graph",
           "name": "bg",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "fillColor": "#2563eb",
           "cornerRadius": 6,
@@ -1530,7 +1544,7 @@
         {
           "type": "text",
           "name": "title",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "text": "经典科技蓝",
           "align": "center",
@@ -1544,9 +1558,9 @@
     {
       "type": "button",
       "name": "btnColor_Green",
-      "x": 1012,
-      "y": 332,
-      "width": 128,
+      "x": 762,
+      "y": 358,
+      "width": 124,
       "height": 32,
       "mode": "Radio",
       "relatedController": "colorCtrl",
@@ -1568,7 +1582,7 @@
         {
           "type": "graph",
           "name": "bg",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "fillColor": "#334155",
           "cornerRadius": 6,
@@ -1593,7 +1607,7 @@
         {
           "type": "text",
           "name": "title",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "text": "翡翠森林绿",
           "align": "center",
@@ -1606,9 +1620,9 @@
     {
       "type": "button",
       "name": "btnColor_Red",
-      "x": 1148,
-      "y": 332,
-      "width": 128,
+      "x": 892,
+      "y": 358,
+      "width": 124,
       "height": 32,
       "mode": "Radio",
       "relatedController": "colorCtrl",
@@ -1630,7 +1644,7 @@
         {
           "type": "graph",
           "name": "bg",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "fillColor": "#334155",
           "cornerRadius": 6,
@@ -1655,7 +1669,7 @@
         {
           "type": "text",
           "name": "title",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "text": "炽热战火红",
           "align": "center",
@@ -1667,9 +1681,9 @@
     },
     {
       "type": "text",
-      "x": 876,
-      "y": 370,
-      "width": 300,
+      "x": 632,
+      "y": 398,
+      "width": 384,
       "height": 18,
       "text": "④ 专属置灰与触控属性控制 (GearLook):",
       "fontSize": 11,
@@ -1680,9 +1694,9 @@
     {
       "type": "button",
       "name": "btnState_Normal",
-      "x": 876,
-      "y": 390,
-      "width": 128,
+      "x": 632,
+      "y": 420,
+      "width": 124,
       "height": 32,
       "mode": "Radio",
       "relatedController": "lookCtrl",
@@ -1705,7 +1719,7 @@
         {
           "type": "graph",
           "name": "bg",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "fillColor": "#2563eb",
           "cornerRadius": 6,
@@ -1730,7 +1744,7 @@
         {
           "type": "text",
           "name": "title",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "text": "正常状态",
           "align": "center",
@@ -1744,9 +1758,9 @@
     {
       "type": "button",
       "name": "btnState_Gray",
-      "x": 1012,
-      "y": 390,
-      "width": 128,
+      "x": 762,
+      "y": 420,
+      "width": 124,
       "height": 32,
       "mode": "Radio",
       "relatedController": "lookCtrl",
@@ -1768,7 +1782,7 @@
         {
           "type": "graph",
           "name": "bg",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "fillColor": "#334155",
           "cornerRadius": 6,
@@ -1793,7 +1807,7 @@
         {
           "type": "text",
           "name": "title",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "text": "切换置灰 (grayed)",
           "align": "center",
@@ -1806,9 +1820,9 @@
     {
       "type": "button",
       "name": "btnState_Touch",
-      "x": 1148,
-      "y": 390,
-      "width": 128,
+      "x": 892,
+      "y": 420,
+      "width": 124,
       "height": 32,
       "mode": "Radio",
       "relatedController": "lookCtrl",
@@ -1830,7 +1844,7 @@
         {
           "type": "graph",
           "name": "bg",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "fillColor": "#334155",
           "cornerRadius": 6,
@@ -1855,7 +1869,7 @@
         {
           "type": "text",
           "name": "title",
-          "width": 128,
+          "width": 124,
           "height": 32,
           "text": "不可触控 (touch=false)",
           "align": "center",
@@ -1868,14 +1882,14 @@
     {
       "type": "text",
       "name": "inspectorLog",
-      "x": 876,
-      "y": 435,
+      "x": 632,
+      "y": 462,
       "text": "检视器日志：就绪。FGUI 原生控制器驱动：Look / Size / Color / 灰度 / 触控。点击目标测试元件验证交互！",
       "fontSize": 11,
       "color": "#64748b",
       "leading": 4,
-      "width": 420,
-      "height": 40,
+      "width": 384,
+      "height": 152,
       "group": "inspectorGroup"
     }
   ]

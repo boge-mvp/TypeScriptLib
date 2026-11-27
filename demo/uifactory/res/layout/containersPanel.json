@@ -1,8 +1,8 @@
 {
   "type": "panel",
   "name": "tab4Containers",
-  "width": 1432,
-  "height": 600,
+  "width": 1052,
+  "height": 648,
   "background": {
     "type": "graph",
     "shape": "rect",
@@ -15,9 +15,9 @@
     {
       "type": "text",
       "name": "pageTitle",
-      "x": 24,
+      "x": 18,
       "y": 16,
-      "width": 700,
+      "width": 1004,
       "height": 28,
       "text": "Tab 4 · 复合导航与滚动容器 (PureList / PureTree / ScrollPane + GScrollBar)",
       "fontSize": 18,
@@ -27,9 +27,9 @@
     {
       "type": "text",
       "name": "pageSub",
-      "x": 24,
+      "x": 18,
       "y": 46,
-      "width": 1000,
+      "width": 1004,
       "height": 20,
       "text": "验证 PureList 虚拟化对象池复用、PureTree 多级树形展开折叠、以及带独立 GScrollBar 双向同步绑定的 ScrollPane 视口。",
       "fontSize": 13,
@@ -38,9 +38,9 @@
     {
       "type": "graph",
       "name": "cardListBg",
-      "x": 24,
+      "x": 18,
       "y": 80,
-      "width": 448,
+      "width": 329,
       "height": 496,
       "shape": "rect",
       "fillColor": "#0f172a",
@@ -51,9 +51,9 @@
     {
       "type": "text",
       "name": "cardListHeader",
-      "x": 40,
+      "x": 29,
       "y": 94,
-      "width": 416,
+      "width": 306,
       "height": 24,
       "text": "4.1 PureList 虚拟化滚动列表 (500 项对象池复用)",
       "fontSize": 14,
@@ -63,9 +63,9 @@
     {
       "type": "list",
       "name": "demoVirtualList",
-      "x": 40,
+      "x": 29,
       "y": 128,
-      "width": 416,
+      "width": 306,
       "height": 392,
       "overflow": "scroll",
       "scroll": "vertical",
@@ -78,9 +78,9 @@
     {
       "type": "text",
       "name": "listStatusText",
-      "x": 40,
+      "x": 29,
       "y": 532,
-      "width": 416,
+      "width": 306,
       "height": 28,
       "text": "选中列表项：请点击任意行进行测试",
       "fontSize": 13,
@@ -90,9 +90,9 @@
     {
       "type": "graph",
       "name": "cardTreeBg",
-      "x": 488,
+      "x": 359,
       "y": 80,
-      "width": 448,
+      "width": 329,
       "height": 496,
       "shape": "rect",
       "fillColor": "#0f172a",
@@ -103,21 +103,21 @@
     {
       "type": "text",
       "name": "cardTreeHeader",
-      "x": 504,
+      "x": 370,
       "y": 94,
-      "width": 416,
+      "width": 306,
       "height": 24,
       "text": "4.2 PureTree 声明式多级目录树 (单击箭头或双击展开)",
       "fontSize": 14,
       "bold": true,
-      "color": "#38bdf8"
+      "color": "#34d399"
     },
     {
       "type": "tree",
       "name": "demoTree",
-      "x": 504,
+      "x": 370,
       "y": 128,
-      "width": 416,
+      "width": 306,
       "height": 392,
       "defaultItem": "res/layout/treeItem.json",
       "indent": 20,
@@ -129,15 +129,27 @@
           "icon": "res/symbols/item_1.png",
           "expanded": true,
           "children": [
-            { "text": "UIFactory.ts (门面协调器)", "icon": "res/symbols/item_2.png" },
-            { "text": "UIFactoryPipeline.ts (6阶段管线)", "icon": "res/symbols/item_3.png" },
+            {
+              "text": "UIFactory.ts (门面协调器)",
+              "icon": "res/symbols/item_2.png"
+            },
+            {
+              "text": "UIFactoryPipeline.ts (6阶段管线)",
+              "icon": "res/symbols/item_3.png"
+            },
             {
               "text": "Gears 状态齿轮群",
               "icon": "res/symbols/item_4.png",
               "expanded": true,
               "children": [
-                { "text": "GearDisplay & GearDisplay2", "icon": "res/symbols/item_5.png" },
-                { "text": "GearXY / GearSize / GearColor", "icon": "res/symbols/item_6.png" }
+                {
+                  "text": "GearDisplay & GearDisplay2",
+                  "icon": "res/symbols/item_5.png"
+                },
+                {
+                  "text": "GearXY / GearSize / GearColor",
+                  "icon": "res/symbols/item_6.png"
+                }
               ]
             }
           ]
@@ -147,8 +159,14 @@
           "icon": "res/symbols/item_7.png",
           "expanded": false,
           "children": [
-            { "text": "hero_orb.json (Spine 3.8)", "icon": "res/symbols/item_8.png" },
-            { "text": "ui_bundle.bin (加密合包)", "icon": "res/symbols/item_1.png" }
+            {
+              "text": "hero_orb.json (Spine 3.8)",
+              "icon": "res/symbols/item_8.png"
+            },
+            {
+              "text": "ui_bundle.bin (加密合包)",
+              "icon": "res/symbols/item_1.png"
+            }
           ]
         }
       ]
@@ -156,9 +174,9 @@
     {
       "type": "text",
       "name": "treeStatusText",
-      "x": 504,
+      "x": 370,
       "y": 532,
-      "width": 416,
+      "width": 306,
       "height": 28,
       "text": "选中树节点：等待点击节点",
       "fontSize": 13,
@@ -168,9 +186,9 @@
     {
       "type": "graph",
       "name": "cardScrollBg",
-      "x": 952,
+      "x": 699,
       "y": 80,
-      "width": 456,
+      "width": 335,
       "height": 496,
       "shape": "rect",
       "fillColor": "#0f172a",
@@ -181,9 +199,9 @@
     {
       "type": "text",
       "name": "cardScrollHeader",
-      "x": 968,
+      "x": 711,
       "y": 94,
-      "width": 424,
+      "width": 311,
       "height": 24,
       "text": "4.3 滚动条显示规则测试台 (visible / auto / hidden / floating / left)",
       "fontSize": 14,
@@ -193,9 +211,9 @@
     {
       "type": "list",
       "name": "scrollViewport",
-      "x": 968,
+      "x": 711,
       "y": 128,
-      "width": 424,
+      "width": 311,
       "height": 344,
       "overflow": "scroll",
       "scrollType": 1,
@@ -214,26 +232,45 @@
     {
       "type": "group",
       "name": "sbRulesGroup",
-      "x": 968,
+      "x": 711,
       "y": 484,
-      "width": 424,
+      "width": 311,
       "height": 32,
-      "groupLayout": "horizontal",
-      "columnGap": 12
+      "groupLayout": "Horizontal",
+      "columnGap": 9
     },
     {
       "type": "button",
       "name": "btnSbDisplay",
       "group": "sbRulesGroup",
       "y": 484,
-      "width": 148,
+      "width": 109,
       "height": 32,
       "title": "显示: visible",
       "downEffect": 2,
       "downEffectValue": 0.94,
       "elements": [
-        { "type": "graph", "name": "bg", "width": 148, "height": 32, "shape": "rect", "fillColor": "#1e293b", "lineSize": 1, "lineColor": "#38bdf8", "cornerRadius": 8 },
-        { "type": "text", "name": "title", "width": 148, "height": 32, "align": "center", "valign": "middle", "fontSize": 12, "color": "#38bdf8" }
+        {
+          "type": "graph",
+          "name": "bg",
+          "width": 109,
+          "height": 32,
+          "shape": "rect",
+          "fillColor": "#1e293b",
+          "lineSize": 1,
+          "lineColor": "#38bdf8",
+          "cornerRadius": 8
+        },
+        {
+          "type": "text",
+          "name": "title",
+          "width": 109,
+          "height": 32,
+          "align": "center",
+          "valign": "middle",
+          "fontSize": 12,
+          "color": "#38bdf8"
+        }
       ]
     },
     {
@@ -241,14 +278,57 @@
       "name": "btnSbFloating",
       "group": "sbRulesGroup",
       "y": 484,
-      "width": 124,
+      "width": 91,
       "height": 32,
+      "mode": "Check",
+      "selected": false,
       "title": "悬浮: 关(占位)",
+      "selectedTitle": "悬浮: 开(悬浮)",
       "downEffect": 2,
       "downEffectValue": 0.94,
       "elements": [
-        { "type": "graph", "name": "bg", "width": 124, "height": 32, "shape": "rect", "fillColor": "#1e293b", "lineSize": 1, "lineColor": "#475569", "cornerRadius": 8 },
-        { "type": "text", "name": "title", "width": 124, "height": 32, "align": "center", "valign": "middle", "fontSize": 12, "color": "#e2e8f0" }
+        {
+          "type": "graph",
+          "name": "bg",
+          "width": 91,
+          "height": 32,
+          "shape": "rect",
+          "fillColor": "#1e293b",
+          "lineSize": 1,
+          "lineColor": "#475569",
+          "cornerRadius": 8,
+          "gearColor": {
+            "controller": "button",
+            "pages": {
+              "up": {
+                "color": "#1e293b",
+                "strokeColor": "#475569"
+              },
+              "down": {
+                "color": "#0c4a6e",
+                "strokeColor": "#38bdf8"
+              },
+              "over": {
+                "color": "#334155",
+                "strokeColor": "#64748b"
+              },
+              "selectedOver": {
+                "color": "#0c4a6e",
+                "strokeColor": "#7dd3fc"
+              }
+            }
+          }
+        },
+        {
+          "type": "text",
+          "name": "title",
+          "width": 91,
+          "height": 32,
+          "align": "center",
+          "valign": "middle",
+          "fontSize": 12,
+          "color": "#e2e8f0"
+        }
       ]
     },
     {
@@ -256,22 +336,65 @@
       "name": "btnSbLeft",
       "group": "sbRulesGroup",
       "y": 484,
-      "width": 128,
+      "width": 94,
       "height": 32,
+      "mode": "Check",
+      "selected": false,
       "title": "侧边: 右侧",
+      "selectedTitle": "侧边: 左侧",
       "downEffect": 2,
       "downEffectValue": 0.94,
       "elements": [
-        { "type": "graph", "name": "bg", "width": 128, "height": 32, "shape": "rect", "fillColor": "#1e293b", "lineSize": 1, "lineColor": "#a855f7", "cornerRadius": 8 },
-        { "type": "text", "name": "title", "width": 128, "height": 32, "align": "center", "valign": "middle", "fontSize": 12, "color": "#e9d5ff" }
+        {
+          "type": "graph",
+          "name": "bg",
+          "width": 94,
+          "height": 32,
+          "shape": "rect",
+          "fillColor": "#1e293b",
+          "lineSize": 1,
+          "lineColor": "#a855f7",
+          "cornerRadius": 8,
+          "gearColor": {
+            "controller": "button",
+            "pages": {
+              "up": {
+                "color": "#1e293b",
+                "strokeColor": "#a855f7"
+              },
+              "down": {
+                "color": "#581c87",
+                "strokeColor": "#c084fc"
+              },
+              "over": {
+                "color": "#334155",
+                "strokeColor": "#a855f7"
+              },
+              "selectedOver": {
+                "color": "#581c87",
+                "strokeColor": "#d8b4fe"
+              }
+            }
+          }
+        },
+        {
+          "type": "text",
+          "name": "title",
+          "width": 94,
+          "height": 32,
+          "align": "center",
+          "valign": "middle",
+          "fontSize": 12,
+          "color": "#e9d5ff"
+        }
       ]
     },
     {
       "type": "text",
       "name": "scrollStatusText",
-      "x": 968,
+      "x": 711,
       "y": 528,
-      "width": 424,
+      "width": 311,
       "height": 28,
       "text": "规则=visible | floating=false | left=false | 进度=0%",
       "fontSize": 13,

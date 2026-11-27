@@ -1,17 +1,26 @@
 {
   "type": "button",
   "name": "listItem",
-  "width": 360,
+  "width": 286,
   "height": 48,
   "mode": "Check",
   "controllers": [
-    { "name": "button", "pages": ["0", "1", "2", "3"], "selectedIndex": 0 }
+    {
+      "name": "button",
+      "pages": [
+        "up",
+        "down",
+        "over",
+        "selectedOver"
+      ],
+      "selectedIndex": 0
+    }
   ],
   "elements": [
     {
       "type": "graph",
       "name": "bg",
-      "width": 360,
+      "width": 286,
       "height": 48,
       "shape": "rect",
       "fillColor": "#1e293b",
@@ -21,10 +30,22 @@
       "gearColor": {
         "controller": "button",
         "pages": {
-          "0": { "color": "#1e293b", "outlineColor": "#334155" },
-          "1": { "color": "#0c4a6e", "outlineColor": "#38bdf8" },
-          "2": { "color": "#273549", "outlineColor": "#475569" },
-          "3": { "color": "#075985", "outlineColor": "#7dd3fc" }
+          "up": {
+            "color": "#1e293b",
+            "strokeColor": "#334155"
+          },
+          "down": {
+            "color": "#0c4a6e",
+            "strokeColor": "#38bdf8"
+          },
+          "over": {
+            "color": "#273549",
+            "strokeColor": "#475569"
+          },
+          "selectedOver": {
+            "color": "#075985",
+            "strokeColor": "#7dd3fc"
+          }
         }
       }
     },
@@ -43,7 +64,7 @@
       "name": "title",
       "x": 56,
       "y": 12,
-      "width": 220,
+      "width": 156,
       "height": 24,
       "fontSize": 14,
       "bold": true,
@@ -54,7 +75,7 @@
     {
       "type": "text",
       "name": "badge",
-      "x": 284,
+      "x": 212,
       "y": 14,
       "width": 64,
       "height": 20,
